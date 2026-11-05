@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --font-heading: "Press Start 2P", ui-monospace, monospace;
+    --font-body: "VT323", ui-monospace, monospace;
+    --font-display: "Press Start 2P", ui-monospace, monospace;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* --- 16-bit game palette (readable light alternative) --- */
+    --game-bg: #f2f0fb;
+    --game-bg-95: rgba(242, 240, 251, 0.95);
+    --game-bg-deep: #e6e2f4;
+    --game-fg: #221d44;
+    --game-muted: #5c5484;
+    --game-dim: #6a6390;
+    --game-card: #ffffff;
+    --game-panel: #e9e5fa;
+    --game-border: #c9c2e8;
+    --game-border-strong: #6a5f9e;
+    --game-accent: #a06a00;
+    --game-accent-hover: #7d5300;
+    --game-accent-fg: #ffffff;
+    --game-accent-bg: #fff3c4;
+    --game-success: #14682f;
+    --game-success-border: #2e9e56;
+    --game-success-bg: #e2f6e9;
+    --game-success-panel: #cdeeda;
+    --game-success-bg-hover: #b8e3c8;
+    --game-danger: #cc2f45;
+    --game-violet: #6a4fc8;
+    --game-violet-bg: #e5defa;
+    --game-violet-bg-hover: #d5ccf5;
+    --game-violet-border: #8a72d8;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* --- 16-bit game palette (dark, the shipped retro look) --- */
+    --game-bg: #0d0b1e;
+    --game-bg-95: rgba(13, 11, 30, 0.95);
+    --game-bg-deep: #100d26;
+    --game-fg: #e8e4ff;
+    --game-muted: #8f86c9;
+    --game-dim: #7e76b4;
+    --game-card: #151233;
+    --game-panel: #231d4d;
+    --game-border: #2a2450;
+    --game-border-strong: #3a3370;
+    --game-accent: #f5b400;
+    --game-accent-hover: #ffd44d;
+    --game-accent-fg: #000000;
+    --game-accent-bg: #221a04;
+    --game-success: #7ef29a;
+    --game-success-border: #3ba55d;
+    --game-success-bg: #12281a;
+    --game-success-panel: #1b2f22;
+    --game-success-bg-hover: #254430;
+    --game-danger: #ff5566;
+    --game-violet: #b48cff;
+    --game-violet-bg: #2a1f52;
+    --game-violet-bg-hover: #3a2a6e;
+    --game-violet-border: #4b3a8c;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    overscroll-behavior: none; /* no browser rubber-banding on Android */
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+    background-color: var(--game-bg);
+    font-size: 18px;
+    overscroll-behavior: none;
+  }
+
+  /* Readable content and inputs stay selectable. */
+  p,
+  span,
+  input,
+  textarea {
+    user-select: auto;
+  }
+
+  /* Tap targets and app chrome stay selection-free, including their labels. */
+  button,
+  nav,
+  header,
+  [role="button"],
+  .select-none,
+  button *,
+  nav *,
+  header *,
+  [role="button"] * {
+    user-select: none;
+  }
+}
+
+/* --- 16-bit game chrome --- */
+.font-pixel {
+  font-family: "Press Start 2P", ui-monospace, monospace;
+}
+
+.font-term {
+  font-family: "VT323", ui-monospace, monospace;
+}
+
+.title-glow {
+  text-shadow: 0 0 14px rgba(245, 180, 0, 0.55);
+}
+
+.crt-scanlines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(13, 11, 30, 0.35) 0px,
+    rgba(13, 11, 30, 0.35) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+@keyframes gain-pop {
+  from {
+    transform: translate(-50%, -6px);
+    opacity: 1;
+  }
+  to {
+    transform: translate(-50%, -40px);
+    opacity: 0;
+  }
+}
+
+.gain-pop {
+  animation: gain-pop 0.9s ease-out forwards;
+}
+
+@keyframes tile-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 180, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(245, 180, 0, 0);
+  }
+}
+
+.tile-run {
+  animation: tile-pulse 1.6s ease-in-out infinite;
+}
+
+/* --- Mobile safe areas: notch / home-indicator insets --- */
+/* max() keeps the headers' normal 12px spacing when no inset exists. */
+.safe-top {
+  padding-top: max(env(safe-area-inset-top), 0.75rem);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

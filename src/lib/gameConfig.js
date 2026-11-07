@@ -222,18 +222,20 @@ export function cappedTick(raw, hidden, budget) {
 // --- Prestige: reset your empire to recruit a capped profit bonus ---
 // First investor at $1T lifetime (was $1M, which a rush reached in ~3 minutes).
 export const PRESTIGE_UNIT = 1e12;
-// Investors, singularity, mastery, challenges, projects, and research revenue
-// all multiply into this one ceiling. See empire.js.
+// Kept as the old reference point. The live income ceiling is the soft cap in
+// empire.js, which starts near x14 and rises with singularity points.
 export const GLOBAL_CAP = 10;
 
-// Income multipliers in this game are capped:
+// Income multipliers stay bounded:
 //   milestoneMult — ×144 at 220 owned, then flat
-//   prestigeMult  — ×10 at 500 investors, then flat
+//   prestigeMult  — +5% for 100, +1% for 400, then +0.02% with no hard stop
+// The product of every empire bonus then passes through the soft ceiling in
+// empire.js, so a huge investor count still cannot make income infinite.
 // Owned count is a quantity, not a bonus, and a single purchase stops at MAX_BUY.
 //
-// Singularity (not built): a later reset could open at 100 investors and grant
-// at most ×4 (20 points at +20% each). That bonus has to live inside the ×10
-// income cap above — never as a second uncapped multiplier stacked on prestige.
+// Singularity is implemented in empire.js. Each point is +20% up to ×4.
+// The investor bill for the next fork grows with points already taken, and the
+// whole empire product approaches a ceiling that rises with those points.
 export function investorsFor(runLifetime) {
   if (!Number.isFinite(runLifetime) || runLifetime <= 0) return 0;
   const n = Math.floor(Math.sqrt(runLifetime / PRESTIGE_UNIT));
@@ -243,9 +245,11 @@ export function investorsFor(runLifetime) {
 export function prestigeMult(investors) {
   const n = Math.max(0, Math.floor(investors));
   if (!Number.isFinite(n)) return 1;
-  const a = Math.min(n, 100); // +5% each → at most ×6
-  const b = Math.min(Math.max(n - 100, 0), 400); // +1% each → at most ×10
-  return 1 + a * 0.05 + b * 0.01; // hard cap ×10
+  const a = Math.min(n, 100); // +5% each
+  const b = Math.min(Math.max(n - 100, 0), 400); // +1% each, through 500
+  const c = Math.max(n - 500, 0); // +0.02% each after that, no hard stop
+  const mult = 1 + a * 0.05 + b * 0.01 + c * 0.0002;
+  return Number.isFinite(mult) ? mult : 1;
 }
 
 function rateOf(cfg, owned) {

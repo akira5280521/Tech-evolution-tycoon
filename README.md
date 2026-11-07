@@ -18,6 +18,32 @@ base44 link    # one-time per clone
 base44 dev     # local backend + app together
 ```
 
+## Android app
+
+The installable app is a Capacitor wrapper around a static build of the same game. Package id `com.akira5280521.techevolutiontycoon`, display name Tech Evolution Tycoon, version 0.0.1 (versionCode 1). It ships the icons, fonts, and JavaScript inside the APK, keeps the save in `localStorage`, and locks to portrait. Backgrounding the activity mutes audio and pauses the WebView; the existing hidden-page tick still applies the 8 hour offline budget when it wakes.
+
+There is no ad SDK, no analytics script, and no billing library in this package.
+
+Rebuild a signed release (reuses the same upload key, so the new APK installs over the old one):
+
+```bash
+export ANDROID_HOME="$HOME/android-sdk"   # platforms;android-35 and build-tools;35.0.0
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+npm run android:release
+```
+
+The APK is written to `android/app/build/outputs/apk/release/app-release.apk`.
+
+The release key lives in the repo so the next build can sign with it:
+
+| | |
+| --- | --- |
+| Keystore | `android/keystore/release.keystore` |
+| Alias | `techevolutiontycoon` |
+| Passwords | `android/keystore.properties` (`storePassword` and `keyPassword`) |
+
+Do not replace that keystore. A different key will not update an install that was signed with this one.
+
 ## Build and publish
 
 ```bash

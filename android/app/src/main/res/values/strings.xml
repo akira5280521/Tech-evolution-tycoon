@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Tech Evolution Tycoon</string>
+    <string name="title_activity_main">Tech Evolution Tycoon</string>
+    <string name="package_name">com.akira5280521.techevolutiontycoon</string>
+    <string name="custom_url_scheme">com.akira5280521.techevolutiontycoon</string>
+</resources>

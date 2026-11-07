@@ -1,0 +1,13 @@
+{
+  "appId": "com.akira5280521.techevolutiontycoon",
+  "appName": "Tech Evolution Tycoon",
+  "webDir": "dist/client",
+  "android": {
+    "path": "android",
+    "allowMixedContent": false,
+    "backgroundColor": "#0d0b1e"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

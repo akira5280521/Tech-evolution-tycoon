@@ -18,7 +18,7 @@ export const BUSINESSES = [
     baseCost: 4,
     revenue: 1,
     cycleMs: 600,
-    coef: 1.07,
+    coef: 1.071,
     managerName: "Lab Technician",
     managerCost: 1000,
   },
@@ -57,7 +57,7 @@ export const BUSINESSES = [
     baseCost: 311040,
     revenue: 13230,
     cycleMs: 12000,
-    coef: 1.13,
+    coef: 1.14,
     managerName: "Fab Line Supervisor",
     managerCost: 18000000,
   },
@@ -193,11 +193,14 @@ export function maxAffordable(cfg, owned, cash) {
   return Math.max(0, Math.min(MAX_BUY, n));
 }
 
-export function buyCount(mode, cfg, owned, cash) {
-  if (mode === "MAX") return Math.min(MAX_BUY, Math.max(maxAffordable(cfg, owned, cash), 1));
+// `limit` is how many units this click may add. Callers pass the distance to
+// the next milestone, speed gate, or mastery gate so one press cannot skip it.
+export function buyCount(mode, cfg, owned, cash, limit = MAX_BUY) {
+  const cap = Number.isFinite(limit) && limit >= 1 ? Math.min(MAX_BUY, Math.floor(limit)) : MAX_BUY;
+  if (mode === "MAX") return Math.min(cap, Math.max(maxAffordable(cfg, owned, cash), 1));
   const n = parseInt(String(mode).slice(1), 10);
   if (!Number.isFinite(n) || n < 1) return 1;
-  return Math.min(MAX_BUY, n);
+  return Math.min(cap, n);
 }
 
 // Closed tabs, hidden tabs, and suspended timers all share this one budget.
@@ -222,15 +225,21 @@ export function cappedTick(raw, hidden, budget) {
 // --- Prestige: reset your empire to recruit a capped profit bonus ---
 // First investor at $1T lifetime (was $1M, which a rush reached in ~3 minutes).
 export const PRESTIGE_UNIT = 1e12;
+// Kept as the old reference point. The live income ceiling is the soft cap in
+// empire.js, which starts near x14 and rises with singularity points.
+export const GLOBAL_CAP = 10;
 
-// Income multipliers in this game are capped:
+// Income multipliers stay bounded:
 //   milestoneMult — ×144 at 220 owned, then flat
-//   prestigeMult  — ×10 at 500 investors, then flat
-// Owned count is a quantity, not a bonus, and a single purchase stops at MAX_BUY.
+//   prestigeMult  — +5% for 100, +1% for 400, then +0.02% with no hard stop
+// The product of every empire bonus then passes through the soft ceiling in
+// empire.js, so a huge investor count still cannot make income infinite.
+// Owned count is a quantity, not a bonus. A single purchase stops at the next
+// milestone, speed gate, or mastery gate, and never adds more than MAX_BUY.
 //
-// Singularity (not built): a later reset could open at 100 investors and grant
-// at most ×4 (20 points at +20% each). That bonus has to live inside the ×10
-// income cap above — never as a second uncapped multiplier stacked on prestige.
+// Singularity is implemented in empire.js. Each point is +20% up to ×4.
+// The investor bill for the next fork grows with points already taken, and the
+// whole empire product approaches a ceiling that rises with those points.
 export function investorsFor(runLifetime) {
   if (!Number.isFinite(runLifetime) || runLifetime <= 0) return 0;
   const n = Math.floor(Math.sqrt(runLifetime / PRESTIGE_UNIT));
@@ -240,7 +249,101 @@ export function investorsFor(runLifetime) {
 export function prestigeMult(investors) {
   const n = Math.max(0, Math.floor(investors));
   if (!Number.isFinite(n)) return 1;
-  const a = Math.min(n, 100); // +5% each → at most ×6
-  const b = Math.min(Math.max(n - 100, 0), 400); // +1% each → at most ×10
-  return 1 + a * 0.05 + b * 0.01; // hard cap ×10
+  const a = Math.min(n, 100); // +5% each
+  const b = Math.min(Math.max(n - 100, 0), 400); // +1% each, through 500
+  const c = Math.max(n - 500, 0); // +0.02% each after that, no hard stop
+  const mult = 1 + a * 0.05 + b * 0.01 + c * 0.0002;
+  return Number.isFinite(mult) ? mult : 1;
+}
+
+function rateOf(cfg, owned) {
+  if (!owned || owned <= 0) return 0;
+  return (cfg.revenue / (cfg.cycleMs / 1000)) * owned * milestoneMult(owned);
+}
+
+// The single best thing to do with the empire as it stands. Hire beats a new
+// era, which beats clicking an idle machine, which beats another copy of
+// something you already run.
+export function nextMove(state) {
+  const biz = Array.isArray(state?.biz) ? state.biz : [];
+  const cash = Number.isFinite(state?.cash) ? state.cash : 0;
+
+  const noBoss = state?.challenge?.id === "noboss";
+  const glass = state?.challenge?.id === "glass";
+
+  if (!noBoss) {
+    for (let i = BUSINESSES.length - 1; i >= 0; i--) {
+      const st = biz[i];
+      const cfg = BUSINESSES[i];
+      if (!st || st.owned <= 0 || st.manager) continue;
+      if (glass && i !== 0) continue;
+      const cost = state?.shop?.freeManager ? 0 : cfg.managerCost;
+      if (cash >= cost) {
+        return `Hire the ${cfg.managerName} for ${money(cost)} - that era then earns on its own.`;
+      }
+    }
+  }
+
+  for (let i = 1; i < BUSINESSES.length; i++) {
+    if (glass) break;
+    const prev = biz[i - 1];
+    const st = biz[i];
+    if (!prev || prev.owned <= 0 || (st && st.owned > 0)) continue;
+    const cost = costOf(BUSINESSES[i], 0, 1);
+    if (Number.isFinite(cost) && cash >= cost) {
+      return `Buy your first ${BUSINESSES[i].name} for ${money(cost)}.`;
+    }
+    break;
+  }
+
+  for (let i = 0; i < BUSINESSES.length; i++) {
+    const st = biz[i];
+    if (st && st.owned > 0 && !st.manager && !st.running) {
+      return `Run ${BUSINESSES[i].name} to fire the next batch.`;
+    }
+  }
+
+  let best = null;
+  for (let i = 0; i < BUSINESSES.length; i++) {
+    const st = biz[i];
+    const owned = st ? st.owned : 0;
+    if (!(i === 0 || (biz[i - 1] && biz[i - 1].owned > 0) || owned > 0)) continue;
+    const cfg = BUSINESSES[i];
+    const cost = costOf(cfg, owned, 1);
+    const delta = rateOf(cfg, owned + 1) - rateOf(cfg, owned);
+    if (!Number.isFinite(cost) || !(delta > 0) || cash < cost) continue;
+    const payback = cost / delta;
+    if (!best || payback < best.payback) best = { name: cfg.name, cost, payback };
+  }
+  if (best) return `Buy another ${best.name} for ${money(best.cost)}.`;
+
+  const claim = investorsFor(state?.lifetime);
+  if (claim >= 1) {
+    const noun = claim === 1 ? "investor" : "investors";
+    return `Prestige to recruit ${claim} ${noun}.`;
+  }
+
+  let goal = null;
+  for (let i = 0; i < BUSINESSES.length; i++) {
+    const st = biz[i];
+    const cfg = BUSINESSES[i];
+    if (st && st.owned > 0 && !st.manager) {
+      const short = cfg.managerCost - cash;
+      if (short > 0 && (!goal || short < goal.short)) {
+        goal = { short, text: `Save ${money(short)} more to hire the ${cfg.managerName}.` };
+      }
+    }
+  }
+  for (let i = 1; i < BUSINESSES.length; i++) {
+    const prev = biz[i - 1];
+    const st = biz[i];
+    if (!prev || prev.owned <= 0 || (st && st.owned > 0)) continue;
+    const cost = costOf(BUSINESSES[i], 0, 1);
+    const short = cost - cash;
+    if (Number.isFinite(short) && short > 0 && (!goal || short < goal.short)) {
+      goal = { short, text: `Save ${money(short)} more to open ${BUSINESSES[i].name}.` };
+    }
+    break;
+  }
+  return goal ? goal.text : "Keep the machines running. The next era is on its way.";
 }

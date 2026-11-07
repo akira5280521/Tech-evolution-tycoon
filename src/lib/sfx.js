@@ -6,6 +6,7 @@
 let ctx = null;
 let master = null;
 let audible = true;
+let userSound = true;
 
 function audio() {
   if (typeof window === "undefined") return null;
@@ -36,7 +37,17 @@ function setAudible(on) {
 // Hidden tab or minimized window (visibility), or the app losing focus (blur).
 // Sounds that would have started while away are dropped; they are not replayed.
 function syncFromPage() {
-  setAudible(typeof document === "undefined" ? true : !document.hidden);
+  const visible = typeof document === "undefined" || !document.hidden;
+  setAudible(userSound && visible);
+}
+
+export function setSoundEnabled(on) {
+  userSound = !!on;
+  syncFromPage();
+}
+
+export function isSoundEnabled() {
+  return userSound;
 }
 
 function blip(freq, start, duration, gain = 0.12) {

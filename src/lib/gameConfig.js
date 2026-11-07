@@ -1,4 +1,12 @@
 // Central tuning for the idle computing-empire game: eras, milestones, and money math.
+//
+// Tier pacing (the nine businesses): a full-uptime run used to buy every era
+// by 37 minutes and then idle until 2.4h for the first investor. From Punch
+// Cards up, sticker prices and manager costs are 36× the old values. Era n
+// (Punch Cards = 1) keeps its old revenue times 1.75^(n-1), so a tier you
+// waited for is still a raise without funding the next one immediately.
+// Quantum's first purchase now lands just before the ~2.4h first prestige.
+// Vacuum Tubes are unchanged so the opening still teaches the click.
 
 export const BUSINESSES = [
   {
@@ -20,12 +28,12 @@ export const BUSINESSES = [
     era: "c. 1951",
     tagline: "Feed the mainframe a stack of holes and it pays you back in bytes.",
     icon: "https://media.base44.com/images/public/6aebb2bec73aa2ce1dbb81db/99c96d2bc_generated_image.png",
-    baseCost: 60,
+    baseCost: 2160,
     revenue: 60,
     cycleMs: 3000,
     coef: 1.14,
     managerName: "Keypunch Operator",
-    managerCost: 15000,
+    managerCost: 540000,
   },
   {
     id: "transistors",
@@ -33,12 +41,12 @@ export const BUSINESSES = [
     era: "c. 1958",
     tagline: "Solid-state switches replace the glowing glass. Smaller, cooler, faster.",
     icon: "https://media.base44.com/images/public/6aebb2bec73aa2ce1dbb81db/94f9dc9a6_generated_image.png",
-    baseCost: 720,
-    revenue: 540,
+    baseCost: 25920,
+    revenue: 945,
     cycleMs: 6000,
     coef: 1.14,
     managerName: "Cleanroom Foreman",
-    managerCost: 100000,
+    managerCost: 3600000,
   },
   {
     id: "ics",
@@ -46,12 +54,12 @@ export const BUSINESSES = [
     era: "c. 1965",
     tagline: "A whole logic board shrunk onto a single sliver of silicon.",
     icon: "https://media.base44.com/images/public/6aebb2bec73aa2ce1dbb81db/3ed85add0_generated_image.png",
-    baseCost: 8640,
-    revenue: 4320,
+    baseCost: 311040,
+    revenue: 13230,
     cycleMs: 12000,
     coef: 1.13,
     managerName: "Fab Line Supervisor",
-    managerCost: 500000,
+    managerCost: 18000000,
   },
   {
     id: "cpu",
@@ -59,12 +67,12 @@ export const BUSINESSES = [
     era: "c. 1971",
     tagline: "A computer on a chip. The brain is born, and it prints money.",
     icon: "https://media.base44.com/images/public/6aebb2bec73aa2ce1dbb81db/b81d51d3c_generated_image.png",
-    baseCost: 103680,
-    revenue: 51840,
+    baseCost: 3732480,
+    revenue: 277830,
     cycleMs: 24000,
     coef: 1.12,
     managerName: "Chip Architect",
-    managerCost: 1200000,
+    managerCost: 43200000,
   },
   {
     id: "homepc",
@@ -72,12 +80,12 @@ export const BUSINESSES = [
     era: "c. 1977",
     tagline: "Computing escapes the lab and lands on every desk in the suburbs.",
     icon: "https://media.base44.com/images/public/6aebb2bec73aa2ce1dbb81db/f1a4bc2bc_generated_image.png",
-    baseCost: 1244160,
-    revenue: 622080,
+    baseCost: 44789760,
+    revenue: 5834430,
     cycleMs: 48000,
     coef: 1.11,
     managerName: "Assembly Line Boss",
-    managerCost: 12000000,
+    managerCost: 432000000,
   },
   {
     id: "gpu",
@@ -85,12 +93,12 @@ export const BUSINESSES = [
     era: "c. 1999",
     tagline: "Polygons! Pixels! The GPU gold rush begins and never slows down.",
     icon: "https://media.base44.com/images/public/6aebb2bec73aa2ce1dbb81db/601001ef4_generated_image.png",
-    baseCost: 14929920,
-    revenue: 7464960,
+    baseCost: 537477120,
+    revenue: 122523030,
     cycleMs: 96000,
     coef: 1.1,
     managerName: "Silicon Engineer",
-    managerCost: 111000000,
+    managerCost: 3996000000,
   },
   {
     id: "rgb",
@@ -98,12 +106,12 @@ export const BUSINESSES = [
     era: "c. 2010",
     tagline: "More glow, more frames, more profit. The fans never sleep.",
     icon: "https://media.base44.com/images/public/6aebb2bec73aa2ce1dbb81db/5dab53cc9_generated_image.png",
-    baseCost: 179159040,
-    revenue: 89579520,
+    baseCost: 6449725440,
+    revenue: 2572983630,
     cycleMs: 192000,
     coef: 1.09,
     managerName: "Streamer Crafter",
-    managerCost: 555555555,
+    managerCost: 19999999980,
   },
   {
     id: "quantum",
@@ -111,12 +119,12 @@ export const BUSINESSES = [
     era: "c. 2025",
     tagline: "Superpositioned profits, observed daily inside a golden chandelier.",
     icon: "https://media.base44.com/images/public/6aebb2bec73aa2ce1dbb81db/b105db4ed_generated_image.png",
-    baseCost: 2149908480,
-    revenue: 1074954240,
+    baseCost: 77396705280,
+    revenue: 54032656230,
     cycleMs: 384000,
     coef: 1.08,
     managerName: "Cryogenics Engineer",
-    managerCost: 10000000000,
+    managerCost: 360000000000,
   },
 ];
 

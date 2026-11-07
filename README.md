@@ -20,9 +20,9 @@ base44 dev     # local backend + app together
 
 ## Android app
 
-The installable app is a Capacitor wrapper around a static build of the same game. Package id `com.techevolutiontycoon.game`, display name Tech Evolution Tycoon, version 0.0.2 (versionCode 2). It targets Android SDK 36 (minimum 24), ships the icons, fonts, and JavaScript inside the package, keeps the save in `localStorage`, and locks to portrait. Backgrounding the activity mutes audio and pauses the WebView; the existing hidden-page tick still applies the 8 hour offline budget when it wakes. The hardware back button closes a boardroom dilemma, returns from a tab to the previous screen, and leaves the app only from the game screen.
+The installable app is a Capacitor wrapper around a static build of the same game. Package id `com.techevolutiontycoon.game`, display name Tech Evolution Tycoon, version 0.0.3 (versionCode 3). It targets Android SDK 36 (minimum 24), ships the icons, fonts, and JavaScript inside the package, keeps the save in `localStorage`, and locks to portrait. Backgrounding the activity mutes audio and pauses the WebView; the existing hidden-page tick still applies the 8 hour offline budget when it wakes. The hardware back button closes a boardroom dilemma, returns from a tab to the previous screen, and leaves the app only from the game screen.
 
-There is no ad SDK, no analytics script, and no billing library. The manifest does not request network access.
+Sideloaded copies look at the public GitHub release at most once a day, and from More → Settings. The request is anonymous. Play Store installs skip it. There is no ad SDK, no analytics script, and no billing library.
 
 Play listing copy, the privacy policy, and the Data safety / content-rating notes are in `docs/`.
 

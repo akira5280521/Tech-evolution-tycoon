@@ -7,6 +7,7 @@ import { useGameState } from "./GameState";
 import AnalyticsPanel from "./AnalyticsPanel";
 import TokenShop from "./TokenShop";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
+import { CheckForUpdatesButton } from "./UpdateNotice";
 
 const TABS = [
   { id: "howto", label: "HOW TO PLAY" },
@@ -59,6 +60,7 @@ export default function MorePage() {
       {tab === "settings" && (
         <>
           <AnalyticsPanel data={data} />
+          <CheckForUpdatesButton />
           <button type="button" onClick={reset} className="min-h-11 border-2 border-[var(--game-danger)] px-3 font-pixel text-[0.55rem] text-[var(--game-danger)]">
             RESET SAVE
           </button>

@@ -35,4 +35,7 @@
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
     </application>
+
+    <!-- Public GitHub Releases lookup only. The request carries no save or account. -->
+    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

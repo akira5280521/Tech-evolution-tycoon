@@ -6,12 +6,12 @@ import {
   milestoneMult,
   money,
   nextMilestone,
-  prestigeMult,
 } from "@/lib/gameConfig";
+import { effectiveCycleMs, empireFactors, upgradesOf } from "@/lib/empire";
 import IconTile from "./IconTile";
 import ProgressTrack from "./ProgressTrack";
 
-function BusinessRow({ index, state, buyMode, onBuy, onHire, onRun }) {
+function BusinessRow({ index, state, buyMode, onBuy, onHire, onRun, compact }) {
   const cfg = BUSINESSES[index];
   const st = state.biz[index];
   const count = buyCount(buyMode, cfg, st.owned, state.cash);
@@ -19,11 +19,14 @@ function BusinessRow({ index, state, buyMode, onBuy, onHire, onRun }) {
   const canBuy = state.cash >= cost;
   const mult = milestoneMult(st.owned);
   const next = nextMilestone(st.owned);
-  const cycleSeconds = (cfg.cycleMs / 1000).toFixed(cfg.cycleMs % 1000 ? 1 : 0);
+  const cycle = effectiveCycleMs(cfg, state);
+  const cycleSeconds = (cycle / 1000).toFixed(cycle % 1000 ? 1 : 0);
+  const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
+  const perCycle = cfg.revenue * rev * st.owned * mult * empireFactors(state, Date.now()).total;
   const canHire = !st.manager && st.owned > 0 && state.cash >= cfg.managerCost;
 
   return (
-    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 border-2 border-[var(--game-border)] bg-[var(--game-card)] p-3 shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto]">
+    <div className={`grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
       <IconTile cfg={cfg} st={st} onRun={() => onRun(index)} />
 
       <div className="min-w-0 space-y-2">
@@ -38,11 +41,11 @@ function BusinessRow({ index, state, buyMode, onBuy, onHire, onRun }) {
             </span>
           )}
         </div>
-        <p className="font-term text-base leading-5 text-[var(--game-muted)]">{cfg.tagline}</p>
-        <ProgressTrack cfg={cfg} st={st} />
+        {!compact && <p className="font-term text-base leading-5 text-[var(--game-muted)]">{cfg.tagline}</p>}
+        <ProgressTrack cfg={{ ...cfg, cycleMs: cycle }} st={st} />
         <div className="flex flex-wrap justify-between gap-x-3 font-term text-base leading-5 text-[var(--game-muted)]">
           <span>
-            {money(cfg.revenue * st.owned * mult * prestigeMult(state.investors))} / {cycleSeconds}s cycle
+            {money(perCycle)} / {cycleSeconds}s cycle
           </span>
           <span>{next ? `next ×${next.mult} at ${next.owned} owned` : "all milestones earned"}</span>
         </div>
@@ -99,6 +102,9 @@ function BusinessRow({ index, state, buyMode, onBuy, onHire, onRun }) {
 function arePropsEqual(prev, next) {
   if (prev.index !== next.index) return false;
   if (prev.buyMode !== next.buyMode) return false;
+  if (prev.compact !== next.compact) return false;
+  if (prev.state.modStamp !== next.state.modStamp) return false;
+  if (prev.state.boostUntil !== next.state.boostUntil) return false;
   if (prev.onBuy !== next.onBuy || prev.onHire !== next.onHire || prev.onRun !== next.onRun) return false;
   if (prev.state.biz[prev.index] !== next.state.biz[next.index]) return false;
   if (prev.state.cash !== next.state.cash) return false;

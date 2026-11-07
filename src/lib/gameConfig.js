@@ -222,6 +222,9 @@ export function cappedTick(raw, hidden, budget) {
 // --- Prestige: reset your empire to recruit a capped profit bonus ---
 // First investor at $1T lifetime (was $1M, which a rush reached in ~3 minutes).
 export const PRESTIGE_UNIT = 1e12;
+// Investors, singularity, mastery, challenges, projects, and research revenue
+// all multiply into this one ceiling. See empire.js.
+export const GLOBAL_CAP = 10;
 
 // Income multipliers in this game are capped:
 //   milestoneMult — ×144 at 220 owned, then flat
@@ -243,4 +246,96 @@ export function prestigeMult(investors) {
   const a = Math.min(n, 100); // +5% each → at most ×6
   const b = Math.min(Math.max(n - 100, 0), 400); // +1% each → at most ×10
   return 1 + a * 0.05 + b * 0.01; // hard cap ×10
+}
+
+function rateOf(cfg, owned) {
+  if (!owned || owned <= 0) return 0;
+  return (cfg.revenue / (cfg.cycleMs / 1000)) * owned * milestoneMult(owned);
+}
+
+// The single best thing to do with the empire as it stands. Hire beats a new
+// era, which beats clicking an idle machine, which beats another copy of
+// something you already run.
+export function nextMove(state) {
+  const biz = Array.isArray(state?.biz) ? state.biz : [];
+  const cash = Number.isFinite(state?.cash) ? state.cash : 0;
+
+  const noBoss = state?.challenge?.id === "noboss";
+  const glass = state?.challenge?.id === "glass";
+
+  if (!noBoss) {
+    for (let i = BUSINESSES.length - 1; i >= 0; i--) {
+      const st = biz[i];
+      const cfg = BUSINESSES[i];
+      if (!st || st.owned <= 0 || st.manager) continue;
+      if (glass && i !== 0) continue;
+      const cost = state?.shop?.freeManager ? 0 : cfg.managerCost;
+      if (cash >= cost) {
+        return `Hire the ${cfg.managerName} for ${money(cost)} - that era then earns on its own.`;
+      }
+    }
+  }
+
+  for (let i = 1; i < BUSINESSES.length; i++) {
+    if (glass) break;
+    const prev = biz[i - 1];
+    const st = biz[i];
+    if (!prev || prev.owned <= 0 || (st && st.owned > 0)) continue;
+    const cost = costOf(BUSINESSES[i], 0, 1);
+    if (Number.isFinite(cost) && cash >= cost) {
+      return `Buy your first ${BUSINESSES[i].name} for ${money(cost)}.`;
+    }
+    break;
+  }
+
+  for (let i = 0; i < BUSINESSES.length; i++) {
+    const st = biz[i];
+    if (st && st.owned > 0 && !st.manager && !st.running) {
+      return `Run ${BUSINESSES[i].name} to fire the next batch.`;
+    }
+  }
+
+  let best = null;
+  for (let i = 0; i < BUSINESSES.length; i++) {
+    const st = biz[i];
+    const owned = st ? st.owned : 0;
+    if (!(i === 0 || (biz[i - 1] && biz[i - 1].owned > 0) || owned > 0)) continue;
+    const cfg = BUSINESSES[i];
+    const cost = costOf(cfg, owned, 1);
+    const delta = rateOf(cfg, owned + 1) - rateOf(cfg, owned);
+    if (!Number.isFinite(cost) || !(delta > 0) || cash < cost) continue;
+    const payback = cost / delta;
+    if (!best || payback < best.payback) best = { name: cfg.name, cost, payback };
+  }
+  if (best) return `Buy another ${best.name} for ${money(best.cost)}.`;
+
+  const claim = investorsFor(state?.lifetime);
+  if (claim >= 1) {
+    const noun = claim === 1 ? "investor" : "investors";
+    return `Prestige to recruit ${claim} ${noun}.`;
+  }
+
+  let goal = null;
+  for (let i = 0; i < BUSINESSES.length; i++) {
+    const st = biz[i];
+    const cfg = BUSINESSES[i];
+    if (st && st.owned > 0 && !st.manager) {
+      const short = cfg.managerCost - cash;
+      if (short > 0 && (!goal || short < goal.short)) {
+        goal = { short, text: `Save ${money(short)} more to hire the ${cfg.managerName}.` };
+      }
+    }
+  }
+  for (let i = 1; i < BUSINESSES.length; i++) {
+    const prev = biz[i - 1];
+    const st = biz[i];
+    if (!prev || prev.owned <= 0 || (st && st.owned > 0)) continue;
+    const cost = costOf(BUSINESSES[i], 0, 1);
+    const short = cost - cash;
+    if (Number.isFinite(short) && short > 0 && (!goal || short < goal.short)) {
+      goal = { short, text: `Save ${money(short)} more to open ${BUSINESSES[i].name}.` };
+    }
+    break;
+  }
+  return goal ? goal.text : "Keep the machines running. The next era is on its way.";
 }

@@ -1,24 +1,18 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { Gamepad2, Settings as SettingsIcon } from "lucide-react";
+import { Flag, Gamepad2, Package, Settings, Trophy, Zap } from "lucide-react";
 
 const TABS = [
   { id: "game", label: "GAME", to: "/", icon: Gamepad2, isActive: (p) => p === "/" },
-  {
-    id: "settings",
-    label: "SETTINGS",
-    to: "/settings",
-    icon: SettingsIcon,
-    isActive: (p) => p.startsWith("/settings"),
-  },
+  { id: "boost", label: "BOOST", to: "/boost", icon: Zap, isActive: (p) => p.startsWith("/boost") },
+  { id: "board", label: "BOARD", to: "/board", icon: Package, isActive: (p) => p.startsWith("/board") },
+  { id: "runs", label: "RUNS", to: "/runs", icon: Flag, isActive: (p) => p.startsWith("/runs") },
+  { id: "badges", label: "BADGES", to: "/badges", icon: Trophy, isActive: (p) => p.startsWith("/badges") },
+  { id: "more", label: "MORE", to: "/more", icon: Settings, isActive: (p) => p.startsWith("/more") || p.startsWith("/settings") },
 ];
 
-// Per-tab navigation state, kept at module scope so it survives tab switches.
-const tabScroll = { game: 0, settings: 0 };
-// Per-tab route stacks: each records the nested routes visited inside a tab so
-// returning to it can land back where the player left off. The roots ('/' and
-// '/settings') are not pushed — only nested routes, if any are added, go here.
-const tabStacks = { game: [], settings: [] };
+const tabScroll = Object.fromEntries(TABS.map((tab) => [tab.id, 0]));
+const tabStacks = Object.fromEntries(TABS.map((tab) => [tab.id, []]));
 
 export default function BottomTabs() {
   const { pathname } = useLocation();

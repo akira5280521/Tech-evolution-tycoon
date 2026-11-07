@@ -8,6 +8,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        registerPlugin(InstallSourcePlugin.class);
         super.onCreate(savedInstanceState);
         // Draw behind the status and gesture bars so CSS safe-area insets
         // pad the bottom nav instead of hiding it under the system UI.

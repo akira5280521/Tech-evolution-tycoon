@@ -14,7 +14,11 @@ Your empire — cash, businesses, upgrades, and settings — is stored only in t
 
 ## Network
 
-The Android app does not request network permission and does not send gameplay, device identifiers, or diagnostics to a server.
+Sideloaded copies may ask GitHub whether a newer release exists. That request is an anonymous GET to `https://api.github.com/repos/akira5280521/Tech-evolution-tycoon/releases/latest`. It does not include your save, your name, an account, or an advertising id. The developer does not receive the request. If the phone has no network, the check is skipped.
+
+Copies installed from Google Play do not run this check. Play delivers those updates.
+
+The game itself does not send gameplay or diagnostics anywhere.
 
 ## Children
 

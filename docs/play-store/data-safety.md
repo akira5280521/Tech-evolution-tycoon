@@ -1,6 +1,6 @@
 # Play Data safety — draft answers
 
-Use these answers in Play Console → App content → Data safety. They match the app: no account, no ads, no analytics, saves only in local storage, no network permission.
+Use these answers in Play Console → App content → Data safety. They match the app: no account, no ads, no analytics, saves only in local storage. A sideloaded copy may make one anonymous request to GitHub's public releases API. That request sends no save, account, or advertising id, and this developer does not receive or store it. Play installs skip the check.
 
 ## Overview
 
@@ -33,5 +33,6 @@ Answer **not collected** and **not shared** for every category, including:
 - Data is not shared with third parties
 - No data is collected for advertising or analytics
 - No account is required
+- The only off-device request is an anonymous GET of the public GitHub releases document. Do not mark a data type as collected for it.
 
 If Console still asks about encryption or deletion because a toggle was set to Yes by mistake, go back and set collection to No.

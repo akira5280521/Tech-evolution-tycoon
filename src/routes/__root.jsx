@@ -6,6 +6,7 @@ import { DefaultCatchBoundary } from "@/components/DefaultCatchBoundary";
 import { NotFound } from "@/components/NotFound";
 import { Toaster } from "@/components/ui/sonner";
 import { GameStateProvider } from "@/components/game/GameState";
+import { UpdateCheckProvider } from "@/components/game/UpdateNotice";
 import { AuthProvider } from "@/lib/AuthContext";
 import { installNativeLifecycle } from "@/lib/nativeShell";
 import { Base44Scripts } from "base44:document";
@@ -47,6 +48,7 @@ function RootComponent() {
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
       <AuthProvider>
         <GameStateProvider>
+        <UpdateCheckProvider>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={location.pathname}
@@ -58,6 +60,7 @@ function RootComponent() {
             <Outlet />
           </motion.div>
         </AnimatePresence>
+        </UpdateCheckProvider>
         </GameStateProvider>
         <Toaster />
       </AuthProvider>

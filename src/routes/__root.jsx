@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { DefaultCatchBoundary } from "@/components/DefaultCatchBoundary";
 import { NotFound } from "@/components/NotFound";
 import { Toaster } from "@/components/ui/sonner";
+import { GameStateProvider } from "@/components/game/GameState";
 import { AuthProvider } from "@/lib/AuthContext";
 import { Base44Scripts } from "base44:document";
 import appCss from "@/index.css?url";
@@ -46,6 +47,7 @@ function RootComponent() {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
       <AuthProvider>
+        <GameStateProvider>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={location.pathname}
@@ -57,6 +59,7 @@ function RootComponent() {
             <Outlet />
           </motion.div>
         </AnimatePresence>
+        </GameStateProvider>
         <Toaster />
       </AuthProvider>
     </ThemeProvider>

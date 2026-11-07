@@ -39,12 +39,16 @@ export function migrateSave(data) {
   });
 
   const lastSeen = typeof data.lastSeen === "number" && Number.isFinite(data.lastSeen) ? data.lastSeen : undefined;
+  const briefingDay = typeof data.briefingDay === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.briefingDay) ? data.briefingDay : null;
   return {
     version: SAVE_VERSION,
     cash: finiteNumber(data.cash, 0),
     lifetime: finiteNumber(data.lifetime, 0),
     investors,
     lastSeen,
+    briefingDay,
+    streak: Math.max(1, Math.floor(finiteNumber(data.streak, 1))),
+    meta: data,
     biz,
   };
 }

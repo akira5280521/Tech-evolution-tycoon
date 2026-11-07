@@ -1,5 +1,5 @@
 {
-  "appId": "com.akira5280521.techevolutiontycoon",
+  "appId": "com.techevolutiontycoon.game",
   "appName": "Tech Evolution Tycoon",
   "webDir": "dist/client",
   "android": {
@@ -9,5 +9,12 @@
   },
   "server": {
     "androidScheme": "https"
+  },
+  "plugins": {
+    "SystemBars": {
+      "style": "DARK",
+      "insetsHandling": "css",
+      "initialViewportFitValueHint": "cover"
+    }
   }
 }

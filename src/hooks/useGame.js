@@ -34,6 +34,7 @@ import {
   tickDilemma,
 } from "@/lib/empire";
 import { SAVE_VERSION, clearSaveData, getSaveData, writeSaveData } from "@/lib/gameSave";
+import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
 
 const SAVE_INTERVAL_MS = 5000;
@@ -248,7 +249,7 @@ export function useGame() {
       const wall = Date.now();
       const raw = Math.max(0, wall - lastWall);
       lastWall = wall;
-      const tick = cappedTick(raw, document.hidden, awayBudget);
+      const tick = cappedTick(raw, isPageHidden(), awayBudget);
       awayBudget = tick.budget;
       const dt = tick.dt;
       if (!(dt > 0)) return;
@@ -292,7 +293,7 @@ export function useGame() {
     };
     const iv = setInterval(save, SAVE_INTERVAL_MS);
     const onHide = () => {
-      if (document.hidden) save();
+      if (isPageHidden()) save();
     };
     window.addEventListener("pagehide", save);
     document.addEventListener("visibilitychange", onHide);

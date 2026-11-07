@@ -14,6 +14,8 @@ import {
 } from "@/lib/gameConfig";
 import {
   blankMeta,
+  collectBadges,
+  legacyBadgeIds,
   buyShopItem,
   buyUpgrade,
   canBuyIndex,
@@ -99,6 +101,7 @@ function applySavedMeta(state, raw) {
   state.nextDilemmaAt = num(m.nextDilemmaAt);
   state.nextWindfallAt = num(m.nextWindfallAt);
   state.prestiged = !!m.prestiged;
+  state.badgesEarned = Array.isArray(m.badgesEarned) ? m.badgesEarned.filter((id) => typeof id === "string") : [];
   state.modStamp = 1;
   state.challenge =
     m.challenge && typeof m.challenge.id === "string"
@@ -111,6 +114,7 @@ function applySavedMeta(state, raw) {
 }
 
 function pack(s) {
+  collectBadges(s);
   return {
     version: SAVE_VERSION,
     cash: Number.isFinite(s.cash) && s.cash >= 0 ? s.cash : 0,
@@ -134,6 +138,7 @@ function pack(s) {
     nextDilemmaAt: s.nextDilemmaAt || 0,
     nextWindfallAt: s.nextWindfallAt || 0,
     prestiged: !!s.prestiged,
+    badgesEarned: s.badgesEarned || [],
     challenge: s.challenge,
     dilemma: s.dilemma,
     biz: s.biz.map((b) => ({
@@ -171,6 +176,13 @@ function loadSave() {
       state.biz[i].running = !!b.running && !state.biz[i].manager && owned > 0;
       state.biz[i].activeMs = Number.isFinite(b.activeMs) && b.activeMs > 0 ? b.activeMs : 0;
     });
+    const prior = Number.isFinite(data.meta?.version) ? data.meta.version : 1;
+    if (prior < 3) {
+      const held = new Set(state.badgesEarned || []);
+      for (const id of legacyBadgeIds(state)) held.add(id);
+      state.badgesEarned = [...held];
+    }
+    collectBadges(state);
     const elapsed = Math.min(Math.max(Date.now() - (data.lastSeen || Date.now()), 0), OFFLINE_CAP_MS);
     let offlineGain = 0;
     const rows = [];
@@ -247,6 +259,7 @@ export function useGame() {
     let awayBudget = OFFLINE_CAP_MS;
     const iv = setInterval(() => {
       const wall = Date.now();
+      collectBadges(stateRef.current);
       const raw = Math.max(0, wall - lastWall);
       lastWall = wall;
       const tick = cappedTick(raw, isPageHidden(), awayBudget);

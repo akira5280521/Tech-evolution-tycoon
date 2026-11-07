@@ -113,7 +113,7 @@ export default function GameScreen() {
         </div>
       )}
 
-      <main className="mx-auto max-w-4xl space-y-3 px-3 py-4 overscroll-none">
+      <main className="mx-auto max-w-4xl space-y-2 px-3 py-2 overscroll-none">
         <NewsTicker />
         <NextMove state={state} />
         <DailyBriefing state={state} onRoll={touchBriefing} />

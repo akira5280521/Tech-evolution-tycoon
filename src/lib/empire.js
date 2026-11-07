@@ -147,6 +147,7 @@ export function blankMeta() {
     challengesDone: [],
     challenge: null,
     projectsDone: [],
+    badgesEarned: [],
     shop: { freeManager: false, cashBuys: 0, samples: 0, crateDay: null },
     boostUntil: 0,
     dilemma: null,
@@ -445,14 +446,30 @@ export function canBuyIndex(state, index) {
   return true;
 }
 
+// Owned counts for the tech-era badges. Early eras clear in minutes; the
+// later counts sit well past the first purchase, into hours and days.
+const ERA_BADGE_OWNED = [25, 25, 20, 30, 40, 50, 80, 100, 150];
+const LIFE_BADGES = [
+  { id: "life-1", legacy: 1e3, need: 1e6, label: "$1.00M" },
+  { id: "life-2", legacy: 1e6, need: 1e9, label: "$1.00B" },
+  { id: "life-3", legacy: 1e9, need: 1e12, label: "$1.00T" },
+  { id: "life-4", legacy: 1e12, need: 1e15, label: "$1.00Qa" },
+  { id: "life-5", legacy: 1e15, need: 1e18, label: "$1.00Qi" },
+];
+const PROJECT_BADGES = [
+  { id: "cable", legacy: 1e10, need: 1e13, label: "$10.00T" },
+  { id: "mainframe", legacy: 1e12, need: 1e15, label: "$1.00Qa" },
+  { id: "orbital", legacyOwned: 25, needOwned: 120 },
+];
+
 const BADGE_DEFS = [
   ...BUSINESSES.map((cfg, index) => ({
     id: `era-${cfg.id}`,
     group: "TECH ERAS",
     name: cfg.name,
-    desc: `Own your first ${cfg.name}`,
+    desc: `Own ${ERA_BADGE_OWNED[index]} ${cfg.name}`,
     icon: cfg.icon,
-    earned: (s) => (s.biz?.[index]?.owned || 0) > 0,
+    earned: (s) => (s.biz?.[index]?.owned || 0) >= ERA_BADGE_OWNED[index],
   })),
   ...BUSINESSES.map((cfg, index) => ({
     id: `master-${cfg.id}`,
@@ -462,18 +479,12 @@ const BADGE_DEFS = [
     icon: cfg.icon,
     earned: (s) => isMastered(s, index),
   })),
-  ...[
-    [1e3, "$1.00K"],
-    [1e6, "$1.00M"],
-    [1e9, "$1.00B"],
-    [1e12, "$1.00T"],
-    [1e15, "$1.00Qa"],
-  ].map(([n, label]) => ({
-    id: `life-${n}`,
+  ...LIFE_BADGES.map((row) => ({
+    id: row.id,
     group: "LIFETIME",
-    name: label,
-    desc: `Career earnings reach ${label}`,
-    earned: (s) => (s.careerEarnings || 0) >= n,
+    name: row.label,
+    desc: `Career earnings reach ${row.label}`,
+    earned: (s) => (s.careerEarnings || 0) >= row.need,
   })),
   ...CHALLENGES.map((c) => ({
     id: `ch-${c.id}`,
@@ -482,13 +493,21 @@ const BADGE_DEFS = [
     desc: "Win this challenge run",
     earned: (s) => (s.challengesDone || []).includes(c.id),
   })),
-  ...PROJECTS.map((p) => ({
-    id: `pr-${p.id}`,
-    group: "MEGA-PROJECTS",
-    name: p.name,
-    desc: p.blurb,
-    earned: (s) => (s.projectsDone || []).includes(p.id),
-  })),
+  ...PROJECT_BADGES.map((row) => {
+    const project = PROJECTS.find((p) => p.id === row.id);
+    const desc = row.needOwned
+      ? `Own ${row.needOwned} Quantum Servers at once`
+      : `Career earnings reach ${row.label}`;
+    return {
+      id: `pr-${row.id}`,
+      group: "MEGA-PROJECTS",
+      name: project.name,
+      desc,
+      earned: (s) => (row.needOwned
+        ? (s.biz?.[8]?.owned || 0) >= row.needOwned
+        : (s.careerEarnings || 0) >= row.need),
+    };
+  }),
   {
     id: "time-prestige",
     group: "TIMELINE",
@@ -514,26 +533,69 @@ const BADGE_DEFS = [
     id: "time-lab",
     group: "TIMELINE",
     name: "Specialty",
-    desc: "Commit to a research branch",
-    earned: (s) => (s.specialties || []).length >= 1,
+    desc: "Commit to two research branches",
+    earned: (s) => (s.specialties || []).length >= 2,
   },
   {
     id: "time-streak",
     group: "TIMELINE",
-    name: "Week on the Floor",
-    desc: "Keep a 7 day briefing streak",
-    earned: (s) => (s.streak || 0) >= 7,
+    name: "Fortnight on the Floor",
+    desc: "Keep a 14 day briefing streak",
+    earned: (s) => (s.streak || 0) >= 14,
   },
 ];
 
+// Badges a save already showed before the thresholds moved. Evaluated once,
+// then stored, so a raised bar never takes a collected badge away.
+export function legacyBadgeIds(state) {
+  const ids = [];
+  BUSINESSES.forEach((cfg, index) => {
+    if ((state.biz?.[index]?.owned || 0) > 0) ids.push(`era-${cfg.id}`);
+    if (isMastered(state, index)) ids.push(`master-${cfg.id}`);
+  });
+  for (const row of LIFE_BADGES) {
+    if ((state.careerEarnings || 0) >= row.legacy) ids.push(row.id);
+  }
+  for (const c of CHALLENGES) {
+    if ((state.challengesDone || []).includes(c.id)) ids.push(`ch-${c.id}`);
+  }
+  for (const row of PROJECT_BADGES) {
+    const byProject = (state.projectsDone || []).includes(row.id);
+    const byLegacy = row.legacyOwned
+      ? (state.biz?.[8]?.owned || 0) >= row.legacyOwned
+      : (state.careerEarnings || 0) >= row.legacy;
+    if (byProject || byLegacy) ids.push(`pr-${row.id}`);
+  }
+  if (state.prestiged) ids.push("time-prestige");
+  if ((state.investors || 0) >= forkCost(0)) ids.push("time-board");
+  if ((state.singularities || 0) >= 1) ids.push("time-fork");
+  if ((state.specialties || []).length >= 1) ids.push("time-lab");
+  if ((state.streak || 0) >= 7) ids.push("time-streak");
+  return ids;
+}
+
+export function collectBadges(state) {
+  const held = new Set(Array.isArray(state.badgesEarned) ? state.badgesEarned : []);
+  let changed = false;
+  for (const badge of BADGE_DEFS) {
+    if (!held.has(badge.id) && badge.earned(state)) {
+      held.add(badge.id);
+      changed = true;
+    }
+  }
+  if (changed || !Array.isArray(state.badgesEarned)) state.badgesEarned = [...held];
+  return changed;
+}
+
 export function badgeList(state) {
+  const held = new Set(state.badgesEarned || []);
   return BADGE_DEFS.map((badge) => ({
     id: badge.id,
     group: badge.group,
     name: badge.name,
     desc: badge.desc,
     icon: badge.icon || "",
-    earned: !!badge.earned(state),
+    earned: held.has(badge.id) || !!badge.earned(state),
   }));
 }
 
@@ -585,6 +647,7 @@ export function resolveDilemma(state, choice, now) {
 }
 
 export function snapshotMeta(state) {
+  collectBadges(state);
   return {
     investors: state.investors || 0,
     careerEarnings: state.careerEarnings || 0,
@@ -604,6 +667,7 @@ export function snapshotMeta(state) {
     prestiged: !!state.prestiged,
     streak: state.streak || 1,
     briefingDay: state.briefingDay || null,
+    badgesEarned: [...(state.badgesEarned || [])],
     modStamp: (state.modStamp || 0) + 1,
   };
 }

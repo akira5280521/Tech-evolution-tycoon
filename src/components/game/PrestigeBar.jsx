@@ -21,7 +21,7 @@ export default function PrestigeBar({ state, onPrestige }) {
             )}
           </p>
           <p className="font-term text-sm leading-4 text-[var(--game-dim)]">
-            The first 100 investors add +5% each and the next 400 add +1%, up to ×10. Prestige
+            The first 100 investors add +5% each, the next 400 add +1%, and every investor after that adds +0.02%. Combined with the other empire bonuses, income approaches a ceiling that rises when you fork the timeline. Prestige
             resets your empire; next recruit at {nextAt} lifetime earnings.
           </p>
         </div>

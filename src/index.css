@@ -238,3 +238,22 @@
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
+
+.news-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: news-ticker 42s linear infinite;
+}
+
+.news-ticker-track span {
+  padding-right: 4rem;
+}
+
+@keyframes news-ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .news-ticker-track { animation: none; }
+}

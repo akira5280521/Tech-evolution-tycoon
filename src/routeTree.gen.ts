@@ -10,6 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BadgesRouteImport } from './routes/badges'
+import { Route as BoardRouteImport } from './routes/board'
+import { Route as BoostRouteImport } from './routes/boost'
+import { Route as MoreRouteImport } from './routes/more'
+import { Route as RunsRouteImport } from './routes/runs'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ApiSwRouteImport } from './routes/api/sw'
 import { Route as ApiTimeRouteImport } from './routes/api/time'
@@ -17,6 +22,31 @@ import { Route as ApiTimeRouteImport } from './routes/api/time'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BadgesRoute = BadgesRouteImport.update({
+  id: '/badges',
+  path: '/badges',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BoardRoute = BoardRouteImport.update({
+  id: '/board',
+  path: '/board',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BoostRoute = BoostRouteImport.update({
+  id: '/boost',
+  path: '/boost',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoreRoute = MoreRouteImport.update({
+  id: '/more',
+  path: '/more',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RunsRoute = RunsRouteImport.update({
+  id: '/runs',
+  path: '/runs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -37,12 +67,22 @@ const ApiTimeRoute = ApiTimeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/badges': typeof BadgesRoute
+  '/board': typeof BoardRoute
+  '/boost': typeof BoostRoute
+  '/more': typeof MoreRoute
+  '/runs': typeof RunsRoute
   '/settings': typeof SettingsRoute
   '/api/sw': typeof ApiSwRoute
   '/api/time': typeof ApiTimeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/badges': typeof BadgesRoute
+  '/board': typeof BoardRoute
+  '/boost': typeof BoostRoute
+  '/more': typeof MoreRoute
+  '/runs': typeof RunsRoute
   '/settings': typeof SettingsRoute
   '/api/sw': typeof ApiSwRoute
   '/api/time': typeof ApiTimeRoute
@@ -50,20 +90,58 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/badges': typeof BadgesRoute
+  '/board': typeof BoardRoute
+  '/boost': typeof BoostRoute
+  '/more': typeof MoreRoute
+  '/runs': typeof RunsRoute
   '/settings': typeof SettingsRoute
   '/api/sw': typeof ApiSwRoute
   '/api/time': typeof ApiTimeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/settings' | '/api/sw' | '/api/time'
+  fullPaths:
+    | '/'
+    | '/badges'
+    | '/board'
+    | '/boost'
+    | '/more'
+    | '/runs'
+    | '/settings'
+    | '/api/sw'
+    | '/api/time'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/settings' | '/api/sw' | '/api/time'
-  id: '__root__' | '/' | '/settings' | '/api/sw' | '/api/time'
+  to:
+    | '/'
+    | '/badges'
+    | '/board'
+    | '/boost'
+    | '/more'
+    | '/runs'
+    | '/settings'
+    | '/api/sw'
+    | '/api/time'
+  id:
+    | '__root__'
+    | '/'
+    | '/badges'
+    | '/board'
+    | '/boost'
+    | '/more'
+    | '/runs'
+    | '/settings'
+    | '/api/sw'
+    | '/api/time'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BadgesRoute: typeof BadgesRoute
+  BoardRoute: typeof BoardRoute
+  BoostRoute: typeof BoostRoute
+  MoreRoute: typeof MoreRoute
+  RunsRoute: typeof RunsRoute
   SettingsRoute: typeof SettingsRoute
   ApiSwRoute: typeof ApiSwRoute
   ApiTimeRoute: typeof ApiTimeRoute
@@ -76,6 +154,41 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/badges': {
+      id: '/badges'
+      path: '/badges'
+      fullPath: '/badges'
+      preLoaderRoute: typeof BadgesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/board': {
+      id: '/board'
+      path: '/board'
+      fullPath: '/board'
+      preLoaderRoute: typeof BoardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/boost': {
+      id: '/boost'
+      path: '/boost'
+      fullPath: '/boost'
+      preLoaderRoute: typeof BoostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/more': {
+      id: '/more'
+      path: '/more'
+      fullPath: '/more'
+      preLoaderRoute: typeof MoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/runs': {
+      id: '/runs'
+      path: '/runs'
+      fullPath: '/runs'
+      preLoaderRoute: typeof RunsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -104,6 +217,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BadgesRoute: BadgesRoute,
+  BoardRoute: BoardRoute,
+  BoostRoute: BoostRoute,
+  MoreRoute: MoreRoute,
+  RunsRoute: RunsRoute,
   SettingsRoute: SettingsRoute,
   ApiSwRoute: ApiSwRoute,
   ApiTimeRoute: ApiTimeRoute,

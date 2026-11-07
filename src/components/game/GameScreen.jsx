@@ -57,7 +57,7 @@ export default function GameScreen() {
   }, []);
 
   const cps = state.biz.reduce((sum, st, i) => {
-    if (!st.manager || st.owned <= 0) return sum;
+    if (st.owned <= 0 || (!st.manager && !st.running)) return sum;
     const cfg = BUSINESSES[i];
     return sum + (cfg.revenue * st.owned * milestoneMult(st.owned) * prestigeMult(state.investors) * 1000) / cfg.cycleMs;
   }, 0);

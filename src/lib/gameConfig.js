@@ -18,7 +18,7 @@ export const BUSINESSES = [
     baseCost: 4,
     revenue: 1,
     cycleMs: 600,
-    coef: 1.07,
+    coef: 1.071,
     managerName: "Lab Technician",
     managerCost: 1000,
   },
@@ -57,7 +57,7 @@ export const BUSINESSES = [
     baseCost: 311040,
     revenue: 13230,
     cycleMs: 12000,
-    coef: 1.13,
+    coef: 1.14,
     managerName: "Fab Line Supervisor",
     managerCost: 18000000,
   },
@@ -193,11 +193,14 @@ export function maxAffordable(cfg, owned, cash) {
   return Math.max(0, Math.min(MAX_BUY, n));
 }
 
-export function buyCount(mode, cfg, owned, cash) {
-  if (mode === "MAX") return Math.min(MAX_BUY, Math.max(maxAffordable(cfg, owned, cash), 1));
+// `limit` is how many units this click may add. Callers pass the distance to
+// the next milestone, speed gate, or mastery gate so one press cannot skip it.
+export function buyCount(mode, cfg, owned, cash, limit = MAX_BUY) {
+  const cap = Number.isFinite(limit) && limit >= 1 ? Math.min(MAX_BUY, Math.floor(limit)) : MAX_BUY;
+  if (mode === "MAX") return Math.min(cap, Math.max(maxAffordable(cfg, owned, cash), 1));
   const n = parseInt(String(mode).slice(1), 10);
   if (!Number.isFinite(n) || n < 1) return 1;
-  return Math.min(MAX_BUY, n);
+  return Math.min(cap, n);
 }
 
 // Closed tabs, hidden tabs, and suspended timers all share this one budget.
@@ -231,7 +234,8 @@ export const GLOBAL_CAP = 10;
 //   prestigeMult  — +5% for 100, +1% for 400, then +0.02% with no hard stop
 // The product of every empire bonus then passes through the soft ceiling in
 // empire.js, so a huge investor count still cannot make income infinite.
-// Owned count is a quantity, not a bonus, and a single purchase stops at MAX_BUY.
+// Owned count is a quantity, not a bonus. A single purchase stops at the next
+// milestone, speed gate, or mastery gate, and never adds more than MAX_BUY.
 //
 // Singularity is implemented in empire.js. Each point is +20% up to ×4.
 // The investor bill for the next fork grows with points already taken, and the

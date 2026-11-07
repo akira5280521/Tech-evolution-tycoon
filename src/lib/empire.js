@@ -8,6 +8,7 @@ import {
   MILESTONES,
   costOf,
   investorsFor,
+  MAX_BUY,
   milestoneMult,
   money,
   prestigeMult,
@@ -16,11 +17,11 @@ import {
 export const SINGULARITY_MAX = 4;
 export const DATA_PER_ERA = 0.008;
 export const SPECIALTY_COST = 80;
-// Per era, cheapest first. Tubes are easy to stack, so their bar is higher.
-// Punch cards scale steeply, so theirs is lower. Every era should be finishable
-// within a few weeks of active play.
-const SPEED_NEED = [120, 36, 42, 50, 65, 85, 110, 130, 155];
-const MASTERY_NEED = [190, 52, 60, 72, 90, 115, 145, 175, 210];
+// Per era, cheapest first. Tubes use a slightly steeper cost so the first
+// speed gate is a real wait, and later eras carry a higher mastery bar so the
+// full set takes a few weeks. A purchase cannot skip the next bar: see maxBuyCount.
+const SPEED_NEED = [150, 60, 70, 80, 90, 110, 130, 160, 190];
+const MASTERY_NEED = [220, 150, 150, 150, 155, 165, 220, 220, 250];
 
 export function speedNeed(index) {
   return SPEED_NEED[index] ?? 150;
@@ -30,11 +31,25 @@ export function masteryNeed(index) {
   return MASTERY_NEED[index] ?? 200;
 }
 
+// One click stops at the next milestone, speed gate, or mastery gate.
+// Past every gate, the purchase is still bounded by MAX_BUY.
+export function maxBuyCount(owned, index) {
+  const have = Number.isFinite(owned) && owned > 0 ? Math.floor(owned) : 0;
+  const gates = [];
+  for (const ms of MILESTONES) if (ms.owned > have) gates.push(ms.owned);
+  const speed = speedNeed(index);
+  const mastery = masteryNeed(index);
+  if (speed > have) gates.push(speed);
+  if (mastery > have) gates.push(mastery);
+  if (!gates.length) return MAX_BUY;
+  return Math.max(1, Math.min(MAX_BUY, Math.min(...gates) - have));
+}
+
 // Fork 1, 2, 3… costs this many investors. The curve is meant to put the first
 // fork around day 5-7 of active play and the x4 cap months out.
 export function forkCost(points) {
   const n = Math.max(0, Math.floor(Number(points)) || 0) + 1;
-  return Math.round(17000 * Math.pow(n, 1.85));
+  return Math.round(11200 * Math.pow(n, 1.85));
 }
 
 const UPGRADE_NAMES = [

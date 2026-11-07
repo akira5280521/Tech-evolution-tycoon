@@ -7,14 +7,14 @@ import {
   money,
   nextMilestone,
 } from "@/lib/gameConfig";
-import { effectiveCycleMs, empireFactors, upgradesOf } from "@/lib/empire";
+import { effectiveCycleMs, empireFactors, maxBuyCount, upgradesOf } from "@/lib/empire";
 import IconTile from "./IconTile";
 import ProgressTrack from "./ProgressTrack";
 
 function BusinessRow({ index, state, buyMode, onBuy, onHire, onRun, compact }) {
   const cfg = BUSINESSES[index];
   const st = state.biz[index];
-  const count = buyCount(buyMode, cfg, st.owned, state.cash);
+  const count = buyCount(buyMode, cfg, st.owned, state.cash, maxBuyCount(st.owned, index));
   const cost = costOf(cfg, st.owned, count);
   const canBuy = state.cash >= cost;
   const mult = milestoneMult(st.owned);

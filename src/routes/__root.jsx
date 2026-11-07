@@ -7,6 +7,7 @@ import { NotFound } from "@/components/NotFound";
 import { Toaster } from "@/components/ui/sonner";
 import { GameStateProvider } from "@/components/game/GameState";
 import { AuthProvider } from "@/lib/AuthContext";
+import { installNativeLifecycle } from "@/lib/nativeShell";
 import { Base44Scripts } from "base44:document";
 import appCss from "@/index.css?url";
 
@@ -22,9 +23,6 @@ export const Route = createRootRoute({
     // No icon link: the platform adds the app's logo when serving.
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" },
     ],
   }),
   errorComponent: DefaultCatchBoundary,
@@ -38,6 +36,7 @@ function RootComponent() {
   // Offline mode: after the first online visit, the shell, fonts, and pixel art
   // are cached so the game runs with no signal.
   useEffect(() => {
+    installNativeLifecycle();
     if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
     navigator.serviceWorker.register("/api/sw", { scope: "/" }).catch(() => {
       /* caching unavailable in this context — the game still works online */

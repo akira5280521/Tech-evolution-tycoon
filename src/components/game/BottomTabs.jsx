@@ -57,7 +57,7 @@ export default function BottomTabs() {
   return (
     <nav
       aria-label="Main navigation"
-      className="safe-bottom fixed inset-x-0 bottom-0 z-30 w-full border-t-2 border-[var(--game-border)] bg-[var(--game-bg)]"
+      className="safe-nav fixed inset-x-0 bottom-0 z-30 w-full border-t-2 border-[var(--game-border)] bg-[var(--game-bg)]"
     >
       <div className="mx-auto flex max-w-4xl">
         {TABS.map((tab) => {
@@ -69,15 +69,26 @@ export default function BottomTabs() {
               type="button"
               onClick={() => select(tab)}
               aria-current={active ? "page" : undefined}
+              aria-label={tab.label}
+              title={tab.label}
               data-tab={tab.id}
-              className={`flex min-h-[56px] min-w-0 flex-1 select-none items-center justify-center gap-2 px-2 py-2 ${
+              className={`flex min-h-11 min-w-0 flex-1 basis-0 select-none flex-col items-center justify-center gap-1 overflow-hidden px-0.5 py-1.5 ${
                 active
                   ? "text-[var(--game-accent)]"
                   : "text-[var(--game-muted)] hover:text-[var(--game-accent)]"
               }`}
             >
-              <Icon className="h-5 w-5" aria-hidden="true" />
-              <span className="font-pixel text-sm uppercase tracking-wider">{tab.label}</span>
+              <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+              {/* Pixel type is wide. On a narrow phone, or when the system text
+                  size is bumped, the label ellipsizes inside its own column
+                  instead of painting over the next tab. Under 360px the label
+                  is clipped to the icon and the button name stays on aria-label. */}
+              <span
+                data-tab-label
+                className="w-full min-w-0 truncate text-center font-pixel text-[0.5rem] uppercase leading-tight tracking-normal max-[359px]:sr-only"
+              >
+                {tab.label}
+              </span>
             </button>
           );
         })}

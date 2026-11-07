@@ -227,19 +227,19 @@
 /* --- Mobile safe areas: notch / home-indicator insets --- */
 /* max() keeps the headers' normal 12px spacing when no inset exists. */
 .safe-top {
-  padding-top: max(env(safe-area-inset-top), 0.75rem);
+  padding-top: max(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)), 0.75rem);
 }
 
 .safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
 }
 
-/* Bottom nav: home-indicator plus landscape notches. Horizontal insets stay
-   here so they don't wipe a footer's own left/right padding. */
+/* Bottom nav: home-indicator plus landscape notches. Capacitor writes the
+   --safe-area-inset-* variables; env() covers a normal mobile browser. */
 .safe-nav {
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  padding-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+  padding-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
 }
 
 .news-ticker-track {

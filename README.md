@@ -20,19 +20,24 @@ base44 dev     # local backend + app together
 
 ## Android app
 
-The installable app is a Capacitor wrapper around a static build of the same game. Package id `com.akira5280521.techevolutiontycoon`, display name Tech Evolution Tycoon, version 0.0.1 (versionCode 1). It ships the icons, fonts, and JavaScript inside the APK, keeps the save in `localStorage`, and locks to portrait. Backgrounding the activity mutes audio and pauses the WebView; the existing hidden-page tick still applies the 8 hour offline budget when it wakes.
+The installable app is a Capacitor wrapper around a static build of the same game. Package id `com.techevolutiontycoon.game`, display name Tech Evolution Tycoon, version 0.0.2 (versionCode 2). It targets Android SDK 36 (minimum 24), ships the icons, fonts, and JavaScript inside the package, keeps the save in `localStorage`, and locks to portrait. Backgrounding the activity mutes audio and pauses the WebView; the existing hidden-page tick still applies the 8 hour offline budget when it wakes. The hardware back button closes a boardroom dilemma, returns from a tab to the previous screen, and leaves the app only from the game screen.
 
-There is no ad SDK, no analytics script, and no billing library in this package.
+There is no ad SDK, no analytics script, and no billing library. The manifest does not request network access.
 
-Rebuild a signed release (reuses the same upload key, so the new APK installs over the old one):
+Play listing copy, the privacy policy, and the Data safety / content-rating notes are in `docs/`.
+
+Rebuild a signed release (reuses the same upload key, so a later build of this package id installs over the previous one):
 
 ```bash
-export ANDROID_HOME="$HOME/android-sdk"   # platforms;android-35 and build-tools;35.0.0
+export ANDROID_HOME="$HOME/android-sdk"   # platforms;android-36 and build-tools;36.0.0
 export ANDROID_SDK_ROOT="$ANDROID_HOME"
 npm run android:release
 ```
 
-The APK is written to `android/app/build/outputs/apk/release/app-release.apk`.
+Outputs:
+
+- `android/app/build/outputs/apk/release/app-release.apk`
+- `android/app/build/outputs/bundle/release/app-release.aab`
 
 The release key lives in the repo so the next build can sign with it:
 

@@ -1,11 +1,11 @@
 // Meta progression that sits on top of the era ladder: named upgrades, mastery,
 // challenges, mega-projects, research, the token shop, boardroom events, and
-// singularity. Every Empire Bonuses source multiplies into one global cap.
+// singularity. Every Empire Bonuses source multiplies, then a soft ceiling
+// that rises with singularity points keeps the product finite.
 
 import {
   BUSINESSES,
   MILESTONES,
-  GLOBAL_CAP,
   costOf,
   investorsFor,
   milestoneMult,
@@ -13,12 +13,29 @@ import {
   prestigeMult,
 } from "./gameConfig.js";
 
-export const SINGULARITY_GATE = 100;
 export const SINGULARITY_MAX = 4;
-export const DATA_PER_ERA = 0.15;
+export const DATA_PER_ERA = 0.008;
 export const SPECIALTY_COST = 80;
-export const MASTERY_OWNED = 200;
-export const SPEED_OWNED = 150;
+// Per era, cheapest first. Tubes are easy to stack, so their bar is higher.
+// Punch cards scale steeply, so theirs is lower. Every era should be finishable
+// within a few weeks of active play.
+const SPEED_NEED = [120, 36, 42, 50, 65, 85, 110, 130, 155];
+const MASTERY_NEED = [190, 52, 60, 72, 90, 115, 145, 175, 210];
+
+export function speedNeed(index) {
+  return SPEED_NEED[index] ?? 150;
+}
+
+export function masteryNeed(index) {
+  return MASTERY_NEED[index] ?? 200;
+}
+
+// Fork 1, 2, 3… costs this many investors. The curve is meant to put the first
+// fork around day 5-7 of active play and the x4 cap months out.
+export function forkCost(points) {
+  const n = Math.max(0, Math.floor(Number(points)) || 0) + 1;
+  return Math.round(17000 * Math.pow(n, 1.85));
+}
 
 const UPGRADE_NAMES = [
   ["Tungsten Filaments", "Hotter filaments, brighter valves - the batch fetches triple.", "Batch Soldering", "Pre-tinned boards fire in half the time."],
@@ -52,7 +69,7 @@ export function upgradeOffer(index) {
       blurb: names[3],
       badge: "2X SPD",
       cost: cfg.managerCost * 200,
-      need: SPEED_OWNED,
+      need: speedNeed(index),
     },
   };
 }
@@ -68,7 +85,7 @@ export const CHALLENGES = [
     id: "glass",
     name: "GLASS CEILING",
     blurb: "Vacuum Tubes only - no other era unlocks for the whole run.",
-    goal: 250000,
+    goal: 450000000,
     reward: 0.1,
     limitMs: 0,
   },
@@ -76,17 +93,17 @@ export const CHALLENGES = [
     id: "noboss",
     name: "NO BOSSES",
     blurb: "No managers - you fire every batch yourself, in any era.",
-    goal: 50000,
+    goal: 850000000,
     reward: 0.1,
     limitMs: 0,
   },
   {
     id: "speed",
     name: "SPEEDRUN",
-    blurb: "Earn $1.00M this run before the clock hits 15 minutes.",
-    goal: 1000000,
+    blurb: "Earn $3.20B this run before the clock hits 90 minutes.",
+    goal: 3200000000,
     reward: 0.1,
-    limitMs: 15 * 60 * 1000,
+    limitMs: 90 * 60 * 1000,
   },
 ];
 
@@ -98,9 +115,9 @@ export const PROJECTS = [
 
 export const SHOP = [
   { id: "crate", name: "Daily Crate", cost: 0, blurb: "+6 era tokens, once each local day." },
-  { id: "petty", name: "Petty Cash", cost: 4, blurb: "30 seconds of your current income. Costs 2 more tokens each time." },
-  { id: "sample", name: "Research Sample", cost: 12, blurb: "+40 data. Up to 20 samples." },
-  { id: "key", name: "Master Key", cost: 25, blurb: "The next manager you hire is free. Once." },
+  { id: "petty", name: "Petty Cash", cost: 18, blurb: "30 seconds of your current income. Costs 6 more tokens each time. Needs 40 tokens earned from play." },
+  { id: "sample", name: "Research Sample", cost: 36, blurb: "+40 data. Up to 20 samples. Needs 70 tokens earned from play." },
+  { id: "key", name: "Master Key", cost: 55, blurb: "The next manager you hire is free. Once. Needs 110 tokens earned from play." },
 ];
 
 export function blankMeta() {
@@ -141,7 +158,7 @@ export function upgradesOf(state, id) {
 
 export function isMastered(state, index) {
   const st = state.biz?.[index];
-  if (!st || st.owned < MASTERY_OWNED) return false;
+  if (!st || st.owned < masteryNeed(index)) return false;
   const up = upgradesOf(state, BUSINESSES[index].id);
   return !!(up.rev && up.spd);
 }
@@ -158,8 +175,26 @@ export function dataPerSecond(state) {
   return DATA_PER_ERA * establishedCount(state) + DATA_PER_ERA * masteredCount(state);
 }
 
+// Ceiling starts at 50 and rises by 6 for each singularity point (max 15
+// points → 140). Income approaches that ceiling and never passes it.
+export function incomeCeiling(points) {
+  const n = Math.max(0, Math.min(15, Math.floor(Number(points)) || 0));
+  return 50 + n * 6;
+}
+
+// Soft cap: the first bonuses count almost 1:1, then returns diminish, and
+// the result stays strictly below the ceiling. Non-finite input becomes 1.
+export function softenMultiplier(raw, points) {
+  if (!Number.isFinite(raw) || raw <= 1) return 1;
+  const ceiling = incomeCeiling(points);
+  const span = ceiling - 1;
+  const applied = 1 + span * (1 - Math.exp(-(raw - 1) / span));
+  if (!Number.isFinite(applied)) return ceiling;
+  return Math.min(ceiling, Math.max(1, applied));
+}
+
 // Investors, singularity, mastery, challenges, mega-projects, and research
-// revenue specialties multiply together and then stop at GLOBAL_CAP.
+// revenue specialties multiply together, then pass through the soft ceiling.
 export function empireFactors(state, now = 0) {
   const investors = prestigeMult(state?.investors || 0);
   const singularity = singularityMult(state?.singularities || 0);
@@ -171,10 +206,10 @@ export function empireFactors(state, now = 0) {
   if (specs.includes("scale")) specialty *= 1.25;
   if (specs.includes("signal")) specialty *= 1.1;
   const raw = investors * singularity * mastery * challenges * projects * specialty;
-  const capped = Math.min(GLOBAL_CAP, Number.isFinite(raw) ? raw : 1);
+  const safeRaw = Number.isFinite(raw) && raw > 0 ? raw : 1;
   const temp = now > 0 && now < (state?.boostUntil || 0) ? 1.15 : 1;
-  const total = Math.min(GLOBAL_CAP, capped * temp);
-  return { investors, singularity, mastery, challenges, projects, specialty, raw, capped, temp, total };
+  const total = softenMultiplier(safeRaw * temp, state?.singularities || 0);
+  return { investors, singularity, mastery, challenges, projects, specialty, raw: safeRaw, temp, total, ceiling: incomeCeiling(state?.singularities || 0) };
 }
 
 export function effectiveCycleMs(cfg, state) {
@@ -277,8 +312,22 @@ export function completeProjects(state) {
 }
 
 export function pettyCost(state) {
-  return 4 + (state.shop?.cashBuys || 0) * 2;
+  return 18 + (state.shop?.cashBuys || 0) * 6;
 }
+
+// Tokens that came from play, not from opening the daily crate.
+export function gameplayTokens(state) {
+  let n = 0;
+  for (const id of state.grants || []) {
+    if (id.startsWith("era:")) n += 5;
+    else if (id.startsWith("ms:")) n += 2;
+    else if (id.startsWith("challenge:")) n += 12;
+    else if (id.startsWith("project:")) n += 20;
+  }
+  return n;
+}
+
+const SHOP_EARNED = { petty: 40, sample: 70, key: 110 };
 
 export function shopQuote(state, id, now = Date.now()) {
   const item = SHOP.find((entry) => entry.id === id);
@@ -288,9 +337,14 @@ export function shopQuote(state, id, now = Date.now()) {
     if (state.shop.crateDay === localDayKey) return { ok: false, reason: "The crate was already opened today.", cost: 0 };
     return { ok: true, cost: 0 };
   }
-  if (id === "key" && state.shop.freeManager) return { ok: false, reason: "You already hold a Master Key.", cost: 25 };
-  if (id === "sample" && (state.shop.samples || 0) >= 20) return { ok: false, reason: "No samples left.", cost: 12 };
+  const earnedNeed = SHOP_EARNED[id] || 0;
+  const earned = gameplayTokens(state);
   const cost = id === "petty" ? pettyCost(state) : item.cost;
+  if (earned < earnedNeed) {
+    return { ok: false, reason: `Earn ${earnedNeed} tokens from play first (${earned} so far). The daily crate does not count.`, cost };
+  }
+  if (id === "key" && state.shop.freeManager) return { ok: false, reason: "You already hold a Master Key.", cost };
+  if (id === "sample" && (state.shop.samples || 0) >= 20) return { ok: false, reason: "No samples left.", cost };
   if ((state.tokens || 0) < cost) return { ok: false, reason: "Not enough era tokens.", cost };
   return { ok: true, cost };
 }
@@ -389,7 +443,7 @@ const BADGE_DEFS = [
     id: `master-${cfg.id}`,
     group: "MASTERY",
     name: `${cfg.name} Mastery`,
-    desc: `200 owned and both upgrades`,
+    desc: "Reach this era's mastery count and buy both upgrades",
     icon: cfg.icon,
     earned: (s) => isMastered(s, index),
   })),
@@ -431,8 +485,8 @@ const BADGE_DEFS = [
     id: "time-board",
     group: "TIMELINE",
     name: "Full Board",
-    desc: "Hold 100 investors",
-    earned: (s) => (s.investors || 0) >= 100,
+    desc: "Bank enough investors to fork the timeline",
+    earned: (s) => (s.investors || 0) >= forkCost(0),
   },
   {
     id: "time-fork",

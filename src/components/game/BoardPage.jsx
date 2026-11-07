@@ -1,4 +1,4 @@
-import { empireFactors, singularityMult, SINGULARITY_GATE } from "@/lib/empire";
+import { empireFactors, forkCost, singularityMult } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import TokenShop from "./TokenShop";
@@ -18,7 +18,8 @@ export default function BoardPage() {
     ["MEGA-PROJECTS", `+${pct(factors.projects)}`],
     ["RESEARCH", `X${factors.specialty.toFixed(2)}`],
   ];
-  const ready = (state.investors || 0) >= SINGULARITY_GATE && singularityMult((state.singularities || 0) + 1) > factors.singularity;
+  const bill = forkCost(state.singularities || 0);
+  const ready = (state.investors || 0) >= bill && singularityMult((state.singularities || 0) + 1) > factors.singularity;
   return (
     <ScreenShell title="INVESTORS" subtitle="Bank investors for +5% each, or spend them on targeted power.">
       <Panel>
@@ -33,17 +34,17 @@ export default function BoardPage() {
         </dl>
         <p className="mt-3 font-term text-lg leading-6">
           Total revenue <span className="text-[var(--game-success)]">X{factors.total.toFixed(2)}</span> in every era, multiplied with each other.
-          {factors.raw > 10 ? " The global cap is X10." : ""}
+          The soft ceiling is X{factors.ceiling.toFixed(1)} and it rises with each fork.
         </p>
         <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
           Your board: {state.investors || 0} investors. Recruit more with PRESTIGE on the GAME tab.
         </p>
         <div className="mt-3">
           <GoldButton disabled={!ready} onClick={forkTimeline} dataAttr="fork">
-            <span className="font-pixel text-[0.6rem]">{ready ? "FORK THE TIMELINE" : `FORK NEEDS ${SINGULARITY_GATE} INVESTORS`}</span>
+            <span className="font-pixel text-[0.6rem]">{ready ? "FORK THE TIMELINE" : `FORK NEEDS ${bill} INVESTORS`}</span>
           </GoldButton>
           <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
-            Spending 100 investors resets the machines and adds one singularity point, max x4, inside the x10 cap. Research, tokens, and upgrades stay. Another specialty slot opens.
+            Spending {bill} investors resets the machines and adds one singularity point, max x4. Each fork costs more than the last, and the income ceiling rises with them. Research, tokens, and upgrades stay. Another specialty slot opens.
           </p>
         </div>
       </Panel>

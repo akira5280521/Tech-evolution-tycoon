@@ -83,9 +83,9 @@ function HowTo() {
     "Tap a machine to run one batch. Hire its manager and it keeps running.",
     "Buy x1, x10, x100, or MAX. Milestones multiply that whole era.",
     "Prestige on the game tab recruits investors. The first one needs $1T lifetime earnings.",
-    "Named upgrades and era mastery never reset. Mastery is 200 owned plus both upgrades.",
-    "Era tokens pay for the shop on the Board tab. The daily crate is free.",
-    "Fork the timeline at 100 investors. Singularity maxes at x4, and every empire bonus shares one x10 cap.",
+    "Named upgrades and era mastery never reset. The owned count for mastery is lower on steep early eras and higher on tubes and quantum.",
+    "Era tokens pay for the shop on the Board tab. Only the daily crate is free from the start.",
+    "Fork the timeline once you can pay the investor bill. Each fork costs more. Singularity maxes at x4, and the income ceiling rises with it instead of cutting off flat.",
     "Close the tab and hired crews earn for up to 8 hours. Sound goes quiet while the app is hidden.",
   ];
   return (

@@ -1,5 +1,5 @@
 import { BUSINESSES, money } from "@/lib/gameConfig";
-import { isMastered, upgradeOffer, upgradesOf } from "@/lib/empire";
+import { isMastered, masteryNeed, upgradeOffer, upgradesOf } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 
@@ -25,7 +25,7 @@ export default function BoostPage() {
             <UpgradeCard piece={offer.rev} owned={owned} bought={up.rev} cash={state.cash} onBuy={() => purchaseUpgrade(index, "rev")} />
             <UpgradeCard piece={offer.spd} owned={owned} bought={up.spd} cash={state.cash} onBuy={() => purchaseUpgrade(index, "spd")} />
             <p className="mt-3 font-term text-base leading-5 text-[var(--game-muted)]">
-              ERA MASTERY: {owned >= 200 ? "✓" : "X"} {Math.min(owned, 200)}/200 owned · {up.rev && up.spd ? "✓" : "X"} both upgrades
+              ERA MASTERY: {owned >= masteryNeed(index) ? "✓" : "X"} {Math.min(owned, masteryNeed(index))}/{masteryNeed(index)} owned · {up.rev && up.spd ? "✓" : "X"} both upgrades
               {mastered ? " · permanent +5% all" : " → permanent +5% all"}
             </p>
           </Panel>

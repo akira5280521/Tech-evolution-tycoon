@@ -27,10 +27,10 @@ import {
   managerPrice,
   notePurchase,
   resolveDilemma,
+  forkCost,
   singularityMult,
   snapshotMeta,
   tickDilemma,
-  SINGULARITY_GATE,
 } from "@/lib/empire";
 import { SAVE_VERSION, clearSaveData, getSaveData, writeSaveData } from "@/lib/gameSave";
 import { playBuy, playCollect } from "@/lib/sfx";
@@ -443,7 +443,7 @@ export function useGame() {
     const nextInvestors = s.investors + gained;
     if (!Number.isFinite(nextInvestors) || nextInvestors < 0) return;
     const noun = gained === 1 ? "investor" : "investors";
-    if (!window.confirm(`Reset your empire to recruit ${gained} ${noun}? The profit bonus caps inside x10.`)) return;
+    if (!window.confirm(`Reset your empire to recruit ${gained} ${noun}? Investor bonus, singularity, and the other empire bonuses share a soft ceiling.`)) return;
     const meta = snapshotMeta(s);
     const next = freshState();
     Object.assign(next, meta);
@@ -463,16 +463,17 @@ export function useGame() {
   const forkTimeline = useCallback(() => {
     const s = stateRef.current;
     if (s.challenge) return;
-    if ((s.investors || 0) < SINGULARITY_GATE) return;
+    const bill = forkCost(s.singularities || 0);
+    if ((s.investors || 0) < bill) return;
     if (singularityMult((s.singularities || 0) + 1) <= singularityMult(s.singularities || 0)) return;
-    if (!window.confirm("Fork the timeline? This spends 100 investors, resets the machines, and adds one singularity point (max x4, inside the x10 cap). Research and tokens stay.")) return;
+    if (!window.confirm(`Fork the timeline? This spends ${bill} investors, resets the machines, and adds one singularity point (max x4). The income ceiling rises, but it never runs away. Research and tokens stay.`)) return;
     const meta = snapshotMeta(s);
     const next = freshState();
     Object.assign(next, meta);
     next.biz = freshBiz();
     next.cash = 4;
     next.lifetime = 0;
-    next.investors = Math.max(0, (s.investors || 0) - SINGULARITY_GATE);
+    next.investors = Math.max(0, (s.investors || 0) - bill);
     next.singularities = (s.singularities || 0) + 1;
     next.dilemma = null;
     next.challenge = null;

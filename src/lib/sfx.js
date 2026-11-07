@@ -1,3 +1,5 @@
+import { isPageHidden } from "@/lib/pageVisibility";
+
 // Retro sound effects synthesized with the Web Audio API: no files to load,
 // instant playback, and works fully offline. Sounds are short arcade blips.
 // There is no music track. Every blip goes through one master gain so a hidden
@@ -37,8 +39,7 @@ function setAudible(on) {
 // Hidden tab or minimized window (visibility), or the app losing focus (blur).
 // Sounds that would have started while away are dropped; they are not replayed.
 function syncFromPage() {
-  const visible = typeof document === "undefined" || !document.hidden;
-  setAudible(userSound && visible);
+  setAudible(userSound && !isPageHidden());
 }
 
 export function setSoundEnabled(on) {

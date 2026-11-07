@@ -245,7 +245,7 @@
 .news-ticker-track {
   display: flex;
   width: max-content;
-  animation: news-ticker 42s linear infinite;
+  animation: news-ticker 63s linear infinite;
 }
 
 .news-ticker-track span {

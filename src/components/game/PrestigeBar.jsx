@@ -21,8 +21,8 @@ export default function PrestigeBar({ state, onPrestige }) {
             )}
           </p>
           <p className="font-term text-sm leading-4 text-[var(--game-dim)]">
-            Each investor adds +5% to every sale, permanently. Prestige resets your empire; next
-            recruit at {nextAt} lifetime earnings.
+            The first 100 investors add +5% each and the next 400 add +1%, up to ×10. Prestige
+            resets your empire; next recruit at {nextAt} lifetime earnings.
           </p>
         </div>
         <button

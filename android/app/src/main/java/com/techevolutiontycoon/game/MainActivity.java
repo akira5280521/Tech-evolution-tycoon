@@ -1,4 +1,4 @@
-package com.akira5280521.techevolutiontycoon;
+package com.techevolutiontycoon.game;
 
 import android.os.Bundle;
 import android.webkit.WebView;

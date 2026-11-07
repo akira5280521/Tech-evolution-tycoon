@@ -7,8 +7,9 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 
 // v1 banked investors with sqrt(lifetime / 1e6). v2 uses sqrt(lifetime / 1e12),
 // which is exactly 1000× fewer investors for the same lifetime. Saves without
-// a version are v1 and are rescaled once on read.
-export const SAVE_VERSION = 2;
+// a version are v1 and are rescaled once on read. v3 keeps every badge the
+// older, easier rules had already granted.
+export const SAVE_VERSION = 3;
 const V1_INVESTOR_DIVISOR = 1000;
 
 function finiteNumber(n, fallback = 0) {

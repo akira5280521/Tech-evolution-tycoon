@@ -28,6 +28,7 @@ import {
   notePurchase,
   resolveDilemma,
   forkCost,
+  maxBuyCount,
   singularityMult,
   snapshotMeta,
   tickDilemma,
@@ -309,7 +310,7 @@ export function useGame() {
       if (!canBuyIndex(s, i)) return;
       const cfg = BUSINESSES[i];
       const st = s.biz[i];
-      const count = Math.floor(buyCount(buyMode, cfg, st.owned, s.cash));
+      const count = Math.floor(buyCount(buyMode, cfg, st.owned, s.cash, maxBuyCount(st.owned, i)));
       if (!Number.isFinite(count) || count < 1 || count > MAX_BUY) return;
       const cost = costOf(cfg, st.owned, count);
       if (!Number.isFinite(s.cash) || !Number.isFinite(cost) || !(s.cash >= cost)) return;

@@ -16,7 +16,9 @@ Your empire — cash, businesses, upgrades, and settings — is stored only in t
 
 Sideloaded copies may ask GitHub whether a newer release exists. That request is an anonymous GET to `https://api.github.com/repos/akira5280521/Tech-evolution-tycoon/releases/latest`. It does not include your save, your name, an account, or an advertising id. The developer does not receive the request. If the phone has no network, the check is skipped.
 
-Copies installed from Google Play do not run this check. Play delivers those updates.
+If you tap Update, the app downloads that release's APK with the system download manager and opens Android's package installer. The file stays in the app's private storage. The request still carries no save or account.
+
+Copies installed from Google Play do not run this check and do not download an APK. Play delivers those updates.
 
 The game itself does not send gameplay or diagnostics anywhere.
 

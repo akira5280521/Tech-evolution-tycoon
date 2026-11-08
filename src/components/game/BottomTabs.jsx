@@ -53,7 +53,7 @@ export default function BottomTabs() {
       aria-label="Main navigation"
       className="safe-nav fixed inset-x-0 bottom-0 z-30 w-full border-t-2 border-[var(--game-border)] bg-[var(--game-bg)]"
     >
-      <div className="mx-auto flex max-w-4xl">
+      <div className="tab-bar mx-auto flex max-w-4xl">
         {TABS.map((tab) => {
           const active = tab.isActive(pathname);
           const Icon = tab.icon;
@@ -79,7 +79,7 @@ export default function BottomTabs() {
                   is clipped to the icon and the button name stays on aria-label. */}
               <span
                 data-tab-label
-                className="w-full min-w-0 truncate text-center font-pixel text-[0.5rem] uppercase leading-tight tracking-normal max-[359px]:sr-only"
+                className="w-full min-w-0 text-center font-pixel text-[0.5rem] uppercase leading-tight tracking-normal"
               >
                 {tab.label}
               </span>

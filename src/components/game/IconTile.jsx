@@ -10,11 +10,11 @@ export default function IconTile({ cfg, st, onRun }) {
       aria-label={cfg.name}
       data-tile={cfg.id}
       title={idle ? `Run ${cfg.name} by hand` : cfg.name}
-      className={`relative h-16 w-16 shrink-0 select-none border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] p-0.5 ${
+      className={`relative h-[64px] w-[64px] shrink-0 select-none border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] p-0.5 ${
         idle ? "tile-run cursor-pointer" : "cursor-default"
       }`}
     >
-      <Image src={cfg.icon} alt={cfg.name} fittingType="fit" className="h-full w-full" />
+      <Image src={cfg.icon} alt="" fittingType="fit" className="pointer-events-none h-full w-full pixel-art" />
       {st.owned > 0 && (
         <span
           data-owned={cfg.id}

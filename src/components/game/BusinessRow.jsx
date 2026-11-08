@@ -1,29 +1,33 @@
 import { memo } from "react";
 import {
   BUSINESSES,
+  COMMISSION_MS,
   buyCount,
   costOf,
+  formatFlow,
   milestoneMult,
   money,
   nextMilestone,
 } from "@/lib/gameConfig";
-import { effectiveCycleMs, empireFactors, maxBuyCount, upgradesOf } from "@/lib/empire";
+import { effectiveCycleMs, empireFactors, maxBuyCount, supplyFactor, upgradesOf } from "@/lib/empire";
 import IconTile from "./IconTile";
 import ProgressTrack from "./ProgressTrack";
 
-function BusinessRow({ index, state, buyMode, onBuy, onHire, onRun, compact }) {
+function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, compact }) {
   const cfg = BUSINESSES[index];
-  const st = state.biz[index];
-  const count = buyCount(buyMode, cfg, st.owned, state.cash, maxBuyCount(st.owned, index));
+  const st = row;
+  const count = buyCount(buyMode, cfg, st.owned, cash, maxBuyCount(st.owned, index));
   const cost = costOf(cfg, st.owned, count);
-  const canBuy = state.cash >= cost;
+  const canBuy = cash >= cost;
   const mult = milestoneMult(st.owned);
   const next = nextMilestone(st.owned);
   const cycle = effectiveCycleMs(cfg, state);
   const cycleSeconds = (cycle / 1000).toFixed(cycle % 1000 ? 1 : 0);
   const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
-  const perCycle = cfg.revenue * rev * st.owned * mult * empireFactors(state, Date.now()).total;
-  const canHire = !st.manager && st.owned > 0 && state.cash >= cfg.managerCost;
+  const perCycle = cfg.revenue * rev * st.owned * mult * empireFactors(state, Date.now()).total * supplyFactor(state, cfg);
+  const commissioning = (st.commissionUntil || 0) > Date.now();
+  const canHire = !commissioning && !st.manager && st.owned > 0 && cash >= cfg.managerCost;
+  const commissionElapsed = commissioning ? COMMISSION_MS - (st.commissionUntil - Date.now()) : 0;
 
   return (
     <div className={`grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
@@ -42,7 +46,21 @@ function BusinessRow({ index, state, buyMode, onBuy, onHire, onRun, compact }) {
           )}
         </div>
         {!compact && <p className="font-term text-base leading-5 text-[var(--game-muted)]">{cfg.tagline}</p>}
-        <ProgressTrack cfg={{ ...cfg, cycleMs: cycle }} st={st} />
+        {commissioning ? (
+          <>
+            <p className="font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">BRINGING THE LINE ONLINE</p>
+            <ProgressTrack cycleMs={COMMISSION_MS} progress={commissionElapsed} active loop={false} />
+          </>
+        ) : (
+          <ProgressTrack cycleMs={cycle} progress={st.progress} active={!!(st.manager || st.running)} loop={!!st.manager} />
+        )}
+        {(cfg.uses || cfg.makes) && !compact && (
+          <p className="font-term text-base leading-5 text-[var(--game-muted)]">
+            {cfg.uses ? `Uses ${formatFlow(cfg.uses)} / cycle` : ""}
+            {cfg.uses && cfg.makes ? " · " : ""}
+            {cfg.makes ? `Makes ${formatFlow(cfg.makes)} each` : ""}
+          </p>
+        )}
         <div className="flex flex-wrap justify-between gap-x-3 font-term text-base leading-5 text-[var(--game-muted)]">
           <span>
             {money(perCycle)} / {cycleSeconds}s cycle
@@ -100,16 +118,18 @@ function BusinessRow({ index, state, buyMode, onBuy, onHire, onRun, compact }) {
 // buttons, the prestige multiplier, the buy mode, or the action callbacks.
 // Idle rows then skip the parent's per-tick re-renders.
 function arePropsEqual(prev, next) {
-  if (prev.index !== next.index) return false;
-  if (prev.buyMode !== next.buyMode) return false;
-  if (prev.compact !== next.compact) return false;
-  if (prev.state.modStamp !== next.state.modStamp) return false;
-  if (prev.state.boostUntil !== next.state.boostUntil) return false;
-  if (prev.onBuy !== next.onBuy || prev.onHire !== next.onHire || prev.onRun !== next.onRun) return false;
-  if (prev.state.biz[prev.index] !== next.state.biz[next.index]) return false;
-  if (prev.state.cash !== next.state.cash) return false;
-  if (prev.state.investors !== next.state.investors) return false;
-  return true;
+  return prev.index === next.index
+    && prev.buyMode === next.buyMode
+    && prev.compact === next.compact
+    && prev.row === next.row
+    && prev.cash === next.cash
+    && prev.investors === next.investors
+    && prev.modStamp === next.modStamp
+    && prev.boostUntil === next.boostUntil
+    && prev.supplyKey === next.supplyKey
+    && prev.onBuy === next.onBuy
+    && prev.onHire === next.onHire
+    && prev.onRun === next.onRun;
 }
 
 export default memo(BusinessRow, arePropsEqual);

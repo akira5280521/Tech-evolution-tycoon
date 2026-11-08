@@ -127,7 +127,7 @@ export function UpdateCheckProvider({ children }) {
         <div
           role="status"
           data-update-banner
-          className="fixed inset-x-0 z-40 mx-auto flex max-w-4xl items-center justify-between gap-2 border-2 border-[var(--game-accent)] bg-[var(--game-bg)] px-3 py-2 shadow-[4px_4px_0_0_#000]"
+          className="update-banner fixed inset-x-0 z-40 mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 border-2 border-[var(--game-accent)] bg-[var(--game-bg)] px-3 py-2 shadow-[4px_4px_0_0_#000]"
           style={{ bottom: "calc(4.6rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))" }}
         >
           <p className="font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">Update available {value.update.label}</p>

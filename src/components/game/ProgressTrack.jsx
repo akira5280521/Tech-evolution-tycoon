@@ -1,20 +1,40 @@
-// One bar per business: fills over the cycle and animates smoothly between ticks.
-export default function ProgressTrack({ cfg, st }) {
-  const pct = Math.min(100, (st.progress / cfg.cycleMs) * 100);
-  const active = st.manager || st.running;
-  return (
-    <div className="relative h-5 w-full overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]">
-      {/* The 100ms width transition matches the game tick, so an active cycle
-          sweeps smoothly instead of jumping; when the cycle ends (active flips
-          false) the class drops and the bar snaps back to empty instantly. */}
+// A cycle shorter than this is a flicker, not a bar. Show a living full bar.
+const FAST_CYCLE_MS = 500;
+
+// One bar per business. Managers loop a fill for the whole cycle. A manual
+// run fills once from the tap and snaps empty when it pays. Extra taps are
+// ignored by the game loop until that fill completes.
+export default function ProgressTrack({ cycleMs, progress, active, loop }) {
+  const safeCycle = cycleMs > 0 ? cycleMs : 1;
+  const pct = Math.min(100, (Math.max(0, progress) / safeCycle) * 100);
+  const fast = active && safeCycle < FAST_CYCLE_MS;
+
+  let bar;
+  if (fast) {
+    bar = <div className="cycle-shimmer h-full w-full" />;
+  } else if (loop && active) {
+    bar = (
       <div
-        className={`h-full ${
-          active
-            ? "bg-[var(--game-accent)] transition-[width] duration-100 ease-linear"
-            : "bg-[var(--game-border)]"
-        }`}
-        style={{ width: `${pct}%` }}
+        className="cycle-fill h-full bg-[var(--game-accent)]"
+        style={{ animationDuration: `${safeCycle}ms` }}
       />
+    );
+  } else {
+    bar = (
+      <div
+        className={`h-full bg-[var(--game-accent)] ${active ? "transition-[width] duration-100 ease-linear" : ""}`}
+        style={{ width: active ? `${pct}%` : "0%" }}
+      />
+    );
+  }
+
+  return (
+    <div
+      data-bar
+      data-pct={Math.round(pct)}
+      className="relative h-5 w-full overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]"
+    >
+      {bar}
       <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent_0px,transparent_4px,rgba(0,0,0,0.35)_4px,rgba(0,0,0,0.35)_8px)]" />
     </div>
   );

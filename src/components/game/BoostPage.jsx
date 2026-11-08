@@ -1,4 +1,4 @@
-import { BUSINESSES, money } from "@/lib/gameConfig";
+import { BUSINESSES, UPGRADE_MS, money } from "@/lib/gameConfig";
 import { isMastered, masteryNeed, upgradeOffer, upgradesOf } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
@@ -16,14 +16,14 @@ export default function BoostPage() {
         return (
           <Panel key={cfg.id}>
             <div className="flex items-center gap-3">
-              <img src={cfg.icon} alt="" className="h-12 w-12 border-2 border-[var(--game-border-strong)] object-cover" />
+              <img src={cfg.icon} alt="" className="pixel-art h-[64px] w-[64px] border-2 border-[var(--game-border-strong)] object-cover" />
               <div>
                 <h2 className="font-term text-2xl leading-6">{cfg.name}</h2>
                 <p className="font-term text-base text-[var(--game-muted)]">{owned} owned · named upgrades below</p>
               </div>
             </div>
-            <UpgradeCard piece={offer.rev} owned={owned} bought={up.rev} cash={state.cash} onBuy={() => purchaseUpgrade(index, "rev")} />
-            <UpgradeCard piece={offer.spd} owned={owned} bought={up.spd} cash={state.cash} onBuy={() => purchaseUpgrade(index, "spd")} />
+            <UpgradeCard piece={offer.rev} owned={owned} bought={up.rev} cash={state.cash} job={state.upgradeJob} index={index} onBuy={() => purchaseUpgrade(index, "rev")} />
+            <UpgradeCard piece={offer.spd} owned={owned} bought={up.spd} cash={state.cash} job={state.upgradeJob} index={index} onBuy={() => purchaseUpgrade(index, "spd")} />
             <p className="mt-3 font-term text-base leading-5 text-[var(--game-muted)]">
               ERA MASTERY: {owned >= masteryNeed(index) ? "✓" : "X"} {Math.min(owned, masteryNeed(index))}/{masteryNeed(index)} owned · {up.rev && up.spd ? "✓" : "X"} both upgrades
               {mastered ? " · permanent +5% all" : " → permanent +5% all"}
@@ -35,9 +35,12 @@ export default function BoostPage() {
   );
 }
 
-function UpgradeCard({ piece, owned, bought, cash, onBuy }) {
+function UpgradeCard({ piece, owned, bought, cash, onBuy, job, index }) {
   const locked = owned < piece.need;
   const afford = cash >= piece.cost;
+  const installing = job && job.index === index && job.kind === piece.kind;
+  const pct = installing ? Math.max(0, Math.min(100, ((Date.now() - job.startedAt) / UPGRADE_MS) * 100)) : 0;
+  const busy = job && !installing;
   return (
     <div className="mt-3 border-2 border-[var(--game-border)] p-3">
       <div className="flex items-start justify-between gap-2">
@@ -47,11 +50,18 @@ function UpgradeCard({ piece, owned, bought, cash, onBuy }) {
       <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{piece.blurb}</p>
       {bought ? (
         <p className="mt-2 font-pixel text-[0.55rem] text-[var(--game-success)]">OWNED</p>
+      ) : installing ? (
+        <div className="mt-2">
+          <p className="font-pixel text-[0.55rem] text-[var(--game-accent)]">INSTALLING</p>
+          <div className="mt-2 h-5 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]">
+            <div className="h-full bg-[var(--game-accent)]" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
       ) : locked ? (
         <p className="mt-2 font-term text-lg text-[var(--game-muted)]">NEEDS {piece.need} OWNED - you have {owned}</p>
       ) : (
         <div className="mt-2">
-          <GoldButton disabled={!afford} onClick={onBuy} dataAttr={`upgrade-${piece.kind}`}>
+          <GoldButton disabled={!afford || busy} onClick={onBuy} dataAttr={`upgrade-${piece.kind}`}>
             <span className="block font-pixel text-[0.65rem]">BUY</span>
             <span className="font-term text-xl">{money(piece.cost)}</span>
           </GoldButton>

@@ -1,5 +1,6 @@
 package com.techevolutiontycoon.game;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.webkit.WebView;
 import androidx.core.view.WindowCompat;
@@ -10,10 +11,29 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(InstallSourcePlugin.class);
         registerPlugin(AppUpdatePlugin.class);
+        registerPlugin(ScreenOrientationPlugin.class);
         super.onCreate(savedInstanceState);
         // Draw behind the status and gesture bars so CSS safe-area insets
         // pad the bottom nav instead of hiding it under the system UI.
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        applyFontScale(getResources().getConfiguration());
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        applyFontScale(newConfig);
+    }
+
+    // Keep the WebView alive across rotation and system font changes, and
+    // still honor a font scale up to the 1.3x range Android exposes.
+    private void applyFontScale(Configuration config) {
+        WebView webView = getBridge() != null ? getBridge().getWebView() : null;
+        if (webView == null || config == null || !(config.fontScale > 0)) return;
+        int zoom = Math.round(config.fontScale * 100f);
+        if (zoom < 50) zoom = 50;
+        if (zoom > 200) zoom = 200;
+        webView.getSettings().setTextZoom(zoom);
     }
 
     @Override

@@ -22,9 +22,10 @@ async function installedVersionCode() {
   return Number.isFinite(code) ? code : null;
 }
 
-export async function openReleaseApk(url) {
-  const { Browser } = await import("@capacitor/browser");
-  await Browser.open({ url });
+export async function installReleaseApk(url) {
+  const { registerPlugin } = await import("@capacitor/core");
+  const AppUpdate = registerPlugin("AppUpdate");
+  return AppUpdate.installApk({ url });
 }
 
 export function UpdateCheckProvider({ children }) {
@@ -32,7 +33,9 @@ export function UpdateCheckProvider({ children }) {
   const [native, setNative] = useState(false);
   const [update, setUpdate] = useState(null);
   const [checking, setChecking] = useState(false);
+  const [installing, setInstalling] = useState(false);
   const [note, setNote] = useState("");
+  const [installNote, setInstallNote] = useState("");
 
   useEffect(() => {
     let cancel = false;
@@ -91,7 +94,32 @@ export function UpdateCheckProvider({ children }) {
     }
   }, [checking, native, playInstall]);
 
-  const value = { showControl: native && !playInstall, update: playInstall ? null : update, checking, note, checkNow };
+  const startInstall = useCallback(async (url) => {
+    if (!url || installing) return;
+    setInstalling(true);
+    setInstallNote("");
+    try {
+      const result = await installReleaseApk(url);
+      if (result?.status === "needs-permission") {
+        setInstallNote("Allow installs from this app, then come back.");
+      }
+    } catch {
+      setInstallNote("Couldn't start the download.");
+    } finally {
+      setInstalling(false);
+    }
+  }, [installing]);
+
+  const value = {
+    showControl: native && !playInstall,
+    update: playInstall ? null : update,
+    checking,
+    note,
+    checkNow,
+    installing,
+    installNote,
+    startInstall,
+  };
   return (
     <UpdateCheckContext.Provider value={value}>
       {children}
@@ -106,15 +134,22 @@ export function UpdateCheckProvider({ children }) {
           <button
             type="button"
             data-action="open-update"
-            onClick={() => {
-              openReleaseApk(value.update.apkUrl).catch(() => undefined);
-            }}
-            className="min-h-11 shrink-0 border-2 border-[var(--game-accent)] px-2 font-pixel text-[0.5rem] text-[var(--game-accent)]"
+            disabled={installing}
+            onClick={() => startInstall(value.update.apkUrl)}
+            className="min-h-11 shrink-0 border-2 border-[var(--game-accent)] px-2 font-pixel text-[0.5rem] text-[var(--game-accent)] disabled:opacity-60"
           >
-            UPDATE
+            {installing ? "DOWNLOADING…" : "UPDATE"}
           </button>
         </div>
       )}
+      {value.update && installNote ? (
+        <p
+          className="fixed inset-x-0 z-40 mx-auto max-w-4xl px-3 font-term text-base text-[var(--game-muted)]"
+          style={{ bottom: "calc(8.2rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))" }}
+        >
+          {installNote}
+        </p>
+      ) : null}
     </UpdateCheckContext.Provider>
   );
 }
@@ -126,6 +161,9 @@ export function useUpdateCheck() {
     checking: false,
     note: "",
     checkNow: async () => {},
+    installing: false,
+    installNote: "",
+    startInstall: async () => {},
   };
 }
 

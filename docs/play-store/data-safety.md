@@ -1,6 +1,6 @@
 # Play Data safety — draft answers
 
-Use these answers in Play Console → App content → Data safety. They match the app: no account, no ads, no analytics, saves only in local storage. A sideloaded copy may make one anonymous request to GitHub's public releases API. That request sends no save, account, or advertising id, and this developer does not receive or store it. Play installs skip the check.
+Use these answers in Play Console → App content → Data safety. They match the app: no account, no ads, no analytics, saves only in local storage. A sideloaded copy may make one anonymous request to GitHub's public releases API, and if the player taps Update it downloads that release APK. Neither request sends a save, account, or advertising id, and this developer does not receive or store them. Play installs skip the check and the download. The `REQUEST_INSTALL_PACKAGES` permission is only used for that sideload installer handoff.
 
 ## Overview
 

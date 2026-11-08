@@ -5,8 +5,16 @@
 
 import {
   BUSINESSES,
+  COMMISSION_MS,
   MILESTONES,
+  PROJECT_MS,
+  RESEARCH_MS,
+  SUPPLY_KEYS,
+  UPGRADE_MS,
+  blankSupply,
+  blockedByGlass,
   costOf,
+  indexOfBusiness,
   investorsFor,
   MAX_BUY,
   milestoneMult,
@@ -20,8 +28,8 @@ export const SPECIALTY_COST = 80;
 // Per era, cheapest first. Tubes use a slightly steeper cost so the first
 // speed gate is a real wait, and later eras carry a higher mastery bar so the
 // full set takes a few weeks. A purchase cannot skip the next bar: see maxBuyCount.
-const SPEED_NEED = [150, 60, 70, 80, 90, 110, 130, 160, 190];
-const MASTERY_NEED = [220, 150, 150, 150, 155, 165, 220, 220, 250];
+const SPEED_NEED = [30, 36, 40, 44, 150, 60, 70, 80, 90, 110, 130, 160, 190];
+const MASTERY_NEED = [72, 70, 80, 90, 220, 150, 150, 150, 155, 165, 220, 220, 250];
 
 export function speedNeed(index) {
   return SPEED_NEED[index] ?? 150;
@@ -53,6 +61,10 @@ export function forkCost(points) {
 }
 
 const UPGRADE_NAMES = [
+  ["Screened Grit", "Washed sand sells cleaner. Each scoop pays triple.", "Second Shift", "The pit stays lit. Cycles run twice as fast."],
+  ["High-Grade Ore", "The seam runs rich. Each pull pays triple.", "Twin Drills", "Two faces at once. The cycle is cut in half."],
+  ["Zone Refine", "The still drops metal-grade silicon. Yield triples.", "Hotter Crucible", "The melt finishes sooner. Twice the speed."],
+  ["Seed Crystals", "Each pull starts true. Wafer revenue triples.", "Twin Pullers", "Two crystals grow at once. Cycles are halved."],
   ["Tungsten Filaments", "Hotter filaments, brighter valves - the batch fetches triple.", "Batch Soldering", "Pre-tinned boards fire in half the time."],
   ["Steel Hoppers", "The card path stops jamming. Every stack pays triple.", "Gang Punch", "One stroke cuts a whole row. Cycles run twice as fast."],
   ["Doped Wafers", "Cleaner junctions, triple the yield from each wafer.", "Wave Soldering", "The line never waits on a hand iron. Twice the speed."],
@@ -75,7 +87,7 @@ export function upgradeOffer(index) {
       name: names[0],
       blurb: names[1],
       badge: "X3 REV",
-      cost: cfg.managerCost * 10,
+      cost: cfg.revCost ?? cfg.managerCost * 10,
       need: 0,
     },
     spd: {
@@ -83,7 +95,7 @@ export function upgradeOffer(index) {
       name: names[2],
       blurb: names[3],
       badge: "2X SPD",
-      cost: cfg.managerCost * 200,
+      cost: cfg.spdCost ?? cfg.managerCost * 200,
       need: speedNeed(index),
     },
   };
@@ -155,7 +167,64 @@ export function blankMeta() {
     nextDilemmaAt: 0,
     nextWindfallAt: 0,
     prestiged: false,
+    supply: blankSupply(),
+    foreman: false,
+    sawPit: false,
+    orientation: "auto",
+    researchJob: null,
+    upgradeJob: null,
+    projectJob: null,
   };
+}
+
+const SUPPLY_CAP = 1e9;
+
+export function ensureSupply(state) {
+  const next = blankSupply();
+  const raw = state.supply && typeof state.supply === "object" ? state.supply : {};
+  for (const key of SUPPLY_KEYS) {
+    const n = raw[key];
+    next[key] = typeof n === "number" && Number.isFinite(n) && n > 0 ? Math.min(SUPPLY_CAP, n) : 0;
+  }
+  state.supply = next;
+  return next;
+}
+
+// A dry machine still pays a floor so the bar never freezes on an empty bin.
+export function supplyFactor(state, cfg) {
+  if (!cfg?.uses) return 1;
+  if (state?.challenge?.id === "glass" && cfg.id === "tubes") return 1;
+  const supply = ensureSupply(state);
+  let cover = 1;
+  for (const [key, need] of Object.entries(cfg.uses)) {
+    const want = Number(need) || 0;
+    if (want <= 0) continue;
+    cover = Math.min(cover, (supply[key] || 0) / want);
+  }
+  if (!Number.isFinite(cover) || cover < 0) cover = 0;
+  return 0.15 + 0.85 * Math.min(1, cover);
+}
+
+function moveSupply(state, cfg, cycles, owned) {
+  if (!cfg?.uses && !cfg?.makes) return;
+  const supply = ensureSupply(state);
+  const n = Number.isFinite(cycles) && cycles > 0 ? cycles : 0;
+  const count = Number.isFinite(owned) && owned > 0 ? owned : 0;
+  const skipDraw = state?.challenge?.id === "glass" && cfg.id === "tubes";
+  if (cfg.uses && !skipDraw) {
+    for (const [key, need] of Object.entries(cfg.uses)) {
+      const want = (Number(need) || 0) * n;
+      const have = supply[key] || 0;
+      supply[key] = Math.max(0, have - Math.min(have, want));
+    }
+  }
+  if (cfg.makes && count > 0) {
+    for (const [key, make] of Object.entries(cfg.makes)) {
+      const add = (Number(make) || 0) * count * n;
+      const next = (supply[key] || 0) + add;
+      supply[key] = Number.isFinite(next) ? Math.min(SUPPLY_CAP, Math.max(0, next)) : supply[key] || 0;
+    }
+  }
 }
 
 export function singularityMult(points) {
@@ -244,7 +313,7 @@ export function incomePerSecond(state, now = 0) {
     const cfg = BUSINESSES[i];
     const up = upgradesOf(state, cfg.id);
     const rev = up.rev ? 3 : 1;
-    sum += (cfg.revenue * rev * st.owned * milestoneMult(st.owned) * mult * 1000) / effectiveCycleMs(cfg, state);
+    sum += (cfg.revenue * rev * st.owned * milestoneMult(st.owned) * mult * supplyFactor(state, cfg) * 1000) / effectiveCycleMs(cfg, state);
   });
   return sum;
 }
@@ -255,7 +324,9 @@ export function creditCycles(state, index, cycles, now = 0) {
   const st = state.biz?.[index];
   if (!st || st.owned <= 0) return 0;
   const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
-  const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total;
+  const factor = supplyFactor(state, cfg);
+  moveSupply(state, cfg, cycles, st.owned);
+  const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor;
   return creditAmount(state, amount, now);
 }
 
@@ -314,17 +385,93 @@ function projectReady(state, id) {
   if ((state.projectsDone || []).includes(id)) return false;
   if (id === "cable") return (state.careerEarnings || 0) >= 1e10;
   if (id === "mainframe") return (state.careerEarnings || 0) >= 1e12;
-  if (id === "orbital") return (state.biz?.[8]?.owned || 0) >= 25;
+  if (id === "orbital") return (state.biz?.[indexOfBusiness("quantum")]?.owned || 0) >= 25;
   return false;
 }
 
-export function completeProjects(state) {
-  for (const project of PROJECTS) {
-    if (!projectReady(state, project.id)) continue;
-    state.projectsDone = [...(state.projectsDone || []), project.id];
-    grantTokens(state, `project:${project.id}`, project.tokens);
-    state.modStamp = (state.modStamp || 0) + 1;
+function timedJob(job) {
+  if (!job || typeof job !== "object") return null;
+  if (!Number.isFinite(job.readyAt) || !Number.isFinite(job.startedAt)) return null;
+  if (job.readyAt < job.startedAt) return null;
+  return job;
+}
+
+export function beginResearch(state, id, now) {
+  if (timedJob(state.researchJob)) return false;
+  if (!canCommit(state, id)) return false;
+  state.researchJob = { id, startedAt: now, readyAt: now + RESEARCH_MS };
+  state.modStamp = (state.modStamp || 0) + 1;
+  return true;
+}
+
+function applyUpgradeFlag(state, index, kind) {
+  const cfg = BUSINESSES[index];
+  if (!cfg || (kind !== "rev" && kind !== "spd")) return false;
+  const up = { ...upgradesOf(state, cfg.id) };
+  if (up[kind]) return false;
+  up[kind] = true;
+  state.upgrades = { ...(state.upgrades || {}), [cfg.id]: up };
+  state.modStamp = (state.modStamp || 0) + 1;
+  return true;
+}
+
+// Spend now, install over a visible timer. The tick applies the flag.
+export function buyUpgrade(state, index, kind, now = Date.now()) {
+  if (timedJob(state.upgradeJob)) return false;
+  const offer = upgradeOffer(index);
+  const piece = offer?.[kind];
+  if (!piece) return false;
+  const up = upgradesOf(state, offer.id);
+  if (up[kind]) return false;
+  const owned = state.biz?.[index]?.owned || 0;
+  if (owned < piece.need) return false;
+  if (!(state.cash >= piece.cost) || !Number.isFinite(piece.cost)) return false;
+  state.cash -= piece.cost;
+  state.upgradeJob = { index, kind, startedAt: now, readyAt: now + UPGRADE_MS };
+  state.modStamp = (state.modStamp || 0) + 1;
+  return true;
+}
+
+export function finishTimedWork(state, now) {
+  const notes = [];
+  if (!Number.isFinite(now) || now < 1e11) return notes;
+  const research = timedJob(state.researchJob);
+  state.researchJob = research;
+  if (research && now >= research.readyAt) {
+    state.researchJob = null;
+    if (commitSpecialty(state, research.id)) notes.push({ type: "research", id: research.id });
   }
+  const upgrade = timedJob(state.upgradeJob);
+  state.upgradeJob = upgrade;
+  if (upgrade && now >= upgrade.readyAt) {
+    state.upgradeJob = null;
+    if (applyUpgradeFlag(state, upgrade.index, upgrade.kind)) notes.push({ type: "upgrade" });
+  }
+  const project = timedJob(state.projectJob);
+  state.projectJob = project;
+  if (project && now >= project.readyAt) {
+    state.projectJob = null;
+    if (!(state.projectsDone || []).includes(project.id)) {
+      const spec = PROJECTS.find((entry) => entry.id === project.id);
+      state.projectsDone = [...(state.projectsDone || []), project.id];
+      if (spec) grantTokens(state, `project:${project.id}`, spec.tokens);
+      state.modStamp = (state.modStamp || 0) + 1;
+      notes.push({ type: "project", id: project.id });
+    }
+  }
+  if (!state.projectJob) {
+    for (const entry of PROJECTS) {
+      if (!projectReady(state, entry.id)) continue;
+      state.projectJob = { id: entry.id, startedAt: now, readyAt: now + PROJECT_MS };
+      notes.push({ type: "projectstart", id: entry.id });
+      break;
+    }
+  }
+  return notes;
+}
+
+export function completeProjects(state, now = Date.now()) {
+  finishTimedWork(state, now);
 }
 
 export function pettyCost(state) {
@@ -396,6 +543,7 @@ export function buyShopItem(state, id, now = Date.now()) {
 }
 
 export function canCommit(state, id) {
+  if (timedJob(state.researchJob)) return false;
   if (!SPECIALTIES.some((entry) => entry.id === id)) return false;
   if ((state.specialties || []).includes(id)) return false;
   if ((state.specialties || []).length >= specialtySlots(state)) return false;
@@ -407,23 +555,6 @@ export function commitSpecialty(state, id) {
   if (!canCommit(state, id)) return false;
   state.data -= SPECIALTY_COST;
   state.specialties = [...(state.specialties || []), id];
-  state.modStamp = (state.modStamp || 0) + 1;
-  return true;
-}
-
-export function buyUpgrade(state, index, kind) {
-  const offer = upgradeOffer(index);
-  const piece = offer[kind];
-  if (!piece) return false;
-  const id = offer.id;
-  const up = { ...upgradesOf(state, id) };
-  if (up[kind]) return false;
-  const owned = state.biz?.[index]?.owned || 0;
-  if (owned < piece.need) return false;
-  if (!(state.cash >= piece.cost)) return false;
-  state.cash -= piece.cost;
-  up[kind] = true;
-  state.upgrades = { ...(state.upgrades || {}), [id]: up };
   state.modStamp = (state.modStamp || 0) + 1;
   return true;
 }
@@ -441,14 +572,14 @@ export function canHireIndex(state, index) {
 }
 
 export function canBuyIndex(state, index) {
-  if (state.challenge?.id === "glass" && index !== 0) return false;
+  if (blockedByGlass(state, index)) return false;
   if (index > 0 && !(state.biz?.[index - 1]?.owned > 0 || state.biz?.[index]?.owned > 0)) return false;
   return true;
 }
 
 // Owned counts for the tech-era badges. Early eras clear in minutes; the
 // later counts sit well past the first purchase, into hours and days.
-const ERA_BADGE_OWNED = [25, 25, 20, 30, 40, 50, 80, 100, 150];
+const ERA_BADGE_OWNED = [20, 18, 16, 16, 25, 25, 20, 30, 40, 50, 80, 100, 150];
 const LIFE_BADGES = [
   { id: "life-1", legacy: 1e3, need: 1e6, label: "$1.00M" },
   { id: "life-2", legacy: 1e6, need: 1e9, label: "$1.00B" },
@@ -504,7 +635,7 @@ const BADGE_DEFS = [
       name: project.name,
       desc,
       earned: (s) => (row.needOwned
-        ? (s.biz?.[8]?.owned || 0) >= row.needOwned
+        ? (s.biz?.[indexOfBusiness("quantum")]?.owned || 0) >= row.needOwned
         : (s.careerEarnings || 0) >= row.need),
     };
   }),
@@ -562,7 +693,7 @@ export function legacyBadgeIds(state) {
   for (const row of PROJECT_BADGES) {
     const byProject = (state.projectsDone || []).includes(row.id);
     const byLegacy = row.legacyOwned
-      ? (state.biz?.[8]?.owned || 0) >= row.legacyOwned
+      ? (state.biz?.[indexOfBusiness("quantum")]?.owned || 0) >= row.legacyOwned
       : (state.careerEarnings || 0) >= row.legacy;
     if (byProject || byLegacy) ids.push(`pr-${row.id}`);
   }
@@ -668,6 +799,10 @@ export function snapshotMeta(state) {
     streak: state.streak || 1,
     briefingDay: state.briefingDay || null,
     badgesEarned: [...(state.badgesEarned || [])],
+    supply: { ...ensureSupply(state) },
+    foreman: !!state.foreman,
+    sawPit: !!state.sawPit,
+    orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
     modStamp: (state.modStamp || 0) + 1,
   };
 }
@@ -678,6 +813,7 @@ export function investorsReady(state) {
 
 export const HEADLINES = [
   "PRICES SOAR AS GAMERS CHASE THE NEXT FRAME",
+  "SILICA SAND LEAVES THE PIT BY THE TONNE",
   "VACUUM TUBES STILL WARM IN THE BACK ROOM",
   "PUNCH CARDS JAM, PROFITS DO NOT",
   "CLEANROOM FOREMAN DENIES ANY LEAK",

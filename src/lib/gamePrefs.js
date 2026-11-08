@@ -2,6 +2,7 @@
 // businesses does not also flip the player's phone settings.
 
 const KEY = "pc-tycoon-prefs-v1";
+export const PREFS_EVENT = "pc-tycoon-prefs";
 
 export function readPrefs() {
   try {
@@ -22,5 +23,6 @@ export function writePrefs(partial) {
   } catch {
     /* storage unavailable — the toggle still works for this visit */
   }
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(PREFS_EVENT));
   return next;
 }

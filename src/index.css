@@ -243,6 +243,9 @@
 }
 
 .news-ticker-track {
+  position: absolute;
+  top: 0;
+  left: 0;
   display: flex;
   width: max-content;
   animation: news-ticker 63s linear infinite;
@@ -257,6 +260,131 @@
   to { transform: translateX(-50%); }
 }
 
+/* Manager bars sweep 0 → 100% once per cycle, then restart. */
+@keyframes cycle-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.cycle-fill {
+  width: 100%;
+  transform-origin: left center;
+  animation-name: cycle-fill;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* Cycles under half a second stay a full bar with a moving highlight. */
+@keyframes cycle-shimmer {
+  from { background-position: 0 0; }
+  to { background-position: 32px 0; }
+}
+
+.cycle-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--game-accent) 0%,
+    #ffe7a3 45%,
+    var(--game-accent) 90%
+  );
+  background-size: 32px 100%;
+  animation: cycle-shimmer 0.45s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .news-ticker-track { animation: none; }
+  .cycle-fill,
+  .cycle-shimmer { animation: none; }
+}
+
+/* Pixel icons stay on the pixel grid at 1x, 2x, 3x, and 4x. */
+.pixel-art,
+img[src*="/icons/"] {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.safe-x {
+  padding-left: max(0.75rem, var(--safe-area-inset-left, env(safe-area-inset-left, 0px)));
+  padding-right: max(0.75rem, var(--safe-area-inset-right, env(safe-area-inset-right, 0px)));
+}
+
+.game-modal {
+  max-height: calc(100dvh - 1.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow: auto;
+}
+
+.game-root {
+  padding-bottom: calc(8rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+}
+
+@media (min-width: 481px) {
+  .game-root {
+    padding-bottom: calc(4.75rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+  }
+}
+
+@media (orientation: portrait) and (max-width: 480px) {
+  .safe-nav .tab-bar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .game-root {
+    padding-bottom: calc(11rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+  }
+}
+
+@media (orientation: landscape) {
+  .safe-nav {
+    top: 0;
+    right: auto;
+    bottom: 0;
+    left: 0;
+    width: 5.75rem;
+    height: auto;
+    border-top-width: 0;
+    border-right: 2px solid var(--game-border);
+    padding-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+    padding-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+  }
+
+  .safe-nav .tab-bar {
+    flex-direction: column;
+    height: 100%;
+    max-width: none;
+  }
+
+  .game-root,
+  .screen-shell {
+    padding-bottom: 0.75rem;
+    padding-left: calc(5.75rem + var(--safe-area-inset-left, env(safe-area-inset-left, 0px)));
+  }
+
+  .update-banner {
+    left: calc(5.75rem + var(--safe-area-inset-left, env(safe-area-inset-left, 0px))) !important;
+    max-width: none;
+  }
+}
+
+@media (orientation: landscape) and (min-width: 800px) {
+  .game-frame {
+    display: grid;
+    grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+    max-width: 76rem;
+    margin-inline: auto;
+  }
+
+  .game-side {
+    position: sticky;
+    top: 0;
+    max-height: 100dvh;
+    overflow: auto;
+  }
+
+  .game-frame > * {
+    min-width: 0;
+  }
 }

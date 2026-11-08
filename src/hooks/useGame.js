@@ -4,6 +4,8 @@ import { applyBriefing } from "@/lib/briefing";
 import {
   AWAY_MODAL_MS,
   BUSINESSES,
+  COMMISSION_MS,
+  FOREMAN_COST,
   MAX_BUY,
   OFFLINE_CAP_MS,
   buyCount,
@@ -13,6 +15,8 @@ import {
   money,
 } from "@/lib/gameConfig";
 import {
+  CHALLENGES,
+  beginResearch,
   blankMeta,
   collectBadges,
   legacyBadgeIds,
@@ -20,12 +24,11 @@ import {
   buyUpgrade,
   canBuyIndex,
   canHireIndex,
-  commitSpecialty,
-  completeProjects,
-  creditAmount,
   creditCycles,
   dataPerSecond,
   effectiveCycleMs,
+  ensureSupply,
+  finishTimedWork,
   managerPrice,
   notePurchase,
   resolveDilemma,
@@ -35,20 +38,22 @@ import {
   snapshotMeta,
   tickDilemma,
 } from "@/lib/empire";
+import { applyOrientation } from "@/lib/orientation";
 import { SAVE_VERSION, clearSaveData, getSaveData, writeSaveData } from "@/lib/gameSave";
 import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
 
 const SAVE_INTERVAL_MS = 5000;
 
-function freshBiz() {
-  return BUSINESSES.map((_, i) => ({
-    owned: i === 0 ? 1 : 0,
+function freshBiz(mode) {
+  return BUSINESSES.map((cfg, i) => ({
+    owned: mode === "glass" ? (cfg.id === "tubes" ? 1 : 0) : i === 0 ? 1 : 0,
     manager: false,
     running: false,
     progress: 0,
     activeMs: 0,
     lastGain: null,
+    commissionUntil: 0,
   }));
 }
 
@@ -103,6 +108,8 @@ function applySavedMeta(state, raw) {
   state.prestiged = !!m.prestiged;
   state.badgesEarned = Array.isArray(m.badgesEarned) ? m.badgesEarned.filter((id) => typeof id === "string") : [];
   state.modStamp = 1;
+  const orient = raw?.orientation;
+  state.orientation = orient === "portrait" || orient === "landscape" || orient === "auto" ? orient : "auto";
   state.challenge =
     m.challenge && typeof m.challenge.id === "string"
       ? { id: m.challenge.id, startedAt: num(m.challenge.startedAt), earnings: num(m.challenge.earnings) }
@@ -139,6 +146,13 @@ function pack(s) {
     nextWindfallAt: s.nextWindfallAt || 0,
     prestiged: !!s.prestiged,
     badgesEarned: s.badgesEarned || [],
+    supply: s.supply,
+    foreman: !!s.foreman,
+    sawPit: !!s.sawPit,
+    orientation: s.orientation || "auto",
+    researchJob: s.researchJob || null,
+    upgradeJob: s.upgradeJob || null,
+    projectJob: s.projectJob || null,
     challenge: s.challenge,
     dilemma: s.dilemma,
     biz: s.biz.map((b) => ({
@@ -147,6 +161,7 @@ function pack(s) {
       running: b.running,
       progress: b.progress,
       activeMs: b.activeMs,
+      commissionUntil: b.commissionUntil || 0,
     })),
   };
 }
@@ -156,6 +171,7 @@ function loadSave() {
   const state = freshState();
   if (!data) {
     applyBriefing(state);
+    applyOrientation(state.orientation);
     return { state, offlineReport: null };
   }
   try {
@@ -175,7 +191,16 @@ function loadSave() {
       state.biz[i].progress = Math.min(progress, cfg.cycleMs);
       state.biz[i].running = !!b.running && !state.biz[i].manager && owned > 0;
       state.biz[i].activeMs = Number.isFinite(b.activeMs) && b.activeMs > 0 ? b.activeMs : 0;
+      state.biz[i].commissionUntil = Number.isFinite(b.commissionUntil) ? b.commissionUntil : 0;
     });
+    state.supply = data.supply;
+    ensureSupply(state);
+    state.foreman = !!data.foreman;
+    state.sawPit = !!data.sawPit;
+    state.orientation = data.orientation === "portrait" || data.orientation === "landscape" ? data.orientation : "auto";
+    state.researchJob = data.researchJob || null;
+    state.upgradeJob = data.upgradeJob || null;
+    state.projectJob = data.projectJob || null;
     const prior = Number.isFinite(data.meta?.version) ? data.meta.version : 1;
     if (prior < 3) {
       const held = new Set(state.badgesEarned || []);
@@ -215,7 +240,8 @@ function loadSave() {
       state.offlineReport = { amount: offlineGain, awayMs: elapsed, rows };
     }
     applyBriefing(state);
-    completeProjects(state);
+    finishTimedWork(state, Date.now());
+    applyOrientation(state.orientation);
     return { state };
   } catch {
     const fallback = freshState();
@@ -230,8 +256,14 @@ function announce(notes) {
       toast("PATENT WINDFALL!", { description: `A licensing deal pays ${money(note.amount)}.` });
     }
     if (note.type === "speedfail") {
-      toast("Speedrun missed", { description: "Fifteen minutes ran out before $1.00M." });
+      const spec = CHALLENGES.find((entry) => entry.id === "speed");
+      const minutes = spec ? Math.round(spec.limitMs / 60000) : 90;
+      toast("Speedrun missed", { description: `${minutes} minutes ran out before ${money(spec ? spec.goal : 3.2e9)}.` });
     }
+    if (note.type === "research") toast("Specialty committed", { description: "The other branches wait until the timeline is forked." });
+    if (note.type === "upgrade") toast("Upgrade installed", { description: "The line is back up." });
+    if (note.type === "projectstart") toast("Project started", { description: "Crews are on site. Give them a moment." });
+    if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
   }
 }
 
@@ -270,6 +302,10 @@ export function useGame() {
       let dirty = false;
       s.biz = s.biz.map((st, i) => {
         if (st.owned <= 0) return st;
+        if ((st.commissionUntil || 0) > wall && !st.manager && !st.running) {
+          dirty = true;
+          return { ...st };
+        }
         if (!st.manager && !st.running) return st;
         const cfg = BUSINESSES[i];
         const cycle = effectiveCycleMs(cfg, s);
@@ -288,11 +324,13 @@ export function useGame() {
         return next;
       });
       s.data = (s.data || 0) + dataPerSecond(s) * (dt / 1000);
-      const notes = tickDilemma(s, wall);
+      const notes = tickDilemma(s, wall).concat(finishTimedWork(s, wall));
       if (notes.length) {
         announce(notes);
         dirty = true;
       }
+      const pending = s.researchJob || s.upgradeJob || s.projectJob || s.biz.some((row) => (row.commissionUntil || 0) > wall);
+      if (pending) dirty = true;
       if (dirty) bump();
     }, 100);
     return () => clearInterval(iv);
@@ -330,7 +368,12 @@ export function useGame() {
       if (!Number.isFinite(s.cash) || !Number.isFinite(cost) || !(s.cash >= cost)) return;
       const before = st.owned;
       s.cash -= cost;
-      s.biz = s.biz.map((b, j) => (j === i ? { ...b, owned: b.owned + count } : b));
+      const now = Date.now();
+      s.biz = s.biz.map((b, j) => (j === i ? {
+        ...b,
+        owned: b.owned + count,
+        commissionUntil: before === 0 ? now + COMMISSION_MS : b.commissionUntil,
+      } : b));
       notePurchase(s, i, before, before + count);
       playBuy();
       saveNow();
@@ -343,6 +386,7 @@ export function useGame() {
     (i) => {
       const s = stateRef.current;
       if (!canHireIndex(s, i)) return;
+      if ((s.biz[i].commissionUntil || 0) > Date.now()) return;
       const price = managerPrice(s, i);
       s.cash -= price;
       if (s.shop?.freeManager) s.shop = { ...s.shop, freeManager: false };
@@ -357,7 +401,9 @@ export function useGame() {
     (i) => {
       const s = stateRef.current;
       const st = s.biz[i];
+      if ((st.commissionUntil || 0) > Date.now()) return;
       if (st.owned > 0 && !st.manager && !st.running) {
+        s.sawPit = true;
         s.biz = s.biz.map((b, j) => (j === i ? { ...b, running: true } : b));
         bump();
       }
@@ -367,15 +413,31 @@ export function useGame() {
 
   const runAll = useCallback(() => {
     const s = stateRef.current;
+    if (!s.foreman) return;
+    const now = Date.now();
     let any = false;
     s.biz = s.biz.map((b) => {
-      if (b.owned > 0 && !b.manager && !b.running) {
+      if (b.owned > 0 && !b.manager && !b.running && !((b.commissionUntil || 0) > now)) {
         any = true;
         return { ...b, running: true };
       }
       return b;
     });
-    if (any) bump();
+    if (any) {
+      s.sawPit = true;
+      bump();
+    }
+  }, [bump]);
+
+  const buyForeman = useCallback(() => {
+    const s = stateRef.current;
+    if (s.foreman) return;
+    if (!(s.cash >= FOREMAN_COST) || !Number.isFinite(s.cash)) return;
+    s.cash -= FOREMAN_COST;
+    s.foreman = true;
+    playBuy();
+    saveNow();
+    bump();
   }, [bump]);
 
   const purchaseUpgrade = useCallback(
@@ -402,8 +464,8 @@ export function useGame() {
 
   const chooseSpecialty = useCallback(
     (id) => {
-      if (!commitSpecialty(stateRef.current, id)) return;
-      toast("Specialty committed", { description: "The other branches wait until the timeline is forked." });
+      if (!beginResearch(stateRef.current, id, Date.now())) return;
+      toast("Calibrating", { description: "The lab needs 20 seconds on this branch." });
       saveNow();
       bump();
     },
@@ -419,7 +481,7 @@ export function useGame() {
     const meta = snapshotMeta(s);
     const next = freshState();
     Object.assign(next, meta);
-    next.biz = freshBiz();
+    next.biz = freshBiz(id === "glass" ? "glass" : undefined);
     next.cash = 4;
     next.lifetime = 0;
     next.challenge = { id, startedAt: Date.now(), earnings: 0 };
@@ -519,6 +581,15 @@ export function useGame() {
     hire,
     run,
     runAll,
+    buyForeman,
+    setOrientation: (orientation) => {
+      const s = stateRef.current;
+      if (orientation !== "auto" && orientation !== "portrait" && orientation !== "landscape") return;
+      s.orientation = orientation;
+      applyOrientation(orientation);
+      saveNow();
+      bump();
+    },
     prestige,
     reset,
     dismissOffline,

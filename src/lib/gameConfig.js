@@ -6,9 +6,76 @@
 // (Punch Cards = 1) keeps its old revenue times 1.75^(n-1), so a tier you
 // waited for is still a raise without funding the next one immediately.
 // Quantum's first purchase now lands just before the ~2.4h first prestige.
-// Vacuum Tubes are unchanged so the opening still teaches the click.
+// Vacuum Tubes take 1.8s per batch (was 0.6s). Revenue is 3 instead of 1 so
+// the opening $/s is unchanged, and a 2x speed upgrade still leaves a 0.9s cycle.
 
 export const BUSINESSES = [
+  {
+    id: "sand",
+    name: "Sand Quarry",
+    era: "Raw stock",
+    tagline: "Scoop silica sand. Every computer starts as a pile of grit.",
+    icon: "/icons/sand.png",
+    baseCost: 4,
+    revenue: 0.4,
+    cycleMs: 2200,
+    coef: 1.14,
+    managerName: "Pit Boss",
+    managerCost: 180,
+    revCost: 550,
+    spdCost: 52000,
+    makes: { sand: 3 },
+  },
+  {
+    id: "copper",
+    name: "Copper Seam",
+    era: "Raw stock",
+    tagline: "Wire starts in the rock. Pull copper before the foundry asks.",
+    icon: "/icons/copper.png",
+    baseCost: 80,
+    revenue: 1.4,
+    cycleMs: 2400,
+    coef: 1.15,
+    managerName: "Drift Miner",
+    managerCost: 2400,
+    revCost: 14000,
+    spdCost: 160000,
+    makes: { copper: 3 },
+  },
+  {
+    id: "silicon",
+    name: "Silicon Still",
+    era: "Refine",
+    tagline: "Melt sand down to metal-grade silicon.",
+    icon: "/icons/silicon.png",
+    baseCost: 650,
+    revenue: 4,
+    cycleMs: 2800,
+    coef: 1.15,
+    managerName: "Kiln Hand",
+    managerCost: 18000,
+    revCost: 90000,
+    spdCost: 900000,
+    uses: { sand: 1 },
+    makes: { silicon: 3 },
+  },
+  {
+    id: "wafers",
+    name: "Wafer Bench",
+    era: "Grow",
+    tagline: "Draw silicon into wafers and lace them with copper.",
+    icon: "/icons/wafers.png",
+    baseCost: 4200,
+    revenue: 14,
+    cycleMs: 3600,
+    coef: 1.15,
+    managerName: "Crystal Puller",
+    managerCost: 120000,
+    revCost: 700000,
+    spdCost: 6000000,
+    uses: { silicon: 1, copper: 1 },
+    makes: { wafers: 6 },
+  },
   {
     id: "tubes",
     name: "Vacuum Tubes",
@@ -16,8 +83,9 @@ export const BUSINESSES = [
     tagline: "Room-sized computers, soldered together one glowing glass valve at a time.",
     icon: "/icons/tubes.png",
     baseCost: 4,
-    revenue: 1,
-    cycleMs: 600,
+    revenue: 3,
+    cycleMs: 1800,
+    uses: { wafers: 1 },
     coef: 1.071,
     managerName: "Lab Technician",
     managerCost: 1000,
@@ -47,6 +115,7 @@ export const BUSINESSES = [
     coef: 1.14,
     managerName: "Cleanroom Foreman",
     managerCost: 3600000,
+    uses: { wafers: 1 },
   },
   {
     id: "ics",
@@ -60,6 +129,7 @@ export const BUSINESSES = [
     coef: 1.14,
     managerName: "Fab Line Supervisor",
     managerCost: 18000000,
+    uses: { wafers: 1 },
   },
   {
     id: "cpu",
@@ -131,6 +201,32 @@ export const BUSINESSES = [
 // Ordered by owned count. The product tops out at ×144 (2^4 × 3^2) once a
 // business reaches 220 — there is no milestone past that, so this multiplier
 // cannot grow forever.
+export const SUPPLY_KEYS = ["sand", "copper", "silicon", "wafers"];
+export const FOREMAN_COST = 25000;
+export const RESEARCH_MS = 20000;
+export const UPGRADE_MS = 12000;
+export const COMMISSION_MS = 8000;
+export const PROJECT_MS = 20000;
+
+export function blankSupply() {
+  return { sand: 0, copper: 0, silicon: 0, wafers: 0 };
+}
+
+export function indexOfBusiness(id) {
+  return BUSINESSES.findIndex((cfg) => cfg.id === id);
+}
+
+export function blockedByGlass(state, index) {
+  return state?.challenge?.id === "glass" && BUSINESSES[index]?.id !== "tubes";
+}
+
+export function formatFlow(flow) {
+  if (!flow) return "";
+  return Object.entries(flow)
+    .map(([key, count]) => `${count} ${key}`)
+    .join(", ");
+}
+
 export const MILESTONES = [
   { owned: 25, mult: 2 },
   { owned: 50, mult: 2 },
@@ -276,7 +372,7 @@ export function nextMove(state) {
       const st = biz[i];
       const cfg = BUSINESSES[i];
       if (!st || st.owned <= 0 || st.manager) continue;
-      if (glass && i !== 0) continue;
+      if (blockedByGlass(state, i)) continue;
       const cost = state?.shop?.freeManager ? 0 : cfg.managerCost;
       if (cash >= cost) {
         return `Hire the ${cfg.managerName} for ${money(cost)} - that era then earns on its own.`;
@@ -285,10 +381,12 @@ export function nextMove(state) {
   }
 
   for (let i = 1; i < BUSINESSES.length; i++) {
-    if (glass) break;
+    if (blockedByGlass(state, i)) continue;
     const prev = biz[i - 1];
     const st = biz[i];
-    if (!prev || prev.owned <= 0 || (st && st.owned > 0)) continue;
+    const prevOwned = prev && prev.owned > 0;
+    const glassOpen = glass && BUSINESSES[i].id === "tubes";
+    if ((!prevOwned && !glassOpen) || (st && st.owned > 0)) continue;
     const cost = costOf(BUSINESSES[i], 0, 1);
     if (Number.isFinite(cost) && cash >= cost) {
       return `Buy your first ${BUSINESSES[i].name} for ${money(cost)}.`;
@@ -335,9 +433,12 @@ export function nextMove(state) {
     }
   }
   for (let i = 1; i < BUSINESSES.length; i++) {
+    if (blockedByGlass(state, i)) continue;
     const prev = biz[i - 1];
     const st = biz[i];
-    if (!prev || prev.owned <= 0 || (st && st.owned > 0)) continue;
+    const prevOwned = prev && prev.owned > 0;
+    const glassOpen = glass && BUSINESSES[i].id === "tubes";
+    if ((!prevOwned && !glassOpen) || (st && st.owned > 0)) continue;
     const cost = costOf(BUSINESSES[i], 0, 1);
     const short = cost - cash;
     if (Number.isFinite(short) && short > 0 && (!goal || short < goal.short)) {

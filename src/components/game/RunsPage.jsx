@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { money } from "@/lib/gameConfig";
+import { PROJECT_MS, money } from "@/lib/gameConfig";
 import { CHALLENGES, PROJECTS } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
@@ -53,6 +53,17 @@ export default function RunsPage() {
             <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{project.blurb}</p>
             <p className="mt-1 font-term text-lg text-[var(--game-success)]">+10% all revenue, forever · +{project.tokens} tokens</p>
             {done && <p className="mt-2 font-pixel text-[0.55rem] text-[var(--game-success)]">FINISHED</p>}
+            {!done && state.projectJob?.id === project.id && (
+              <div className="mt-2">
+                <p className="font-pixel text-[0.55rem] text-[var(--game-accent)]">UNDER CONSTRUCTION</p>
+                <div className="mt-2 h-5 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]">
+                  <div
+                    className="h-full bg-[var(--game-accent)]"
+                    style={{ width: `${Math.max(0, Math.min(100, ((Date.now() - state.projectJob.startedAt) / PROJECT_MS) * 100))}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </Panel>
         );
       })}

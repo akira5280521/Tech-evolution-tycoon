@@ -17,7 +17,7 @@ export default function WelcomeBack({ report, onDismiss }) {
       aria-label="Offline earnings"
       className="fixed inset-0 z-40 flex items-center justify-center overscroll-contain bg-black/70 p-4"
     >
-      <div className="w-full max-w-md border-4 border-[var(--game-accent)] bg-[var(--game-card)] p-5 shadow-[6px_6px_0_0_#000]">
+      <div className="game-modal w-full max-w-md border-4 border-[var(--game-accent)] bg-[var(--game-card)] p-5 shadow-[6px_6px_0_0_#000]">
         <h2 className="title-glow font-pixel text-sm text-[var(--game-accent)]">WELCOME BACK!</h2>
         <p className="mt-3 font-term text-lg leading-6 text-[var(--game-fg)]">
           You were away for {awayLabel(report.awayMs)}. Your hired crew kept the machines running

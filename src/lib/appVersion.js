@@ -1,7 +1,7 @@
 // Web and desktop builds have no PackageManager. Android replaces these
 // with versionName / versionCode from the installed package.
-export const WEB_VERSION_NAME = "0.0.6";
-export const WEB_VERSION_CODE = "6";
+export const WEB_VERSION_NAME = "0.0.7";
+export const WEB_VERSION_CODE = "7";
 
 export function formatAppVersion(name, code) {
   const version = String(name || WEB_VERSION_NAME).replace(/^v/i, "");

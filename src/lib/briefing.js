@@ -6,7 +6,7 @@ export const DAILY_TIPS = [
   "The first investor arrives at $1T lifetime earnings.",
   "Milestones at 25, 50, 100, 150, 200, and 220 multiply a whole era.",
   "Run All fires every machine that still needs a click.",
-  "A hidden tab keeps earning, but only for eight hours.",
+  "A hidden tab keeps earning, but only for twenty-four hours.",
   "Later eras cost more up front and pay more once they are running.",
 ];
 

@@ -71,7 +71,13 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
           <span>
             {money(perCycle)} / {cycleSeconds}s cycle
           </span>
-          <span>{next ? `next ×${next.mult} at ${next.owned} owned` : "all milestones earned"}</span>
+          <span>
+            {next
+              ? next.speed
+                ? `next ${next.speed}× speed at ${next.owned} owned`
+                : `next ×${next.mult} at ${next.owned} owned`
+              : "all milestones earned"}
+          </span>
         </div>
       </div>
 

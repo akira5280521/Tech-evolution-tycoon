@@ -224,6 +224,17 @@
   animation: tile-pulse 1.6s ease-in-out infinite;
 }
 
+@keyframes tile-shake {
+  0%,
+  100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+.tile-shake {
+  animation: tile-shake 0.18s linear;
+}
+
 /* --- Mobile safe areas: notch / home-indicator insets --- */
 /* max() keeps the headers' normal 12px spacing when no inset exists. */
 .safe-top {
@@ -266,9 +277,13 @@
   to { transform: scaleX(1); }
 }
 
-.cycle-fill {
+.cycle-fill,
+.cycle-clock {
   width: 100%;
   transform-origin: left center;
+}
+
+.cycle-fill {
   animation-name: cycle-fill;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
@@ -294,7 +309,8 @@
 @media (prefers-reduced-motion: reduce) {
   .news-ticker-track { animation: none; }
   .cycle-fill,
-  .cycle-shimmer { animation: none; }
+  .cycle-shimmer,
+  .tile-shake { animation: none; }
 }
 
 /* Pixel icons stay on the pixel grid at 1x, 2x, 3x, and 4x. */

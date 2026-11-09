@@ -6,7 +6,7 @@ import ScreenShell, { GoldButton, Panel } from "./chrome";
 export default function BoostPage() {
   const { state, purchaseUpgrade } = useGameState();
   return (
-    <ScreenShell title="UPGRADES" subtitle="Named boosts for each era - and mastery perks that never reset.">
+    <ScreenShell title="UPGRADES" subtitle="Named boosts for each era. Cash upgrades reset on prestige and are bought again.">
       {BUSINESSES.map((cfg, index) => {
         const owned = state.biz[index]?.owned || 0;
         if (index > 0 && owned <= 0 && (state.biz[index - 1]?.owned || 0) <= 0) return null;

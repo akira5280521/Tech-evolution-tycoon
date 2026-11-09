@@ -18,6 +18,7 @@ import {
   investorsFor,
   MAX_BUY,
   milestoneMult,
+  milestoneSpeed,
   money,
   prestigeMult,
 } from "./gameConfig.js";
@@ -57,7 +58,7 @@ export function maxBuyCount(owned, index) {
 // fork around day 5-7 of active play and the x4 cap months out.
 export function forkCost(points) {
   const n = Math.max(0, Math.floor(Number(points)) || 0) + 1;
-  return Math.round(11200 * Math.pow(n, 1.85));
+  return Math.round(8500 * Math.pow(n, 1.85));
 }
 
 const UPGRADE_NAMES = [
@@ -331,9 +332,12 @@ export function empireFactors(state, now = 0) {
 }
 
 export function effectiveCycleMs(cfg, state) {
+  const index = BUSINESSES.findIndex((entry) => entry.id === cfg?.id);
+  const owned = index >= 0 ? state?.biz?.[index]?.owned || 0 : 0;
   const up = upgradesOf(state, cfg.id);
   let speed = up.spd ? 2 : 1;
-  if ((state.specialties || []).includes("velocity")) speed *= 1.08;
+  if ((state?.specialties || []).includes("velocity")) speed *= 1.08;
+  speed *= milestoneSpeed(owned);
   return cfg.cycleMs / speed;
 }
 
@@ -820,8 +824,12 @@ export function resolveDilemma(state, choice, now) {
   return { type: "defer" };
 }
 
-export function snapshotMeta(state) {
+export function snapshotMeta(state, options = {}) {
   collectBadges(state);
+  // Cash upgrades belong to the run. Prestige, fork and a challenge clear them
+  // so they are bought again. An in-flight upgrade job is the same kind of
+  // purchase: carrying it would install that upgrade on the fresh run for free.
+  const resetRunUpgrades = !!options.resetRunUpgrades;
   return {
     investors: state.investors || 0,
     careerEarnings: state.careerEarnings || 0,
@@ -830,7 +838,7 @@ export function snapshotMeta(state) {
     grants: [...(state.grants || [])],
     data: state.data || 0,
     specialties: [...(state.specialties || [])],
-    upgrades: JSON.parse(JSON.stringify(state.upgrades || {})),
+    upgrades: resetRunUpgrades ? {} : JSON.parse(JSON.stringify(state.upgrades || {})),
     challengesDone: [...(state.challengesDone || [])],
     projectsDone: [...(state.projectsDone || [])],
     shop: { ...(state.shop || blankMeta().shop) },
@@ -846,11 +854,11 @@ export function snapshotMeta(state) {
     foreman: !!state.foreman,
     sawPit: !!state.sawPit,
     orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
-    // Paid-for work in flight survives a reset so a just-bought upgrade still installs.
-    // A copy, not the live object: the fresh run must not share a job the
-    // old state can still clear. The cash or data was already committed.
+    // Research and projects are permanent, so a job already paid for keeps its
+    // clock. A cash-upgrade job does not: the fresh run would install it free.
+    // A copy, not the live object, so the old state cannot clear the new job.
     researchJob: copyTimedJob(state.researchJob),
-    upgradeJob: copyTimedJob(state.upgradeJob),
+    upgradeJob: resetRunUpgrades ? null : copyTimedJob(state.upgradeJob),
     projectJob: copyTimedJob(state.projectJob),
     modStamp: (state.modStamp || 0) + 1,
   };

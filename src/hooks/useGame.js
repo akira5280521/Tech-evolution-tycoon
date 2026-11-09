@@ -45,8 +45,8 @@ import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
 
 const SAVE_INTERVAL_MS = 5000;
-// 8 hours / 240 = 2 minute slices at the cap; shorter absences slice finer.
-const OFFLINE_SLICES = 240;
+// 24 hours / 720 = 2 minute slices at the cap; shorter absences slice finer.
+const OFFLINE_SLICES = 720;
 
 function freshBiz(mode) {
   return BUSINESSES.map((cfg, i) => ({
@@ -232,7 +232,7 @@ function loadSave() {
         const mid = start + step * (k + 0.5);
         // Resolve an upgrade or project at the moment it finished, so the
         // rest of the absence pays at the new rate. The whole loop is still
-        // bounded by the 8 hour cap applied above.
+        // bounded by the 24 hour cap applied above.
         finishTimedWork(state, mid);
         state.biz.forEach((st, i) => {
           if (!st.manager || st.owned <= 0) return;
@@ -585,8 +585,8 @@ export function useGame() {
     if (s.challenge) return;
     if ((s.challengesDone || []).includes(id)) return;
     const label = id === "glass" ? "Glass Ceiling" : id === "noboss" ? "No Bosses" : "Speedrun";
-    if (!window.confirm(`Start ${label}? This run's cash and machines reset. Permanent rewards stay.`)) return;
-    const meta = snapshotMeta(s);
+    if (!window.confirm(`Start ${label}? This run's cash, machines and cash upgrades reset. Investors, research and singularity stay.`)) return;
+    const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
     next.biz = freshBiz(id === "glass" ? "glass" : undefined);
@@ -629,8 +629,8 @@ export function useGame() {
     const nextInvestors = s.investors + gained;
     if (!Number.isFinite(nextInvestors) || nextInvestors < 0) return;
     const noun = gained === 1 ? "investor" : "investors";
-    if (!window.confirm(`Reset your empire to recruit ${gained} ${noun}? Investor bonus, singularity, and the other empire bonuses share a soft ceiling.`)) return;
-    const meta = snapshotMeta(s);
+    if (!window.confirm(`Reset your empire to recruit ${gained} ${noun}? Cash upgrades are bought again next run. Investors, research and singularity stay.`)) return;
+    const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
     next.biz = freshBiz();
@@ -643,7 +643,7 @@ export function useGame() {
     stateRef.current = next;
     saveNow();
     bump();
-    toast(`${gained} ${noun} joined!`, { description: "Permanent boosts stayed. The machines did not." });
+    toast(`${gained} ${noun} joined!`, { description: "Investors stayed. Cash upgrades reset with the machines." });
   }, [bump]);
 
   const forkTimeline = useCallback(() => {
@@ -652,8 +652,8 @@ export function useGame() {
     const bill = forkCost(s.singularities || 0);
     if ((s.investors || 0) < bill) return;
     if (singularityMult((s.singularities || 0) + 1) <= singularityMult(s.singularities || 0)) return;
-    if (!window.confirm(`Fork the timeline? This spends ${bill} investors, resets the machines, and adds one singularity point (max x4). The income ceiling rises, but it never runs away. Research and tokens stay.`)) return;
-    const meta = snapshotMeta(s);
+    if (!window.confirm(`Fork the timeline? This spends ${bill} investors, resets the machines and cash upgrades, and adds one singularity point (max x4). Research and tokens stay.`)) return;
+    const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
     next.biz = freshBiz();

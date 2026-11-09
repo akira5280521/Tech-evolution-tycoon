@@ -227,10 +227,11 @@ export function formatFlow(flow) {
     .join(", ");
 }
 
+// 25, 50 and 100 halve the cycle (AdCap-style speed). Later bars still multiply profit.
 export const MILESTONES = [
-  { owned: 25, mult: 2 },
-  { owned: 50, mult: 2 },
-  { owned: 100, mult: 2 },
+  { owned: 25, speed: 2 },
+  { owned: 50, speed: 2 },
+  { owned: 100, speed: 2 },
   { owned: 150, mult: 3 },
   { owned: 200, mult: 2 },
   { owned: 220, mult: 3 },
@@ -238,7 +239,16 @@ export const MILESTONES = [
 
 export function milestoneMult(owned) {
   if (!Number.isFinite(owned) || owned < 0) return 1;
-  return MILESTONES.reduce((m, ms) => (owned >= ms.owned ? m * ms.mult : m), 1);
+  return MILESTONES.reduce((m, ms) => (ms.mult && owned >= ms.owned ? m * ms.mult : m), 1);
+}
+
+export function milestoneSpeed(owned) {
+  if (!Number.isFinite(owned) || owned < 0) return 1;
+  let speed = 1;
+  for (const ms of MILESTONES) {
+    if (ms.speed && owned >= ms.owned) speed *= ms.speed;
+  }
+  return speed;
 }
 
 export function nextMilestone(owned) {
@@ -300,7 +310,7 @@ export function buyCount(mode, cfg, owned, cash, limit = MAX_BUY) {
 }
 
 // Closed tabs, hidden tabs, and suspended timers all share this one budget.
-export const OFFLINE_CAP_MS = 8 * 60 * 60 * 1000;
+export const OFFLINE_CAP_MS = 24 * 60 * 60 * 1000;
 export const AWAY_MODAL_MS = 60 * 1000;
 // A live tick longer than this is a stalled or suspended timer, not a frame.
 export const NORMAL_TICK_MS = 2000;
@@ -326,7 +336,8 @@ export const PRESTIGE_UNIT = 1e12;
 export const GLOBAL_CAP = 10;
 
 // Income multipliers stay bounded:
-//   milestoneMult — ×144 at 220 owned, then flat
+//   milestoneSpeed — ×8 cycle speed by 100 owned, then flat
+//   milestoneMult — ×18 profit by 220 owned, then flat
 //   prestigeMult  — +5% for 100, +1% for 400, then +0.07% with no hard stop
 // The product of every empire bonus then passes through the soft ceiling in
 // empire.js, so a huge investor count still cannot make income infinite.
@@ -354,7 +365,7 @@ export function prestigeMult(investors) {
 
 function rateOf(cfg, owned) {
   if (!owned || owned <= 0) return 0;
-  return (cfg.revenue / (cfg.cycleMs / 1000)) * owned * milestoneMult(owned);
+  return (cfg.revenue / (cfg.cycleMs / 1000) * milestoneSpeed(owned)) * owned * milestoneMult(owned);
 }
 
 // The single best thing to do with the empire as it stands. Hire beats a new

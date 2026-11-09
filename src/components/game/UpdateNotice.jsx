@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { PLAY_INSTALLER, fetchLatestRelease, parseRelease, readUpdateCache, shouldAutoCheck, writeUpdateCache } from "@/lib/appUpdate";
+import { PLAY_INSTALLER, fetchLatestRelease, parseRelease, readUpdateCache, shouldAutoCheck, stillNewer, writeUpdateCache } from "@/lib/appUpdate";
 
 const UpdateCheckContext = createContext(null);
 
@@ -57,7 +57,7 @@ export function UpdateCheckProvider({ children }) {
       const cache = readUpdateCache();
       const now = Date.now();
       if (!shouldAutoCheck(now, cache)) {
-        if (!cancel) setUpdate(cache?.update || null);
+        if (!cancel) setUpdate(stillNewer(cache?.update, installed));
         return;
       }
       try {
@@ -66,8 +66,9 @@ export function UpdateCheckProvider({ children }) {
         writeUpdateCache({ checkedAt: now, update: next });
         if (!cancel) setUpdate(next);
       } catch {
-        writeUpdateCache({ checkedAt: now, update: cache?.update || null });
-        if (!cancel) setUpdate(cache?.update || null);
+        // Leave checkedAt alone so a failed lookup retries on the next launch
+        // instead of going quiet for a day.
+        if (!cancel) setUpdate(stillNewer(cache?.update, installed));
       }
     })();
     return () => {
@@ -81,14 +82,17 @@ export function UpdateCheckProvider({ children }) {
     setNote("");
     try {
       const installed = await installedVersionCode();
-      if (installed == null) return;
+      if (installed == null) {
+        setNote("Couldn't read the installed version.");
+        return;
+      }
       const release = await fetchLatestRelease();
       const next = parseRelease(release, installed);
       writeUpdateCache({ checkedAt: Date.now(), update: next });
       setUpdate(next);
       if (!next) setNote("You're on the latest version.");
     } catch {
-      /* offline or GitHub unavailable — stay quiet */
+      setNote("Couldn't reach GitHub. Check your connection and try again.");
     } finally {
       setChecking(false);
     }
@@ -100,8 +104,13 @@ export function UpdateCheckProvider({ children }) {
     setInstallNote("");
     try {
       const result = await installReleaseApk(url);
-      if (result?.status === "needs-permission") {
+      const status = result?.status;
+      if (status === "needs-permission") {
         setInstallNote("Allow installs from this app, then come back.");
+      } else if (status === "downloading") {
+        setInstallNote("Downloading in the background. The installer opens when it finishes.");
+      } else if (status === "installing") {
+        setInstallNote("Opening the installer…");
       }
     } catch {
       setInstallNote("Couldn't start the download.");

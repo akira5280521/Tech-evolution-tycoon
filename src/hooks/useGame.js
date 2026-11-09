@@ -16,6 +16,7 @@ import {
 } from "@/lib/gameConfig";
 import {
   CHALLENGES,
+  scaledChallengeGoal,
   beginResearch,
   blankMeta,
   collectBadges,
@@ -44,6 +45,8 @@ import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
 
 const SAVE_INTERVAL_MS = 5000;
+// 24 hours / 720 = 2 minute slices at the cap; shorter absences slice finer.
+const OFFLINE_SLICES = 720;
 
 function freshBiz(mode) {
   return BUSINESSES.map((cfg, i) => ({
@@ -110,14 +113,19 @@ function applySavedMeta(state, raw) {
   state.modStamp = 1;
   const orient = raw?.orientation;
   state.orientation = orient === "portrait" || orient === "landscape" || orient === "auto" ? orient : "auto";
-  state.challenge =
-    m.challenge && typeof m.challenge.id === "string"
-      ? { id: m.challenge.id, startedAt: num(m.challenge.startedAt), earnings: num(m.challenge.earnings) }
-      : null;
+  state.challenge = readChallenge(m.challenge);
   state.dilemma =
     m.dilemma && Number(m.dilemma.expiresAt) > Date.now()
       ? { id: "grant", expiresAt: Number(m.dilemma.expiresAt) }
       : null;
+}
+
+function readChallenge(raw) {
+  if (!raw || typeof raw.id !== "string") return null;
+  const spec = CHALLENGES.find((entry) => entry.id === raw.id);
+  const stored = raw.goal;
+  const goal = typeof stored === "number" && Number.isFinite(stored) && stored > 0 ? stored : spec?.goal || 0;
+  return { id: raw.id, startedAt: num(raw.startedAt), earnings: num(raw.earnings), goal };
 }
 
 function pack(s) {
@@ -214,25 +222,34 @@ function loadSave() {
     const now = Date.now();
     if (elapsed > 0) {
       state.data = (state.data || 0) + dataPerSecond(state) * (elapsed / 1000);
-      const boostStart = now - elapsed;
-      state.biz.forEach((st, i) => {
-        if (!st.manager || st.owned <= 0) return;
-        const cfg = BUSINESSES[i];
-        st.activeMs += elapsed;
-        const cycle = effectiveCycleMs(cfg, state);
-        const totalTime = elapsed + st.progress;
-        const cycles = Math.floor(totalTime / cycle);
-        st.progress = totalTime % cycle;
-        if (cycles <= 0) return;
-        const boostMs = Math.max(0, Math.min(elapsed, (state.boostUntil || 0) - boostStart));
-        const boostedCycles = Math.min(cycles, Math.floor(boostMs / cycle));
-        const plainCycles = cycles - boostedCycles;
-        const boosted = creditCycles(state, i, boostedCycles, state.boostUntil);
-        const plain = creditCycles(state, i, plainCycles, 0);
-        const amount = boosted + plain;
+      // Replay the absence in slices so supply drains as it is used, the boost
+      // only covers the slices it overlapped, and timed challenges see the
+      // real moment each payout happened.
+      const start = now - elapsed;
+      const step = elapsed / OFFLINE_SLICES;
+      const gains = new Array(BUSINESSES.length).fill(0);
+      for (let k = 0; k < OFFLINE_SLICES; k++) {
+        const mid = start + step * (k + 0.5);
+        // Resolve an upgrade or project at the moment it finished, so the
+        // rest of the absence pays at the new rate. The whole loop is still
+        // bounded by the 24 hour cap applied above.
+        finishTimedWork(state, mid);
+        state.biz.forEach((st, i) => {
+          if (!st.manager || st.owned <= 0) return;
+          const cycle = effectiveCycleMs(BUSINESSES[i], state);
+          if (!(cycle > 0)) return;
+          st.activeMs += step;
+          st.progress += step;
+          const cycles = Math.floor(st.progress / cycle);
+          if (cycles <= 0) return;
+          st.progress = Math.max(0, st.progress - cycles * cycle);
+          gains[i] += creditCycles(state, i, cycles, mid);
+        });
+      }
+      gains.forEach((amount, i) => {
         if (amount > 0) {
           offlineGain += amount;
-          rows.push({ name: cfg.name, amount });
+          rows.push({ name: BUSINESSES[i].name, amount });
         }
       });
     }
@@ -258,7 +275,7 @@ function announce(notes) {
     if (note.type === "speedfail") {
       const spec = CHALLENGES.find((entry) => entry.id === "speed");
       const minutes = spec ? Math.round(spec.limitMs / 60000) : 90;
-      toast("Speedrun missed", { description: `${minutes} minutes ran out before ${money(spec ? spec.goal : 3.2e9)}.` });
+      toast("Speedrun missed", { description: `${minutes} minutes ran out before ${money(note.goal || (spec ? spec.goal : 3.2e9))}.` });
     }
     if (note.type === "research") toast("Specialty committed", { description: "The other branches wait until the timeline is forked." });
     if (note.type === "upgrade") toast("Upgrade installed", { description: "The line is back up." });
@@ -289,6 +306,98 @@ export function useGame() {
   useEffect(() => {
     let lastWall = Date.now();
     let awayBudget = OFFLINE_CAP_MS;
+    const dueTimers = new Map();
+
+    const clearDue = (i) => {
+      const entry = dueTimers.get(i);
+      if (entry) clearTimeout(entry.id);
+      dueTimers.delete(i);
+    };
+
+    // Pay from the cycle clock (cycleStart + cycleMs), not from summed ticks.
+    // A late timer still pays the laps that already finished, and only once.
+    const settleIndex = (i, dt) => {
+      const s = stateRef.current;
+      const st = s.biz[i];
+      if (!st || st.owned <= 0) return false;
+      const wall = Date.now();
+      const cycle = effectiveCycleMs(BUSINESSES[i], s);
+      if (!(cycle > 0)) return false;
+      if (!st.manager && !st.running) {
+        if (st.holdUntil && wall >= st.holdUntil) {
+          s.biz[i] = { ...st, holdUntil: 0 };
+          return true;
+        }
+        return false;
+      }
+      let next = st;
+      if (!next.cycleStart) {
+        const into = Math.min(Math.max(next.progress || 0, 0), Math.max(cycle - 1, 0));
+        next = { ...next, cycleStart: wall - into, cycleAt: cycle, paidLaps: 0 };
+      } else if (!next.cycleAt || Math.abs(next.cycleAt - cycle) > 0.5) {
+        const old = next.cycleAt || cycle;
+        const elapsedOld = wall - next.cycleStart;
+        const frac = old > 0 ? (elapsedOld % old) / old : 0;
+        next = { ...next, cycleStart: wall - frac * cycle, cycleAt: cycle, paidLaps: 0 };
+      }
+      const elapsed = Math.max(0, wall - next.cycleStart);
+      next = { ...next, activeMs: next.activeMs + (dt || 0) };
+      if (next.manager) {
+        const laps = Math.floor(elapsed / cycle);
+        const already = next.paidLaps || 0;
+        next.progress = elapsed % cycle;
+        if (laps > already) {
+          const gain = creditCycles(s, i, laps - already, wall);
+          next.paidLaps = laps;
+          if (gain > 0) next.lastGain = { id: ++s.gainSeq, amount: gain };
+        }
+      } else if (elapsed >= cycle) {
+        const gain = creditCycles(s, i, 1, wall);
+        playCollect();
+        next = {
+          ...next,
+          running: false,
+          progress: 0,
+          cycleStart: 0,
+          paidLaps: 0,
+          holdUntil: wall + 120,
+        };
+        if (gain > 0) next.lastGain = { id: ++s.gainSeq, amount: gain };
+      } else {
+        next.progress = elapsed;
+      }
+      s.biz[i] = next;
+      return next !== st;
+    };
+
+    const armDue = (i) => {
+      const st = stateRef.current.biz[i];
+      if (!st?.cycleStart || !(st.manager || st.running)) {
+        clearDue(i);
+        return;
+      }
+      const cycle = effectiveCycleMs(BUSINESSES[i], stateRef.current);
+      if (!(cycle > 0)) return;
+      const key = `${st.cycleStart}:${Math.round(cycle)}`;
+      const existing = dueTimers.get(i);
+      if (existing?.key === key) return;
+      clearDue(i);
+      const elapsed = Math.max(0, Date.now() - st.cycleStart);
+      const into = st.manager ? elapsed % cycle : elapsed;
+      const remain = Math.max(0, cycle - into);
+      const token = st.cycleStart;
+      const id = setTimeout(() => {
+        dueTimers.delete(i);
+        requestAnimationFrame(() => {
+          const live = stateRef.current.biz[i];
+          if (!live || live.cycleStart !== token) return;
+          if (settleIndex(i, 0)) bump();
+          armDue(i);
+        });
+      }, remain);
+      dueTimers.set(i, { key, id });
+    };
+
     const iv = setInterval(() => {
       const wall = Date.now();
       collectBadges(stateRef.current);
@@ -300,28 +409,14 @@ export function useGame() {
       if (!(dt > 0)) return;
       const s = stateRef.current;
       let dirty = false;
-      s.biz = s.biz.map((st, i) => {
-        if (st.owned <= 0) return st;
+      s.biz.forEach((st, i) => {
+        if (st.owned <= 0) return;
         if ((st.commissionUntil || 0) > wall && !st.manager && !st.running) {
           dirty = true;
-          return { ...st };
+          return;
         }
-        if (!st.manager && !st.running) return st;
-        const cfg = BUSINESSES[i];
-        const cycle = effectiveCycleMs(cfg, s);
-        const next = { ...st, progress: st.progress + dt, activeMs: st.activeMs + dt };
-        const cycles = Math.floor(next.progress / cycle);
-        dirty = true;
-        if (cycles <= 0) return next;
-        const paidCycles = st.manager ? cycles : 1;
-        next.progress = st.manager ? next.progress % cycle : 0;
-        if (!st.manager) {
-          next.running = false;
-          playCollect();
-        }
-        const gain = creditCycles(s, i, paidCycles, wall);
-        if (gain > 0) next.lastGain = { id: ++s.gainSeq, amount: gain };
-        return next;
+        if (settleIndex(i, dt)) dirty = true;
+        armDue(i);
       });
       s.data = (s.data || 0) + dataPerSecond(s) * (dt / 1000);
       const notes = tickDilemma(s, wall).concat(finishTimedWork(s, wall));
@@ -329,11 +424,15 @@ export function useGame() {
         announce(notes);
         dirty = true;
       }
-      const pending = s.researchJob || s.upgradeJob || s.projectJob || s.biz.some((row) => (row.commissionUntil || 0) > wall);
+      const pending = s.researchJob || s.upgradeJob || s.projectJob || s.biz.some((row) => (row.commissionUntil || 0) > wall || (row.holdUntil || 0) > wall);
       if (pending) dirty = true;
       if (dirty) bump();
     }, 100);
-    return () => clearInterval(iv);
+    return () => {
+      clearInterval(iv);
+      dueTimers.forEach((entry) => clearTimeout(entry.id));
+      dueTimers.clear();
+    };
   }, [bump]);
 
   useEffect(() => {
@@ -390,7 +489,9 @@ export function useGame() {
       const price = managerPrice(s, i);
       s.cash -= price;
       if (s.shop?.freeManager) s.shop = { ...s.shop, freeManager: false };
-      s.biz = s.biz.map((b, j) => (j === i ? { ...b, manager: true, running: true } : b));
+      const started = Date.now();
+      const cycle = effectiveCycleMs(BUSINESSES[i], s);
+      s.biz = s.biz.map((b, j) => (j === i ? { ...b, manager: true, running: true, progress: 0, cycleStart: started, cycleAt: cycle, paidLaps: 0, holdUntil: 0 } : b));
       saveNow();
       bump();
     },
@@ -402,9 +503,16 @@ export function useGame() {
       const s = stateRef.current;
       const st = s.biz[i];
       if ((st.commissionUntil || 0) > Date.now()) return;
+      if (st.owned > 0 && !st.manager && st.running) {
+        s.biz = s.biz.map((b, j) => (j === i ? { ...b, shake: (b.shake || 0) + 1 } : b));
+        bump();
+        return;
+      }
       if (st.owned > 0 && !st.manager && !st.running) {
         s.sawPit = true;
-        s.biz = s.biz.map((b, j) => (j === i ? { ...b, running: true } : b));
+        const started = Date.now();
+        const cycle = effectiveCycleMs(BUSINESSES[i], s);
+        s.biz = s.biz.map((b, j) => (j === i ? { ...b, running: true, progress: 0, cycleStart: started, cycleAt: cycle, paidLaps: 0, holdUntil: 0 } : b));
         bump();
       }
     },
@@ -416,10 +524,10 @@ export function useGame() {
     if (!s.foreman) return;
     const now = Date.now();
     let any = false;
-    s.biz = s.biz.map((b) => {
+    s.biz = s.biz.map((b, j) => {
       if (b.owned > 0 && !b.manager && !b.running && !((b.commissionUntil || 0) > now)) {
         any = true;
-        return { ...b, running: true };
+        return { ...b, running: true, progress: 0, cycleStart: now, cycleAt: effectiveCycleMs(BUSINESSES[j], s), paidLaps: 0, holdUntil: 0 };
       }
       return b;
     });
@@ -477,14 +585,15 @@ export function useGame() {
     if (s.challenge) return;
     if ((s.challengesDone || []).includes(id)) return;
     const label = id === "glass" ? "Glass Ceiling" : id === "noboss" ? "No Bosses" : "Speedrun";
-    if (!window.confirm(`Start ${label}? This run's cash and machines reset. Permanent rewards stay.`)) return;
-    const meta = snapshotMeta(s);
+    if (!window.confirm(`Start ${label}? This run's cash, machines and cash upgrades reset. Investors, research and singularity stay.`)) return;
+    const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
     next.biz = freshBiz(id === "glass" ? "glass" : undefined);
     next.cash = 4;
     next.lifetime = 0;
-    next.challenge = { id, startedAt: Date.now(), earnings: 0 };
+    const spec = CHALLENGES.find((entry) => entry.id === id);
+    next.challenge = { id, startedAt: Date.now(), earnings: 0, goal: scaledChallengeGoal(spec, next) };
     next.dilemma = null;
     stateRef.current = next;
     saveNow();
@@ -520,8 +629,8 @@ export function useGame() {
     const nextInvestors = s.investors + gained;
     if (!Number.isFinite(nextInvestors) || nextInvestors < 0) return;
     const noun = gained === 1 ? "investor" : "investors";
-    if (!window.confirm(`Reset your empire to recruit ${gained} ${noun}? Investor bonus, singularity, and the other empire bonuses share a soft ceiling.`)) return;
-    const meta = snapshotMeta(s);
+    if (!window.confirm(`Reset your empire to recruit ${gained} ${noun}? Cash upgrades are bought again next run. Investors, research and singularity stay.`)) return;
+    const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
     next.biz = freshBiz();
@@ -534,7 +643,7 @@ export function useGame() {
     stateRef.current = next;
     saveNow();
     bump();
-    toast(`${gained} ${noun} joined!`, { description: "Permanent boosts stayed. The machines did not." });
+    toast(`${gained} ${noun} joined!`, { description: "Investors stayed. Cash upgrades reset with the machines." });
   }, [bump]);
 
   const forkTimeline = useCallback(() => {
@@ -543,8 +652,8 @@ export function useGame() {
     const bill = forkCost(s.singularities || 0);
     if ((s.investors || 0) < bill) return;
     if (singularityMult((s.singularities || 0) + 1) <= singularityMult(s.singularities || 0)) return;
-    if (!window.confirm(`Fork the timeline? This spends ${bill} investors, resets the machines, and adds one singularity point (max x4). The income ceiling rises, but it never runs away. Research and tokens stay.`)) return;
-    const meta = snapshotMeta(s);
+    if (!window.confirm(`Fork the timeline? This spends ${bill} investors, resets the machines and cash upgrades, and adds one singularity point (max x4). Research and tokens stay.`)) return;
+    const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
     next.biz = freshBiz();

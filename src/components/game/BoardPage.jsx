@@ -44,7 +44,7 @@ export default function BoardPage() {
             <span className="font-pixel text-[0.6rem]">{ready ? "FORK THE TIMELINE" : `FORK NEEDS ${bill} INVESTORS`}</span>
           </GoldButton>
           <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
-            Spending {bill} investors resets the machines and adds one singularity point, max x4. Each fork costs more than the last, and the income ceiling rises with them. Research, tokens, and upgrades stay. Another specialty slot opens.
+            Spending {bill} investors resets the machines and the cash upgrades, and adds one singularity point, max x4. Each fork costs more than the last, and the income ceiling rises with them. Research and tokens stay. Another specialty slot opens.
           </p>
         </div>
       </Panel>

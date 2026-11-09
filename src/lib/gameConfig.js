@@ -227,10 +227,11 @@ export function formatFlow(flow) {
     .join(", ");
 }
 
+// 25, 50 and 100 halve the cycle (AdCap-style speed). Later bars still multiply profit.
 export const MILESTONES = [
-  { owned: 25, mult: 2 },
-  { owned: 50, mult: 2 },
-  { owned: 100, mult: 2 },
+  { owned: 25, speed: 2 },
+  { owned: 50, speed: 2 },
+  { owned: 100, speed: 2 },
   { owned: 150, mult: 3 },
   { owned: 200, mult: 2 },
   { owned: 220, mult: 3 },
@@ -238,7 +239,16 @@ export const MILESTONES = [
 
 export function milestoneMult(owned) {
   if (!Number.isFinite(owned) || owned < 0) return 1;
-  return MILESTONES.reduce((m, ms) => (owned >= ms.owned ? m * ms.mult : m), 1);
+  return MILESTONES.reduce((m, ms) => (ms.mult && owned >= ms.owned ? m * ms.mult : m), 1);
+}
+
+export function milestoneSpeed(owned) {
+  if (!Number.isFinite(owned) || owned < 0) return 1;
+  let speed = 1;
+  for (const ms of MILESTONES) {
+    if (ms.speed && owned >= ms.owned) speed *= ms.speed;
+  }
+  return speed;
 }
 
 export function nextMilestone(owned) {
@@ -300,7 +310,7 @@ export function buyCount(mode, cfg, owned, cash, limit = MAX_BUY) {
 }
 
 // Closed tabs, hidden tabs, and suspended timers all share this one budget.
-export const OFFLINE_CAP_MS = 8 * 60 * 60 * 1000;
+export const OFFLINE_CAP_MS = 24 * 60 * 60 * 1000;
 export const AWAY_MODAL_MS = 60 * 1000;
 // A live tick longer than this is a stalled or suspended timer, not a frame.
 export const NORMAL_TICK_MS = 2000;
@@ -326,8 +336,9 @@ export const PRESTIGE_UNIT = 1e12;
 export const GLOBAL_CAP = 10;
 
 // Income multipliers stay bounded:
-//   milestoneMult — ×144 at 220 owned, then flat
-//   prestigeMult  — +5% for 100, +1% for 400, then +0.02% with no hard stop
+//   milestoneSpeed — ×8 cycle speed by 100 owned, then flat
+//   milestoneMult — ×18 profit by 220 owned, then flat
+//   prestigeMult  — +5% for 100, +1% for 400, then +0.07% with no hard stop
 // The product of every empire bonus then passes through the soft ceiling in
 // empire.js, so a huge investor count still cannot make income infinite.
 // Owned count is a quantity, not a bonus. A single purchase stops at the next
@@ -347,14 +358,14 @@ export function prestigeMult(investors) {
   if (!Number.isFinite(n)) return 1;
   const a = Math.min(n, 100); // +5% each
   const b = Math.min(Math.max(n - 100, 0), 400); // +1% each, through 500
-  const c = Math.max(n - 500, 0); // +0.02% each after that, no hard stop
-  const mult = 1 + a * 0.05 + b * 0.01 + c * 0.0002;
+  const c = Math.max(n - 500, 0); // +0.07% each after that, no hard stop
+  const mult = 1 + a * 0.05 + b * 0.01 + c * 0.0007;
   return Number.isFinite(mult) ? mult : 1;
 }
 
 function rateOf(cfg, owned) {
   if (!owned || owned <= 0) return 0;
-  return (cfg.revenue / (cfg.cycleMs / 1000)) * owned * milestoneMult(owned);
+  return (cfg.revenue / (cfg.cycleMs / 1000) * milestoneSpeed(owned)) * owned * milestoneMult(owned);
 }
 
 // The single best thing to do with the empire as it stands. Hire beats a new
@@ -366,12 +377,14 @@ export function nextMove(state) {
 
   const noBoss = state?.challenge?.id === "noboss";
   const glass = state?.challenge?.id === "glass";
+  const now = Date.now();
+  const commissioning = (st) => (st?.commissionUntil || 0) > now;
 
   if (!noBoss) {
     for (let i = BUSINESSES.length - 1; i >= 0; i--) {
       const st = biz[i];
       const cfg = BUSINESSES[i];
-      if (!st || st.owned <= 0 || st.manager) continue;
+      if (!st || st.owned <= 0 || st.manager || commissioning(st)) continue;
       if (blockedByGlass(state, i)) continue;
       const cost = state?.shop?.freeManager ? 0 : cfg.managerCost;
       if (cash >= cost) {
@@ -396,7 +409,7 @@ export function nextMove(state) {
 
   for (let i = 0; i < BUSINESSES.length; i++) {
     const st = biz[i];
-    if (st && st.owned > 0 && !st.manager && !st.running) {
+    if (st && st.owned > 0 && !st.manager && !st.running && !commissioning(st)) {
       return `Run ${BUSINESSES[i].name} to fire the next batch.`;
     }
   }
@@ -422,7 +435,7 @@ export function nextMove(state) {
   }
 
   let goal = null;
-  for (let i = 0; i < BUSINESSES.length; i++) {
+  for (let i = 0; i < BUSINESSES.length && !noBoss; i++) {
     const st = biz[i];
     const cfg = BUSINESSES[i];
     if (st && st.owned > 0 && !st.manager) {

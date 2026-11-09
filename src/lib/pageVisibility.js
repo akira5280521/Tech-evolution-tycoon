@@ -1,6 +1,6 @@
 // One hidden flag for the browser tab and the Android activity.
 // The idle tick and the audio mute both read this, so backgrounding the app
-// uses the same 8 hour offline budget as a hidden tab.
+// uses the same 24 hour offline budget as a hidden tab.
 
 let nativeHidden = false;
 

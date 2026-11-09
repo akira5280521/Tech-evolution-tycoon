@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { PROJECT_MS, money } from "@/lib/gameConfig";
-import { CHALLENGES, PROJECTS } from "@/lib/empire";
+import { CHALLENGES, PROJECTS, activeChallengeGoal, scaledChallengeGoal } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 
@@ -24,11 +24,11 @@ export default function RunsPage() {
             <h3 className="font-pixel text-[0.7rem]">{challenge.name}</h3>
             <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{challenge.blurb}</p>
             <p className="mt-2 font-term text-lg leading-6">
-              Goal: {money(challenge.goal)} this run · <span className="text-[var(--game-success)]">+10% all revenue, forever</span>
+              Goal: {money(active ? activeChallengeGoal(state) : scaledChallengeGoal(challenge, state))} this run · <span className="text-[var(--game-success)]">+10% all revenue, forever</span>
             </p>
             {active && (
               <p className="mt-1 font-term text-base text-[var(--game-accent)]">
-                This run {money(state.challenge.earnings)}
+                This run {money(state.challenge.earnings)} / {money(activeChallengeGoal(state))}
                 {challenge.limitMs ? ` · ${Math.ceil(left / 1000)}s left` : ""}
               </p>
             )}

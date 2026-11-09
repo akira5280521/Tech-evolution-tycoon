@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { BUSINESSES, SUPPLY_KEYS, blockedByGlass, money } from "@/lib/gameConfig";
-import { incomePerSecond } from "@/lib/empire";
+import { activeChallengeGoal, incomePerSecond } from "@/lib/empire";
 import { PREFS_EVENT, readPrefs } from "@/lib/gamePrefs";
 import { setSoundEnabled } from "@/lib/sfx";
 import { useGameState } from "./GameState";
@@ -121,7 +121,7 @@ export default function GameScreen() {
           <NewsTicker />
           {state.challenge && (
             <p className="break-words border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-3 font-term text-lg leading-6 text-[var(--game-accent)]">
-              Challenge running: {state.challenge.id} · {money(state.challenge.earnings)} earned this run.
+              Challenge running: {state.challenge.id} · {money(state.challenge.earnings)} / {money(activeChallengeGoal(state))} this run.
             </p>
           )}
           <PrestigeBar state={state} onPrestige={prestige} />
@@ -156,7 +156,7 @@ export default function GameScreen() {
 
       <footer className="safe-x safe-bottom mx-auto max-w-4xl px-3 pb-4 pt-2 font-term text-base leading-5 text-[var(--game-dim)]">
         <p className="border-t-2 border-[var(--game-border)] pt-3">
-          Progress saves on this device. Close the app and a hired crew keeps earning for up to 8 hours.
+          Progress saves on this device. Close the app and a hired crew keeps earning for up to 24 hours.
         </p>
       </footer>
       <BottomTabs />

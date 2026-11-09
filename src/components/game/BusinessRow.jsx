@@ -27,7 +27,6 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
   const perCycle = cfg.revenue * rev * st.owned * mult * empireFactors(state, Date.now()).total * supplyFactor(state, cfg);
   const commissioning = (st.commissionUntil || 0) > Date.now();
   const canHire = !commissioning && !st.manager && st.owned > 0 && cash >= cfg.managerCost;
-  const commissionElapsed = commissioning ? COMMISSION_MS - (st.commissionUntil - Date.now()) : 0;
 
   return (
     <div className={`grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
@@ -49,10 +48,17 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
         {commissioning ? (
           <>
             <p className="font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">BRINGING THE LINE ONLINE</p>
-            <ProgressTrack cycleMs={COMMISSION_MS} progress={commissionElapsed} active loop={false} />
+            <ProgressTrack cycleMs={COMMISSION_MS} cycleStart={(st.commissionUntil || 0) - COMMISSION_MS} progress={0} active loop={false} />
           </>
         ) : (
-          <ProgressTrack cycleMs={cycle} progress={st.progress} active={!!(st.manager || st.running)} loop={!!st.manager} />
+          <ProgressTrack
+            cycleMs={cycle}
+            progress={st.progress}
+            cycleStart={st.cycleStart || 0}
+            active={!!(st.manager || st.running)}
+            loop={!!st.manager}
+            holdUntil={st.holdUntil || 0}
+          />
         )}
         {(cfg.uses || cfg.makes) && !compact && (
           <p className="font-term text-base leading-5 text-[var(--game-muted)]">
@@ -65,7 +71,13 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
           <span>
             {money(perCycle)} / {cycleSeconds}s cycle
           </span>
-          <span>{next ? `next ×${next.mult} at ${next.owned} owned` : "all milestones earned"}</span>
+          <span>
+            {next
+              ? next.speed
+                ? `next ${next.speed}× speed at ${next.owned} owned`
+                : `next ×${next.mult} at ${next.owned} owned`
+              : "all milestones earned"}
+          </span>
         </div>
       </div>
 

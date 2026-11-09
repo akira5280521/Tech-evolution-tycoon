@@ -155,12 +155,12 @@ function HowTo() {
     "Tap a machine to run one batch. The bar fills over the cycle, then it pays. Hire its manager and it keeps running.",
     "Sand, copper, silicon, and wafers feed the later machines. A dry line still pays a little so the bar never freezes.",
     "The Foreman unlocks Run All. Until then, each machine starts on its own.",
-    "Buy x1, x10, x100, or MAX. Milestones multiply that whole era.",
+    "Buy x1, x10, x100, or MAX. At 25, 50 and 100 owned the cycle runs twice as fast. Later milestones multiply profit.",
     "Prestige on the game tab recruits investors. The first one needs $1T lifetime earnings.",
-    "Named upgrades and era mastery never reset. The owned count for mastery is lower on steep early eras and higher on tubes and quantum.",
+    "Cash upgrades reset when you prestige, fork, or start a challenge, and are bought again each run. Research, investors and singularity stay. Mastery returns once you own enough and buy both upgrades again.",
     "Era tokens pay for the shop on the Board tab. Only the daily crate is free from the start.",
     "Fork the timeline once you can pay the investor bill. Each fork costs more. Singularity maxes at x4, and the income ceiling rises with it instead of cutting off flat.",
-    "Close the tab and hired crews earn for up to 8 hours. Sound goes quiet while the app is hidden.",
+    "Close the tab and hired crews earn for up to 24 hours. Sound goes quiet while the app is hidden.",
   ];
   return (
     <Panel>

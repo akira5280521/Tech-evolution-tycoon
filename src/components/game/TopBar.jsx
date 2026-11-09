@@ -5,7 +5,8 @@ const MODES = [
   { id: "x1", label: "X1", sub: "ONE UNIT" },
   { id: "x10", label: "X10", sub: "TEN UNITS" },
   { id: "x100", label: "X100", sub: "HUNDRED" },
-  { id: "MAX", label: "MAX", sub: "ALL AFFORDABLE" },
+  { id: "NEXT", label: "NEXT", sub: "TO GATE" },
+  { id: "MAX", label: "MAX", sub: "ALL YOU CAN" },
 ];
 
 const on = "border-[var(--game-accent)] bg-[var(--game-accent)] text-black";
@@ -54,7 +55,7 @@ export default function TopBar({ state, cps, buyMode, setBuyMode, onRunAll, canR
 
         <div>
           <p className="font-pixel text-[0.55rem] leading-none text-[var(--game-fg)]">BUY</p>
-          <div className="mt-1 grid grid-cols-4 gap-1.5">
+          <div data-buy-modes className="mt-1 grid grid-cols-5 gap-1">
             {MODES.map((mode) => (
               <button
                 key={mode.id}
@@ -62,10 +63,10 @@ export default function TopBar({ state, cps, buyMode, setBuyMode, onRunAll, canR
                 data-mode={mode.id}
                 aria-pressed={buyMode === mode.id}
                 onClick={() => setBuyMode(mode.id)}
-                className={`min-h-11 border-2 px-0.5 py-1 text-center shadow-[2px_2px_0_0_#000] ${buyMode === mode.id ? on : off}`}
+                className={`min-h-11 min-w-0 border-2 px-0.5 py-1 text-center shadow-[2px_2px_0_0_#000] ${buyMode === mode.id ? on : off}`}
               >
-                <span className="block font-pixel text-[0.55rem] leading-4">{mode.label}</span>
-                <span className="mt-0.5 block font-term text-sm leading-4">{mode.sub}</span>
+                <span className="block truncate font-pixel text-[0.5rem] leading-4">{mode.label}</span>
+                <span className="mt-0.5 block truncate font-term text-xs leading-4">{mode.sub}</span>
               </button>
             ))}
           </div>

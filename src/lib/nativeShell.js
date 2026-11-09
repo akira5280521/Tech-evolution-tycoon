@@ -1,6 +1,11 @@
 import { setNativeHidden } from "@/lib/pageVisibility";
 
 function handleBackButton(App, canGoBack) {
+  const notes = document.querySelector("[data-notes-close]");
+  if (notes) {
+    notes.click();
+    return;
+  }
   const defer = document.querySelector("[data-dilemma='defer']");
   if (defer) {
     defer.click();

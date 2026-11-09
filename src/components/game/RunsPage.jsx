@@ -51,7 +51,7 @@ export default function RunsPage() {
           <Panel key={project.id}>
             <h3 className="font-pixel text-[0.65rem]">{project.name}</h3>
             <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{project.blurb}</p>
-            <p className="mt-1 font-term text-lg text-[var(--game-success)]">+10% all revenue, forever · +{project.tokens} tokens</p>
+            <p className="mt-1 font-term text-lg text-[var(--game-success)]">+{Math.round(project.reward * 100)}% all revenue, forever · +{project.tokens} tokens</p>
             {done && <p className="mt-2 font-pixel text-[0.55rem] text-[var(--game-success)]">FINISHED</p>}
             {!done && state.projectJob?.id === project.id && (
               <div className="mt-2">

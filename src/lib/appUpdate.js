@@ -6,6 +6,33 @@ export const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 export const CACHE_KEY = "pc-tycoon-update-check-v1";
 export const PLAY_INSTALLER = "com.android.vending";
 
+const SOON_HEADING = /coming soon|planned|on the way|next up|roadmap/i;
+const MAX_NOTES = 15;
+
+// Turn the release body into two bullet lists. Any bullet line (-, *, •) is an
+// item. A heading or a line ending in ":" switches sections; headings that say
+// "Coming soon" (or Planned / Next up / Roadmap) start the coming-soon list.
+export function parseNotes(body) {
+  const added = [];
+  const soon = [];
+  if (typeof body !== "string") return { added, soon };
+  let target = added;
+  for (const raw of body.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || /^versionCode:/i.test(line)) continue;
+    const bullet = line.match(/^(?:[-*•+]|\d+[.)])\s+(.*)$/);
+    if (bullet) {
+      const text = bullet[1].replace(/\*\*|__|`/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").trim().slice(0, 160);
+      if (text && target.length < MAX_NOTES) target.push(text);
+      continue;
+    }
+    if (/^#{1,6}\s/.test(line) || line.endsWith(":")) {
+      target = SOON_HEADING.test(line) ? soon : added;
+    }
+  }
+  return { added, soon };
+}
+
 export function parseRelease(release, installedCode) {
   const installed = Number(installedCode);
   if (!Number.isFinite(installed)) return null;
@@ -22,7 +49,7 @@ export function parseRelease(release, installedCode) {
   if (!apk) return null;
   const tag = typeof release.tag_name === "string" && release.tag_name ? release.tag_name : String(versionCode);
   const label = tag.startsWith("v") ? tag : `v${tag}`;
-  return { versionCode, label, apkUrl: apk.browser_download_url };
+  return { versionCode, label, apkUrl: apk.browser_download_url, notes: parseNotes(text) };
 }
 
 export function readUpdateCache() {

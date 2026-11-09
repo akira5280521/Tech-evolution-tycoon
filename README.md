@@ -20,9 +20,13 @@ base44 dev     # local backend + app together
 
 ## Android app
 
-The installable app is a Capacitor wrapper around a static build of the same game. Package id `com.techevolutiontycoon.game`, display name Tech Evolution Tycoon, version 0.0.8 (versionCode 8). It targets Android SDK 36 (minimum 24), ships the icons, fonts, and JavaScript inside the package, keeps the save in `localStorage`, and follows the device rotation unless Settings locks portrait or landscape. Backgrounding the activity mutes audio and pauses the WebView; the existing hidden-page tick still applies the 24 hour offline budget when it wakes. The hardware back button closes a boardroom dilemma, returns from a tab to the previous screen, and leaves the app only from the game screen.
+The installable app is a Capacitor wrapper around a static build of the same game. Package id `com.techevolutiontycoon.game`, display name Tech Evolution Tycoon, version 0.0.9 (versionCode 9). It targets Android SDK 36 (minimum 24), ships the icons, fonts, and JavaScript inside the package, keeps the save in `localStorage`, and follows the device rotation unless Settings locks portrait or landscape. Backgrounding the activity mutes audio and pauses the WebView; the existing hidden-page tick still applies the 24 hour offline budget when it wakes. The hardware back button closes a boardroom dilemma, returns from a tab to the previous screen, and leaves the app only from the game screen.
 
 Sideloaded copies look at the public GitHub release at most once a day, and from More → Settings. The request is anonymous. Play Store installs skip it. There is no ad SDK, no analytics script, and no billing library.
+
+### Release notes for the in-app updater
+
+The update banner reads the latest GitHub release. It must not be a draft or pre-release, must have an `.apk` attached, and its notes need a `versionCode:` line higher than the installed build. Bullet points in the notes show on the WHAT'S NEW screen. Bullets under a heading that says "Coming soon" (or Planned, Next up, Roadmap) show in a separate COMING SOON list. See `docs/release-notes-template.md`.
 
 Play listing copy, the privacy policy, and the Data safety / content-rating notes are in `docs/`.
 

@@ -366,12 +366,14 @@ export function nextMove(state) {
 
   const noBoss = state?.challenge?.id === "noboss";
   const glass = state?.challenge?.id === "glass";
+  const now = Date.now();
+  const commissioning = (st) => (st?.commissionUntil || 0) > now;
 
   if (!noBoss) {
     for (let i = BUSINESSES.length - 1; i >= 0; i--) {
       const st = biz[i];
       const cfg = BUSINESSES[i];
-      if (!st || st.owned <= 0 || st.manager) continue;
+      if (!st || st.owned <= 0 || st.manager || commissioning(st)) continue;
       if (blockedByGlass(state, i)) continue;
       const cost = state?.shop?.freeManager ? 0 : cfg.managerCost;
       if (cash >= cost) {
@@ -396,7 +398,7 @@ export function nextMove(state) {
 
   for (let i = 0; i < BUSINESSES.length; i++) {
     const st = biz[i];
-    if (st && st.owned > 0 && !st.manager && !st.running) {
+    if (st && st.owned > 0 && !st.manager && !st.running && !commissioning(st)) {
       return `Run ${BUSINESSES[i].name} to fire the next batch.`;
     }
   }
@@ -422,7 +424,7 @@ export function nextMove(state) {
   }
 
   let goal = null;
-  for (let i = 0; i < BUSINESSES.length; i++) {
+  for (let i = 0; i < BUSINESSES.length && !noBoss; i++) {
     const st = biz[i];
     const cfg = BUSINESSES[i];
     if (st && st.owned > 0 && !st.manager) {

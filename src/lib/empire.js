@@ -751,7 +751,10 @@ export function tickDilemma(state, now) {
   }
   if (state.challenge?.id === "speed") {
     const spec = CHALLENGES.find((c) => c.id === "speed");
-    if (now - state.challenge.startedAt > spec.limitMs && state.challenge.earnings < spec.goal) {
+    // A run that reached the goal in time was already completed by creditAmount.
+    // Anything still open past the limit has failed, even if earnings crossed
+    // the goal late; otherwise the run could never close.
+    if (now - state.challenge.startedAt > spec.limitMs) {
       failChallenge(state);
       notes.push({ type: "speedfail" });
     }
@@ -803,6 +806,10 @@ export function snapshotMeta(state) {
     foreman: !!state.foreman,
     sawPit: !!state.sawPit,
     orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
+    // Paid-for work in flight survives a reset so a just-bought upgrade still installs.
+    researchJob: timedJob(state.researchJob),
+    upgradeJob: timedJob(state.upgradeJob),
+    projectJob: timedJob(state.projectJob),
     modStamp: (state.modStamp || 0) + 1,
   };
 }

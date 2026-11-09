@@ -44,6 +44,8 @@ import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
 
 const SAVE_INTERVAL_MS = 5000;
+// 8 hours / 240 = 2 minute slices at the cap; shorter absences slice finer.
+const OFFLINE_SLICES = 240;
 
 function freshBiz(mode) {
   return BUSINESSES.map((cfg, i) => ({
@@ -214,25 +216,29 @@ function loadSave() {
     const now = Date.now();
     if (elapsed > 0) {
       state.data = (state.data || 0) + dataPerSecond(state) * (elapsed / 1000);
-      const boostStart = now - elapsed;
-      state.biz.forEach((st, i) => {
-        if (!st.manager || st.owned <= 0) return;
-        const cfg = BUSINESSES[i];
-        st.activeMs += elapsed;
-        const cycle = effectiveCycleMs(cfg, state);
-        const totalTime = elapsed + st.progress;
-        const cycles = Math.floor(totalTime / cycle);
-        st.progress = totalTime % cycle;
-        if (cycles <= 0) return;
-        const boostMs = Math.max(0, Math.min(elapsed, (state.boostUntil || 0) - boostStart));
-        const boostedCycles = Math.min(cycles, Math.floor(boostMs / cycle));
-        const plainCycles = cycles - boostedCycles;
-        const boosted = creditCycles(state, i, boostedCycles, state.boostUntil);
-        const plain = creditCycles(state, i, plainCycles, 0);
-        const amount = boosted + plain;
+      // Replay the absence in slices so supply drains as it is used, the boost
+      // only covers the slices it overlapped, and timed challenges see the
+      // real moment each payout happened.
+      const start = now - elapsed;
+      const step = elapsed / OFFLINE_SLICES;
+      const gains = new Array(BUSINESSES.length).fill(0);
+      for (let k = 0; k < OFFLINE_SLICES; k++) {
+        const mid = start + step * (k + 0.5);
+        state.biz.forEach((st, i) => {
+          if (!st.manager || st.owned <= 0) return;
+          const cycle = effectiveCycleMs(BUSINESSES[i], state);
+          st.activeMs += step;
+          st.progress += step;
+          const cycles = Math.floor(st.progress / cycle);
+          if (cycles <= 0) return;
+          st.progress -= cycles * cycle;
+          gains[i] += creditCycles(state, i, cycles, mid);
+        });
+      }
+      gains.forEach((amount, i) => {
         if (amount > 0) {
           offlineGain += amount;
-          rows.push({ name: cfg.name, amount });
+          rows.push({ name: BUSINESSES[i].name, amount });
         }
       });
     }

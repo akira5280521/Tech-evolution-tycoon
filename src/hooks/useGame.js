@@ -224,14 +224,19 @@ function loadSave() {
       const gains = new Array(BUSINESSES.length).fill(0);
       for (let k = 0; k < OFFLINE_SLICES; k++) {
         const mid = start + step * (k + 0.5);
+        // Resolve an upgrade or project at the moment it finished, so the
+        // rest of the absence pays at the new rate. The whole loop is still
+        // bounded by the 8 hour cap applied above.
+        finishTimedWork(state, mid);
         state.biz.forEach((st, i) => {
           if (!st.manager || st.owned <= 0) return;
           const cycle = effectiveCycleMs(BUSINESSES[i], state);
+          if (!(cycle > 0)) return;
           st.activeMs += step;
           st.progress += step;
           const cycles = Math.floor(st.progress / cycle);
           if (cycles <= 0) return;
-          st.progress -= cycles * cycle;
+          st.progress = Math.max(0, st.progress - cycles * cycle);
           gains[i] += creditCycles(state, i, cycles, mid);
         });
       }

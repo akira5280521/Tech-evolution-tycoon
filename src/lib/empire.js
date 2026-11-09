@@ -344,8 +344,10 @@ export function creditAmount(state, amount, now = 0) {
       if (!spec.limitMs || (now > 0 && elapsed <= spec.limitMs)) completeChallenge(state);
     }
   }
-  completeProjects(state);
-  return amount;
+    // Honor the payout's own clock. Offline slices pass a past moment; a
+    // missing clock means "right now" so a shop or windfall still finishes work.
+    completeProjects(state, now > 1e11 ? now : Date.now());
+    return amount;
 }
 
 export function grantTokens(state, id, amount) {
@@ -394,6 +396,11 @@ function timedJob(job) {
   if (!Number.isFinite(job.readyAt) || !Number.isFinite(job.startedAt)) return null;
   if (job.readyAt < job.startedAt) return null;
   return job;
+}
+
+function copyTimedJob(job) {
+  const clean = timedJob(job);
+  return clean ? { ...clean } : null;
 }
 
 export function beginResearch(state, id, now) {
@@ -807,9 +814,11 @@ export function snapshotMeta(state) {
     sawPit: !!state.sawPit,
     orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
     // Paid-for work in flight survives a reset so a just-bought upgrade still installs.
-    researchJob: timedJob(state.researchJob),
-    upgradeJob: timedJob(state.upgradeJob),
-    projectJob: timedJob(state.projectJob),
+    // A copy, not the live object: the fresh run must not share a job the
+    // old state can still clear. The cash or data was already committed.
+    researchJob: copyTimedJob(state.researchJob),
+    upgradeJob: copyTimedJob(state.upgradeJob),
+    projectJob: copyTimedJob(state.projectJob),
     modStamp: (state.modStamp || 0) + 1,
   };
 }

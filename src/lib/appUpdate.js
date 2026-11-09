@@ -33,6 +33,14 @@ export function parseNotes(body) {
   return { added, soon };
 }
 
+// Same rule the Android side enforces: this repo's release download, one tag,
+// one .apk, no escapes or dot segments. Anything else is never offered.
+const APK_URL = /^https:\/\/github\.com\/akira5280521\/tech-evolution-tycoon\/releases\/download\/[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+\.apk$/i;
+
+export function isReleaseApkUrl(url) {
+  return typeof url === "string" && APK_URL.test(url) && !url.includes("/../") && !url.includes("/./");
+}
+
 export function parseRelease(release, installedCode) {
   const installed = Number(installedCode);
   if (!Number.isFinite(installed)) return null;
@@ -44,7 +52,7 @@ export function parseRelease(release, installedCode) {
   const assets = Array.isArray(release.assets) ? release.assets : [];
   const apk = assets.find((asset) => {
     const name = typeof asset?.name === "string" ? asset.name.toLowerCase() : "";
-    return name.endsWith(".apk") && typeof asset.browser_download_url === "string" && asset.browser_download_url.startsWith("https://");
+    return name.endsWith(".apk") && isReleaseApkUrl(asset.browser_download_url);
   });
   if (!apk) return null;
   const tag = typeof release.tag_name === "string" && release.tag_name ? release.tag_name : String(versionCode);
@@ -59,7 +67,7 @@ export function readUpdateCache() {
     if (!raw || typeof raw.checkedAt !== "number") return null;
     return {
       checkedAt: raw.checkedAt,
-      update: raw.update && typeof raw.update.apkUrl === "string" ? raw.update : null,
+      update: raw.update && isReleaseApkUrl(raw.update.apkUrl) ? raw.update : null,
     };
   } catch {
     return null;

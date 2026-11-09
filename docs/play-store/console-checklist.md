@@ -4,7 +4,7 @@ The repo can produce the signed Android App Bundle. These steps only exist in th
 
 1. **Developer account.** Register a Google Play Console account (one-time fee). New personal accounts have to run a closed test with at least **12 testers opted in for 14 consecutive days** before Google will let the app apply for production.
 2. **Create the app** with package name `com.techevolutiontycoon.game`. This is a different id from `com.akira5280521.techevolutiontycoon`, so it does not update phones that installed that earlier package.
-3. **Play App Signing.** On the first upload, enroll in Play App Signing. Upload `app-release.aab` signed with the keystore already in this repo (`android/keystore/release.keystore`, alias `techevolutiontycoon`, passwords in `android/keystore.properties`). That file is the **upload key**. Google holds the app signing key. Do not generate a replacement upload key.
+3. **Play App Signing.** On the first upload, enroll in Play App Signing. Upload `app-release.aab` signed with your private release key (see `docs/signing.md`). That key is the **upload key**; Google holds the app signing key. The key that used to be in this repo is public, so use a new one: if the old key was ever uploaded to Play, ask Play Console support to reset the upload key.
 4. **Privacy policy URL.** Host `docs/privacy-policy.md` at a public HTTPS address (the GitHub page for this file is enough if the repository is public) and paste that URL into the store listing and the Data safety form.
 5. **Store listing.** Paste the short and full descriptions from `listing.md`. Upload `icon-512.png` and `feature-graphic.png`. Add at least two portrait phone screenshots taken on a device.
 6. **Data safety.** Enter the answers in `data-safety.md`.

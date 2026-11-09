@@ -51,4 +51,5 @@ and list the next items under "Coming soon" in the release notes (see
 - Notifications (factories full, research done).
 - Lower the game tick rate to save battery.
 - An "abandon challenge" button.
-- Remove the signing keystore and passwords from the public repo.
+- Ship save export/import before the first release signed with the new key
+  (see `docs/signing.md`), so sideload players keep progress when reinstalling.

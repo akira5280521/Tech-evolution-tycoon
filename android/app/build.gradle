@@ -1,8 +1,19 @@
 apply plugin: 'com.android.application'
 
+// Release signing. The key is never stored in the repo. Give it to the build
+// either in android/keystore.properties (git-ignored) or as environment
+// variables on a build server. See docs/signing.md.
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file("keystore.properties")
-keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+def signingValue = { String key, String envName ->
+    def value = keystoreProperties.getProperty(key) ?: System.getenv(envName)
+    return value ? value.trim() : null
+}
+def releaseStoreFile = signingValue("storeFile", "TET_KEYSTORE_FILE")
+def releaseSigningReady = releaseStoreFile != null && rootProject.file(releaseStoreFile).exists()
 
 android {
     namespace = "com.techevolutiontycoon.game"
@@ -11,8 +22,8 @@ android {
         applicationId "com.techevolutiontycoon.game"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
-        versionName "0.0.10"
+        versionCode 11
+        versionName "0.0.11"
         // Keep a 64-bit ABI beside every 32-bit one if a dependency adds native code.
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
@@ -26,15 +37,17 @@ android {
     }
     signingConfigs {
         release {
-            storeFile rootProject.file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
+            if (releaseSigningReady) {
+                storeFile rootProject.file(releaseStoreFile)
+                storePassword signingValue("storePassword", "TET_KEYSTORE_PASSWORD")
+                keyAlias signingValue("keyAlias", "TET_KEY_ALIAS")
+                keyPassword signingValue("keyPassword", "TET_KEY_PASSWORD")
+            }
         }
     }
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            if (releaseSigningReady) signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -60,3 +73,12 @@ dependencies {
 }
 
 apply from: 'capacitor.build.gradle'
+
+// Stop a release build early with a clear message instead of producing an
+// unsigned APK that can't be installed.
+gradle.taskGraph.whenReady { graph ->
+    def wantsRelease = graph.allTasks.any { it.project == project && it.name.toLowerCase().contains("release") }
+    if (wantsRelease && !releaseSigningReady) {
+        throw new GradleException("No release signing key found. Create android/keystore.properties or set TET_KEYSTORE_FILE and the other TET_* variables. See docs/signing.md.")
+    }
+}

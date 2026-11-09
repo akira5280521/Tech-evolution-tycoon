@@ -115,6 +115,8 @@ export function UpdateCheckProvider({ children }) {
         setInstallNote("Allow installs from this app, then come back.");
       } else if (status === "downloading") {
         setInstallNote("Downloading in the background. The installer opens when it finishes.");
+      } else if (status === "rejected") {
+        setInstallNote("The download didn't pass the safety check, so it wasn't installed. Get the update from the GitHub releases page.");
       } else if (status === "installing") {
         setInstallNote("Opening the installer…");
       }

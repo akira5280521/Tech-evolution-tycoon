@@ -22,8 +22,8 @@ public class AppUpdatePlugin extends Plugin {
                 resolveStatus(call, "needs-permission");
                 return;
             }
-            ApkUpdate.launchInstaller(getContext());
-            resolveStatus(call, "installing");
+            boolean opened = ApkUpdate.launchInstaller(getContext());
+            resolveStatus(call, opened ? "installing" : "rejected");
             return;
         }
         if (ApkUpdate.downloadInProgress(getContext())) {

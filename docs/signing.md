@@ -61,7 +61,7 @@ it safe again. Rotating to the new key (steps 1-2) is the real fix.
 
 - **Sideloaded installs:** Android won't update an app with an APK signed by a
   different key. Players must uninstall and reinstall once, which clears local
-  progress. Ship save export/import first so they can carry their save across.
+  progress. Since 0.0.12 they can carry their save across: More → Settings → Save Backup → Export Save before uninstalling, then Restore From a Code after installing.
   The in-app updater will (correctly) refuse the new-key APK with a "didn't pass
   the safety check" message, so say "reinstall from GitHub" in the release notes.
 - **Google Play installs:** Play re-signs with Google's app signing key, so

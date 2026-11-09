@@ -127,7 +127,7 @@ export const CHALLENGES = [
   {
     id: "speed",
     name: "SPEEDRUN",
-    blurb: "Earn $3.20B this run before the clock hits 90 minutes.",
+    blurb: "Earn this run's goal before the clock hits 90 minutes.",
     goal: 3200000000,
     reward: 0.1,
     limitMs: 90 * 60 * 1000,
@@ -278,6 +278,39 @@ export function softenMultiplier(raw, points) {
   return Math.min(ceiling, Math.max(1, applied));
 }
 
+// Permanent income bonus a challenge run actually keeps. Machines reset, so
+// mastery from the empire you just left does not inflate the target. A live
+// boost is left out too: it expires, and the goal must not.
+export function challengeIncomeBonus(state) {
+  const virtual = {
+    investors: state?.investors || 0,
+    singularities: state?.singularities || 0,
+    challengesDone: state?.challengesDone || [],
+    projectsDone: state?.projectsDone || [],
+    specialties: state?.specialties || [],
+    upgrades: state?.upgrades || {},
+    biz: BUSINESSES.map(() => ({ owned: 0 })),
+  };
+  const total = empireFactors(virtual, 0).total;
+  return Number.isFinite(total) && total >= 1 ? total : 1;
+}
+
+export function scaledChallengeGoal(spec, state) {
+  const base = spec?.goal;
+  if (!Number.isFinite(base) || base <= 0) return 0;
+  const goal = base * challengeIncomeBonus(state);
+  return Number.isFinite(goal) && goal > 0 ? goal : base;
+}
+
+// The goal locked in when the run started. An older save has no stored goal
+// and keeps the original base number, so a run already underway does not move.
+export function activeChallengeGoal(state) {
+  const spec = CHALLENGES.find((entry) => entry.id === state?.challenge?.id);
+  const stored = state?.challenge?.goal;
+  if (typeof stored === "number" && Number.isFinite(stored) && stored > 0) return stored;
+  return spec?.goal || 0;
+}
+
 // Investors, singularity, mastery, challenges, mega-projects, and research
 // revenue specialties multiply together, then pass through the soft ceiling.
 export function empireFactors(state, now = 0) {
@@ -339,7 +372,7 @@ export function creditAmount(state, amount, now = 0) {
   if (state.challenge) {
     state.challenge.earnings += amount;
     const spec = CHALLENGES.find((c) => c.id === state.challenge.id);
-    if (spec && state.challenge.earnings >= spec.goal) {
+    if (spec && state.challenge.earnings >= activeChallengeGoal(state)) {
       const elapsed = now - state.challenge.startedAt;
       if (!spec.limitMs || (now > 0 && elapsed <= spec.limitMs)) completeChallenge(state);
     }
@@ -762,8 +795,8 @@ export function tickDilemma(state, now) {
     // Anything still open past the limit has failed, even if earnings crossed
     // the goal late; otherwise the run could never close.
     if (now - state.challenge.startedAt > spec.limitMs) {
+      notes.push({ type: "speedfail", goal: activeChallengeGoal(state) });
       failChallenge(state);
-      notes.push({ type: "speedfail" });
     }
   }
   return notes;

@@ -16,6 +16,7 @@ import {
 } from "@/lib/gameConfig";
 import {
   CHALLENGES,
+  scaledChallengeGoal,
   beginResearch,
   blankMeta,
   collectBadges,
@@ -112,14 +113,19 @@ function applySavedMeta(state, raw) {
   state.modStamp = 1;
   const orient = raw?.orientation;
   state.orientation = orient === "portrait" || orient === "landscape" || orient === "auto" ? orient : "auto";
-  state.challenge =
-    m.challenge && typeof m.challenge.id === "string"
-      ? { id: m.challenge.id, startedAt: num(m.challenge.startedAt), earnings: num(m.challenge.earnings) }
-      : null;
+  state.challenge = readChallenge(m.challenge);
   state.dilemma =
     m.dilemma && Number(m.dilemma.expiresAt) > Date.now()
       ? { id: "grant", expiresAt: Number(m.dilemma.expiresAt) }
       : null;
+}
+
+function readChallenge(raw) {
+  if (!raw || typeof raw.id !== "string") return null;
+  const spec = CHALLENGES.find((entry) => entry.id === raw.id);
+  const stored = raw.goal;
+  const goal = typeof stored === "number" && Number.isFinite(stored) && stored > 0 ? stored : spec?.goal || 0;
+  return { id: raw.id, startedAt: num(raw.startedAt), earnings: num(raw.earnings), goal };
 }
 
 function pack(s) {
@@ -269,7 +275,7 @@ function announce(notes) {
     if (note.type === "speedfail") {
       const spec = CHALLENGES.find((entry) => entry.id === "speed");
       const minutes = spec ? Math.round(spec.limitMs / 60000) : 90;
-      toast("Speedrun missed", { description: `${minutes} minutes ran out before ${money(spec ? spec.goal : 3.2e9)}.` });
+      toast("Speedrun missed", { description: `${minutes} minutes ran out before ${money(note.goal || (spec ? spec.goal : 3.2e9))}.` });
     }
     if (note.type === "research") toast("Specialty committed", { description: "The other branches wait until the timeline is forked." });
     if (note.type === "upgrade") toast("Upgrade installed", { description: "The line is back up." });
@@ -495,7 +501,8 @@ export function useGame() {
     next.biz = freshBiz(id === "glass" ? "glass" : undefined);
     next.cash = 4;
     next.lifetime = 0;
-    next.challenge = { id, startedAt: Date.now(), earnings: 0 };
+    const spec = CHALLENGES.find((entry) => entry.id === id);
+    next.challenge = { id, startedAt: Date.now(), earnings: 0, goal: scaledChallengeGoal(spec, next) };
     next.dilemma = null;
     stateRef.current = next;
     saveNow();

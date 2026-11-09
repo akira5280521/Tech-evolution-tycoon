@@ -44,6 +44,7 @@ import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { HISTORY_CARDS, collectHistory } from "@/lib/history";
 import { applyOrientation } from "@/lib/orientation";
 import { SAVE_VERSION, clearSaveData, getSaveData, writeSaveData } from "@/lib/gameSave";
+import { encodeSave } from "@/lib/saveCode";
 import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
 
@@ -705,6 +706,29 @@ export function useGame() {
     bump();
   }, [bump]);
 
+  // Backup code for the current empire. Saves first so the code is up to date.
+  const exportSave = useCallback(async () => {
+    const packed = pack(stateRef.current);
+    writeSaveData(packed);
+    return encodeSave(packed);
+  }, []);
+
+  // Replace the whole empire with a save from a backup code (already decoded
+  // and checked by decodeSave). The normal loader runs on it, so it is cleaned
+  // the same way as any save, and away time since the backup is paid as usual.
+  const importSave = useCallback(
+    (data) => {
+      if (!data || typeof data !== "object") return false;
+      writeSaveData(data);
+      const { state } = loadSave();
+      stateRef.current = state;
+      saveNow();
+      bump();
+      return true;
+    },
+    [bump, saveNow]
+  );
+
   const touchBriefing = useCallback(() => {
     if (applyBriefing(stateRef.current)) bump();
   }, [bump]);
@@ -737,5 +761,7 @@ export function useGame() {
     cashOut,
     forkTimeline,
     touchBriefing,
+    exportSave,
+    importSave,
   };
 }

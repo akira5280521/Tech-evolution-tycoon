@@ -12,6 +12,9 @@ and list the next items under "Coming soon" in the release notes (see
 - **0.0.10** - History cards and the Museum (26 stories, two per era), and the
   Dot-com Bubble. The pop time is chosen when the stock appears and shown as a
   countdown.
+- **0.0.11** - Safer updater: strict link check, private staging, package,
+  version and signer checks before install. Signing key out of the repo.
+- **0.0.12** - Save backup: export a save code, restore from one.
 
 ## Next: history theme
 
@@ -46,10 +49,8 @@ and list the next items under "Coming soon" in the release notes (see
 
 - Investor upgrade shop (a second use for investors).
 - Space Age world, using the draft in `src/lib/worldSpace.js`.
-- Save backup: export/import code, then cloud save.
+- Cloud save (export/import codes shipped in 0.0.12).
 - A Play Store build without the sideload updater and its install permission.
 - Notifications (factories full, research done).
 - Lower the game tick rate to save battery.
 - An "abandon challenge" button.
-- Ship save export/import before the first release signed with the new key
-  (see `docs/signing.md`), so sideload players keep progress when reinstalling.

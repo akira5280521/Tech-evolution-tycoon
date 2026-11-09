@@ -14,6 +14,7 @@ import NextMove from "./NextMove";
 import TokenShop from "./TokenShop";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { CheckForUpdatesButton } from "./UpdateNotice";
+import SaveBackup from "./SaveBackup";
 
 const TABS = [
   { id: "howto", label: "HOW TO PLAY" },
@@ -49,7 +50,7 @@ export default function MorePage() {
   const location = useLocation();
   const hash = (location.hash || "#settings").replace("#", "");
   const tab = TABS.some((entry) => entry.id === hash) ? hash : "settings";
-  const { state, reset, purchaseShop, chooseSpecialty, setOrientation, touchBriefing } = useGameState();
+  const { state, reset, purchaseShop, chooseSpecialty, setOrientation, touchBriefing, exportSave, importSave } = useGameState();
   const data = getSaveData();
 
   if (tab === "research") {
@@ -69,6 +70,7 @@ export default function MorePage() {
           <OrientationSetting value={state.orientation || "auto"} onChange={setOrientation} />
           <AnalyticsPanel data={data} />
           <CheckForUpdatesButton />
+          <SaveBackup state={state} onExport={exportSave} onImport={importSave} />
           <button type="button" onClick={reset} className="min-h-11 border-2 border-[var(--game-danger)] px-3 font-pixel text-[0.55rem] text-[var(--game-danger)]">
             RESET SAVE
           </button>

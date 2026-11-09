@@ -11,8 +11,8 @@ android {
         applicationId "com.techevolutiontycoon.game"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8
-        versionName "0.0.8"
+        versionCode 9
+        versionName "0.0.9"
         // Keep a 64-bit ABI beside every 32-bit one if a dependency adds native code.
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"

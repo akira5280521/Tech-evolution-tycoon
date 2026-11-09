@@ -33,6 +33,7 @@ import {
   managerPrice,
   notePurchase,
   resolveDilemma,
+  DILEMMAS,
   forkCost,
   maxBuyCount,
   singularityMult,
@@ -107,6 +108,7 @@ function applySavedMeta(state, raw) {
   state.boostUntil = num(m.boostUntil);
   state.dilemmaDeferUntil = num(m.dilemmaDeferUntil);
   state.nextDilemmaAt = num(m.nextDilemmaAt);
+  state.lastDilemma = typeof m.lastDilemma === "string" ? m.lastDilemma : null;
   state.nextWindfallAt = num(m.nextWindfallAt);
   state.prestiged = !!m.prestiged;
   state.badgesEarned = Array.isArray(m.badgesEarned) ? m.badgesEarned.filter((id) => typeof id === "string") : [];
@@ -116,7 +118,7 @@ function applySavedMeta(state, raw) {
   state.challenge = readChallenge(m.challenge);
   state.dilemma =
     m.dilemma && Number(m.dilemma.expiresAt) > Date.now()
-      ? { id: "grant", expiresAt: Number(m.dilemma.expiresAt) }
+      ? { id: DILEMMAS.some((d) => d.id === m.dilemma.id) ? m.dilemma.id : "grant", expiresAt: Number(m.dilemma.expiresAt) }
       : null;
 }
 
@@ -151,6 +153,7 @@ function pack(s) {
     boostUntil: s.boostUntil || 0,
     dilemmaDeferUntil: s.dilemmaDeferUntil || 0,
     nextDilemmaAt: s.nextDilemmaAt || 0,
+    lastDilemma: s.lastDilemma || null,
     nextWindfallAt: s.nextWindfallAt || 0,
     prestiged: !!s.prestiged,
     badgesEarned: s.badgesEarned || [],
@@ -604,8 +607,7 @@ export function useGame() {
     (choice) => {
       const result = resolveDilemma(stateRef.current, choice, Date.now());
       if (!result) return;
-      if (result.type === "tokens") toast("Paperwork filed", { description: "+2 era tokens." });
-      if (result.type === "boost") toast("Automation sold", { description: "Revenue x1.15 for 5 minutes." });
+      if (result.type === "choice") toast(result.title, { description: `${result.summary}.` });
       if (result.type === "defer") toast("Deferred", { description: "The board will ask again in 5 minutes." });
       saveNow();
       bump();

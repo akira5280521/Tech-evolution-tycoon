@@ -48,6 +48,13 @@ export function writeUpdateCache(entry) {
   }
 }
 
+// A cached offer is only real while it is still newer than what's installed.
+// Without this the banner kept offering the version you just updated to.
+export function stillNewer(update, installedCode) {
+  const installed = Number(installedCode);
+  return !!update && Number.isFinite(installed) && Number(update.versionCode) > installed ? update : null;
+}
+
 export function shouldAutoCheck(now, cache) {
   if (!cache || typeof cache.checkedAt !== "number") return true;
   return now - cache.checkedAt >= CHECK_INTERVAL_MS;
@@ -55,10 +62,9 @@ export function shouldAutoCheck(now, cache) {
 
 export async function fetchLatestRelease() {
   const response = await fetch(RELEASES_URL, {
-    headers: {
-      Accept: "application/vnd.github+json",
-      "User-Agent": "TechEvolutionTycoon",
-    },
+    // Browsers own User-Agent; setting it here is ignored at best and can
+    // force a CORS preflight GitHub rejects at worst.
+    headers: { Accept: "application/vnd.github+json" },
   });
   if (!response.ok) throw new Error("release lookup failed");
   return response.json();

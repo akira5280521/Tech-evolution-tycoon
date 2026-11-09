@@ -18,6 +18,7 @@ import {
   investorsFor,
   MAX_BUY,
   milestoneMult,
+  milestoneSpeed,
   money,
   prestigeMult,
 } from "./gameConfig.js";
@@ -57,7 +58,7 @@ export function maxBuyCount(owned, index) {
 // fork around day 5-7 of active play and the x4 cap months out.
 export function forkCost(points) {
   const n = Math.max(0, Math.floor(Number(points)) || 0) + 1;
-  return Math.round(11200 * Math.pow(n, 1.85));
+  return Math.round(8500 * Math.pow(n, 1.85));
 }
 
 const UPGRADE_NAMES = [
@@ -127,7 +128,7 @@ export const CHALLENGES = [
   {
     id: "speed",
     name: "SPEEDRUN",
-    blurb: "Earn $3.20B this run before the clock hits 90 minutes.",
+    blurb: "Earn this run's goal before the clock hits 90 minutes.",
     goal: 3200000000,
     reward: 0.1,
     limitMs: 90 * 60 * 1000,
@@ -278,6 +279,39 @@ export function softenMultiplier(raw, points) {
   return Math.min(ceiling, Math.max(1, applied));
 }
 
+// Permanent income bonus a challenge run actually keeps. Machines reset, so
+// mastery from the empire you just left does not inflate the target. A live
+// boost is left out too: it expires, and the goal must not.
+export function challengeIncomeBonus(state) {
+  const virtual = {
+    investors: state?.investors || 0,
+    singularities: state?.singularities || 0,
+    challengesDone: state?.challengesDone || [],
+    projectsDone: state?.projectsDone || [],
+    specialties: state?.specialties || [],
+    upgrades: state?.upgrades || {},
+    biz: BUSINESSES.map(() => ({ owned: 0 })),
+  };
+  const total = empireFactors(virtual, 0).total;
+  return Number.isFinite(total) && total >= 1 ? total : 1;
+}
+
+export function scaledChallengeGoal(spec, state) {
+  const base = spec?.goal;
+  if (!Number.isFinite(base) || base <= 0) return 0;
+  const goal = base * challengeIncomeBonus(state);
+  return Number.isFinite(goal) && goal > 0 ? goal : base;
+}
+
+// The goal locked in when the run started. An older save has no stored goal
+// and keeps the original base number, so a run already underway does not move.
+export function activeChallengeGoal(state) {
+  const spec = CHALLENGES.find((entry) => entry.id === state?.challenge?.id);
+  const stored = state?.challenge?.goal;
+  if (typeof stored === "number" && Number.isFinite(stored) && stored > 0) return stored;
+  return spec?.goal || 0;
+}
+
 // Investors, singularity, mastery, challenges, mega-projects, and research
 // revenue specialties multiply together, then pass through the soft ceiling.
 export function empireFactors(state, now = 0) {
@@ -298,9 +332,12 @@ export function empireFactors(state, now = 0) {
 }
 
 export function effectiveCycleMs(cfg, state) {
+  const index = BUSINESSES.findIndex((entry) => entry.id === cfg?.id);
+  const owned = index >= 0 ? state?.biz?.[index]?.owned || 0 : 0;
   const up = upgradesOf(state, cfg.id);
   let speed = up.spd ? 2 : 1;
-  if ((state.specialties || []).includes("velocity")) speed *= 1.08;
+  if ((state?.specialties || []).includes("velocity")) speed *= 1.08;
+  speed *= milestoneSpeed(owned);
   return cfg.cycleMs / speed;
 }
 
@@ -339,13 +376,15 @@ export function creditAmount(state, amount, now = 0) {
   if (state.challenge) {
     state.challenge.earnings += amount;
     const spec = CHALLENGES.find((c) => c.id === state.challenge.id);
-    if (spec && state.challenge.earnings >= spec.goal) {
+    if (spec && state.challenge.earnings >= activeChallengeGoal(state)) {
       const elapsed = now - state.challenge.startedAt;
       if (!spec.limitMs || (now > 0 && elapsed <= spec.limitMs)) completeChallenge(state);
     }
   }
-  completeProjects(state);
-  return amount;
+    // Honor the payout's own clock. Offline slices pass a past moment; a
+    // missing clock means "right now" so a shop or windfall still finishes work.
+    completeProjects(state, now > 1e11 ? now : Date.now());
+    return amount;
 }
 
 export function grantTokens(state, id, amount) {
@@ -394,6 +433,11 @@ function timedJob(job) {
   if (!Number.isFinite(job.readyAt) || !Number.isFinite(job.startedAt)) return null;
   if (job.readyAt < job.startedAt) return null;
   return job;
+}
+
+function copyTimedJob(job) {
+  const clean = timedJob(job);
+  return clean ? { ...clean } : null;
 }
 
 export function beginResearch(state, id, now) {
@@ -751,9 +795,12 @@ export function tickDilemma(state, now) {
   }
   if (state.challenge?.id === "speed") {
     const spec = CHALLENGES.find((c) => c.id === "speed");
-    if (now - state.challenge.startedAt > spec.limitMs && state.challenge.earnings < spec.goal) {
+    // A run that reached the goal in time was already completed by creditAmount.
+    // Anything still open past the limit has failed, even if earnings crossed
+    // the goal late; otherwise the run could never close.
+    if (now - state.challenge.startedAt > spec.limitMs) {
+      notes.push({ type: "speedfail", goal: activeChallengeGoal(state) });
       failChallenge(state);
-      notes.push({ type: "speedfail" });
     }
   }
   return notes;
@@ -777,8 +824,12 @@ export function resolveDilemma(state, choice, now) {
   return { type: "defer" };
 }
 
-export function snapshotMeta(state) {
+export function snapshotMeta(state, options = {}) {
   collectBadges(state);
+  // Cash upgrades belong to the run. Prestige, fork and a challenge clear them
+  // so they are bought again. An in-flight upgrade job is the same kind of
+  // purchase: carrying it would install that upgrade on the fresh run for free.
+  const resetRunUpgrades = !!options.resetRunUpgrades;
   return {
     investors: state.investors || 0,
     careerEarnings: state.careerEarnings || 0,
@@ -787,7 +838,7 @@ export function snapshotMeta(state) {
     grants: [...(state.grants || [])],
     data: state.data || 0,
     specialties: [...(state.specialties || [])],
-    upgrades: JSON.parse(JSON.stringify(state.upgrades || {})),
+    upgrades: resetRunUpgrades ? {} : JSON.parse(JSON.stringify(state.upgrades || {})),
     challengesDone: [...(state.challengesDone || [])],
     projectsDone: [...(state.projectsDone || [])],
     shop: { ...(state.shop || blankMeta().shop) },
@@ -803,6 +854,12 @@ export function snapshotMeta(state) {
     foreman: !!state.foreman,
     sawPit: !!state.sawPit,
     orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
+    // Research and projects are permanent, so a job already paid for keeps its
+    // clock. A cash-upgrade job does not: the fresh run would install it free.
+    // A copy, not the live object, so the old state cannot clear the new job.
+    researchJob: copyTimedJob(state.researchJob),
+    upgradeJob: resetRunUpgrades ? null : copyTimedJob(state.upgradeJob),
+    projectJob: copyTimedJob(state.projectJob),
     modStamp: (state.modStamp || 0) + 1,
   };
 }

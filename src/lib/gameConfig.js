@@ -327,7 +327,7 @@ export const GLOBAL_CAP = 10;
 
 // Income multipliers stay bounded:
 //   milestoneMult — ×144 at 220 owned, then flat
-//   prestigeMult  — +5% for 100, +1% for 400, then +0.02% with no hard stop
+//   prestigeMult  — +5% for 100, +1% for 400, then +0.07% with no hard stop
 // The product of every empire bonus then passes through the soft ceiling in
 // empire.js, so a huge investor count still cannot make income infinite.
 // Owned count is a quantity, not a bonus. A single purchase stops at the next
@@ -347,8 +347,8 @@ export function prestigeMult(investors) {
   if (!Number.isFinite(n)) return 1;
   const a = Math.min(n, 100); // +5% each
   const b = Math.min(Math.max(n - 100, 0), 400); // +1% each, through 500
-  const c = Math.max(n - 500, 0); // +0.02% each after that, no hard stop
-  const mult = 1 + a * 0.05 + b * 0.01 + c * 0.0002;
+  const c = Math.max(n - 500, 0); // +0.07% each after that, no hard stop
+  const mult = 1 + a * 0.05 + b * 0.01 + c * 0.0007;
   return Number.isFinite(mult) ? mult : 1;
 }
 

@@ -20,7 +20,7 @@ base44 dev     # local backend + app together
 
 ## Android app
 
-The installable app is a Capacitor wrapper around a static build of the same game. Package id `com.techevolutiontycoon.game`, display name Tech Evolution Tycoon, version 0.0.10 (versionCode 10). It targets Android SDK 36 (minimum 24), ships the icons, fonts, and JavaScript inside the package, keeps the save in `localStorage`, and follows the device rotation unless Settings locks portrait or landscape. Backgrounding the activity mutes audio and pauses the WebView; the existing hidden-page tick still applies the 24 hour offline budget when it wakes. The hardware back button closes a boardroom dilemma, returns from a tab to the previous screen, and leaves the app only from the game screen.
+The installable app is a Capacitor wrapper around a static build of the same game. Package id `com.techevolutiontycoon.game`, display name Tech Evolution Tycoon, version 0.0.11 (versionCode 11). It targets Android SDK 36 (minimum 24), ships the icons, fonts, and JavaScript inside the package, keeps the save in `localStorage`, and follows the device rotation unless Settings locks portrait or landscape. Backgrounding the activity mutes audio and pauses the WebView; the existing hidden-page tick still applies the 24 hour offline budget when it wakes. The hardware back button closes a boardroom dilemma, returns from a tab to the previous screen, and leaves the app only from the game screen.
 
 Sideloaded copies look at the public GitHub release at most once a day, and from More → Settings. The request is anonymous. Play Store installs skip it. There is no ad SDK, no analytics script, and no billing library.
 
@@ -43,15 +43,9 @@ Outputs:
 - `android/app/build/outputs/apk/release/app-release.apk`
 - `android/app/build/outputs/bundle/release/app-release.aab`
 
-The release key lives in the repo so the next build can sign with it:
+The release signing key is **not** in the repo. Keep it somewhere private and give it to the build in `android/keystore.properties` (git-ignored) or as `TET_*` environment variables. A release build stops with a message if neither is set. Setup, key rotation and history cleanup are in [`docs/signing.md`](docs/signing.md).
 
-| | |
-| --- | --- |
-| Keystore | `android/keystore/release.keystore` |
-| Alias | `techevolutiontycoon` |
-| Passwords | `android/keystore.properties` (`storePassword` and `keyPassword`) |
-
-Do not replace that keystore. A different key will not update an install that was signed with this one.
+The in-app updater only installs an APK that is this app, newer than the installed version, and signed with the same key as the installed copy.
 
 ## Build and publish
 

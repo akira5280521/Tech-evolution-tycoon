@@ -304,6 +304,14 @@ export function maxAffordable(cfg, owned, cash) {
 export function buyCount(mode, cfg, owned, cash, limit = MAX_BUY) {
   const cap = Number.isFinite(limit) && limit >= 1 ? Math.min(MAX_BUY, Math.floor(limit)) : MAX_BUY;
   if (mode === "MAX") return Math.min(cap, Math.max(maxAffordable(cfg, owned, cash), 1));
+  // NEXT: exactly enough to reach the next milestone, speed gate, or mastery
+  // gate. Callers pass that distance as `limit`. Past every gate, round up to
+  // the next multiple of 25 so the button still has a target.
+  if (mode === "NEXT") {
+    if (cap < MAX_BUY) return cap;
+    const have = Number.isFinite(owned) && owned > 0 ? Math.floor(owned) : 0;
+    return 25 - (have % 25);
+  }
   const n = parseInt(String(mode).slice(1), 10);
   if (!Number.isFinite(n) || n < 1) return 1;
   return Math.min(cap, n);

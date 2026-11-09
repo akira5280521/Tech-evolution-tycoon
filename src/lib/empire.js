@@ -102,6 +102,95 @@ export function upgradeOffer(index) {
   };
 }
 
+// Boardroom dilemmas. Each offers two shapes of the same moment. Effects:
+//   tokens: era tokens   data: research data   cash: seconds of current income
+//   boost: minutes of the x1.15 revenue boost
+// Which dilemma appears is random, and the same one does not appear twice in a
+// row. Each choice's reward is fixed.
+export const DILEMMAS = [
+  {
+    id: "grant",
+    title: "GOVERNMENT GRANT",
+    text: "The Ministry of Computing offers a research grant - in two shapes.",
+    choices: [
+      { key: "a", label: "FILE THE PAPERWORK", effects: { tokens: 2 } },
+      { key: "b", label: "SELL THE AUTOMATION", effects: { boost: 5 } },
+    ],
+  },
+  {
+    id: "patent",
+    title: "PATENT TROLL",
+    text: "A shell company claims it invented the on/off switch and wants a cut.",
+    choices: [
+      { key: "a", label: "FIGHT IT IN COURT", effects: { data: 20 } },
+      { key: "b", label: "SETTLE AND CROSS-LICENSE", effects: { cash: 20 } },
+    ],
+  },
+  {
+    id: "expo",
+    title: "COMPUTER EXPO",
+    text: "You have a booth at the biggest trade show of the year.",
+    choices: [
+      { key: "a", label: "WORK THE CROWD", effects: { boost: 5 } },
+      { key: "b", label: "SELL THE DEMO UNITS", effects: { cash: 25 } },
+    ],
+  },
+  {
+    id: "intern",
+    title: "THE SUMMER INTERN",
+    text: "A brilliant intern rewired the break-room toaster. Where do they go next?",
+    choices: [
+      { key: "a", label: "SEND THEM TO R&D", effects: { data: 25 } },
+      { key: "b", label: "LEND THEM TO SALES", effects: { tokens: 3 } },
+    ],
+  },
+  {
+    id: "cover",
+    title: "MAGAZINE COVER",
+    text: "A computing magazine wants your flagship machine on the front page.",
+    choices: [
+      { key: "a", label: "DO THE PHOTO SHOOT", effects: { tokens: 3 } },
+      { key: "b", label: "OPEN PRE-ORDERS", effects: { cash: 30 } },
+    ],
+  },
+  {
+    id: "overclock",
+    title: "OVERCLOCK THE LINE",
+    text: "The engineers swear the machines can run hotter. The fire marshal is less sure.",
+    choices: [
+      { key: "a", label: "PUSH IT", effects: { boost: 5 } },
+      { key: "b", label: "LOG THE THERMALS", effects: { data: 15 } },
+    ],
+  },
+  {
+    id: "hackathon",
+    title: "WEEKEND HACKATHON",
+    text: "Local hackers want to use your servers for a 48-hour coding marathon.",
+    choices: [
+      { key: "a", label: "SPONSOR IT", effects: { tokens: 1, data: 15 } },
+      { key: "b", label: "RENT THEM THE RACKS", effects: { cash: 20 } },
+    ],
+  },
+  {
+    id: "y2k",
+    title: "MILLENNIUM BUG",
+    text: "Clients panic that every clock will roll back to 1900 at midnight.",
+    choices: [
+      { key: "a", label: "PATCH EVERYTHING", effects: { data: 20 } },
+      { key: "b", label: "SELL CONSULTING HOURS", effects: { cash: 30 } },
+    ],
+  },
+];
+
+export function dilemmaSpec(id) {
+  return DILEMMAS.find((d) => d.id === id) || DILEMMAS[0];
+}
+
+function pickDilemma(lastId) {
+  const pool = DILEMMAS.filter((d) => d.id !== lastId);
+  return pool[Math.floor(Math.random() * pool.length)] || DILEMMAS[0];
+}
+
 export const SPECIALTIES = [
   { id: "scale", name: "SCALE", cost: SPECIALTY_COST, blurb: "+25% all revenue, forever." },
   { id: "velocity", name: "VELOCITY", cost: SPECIALTY_COST, blurb: "Every production cycle 8% faster, forever." },
@@ -139,7 +228,24 @@ export const PROJECTS = [
   { id: "cable", name: "TRANSCONTINENTAL CABLE", blurb: "Career earnings reach $10.00B.", reward: 0.1, tokens: 20 },
   { id: "mainframe", name: "NATIONAL MAINFRAME", blurb: "Career earnings reach $1.00T.", reward: 0.1, tokens: 20 },
   { id: "orbital", name: "ORBITAL ARRAY", blurb: "Own 25 Quantum Servers at once.", reward: 0.1, tokens: 20 },
+  // Later projects pay a smaller bonus each so the set stays inside the soft ceiling.
+  { id: "arpanet", name: "ARPANET NODE", blurb: "Own 100 Punch Cards and 100 Transistors at once.", reward: 0.05, tokens: 15,
+    check: (s) => owns(s, "punchcards", 100) && owns(s, "transistors", 100) },
+  { id: "apollo", name: "APOLLO GUIDANCE COMPUTER", blurb: "Own 150 Integrated Circuits at once.", reward: 0.05, tokens: 15,
+    check: (s) => owns(s, "ics", 150) },
+  { id: "homebrew", name: "HOMEBREW COMPUTER CLUB", blurb: "Own 100 of every era from Punch Cards to Home Computers.", reward: 0.05, tokens: 15,
+    check: (s) => ["punchcards", "transistors", "ics", "cpu", "homepc"].every((id) => owns(s, id, 100)) },
+  { id: "y2k", name: "Y2K PATCH", blurb: "Career earnings reach $1.00Qa.", reward: 0.05, tokens: 15,
+    check: (s) => (s.careerEarnings || 0) >= 1e15 },
+  { id: "lan", name: "WORLD'S BIGGEST LAN PARTY", blurb: "Own 150 Graphics Cards and 150 RGB Battlestations at once.", reward: 0.05, tokens: 15,
+    check: (s) => owns(s, "gpu", 150) && owns(s, "rgb", 150) },
+  { id: "timeline", name: "PARALLEL TIMELINE", blurb: "Fork the timeline once.", reward: 0.05, tokens: 15,
+    check: (s) => (s.singularities || 0) >= 1 },
 ];
+
+function owns(state, id, n) {
+  return (state.biz?.[indexOfBusiness(id)]?.owned || 0) >= n;
+}
 
 export const SHOP = [
   { id: "crate", name: "Daily Crate", cost: 0, blurb: "+6 era tokens, once each local day." },
@@ -164,6 +270,7 @@ export function blankMeta() {
     shop: { freeManager: false, cashBuys: 0, samples: 0, crateDay: null },
     boostUntil: 0,
     dilemma: null,
+    lastDilemma: null,
     dilemmaDeferUntil: 0,
     nextDilemmaAt: 0,
     nextWindfallAt: 0,
@@ -319,7 +426,7 @@ export function empireFactors(state, now = 0) {
   const singularity = singularityMult(state?.singularities || 0);
   const mastery = 1 + 0.05 * masteredCount(state);
   const challenges = 1 + 0.1 * ((state?.challengesDone || []).length);
-  const projects = 1 + 0.1 * ((state?.projectsDone || []).length);
+  const projects = 1 + (state?.projectsDone || []).reduce((sum, id) => sum + (PROJECTS.find((p) => p.id === id)?.reward || 0), 0);
   let specialty = 1;
   const specs = state?.specialties || [];
   if (specs.includes("scale")) specialty *= 1.25;
@@ -425,7 +532,8 @@ function projectReady(state, id) {
   if (id === "cable") return (state.careerEarnings || 0) >= 1e10;
   if (id === "mainframe") return (state.careerEarnings || 0) >= 1e12;
   if (id === "orbital") return (state.biz?.[indexOfBusiness("quantum")]?.owned || 0) >= 25;
-  return false;
+  const spec = PROJECTS.find((p) => p.id === id);
+  return !!spec?.check?.(state);
 }
 
 function timedJob(job) {
@@ -784,7 +892,9 @@ export function tickDilemma(state, now) {
     notes.push({ type: "expire" });
   }
   if (!state.dilemma && now >= (state.dilemmaDeferUntil || 0) && now >= (state.nextDilemmaAt || 0)) {
-    state.dilemma = { id: "grant", expiresAt: now + 45 * 1000 };
+    const pick = pickDilemma(state.lastDilemma);
+    state.lastDilemma = pick.id;
+    state.dilemma = { id: pick.id, expiresAt: now + 45 * 1000 };
     notes.push({ type: "dilemma" });
   }
   if (now >= (state.nextWindfallAt || 0) && incomePerSecond(state, now) > 0) {
@@ -806,19 +916,35 @@ export function tickDilemma(state, now) {
   return notes;
 }
 
+// Plain-language summary of a choice, for the modal and the toast.
+export function describeEffects(effects) {
+  const parts = [];
+  if (effects.tokens) parts.push(`+${effects.tokens} era token${effects.tokens === 1 ? "" : "s"}`);
+  if (effects.data) parts.push(`+${effects.data} data`);
+  if (effects.cash) parts.push(`${effects.cash} seconds of income`);
+  if (effects.boost) parts.push(`Revenue x1.15 for ${effects.boost} minutes`);
+  return parts.join(", ");
+}
+
 export function resolveDilemma(state, choice, now) {
   if (!state.dilemma) return null;
-  state.dilemma = null;
-  state.nextDilemmaAt = now + 6 * 60 * 1000;
-  if (choice === "tokens") {
-    state.tokens = (state.tokens || 0) + 2;
-    return { type: "tokens" };
-  }
-  if (choice === "boost") {
-    state.boostUntil = now + 5 * 60 * 1000;
+  const spec = dilemmaSpec(state.dilemma.id);
+  // Old saves sent "tokens"/"boost"; map them to the grant's two choices.
+  const key = choice === "tokens" ? "a" : choice === "boost" ? "b" : choice;
+  const picked = spec.choices.find((c) => c.key === key);
+  if (picked) {
+    state.dilemma = null;
+    state.nextDilemmaAt = now + 6 * 60 * 1000;
+    const fx = picked.effects;
+    const summary = describeEffects(fx);
+    if (fx.tokens) state.tokens = (state.tokens || 0) + fx.tokens;
+    if (fx.data) state.data = (state.data || 0) + fx.data;
+    if (fx.cash) creditAmount(state, Math.max(100, incomePerSecond(state, now) * fx.cash), now);
+    if (fx.boost) state.boostUntil = Math.max(state.boostUntil || 0, now) + fx.boost * 60 * 1000;
     state.modStamp = (state.modStamp || 0) + 1;
-    return { type: "boost" };
+    return { type: "choice", title: picked.label, summary };
   }
+  state.dilemma = null;
   state.dilemmaDeferUntil = now + 5 * 60 * 1000;
   state.nextDilemmaAt = state.dilemmaDeferUntil;
   return { type: "defer" };
@@ -844,6 +970,7 @@ export function snapshotMeta(state, options = {}) {
     shop: { ...(state.shop || blankMeta().shop) },
     boostUntil: state.boostUntil || 0,
     dilemmaDeferUntil: state.dilemmaDeferUntil || 0,
+    lastDilemma: state.lastDilemma || null,
     nextDilemmaAt: state.nextDilemmaAt || 0,
     nextWindfallAt: state.nextWindfallAt || 0,
     prestiged: !!state.prestiged,
@@ -878,4 +1005,17 @@ export const HEADLINES = [
   "RGB FANS AUDIBLE FROM ORBIT",
   "QUANTUM CHANDELIER OBSERVED PAYING DIVIDENDS",
   "MINISTRY OF COMPUTING ANNOUNCES A GRANT",
+  "COPPER PRICES TICK UP, MINERS TICK DOWN",
+  "WAFER BENCH WORKERS DEMAND BETTER STOOLS",
+  "INTERN REWIRES TOASTER, PATENTS PENDING",
+  "MAINFRAME FILLS ENTIRE GYM, STILL WANTS MORE",
+  "MOON LANDING CREDITS YOUR GUIDANCE CHIPS",
+  "HOME COMPUTER SALES BEAT TYPEWRITERS FOR THE FIRST TIME",
+  "EXPERTS: 640K SHOULD BE ENOUGH FOR ANYBODY",
+  "DIAL-UP SCREECH NAMED CITY'S NEW ANTHEM",
+  "MILLENNIUM BUG FAILS TO BITE",
+  "GPU SHORTAGE: GAMERS QUEUE AROUND THE BLOCK",
+  "LAN PARTY ENTERS DAY THREE, PIZZA SUPPLY HOLDS",
+  "QUANTUM SERVER BOTH ON AND OFF, ANALYSTS SAY",
+  "INVESTORS ASK IF THE TIMELINE CAN BE FORKED",
 ];

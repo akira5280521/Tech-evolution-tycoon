@@ -36,6 +36,12 @@ export function UpdateCheckProvider({ children }) {
   const [installing, setInstalling] = useState(false);
   const [note, setNote] = useState("");
   const [installNote, setInstallNote] = useState("");
+  const [showNotes, setShowNotes] = useState(false);
+  const [previewNotes, setPreviewNotes] = useState(false);
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    setPreviewNotes(new URLSearchParams(window.location.search).has("notes"));
+  }, []);
 
   useEffect(() => {
     let cancel = false;
@@ -140,16 +146,42 @@ export function UpdateCheckProvider({ children }) {
           style={{ bottom: "calc(4.6rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))" }}
         >
           <p className="font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">Update available {value.update.label}</p>
-          <button
-            type="button"
-            data-action="open-update"
-            disabled={installing}
-            onClick={() => startInstall(value.update.apkUrl)}
-            className="min-h-11 shrink-0 border-2 border-[var(--game-accent)] px-2 font-pixel text-[0.5rem] text-[var(--game-accent)] disabled:opacity-60"
-          >
-            {installing ? "DOWNLOADING…" : "UPDATE"}
-          </button>
+          <div className="flex shrink-0 gap-2">
+            {hasNotes(value.update) && (
+              <button
+                type="button"
+                data-action="whats-new"
+                onClick={() => setShowNotes(true)}
+                className="min-h-11 shrink-0 border-2 border-[var(--game-border-strong)] px-2 font-pixel text-[0.5rem] text-[var(--game-fg)]"
+              >
+                WHAT'S NEW
+              </button>
+            )}
+            <button
+              type="button"
+              data-action="open-update"
+              disabled={installing}
+              onClick={() => startInstall(value.update.apkUrl)}
+              className="min-h-11 shrink-0 border-2 border-[var(--game-accent)] px-2 font-pixel text-[0.5rem] text-[var(--game-accent)] disabled:opacity-60"
+            >
+              {installing ? "DOWNLOADING…" : "UPDATE"}
+            </button>
+          </div>
         </div>
+      )}
+      {value.update && showNotes && (
+        <ReleaseNotes
+          update={value.update}
+          installing={installing}
+          onUpdate={() => {
+            setShowNotes(false);
+            startInstall(value.update.apkUrl);
+          }}
+          onClose={() => setShowNotes(false)}
+        />
+      )}
+      {previewNotes && !value.update && (
+        <ReleaseNotes update={previewUpdate} installing={false} onUpdate={() => setPreviewNotes(false)} onClose={() => setPreviewNotes(false)} />
       )}
       {value.update && installNote ? (
         <p
@@ -160,6 +192,84 @@ export function UpdateCheckProvider({ children }) {
         </p>
       ) : null}
     </UpdateCheckContext.Provider>
+  );
+}
+
+function hasNotes(update) {
+  return !!(update?.notes && (update.notes.added?.length || update.notes.soon?.length));
+}
+
+const previewUpdate = {
+  label: "v0.0.9",
+  notes: {
+    added: [
+      "NEXT buy reaches the next milestone or gate",
+      "Eight boardroom dilemmas, each with a fixed reward",
+      "Six new mega-projects, from ARPANET Node to Parallel Timeline",
+    ],
+    soon: [
+      "Investor upgrade shop",
+      "A second world: the Space Age",
+      "Cloud save backup",
+    ],
+  },
+};
+
+export function ReleaseNotes({ update, installing, onUpdate, onClose }) {
+  const added = update.notes?.added || [];
+  const soon = update.notes?.soon || [];
+  return (
+    <div role="dialog" aria-label={`What's new in ${update.label}`} className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+      <div className="game-modal flex max-h-[85vh] w-full max-w-md flex-col border-4 border-[var(--game-accent)] bg-[var(--game-card)] shadow-[6px_6px_0_0_#000]">
+        <div className="overflow-y-auto p-4">
+          <p className="font-pixel text-[0.55rem] text-[var(--game-accent)]">UPDATE {update.label}</p>
+          {added.length > 0 && (
+            <>
+              <h2 className="mt-3 font-pixel text-sm text-[var(--game-fg)]">WHAT'S NEW</h2>
+              <ul className="mt-2 space-y-2" data-notes="added">
+                {added.map((item) => (
+                  <li key={item} className="flex gap-2 font-term text-lg leading-6 text-[var(--game-fg)]">
+                    <span aria-hidden="true" className="text-[var(--game-accent)]">▸</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {soon.length > 0 && (
+            <>
+              <h2 className="mt-4 font-pixel text-sm text-[var(--game-violet)]">COMING SOON</h2>
+              <ul className="mt-2 space-y-2" data-notes="soon">
+                {soon.map((item) => (
+                  <li key={item} className="flex gap-2 font-term text-lg leading-6 text-[var(--game-muted)]">
+                    <span aria-hidden="true" className="shrink-0 border border-[var(--game-violet-border)] px-1 font-pixel text-[0.45rem] leading-5 text-[var(--game-violet)]">SOON</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+        <div className="flex gap-2 border-t-2 border-[var(--game-border-strong)] p-3">
+          <button
+            type="button"
+            onClick={onUpdate}
+            disabled={installing}
+            className="min-h-11 flex-1 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-2 font-pixel text-[0.55rem] text-black disabled:opacity-60"
+          >
+            {installing ? "DOWNLOADING…" : "UPDATE NOW"}
+          </button>
+          <button
+            type="button"
+            data-notes-close
+            onClick={onClose}
+            className="min-h-11 flex-1 border-2 border-[var(--game-border-strong)] px-2 font-pixel text-[0.55rem] text-[var(--game-muted)]"
+          >
+            LATER
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

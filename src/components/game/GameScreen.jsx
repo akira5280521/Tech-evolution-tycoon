@@ -13,10 +13,11 @@ import WelcomeBack from "./WelcomeBack";
 import BottomTabs from "./BottomTabs";
 import NewsTicker from "./NewsTicker";
 import DilemmaModal from "./DilemmaModal";
+import BubbleBanner from "./BubbleBanner";
 
 export default function GameScreen() {
   const game = useGameState();
-  const { state, buyMode, setBuyMode, buy, hire, run, runAll, buyForeman, prestige, dismissOffline, chooseDilemma } = game;
+  const { state, buyMode, setBuyMode, buy, hire, run, runAll, buyForeman, prestige, dismissOffline, chooseDilemma, cashOut } = game;
   const [, bumpTick] = useState(0);
   const [pullDist, setPullDist] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
@@ -119,6 +120,7 @@ export default function GameScreen() {
 
         <main className="safe-x mx-auto min-w-0 max-w-4xl space-y-2 overflow-x-hidden px-3 py-2">
           <NewsTicker />
+          <BubbleBanner state={state} onCashOut={cashOut} />
           {state.challenge && (
             <p className="break-words border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-3 font-term text-lg leading-6 text-[var(--game-accent)]">
               Challenge running: {state.challenge.id} · {money(state.challenge.earnings)} / {money(activeChallengeGoal(state))} this run.

@@ -1,6 +1,7 @@
 import { badgeList } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell from "./chrome";
+import MuseumSection from "./MuseumSection";
 
 export default function BadgesPage() {
   const { state } = useGameState();
@@ -13,6 +14,7 @@ export default function BadgesPage() {
       <p className="font-term text-lg leading-6 text-[var(--game-muted)]">
         Earn badges by unlocking new tech eras, stacking massive lifetime profit, mastering eras, and collapsing the timeline.
       </p>
+      <MuseumSection state={state} />
       {groups.map((group) => (
         <section key={group}>
           <h2 className="font-pixel text-[0.65rem] text-[var(--game-violet)]">· {group}</h2>

@@ -40,6 +40,8 @@ import {
   snapshotMeta,
   tickDilemma,
 } from "@/lib/empire";
+import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
+import { HISTORY_CARDS, collectHistory } from "@/lib/history";
 import { applyOrientation } from "@/lib/orientation";
 import { SAVE_VERSION, clearSaveData, getSaveData, writeSaveData } from "@/lib/gameSave";
 import { isPageHidden } from "@/lib/pageVisibility";
@@ -112,6 +114,9 @@ function applySavedMeta(state, raw) {
   state.nextWindfallAt = num(m.nextWindfallAt);
   state.prestiged = !!m.prestiged;
   state.badgesEarned = Array.isArray(m.badgesEarned) ? m.badgesEarned.filter((id) => typeof id === "string") : [];
+  state.museum = Array.isArray(m.museum) ? m.museum.filter((id) => HISTORY_CARDS.some((c) => c.id === id)) : [];
+  state.bubble = cleanBubble(m.bubble);
+  state.nextBubbleAt = num(m.nextBubbleAt);
   state.modStamp = 1;
   const orient = raw?.orientation;
   state.orientation = orient === "portrait" || orient === "landscape" || orient === "auto" ? orient : "auto";
@@ -157,6 +162,9 @@ function pack(s) {
     nextWindfallAt: s.nextWindfallAt || 0,
     prestiged: !!s.prestiged,
     badgesEarned: s.badgesEarned || [],
+    museum: s.museum || [],
+    bubble: s.bubble || null,
+    nextBubbleAt: s.nextBubbleAt || 0,
     supply: s.supply,
     foreman: !!s.foreman,
     sawPit: !!s.sawPit,
@@ -284,6 +292,12 @@ function announce(notes) {
     if (note.type === "upgrade") toast("Upgrade installed", { description: "The line is back up." });
     if (note.type === "projectstart") toast("Project started", { description: "Crews are on site. Give them a moment." });
     if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
+    if (note.type === "history") {
+      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum on the Badges tab." });
+      else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum on the Badges tab." });
+    }
+    if (note.type === "bubble") toast("DOT-COM BUBBLE!", { description: "Your web stock is soaring. The banner counts down to the pop." });
+    if (note.type === "bubblepop") toast("The bubble popped", { description: "The web stock is worth nothing now. Sell sooner next time." });
   }
 }
 
@@ -422,7 +436,9 @@ export function useGame() {
         armDue(i);
       });
       s.data = (s.data || 0) + dataPerSecond(s) * (dt / 1000);
-      const notes = tickDilemma(s, wall).concat(finishTimedWork(s, wall));
+      const notes = tickDilemma(s, wall).concat(finishTimedWork(s, wall), tickBubble(s, wall));
+      const cards = collectHistory(s);
+      if (cards.length) notes.push({ type: "history", cards });
       if (notes.length) {
         announce(notes);
         dirty = true;
@@ -615,6 +631,15 @@ export function useGame() {
     [bump]
   );
 
+  const cashOut = useCallback(() => {
+    const result = cashOutBubble(stateRef.current, Date.now());
+    if (!result) return;
+    playCollect();
+    toast("Sold at the top", { description: `Your web stock paid ${money(result.amount)}.` });
+    saveNow();
+    bump();
+  }, [bump, saveNow]);
+
   const dismissOffline = useCallback(() => {
     const s = stateRef.current;
     if (!s.offlineReport) return;
@@ -709,6 +734,7 @@ export function useGame() {
     chooseSpecialty,
     startChallenge,
     chooseDilemma,
+    cashOut,
     forkTimeline,
     touchBriefing,
   };

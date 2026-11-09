@@ -1,3 +1,9 @@
+# Release signing - never commit the key or its passwords
+android/keystore.properties
+android/keystore/
+*.jks
+*.keystore
+
 # env
 .env
 .env.*

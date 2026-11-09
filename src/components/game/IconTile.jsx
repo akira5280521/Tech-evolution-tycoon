@@ -1,10 +1,21 @@
+import { useEffect, useRef } from "react";
 import { Image } from "@/components/ui/image";
 import { money } from "@/lib/gameConfig";
 
 export default function IconTile({ cfg, st, onRun }) {
+  const ref = useRef(null);
   const idle = st.owned > 0 && !st.manager && !st.running;
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !st.shake) return undefined;
+    el.classList.remove("tile-shake");
+    void el.offsetWidth;
+    el.classList.add("tile-shake");
+    return undefined;
+  }, [st.shake]);
   return (
     <button
+      ref={ref}
       type="button"
       onClick={onRun}
       aria-label={cfg.name}

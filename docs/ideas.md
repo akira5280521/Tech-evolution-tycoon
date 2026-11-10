@@ -7,7 +7,7 @@ chance-based rewards, and new content stays hidden ("???") until discovered.
 
 ## First minutes and UI
 
-**Roadmap:** items 1-3 (phase 1).
+**Roadmap:** items 1-3 (phase 1); the era arrival card ships with item 4.
 
 - **Company name:** asked once at the start, editable in More. Length limit
   and a simple word filter; it is only stored on the device. Used in ticker
@@ -82,7 +82,7 @@ Generic names with real dates:
 |---|---|---|---|
 | 4-bit calculator chip | 1971 | 2D display card | ~1990 |
 | 8-bit home chip | 1974 | 3D accelerator add-in | 1996 |
-| 16-bit | 1978 | All-in-one 3D chip | 1999 |
+| 16-bit | 1978 | Geometry handled on the card (first "GPU") | 1999 |
 | 32-bit | 1985 | Programmable shaders | 2001 |
 | 64-bit | 2003 | Unified shaders and GPU computing | 2006 |
 | Dual and multi-core | 2005 | AI tensor cores | 2017 |
@@ -174,7 +174,11 @@ in the game and a long-term goal across runs.
 
 ### Slots and generations
 
-Generic names with real dates (check each against a source before shipping):
+The simple version that ships first (item 12). The [parts catalog](#parts-catalog)
+(item 13 on) replaces these tiers with real parts, adds the Motherboard,
+Power Supply and Case slots, and replaces the build bonus below with the
+Bench Score. Generic names with real dates (check each against a source
+before shipping):
 
 | Slot | Generations |
 |---|---|
@@ -229,7 +233,8 @@ Generic names with real dates (check each against a source before shipping):
 - Needs new saved state (`state.workbench`), kept in `snapshotMeta`.
 - Re-run the pacing simulation: the first fork should stay around 5-7 days
   of nonstop play.
-- Art: one small icon per part generation, about 20 in total.
+- Art: one small icon per part generation (about 20), plus the case and
+  layer sprites for the PC picture: about 30-35 sprites in all.
 
 ## Parts catalog
 
@@ -279,8 +284,8 @@ interchange. Each era of sockets has a matching Motherboard part.
 
 Extra real detail: the first popular 3D add-in cards (1996) did 3D only and
 needed a separate 2D card connected by a pass-through cable. On the
-Workbench that could take a second graphics slot until all-in-one cards
-arrive.
+Workbench that could take a second graphics slot until combined 2D and 3D
+cards arrive (1997).
 
 ### How it plays
 
@@ -300,8 +305,8 @@ arrive.
 
 - Every part has a power draw in watts, using real-style figures for its
   period, and the Power Supply slot has a wattage. Rough real curve (check
-  before shipping): 1980s-90s PCs ran on about 150-250 W supplies when a
-  processor drew 10-30 W; mid-2000s processors drew over 100 W alone; modern
+  before shipping): the first PCs of the early 1980s had supplies of about
+  65-130 W, and 1990s PCs about 200-250 W, when a processor drew 10-30 W; mid-2000s processors drew over 100 W alone; modern
   high-end graphics cards draw 300-450 W and 750-1000 W supplies are common.
 - A part that would push the total draw past the supply's wattage won't
   install, and the install screen says why ("needs 550 W, your supply gives
@@ -370,8 +375,11 @@ and can make older parts stop fitting.
 | DDR4 | 2014 |
 | DDR5 | 2020 |
 
-Fits only the board's memory type. Matched pairs give a small dual-channel
-bonus.
+Fits only the board's memory type. Before DDR, matched sets were a
+requirement, not a bonus: 30-pin SIMMs went in sets of four on many boards
+and 72-pin SIMMs in pairs on fifth-generation boards, so a lone stick
+won't install there. Dual-channel memory arrived in the early 2000s; from
+then on a matched pair gives a small bonus.
 
 ### Storage and cables
 
@@ -415,11 +423,14 @@ parody in-game if they were tied to a company.
 
 **Roadmap:** item 15 (parts catalog step 2).
 
-- **Network card:** for the dial-up and LAN-party periods.
+- **Modem card:** for the dial-up years (1980s bulletin boards to the
+  1990s web). 300 baud up to 56k in 1998; fades with broadband.
+- **Network card:** offices in the 1980s, then home LAN parties from the
+  late 1990s; built into boards from the early 2000s.
 - **Sound card:** essential from the late 1980s; optional once sound was
   built into boards around 2000. Mostly for period builds and the score.
-- **Second graphics card:** running two cards together really helped in the
-  mid-2000s to 2010s, then faded. In game it only pays off with parts from
+- **Second graphics card:** running two cards together first appeared in
+  1998, really helped in the mid-2000s to 2010s, then faded. In game it only pays off with parts from
   those periods, with a Museum card explaining why. The way cards were linked
   changed, and the game follows it (from memory, check before shipping; the
   real feature and company names are trademarks, so use generic or parody
@@ -476,7 +487,7 @@ The [chip generations](#chip-generations) system applied to more rows, with
 the same rules (owned-count milestones, small bonus, a history card each):
 
 - **Home Computers:** 8-bit home micro (1977), office PC (1981), graphical
-  desktop with a mouse (1984), laptop (1990s).
+  desktop with a mouse (1984), laptop (late 1980s-1990s).
 - **RGB Battlestations:** LAN-party tower (late 1990s), liquid-cooled rig
   (2000s), small-form-factor mini PC (2010s).
 
@@ -496,7 +507,7 @@ chance involved.
 | Memory price spike | DRAM prices rose sharply in 2017-2018 | Home Computers pay x2, cost x1.5 |
 | Hard-drive shortage | 2011 floods hit drive factories | Storage-related era pays x2, buying paused or pricier |
 | Floppies to CDs | software moved to CD-ROM in the 1990s | A one-time choice: switch now for a boost, or later for free |
-| LAN parties | 2000s gatherings with linked PCs | Network card or linked builds pay more |
+| LAN parties | late 1990s-2000s gatherings with linked PCs | Network card or linked builds pay more |
 | Y2K | the 1999-2000 date bug | Older boards need a fixed-cost patch; patched builds get a bonus |
 | Bad capacitors | faulty board capacitors around 2000-2007 | A fixed "recall": swap affected boards for a part credit, plus a Museum card |
 
@@ -585,8 +596,8 @@ screen is a real bottleneck.
   1990s-2000s, the mechanical comeback in the 2010s. Mice: ball mice, then
   optical around 1999, then gaming mice. Modems: 300 baud up to 56k in 1998,
   then broadband.
-- Mostly cosmetic and collection points; the modem can tie into the
-  dial-up and LAN-party events.
+- Mostly cosmetic and collection points. The modem on the desk is the
+  external kind; internal modem cards are in [Expansion slots](#expansion-slots).
 
 ## Vintage parts
 
@@ -635,7 +646,7 @@ chance.
   (for example the first microprocessor in November 1971, the first PC in
   August 1981, the first web page in 1991). The event lasts a day or two;
   missed rewards come back next year, so nothing is lost for good.
-- **Stats page:** lifetime earnings, prestige count, fastest run to each
+- **Stats page** (roadmap item 10, before the Play Store): lifetime earnings, prestige count, fastest run to each
   era (as a simple chart), parts and cards collected, play time.
 - **Museum completion:** the Museum becomes a timeline wall with one shelf
   per era; filling a shelf pays tokens and a permanent small bonus.

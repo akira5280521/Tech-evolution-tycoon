@@ -247,6 +247,34 @@ arrive.
 - **Period builds** (see PC workbench) get richer: a "1998 Socket 7 build"
   with an underdog chip could be its own achievement.
 
+### Power supply
+
+- Every part has a power draw in watts, using real-style figures for its
+  period, and the Power Supply slot has a wattage. Rough real curve (check
+  before shipping): 1980s-90s PCs ran on about 150-250 W supplies when a
+  processor drew 10-30 W; mid-2000s processors drew over 100 W alone; modern
+  high-end graphics cards draw 300-450 W and 750-1000 W supplies are common.
+- A part that would push the total draw past the supply's wattage won't
+  install, and the install screen says why ("needs 550 W, your supply gives
+  300 W"). Better than a build that silently stops working.
+- Power supplies upgrade through generations: more wattage, then better
+  efficiency, shown with a generic "efficiency rating" (the well-known
+  certification labels are trademarks).
+
+### Overclocking
+
+- Levels: Stock, Mild, Strong, Extreme. Each adds a small amount to the
+  build bonus; about 5-15% at Extreme, kept inside the soft income ceiling.
+- Each level raises power draw and heat. The top level allowed is the lower
+  of two limits:
+  - **Power headroom:** spare watts above what the build draws.
+  - **Cooling tier:** heatsink, fan, tower cooler, liquid.
+- Fixed and visible: the screen shows what each level gives and needs. No
+  random crashes or failure chances (no gambling).
+- On the PC picture, fans spin faster and the lighting glows hotter at
+  higher levels.
+- Re-run the pacing simulation once it's built.
+
 ## More row generations
 
 **Roadmap:** Next: PC hardware, item 5.

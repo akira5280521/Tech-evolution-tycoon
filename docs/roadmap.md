@@ -44,7 +44,8 @@ In this order. Designs in [`docs/ideas.md`](ideas.md).
    (Upgrades · Research, later Workbench) and Badges gets one (Badges ·
    Museum). No seventh tab. [Design](ideas.md#tab-layout).
 3. **PC workbench.** A Workbench view on the Boost tab with part slots
-   (processor, graphics, memory, storage, display, cooling, case). Each slot
+   (processor, graphics, memory, storage, display, cooling, power supply,
+   case). Each slot
    upgrades through generations; a finished build gives an empire-wide bonus
    that grows with the build. A long-term goal that doesn't touch the era
    ladder or saves. The build is drawn as a layered pixel-art PC: each
@@ -63,7 +64,13 @@ In this order. Designs in [`docs/ideas.md`](ideas.md).
    maker-specific), and graphics cards fit by bus (ISA, local bus, PCI, AGP,
    PCI Express). A Motherboard slot sets the socket and bus, so upgrading
    the board is how a build moves forward, as in a real PC.
-   [Design](ideas.md#parts-catalog).
+   **Power supply and overclocking:** every part has a real-style power
+   draw and a Power Supply slot sets the wattage; a part that would overload
+   the supply won't install, and the game says why ("needs 550 W, your
+   supply gives 300 W"). Overclock levels (Stock, Mild, Strong, Extreme) add
+   a small build bonus (about 5-15% at most); the top level allowed is set by
+   the lower of spare wattage and cooling tier. Outcomes are fixed and shown
+   up front, with no random crashes. [Design](ideas.md#parts-catalog).
 5. **Generations on more rows**, using the system from item 1: Home
    Computers (8-bit micro, office PC, graphical desktop, laptop) and RGB
    Battlestations (LAN-party tower, liquid cooling, mini PC). Can ship

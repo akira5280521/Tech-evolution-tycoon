@@ -1,7 +1,8 @@
 # Roadmap
 
 Planned updates, in order. Each one is meant to ship on its own. Nothing in
-"Next" or "Later" is in the game yet. When an item ships, move it to "Done"
+"Next" or "Later" is in the game yet. Longer designs live in
+[`docs/ideas.md`](ideas.md). When an item ships, move it to "Done"
 and list the next items under "Coming soon" in the release notes (see
 `docs/release-notes-template.md`).
 
@@ -30,7 +31,12 @@ test shipped in 0.0.13 (see Done).
 
 ## Next: history theme
 
-1. **Fill the gaps in the timeline.** New eras, each with its own icon,
+1. **Chip generations inside the Microprocessors and Graphics Cards eras.**
+   As a row passes owned-count milestones it evolves (8-bit to multi-core;
+   2D card to ray tracing): new name, picture and tagline, a small bonus, and
+   a Museum history card. No new rows, so no save migration and little
+   pacing change. Design in [`docs/ideas.md`](ideas.md#chip-generations).
+2. **Fill the gaps in the timeline.** New eras, each with its own icon,
    manager, two history cards and upgrade names:
    - Before the tubes: the Jacquard loom (1804) and Hollerith's census
      tabulator (1890). Punch cards are older than tube computers.
@@ -40,21 +46,23 @@ test shipped in 0.0.13 (see Done).
    - 2007: smartphones.
    - 2020s: AI accelerators, just before Quantum.
    Note: `biz` is saved by position, so inserting eras needs a save migration
-   that maps old rows to era ids first. Re-run the pacing sim after.
-2. **More events from real history.**
+   that maps old rows to era ids first. Re-run the pacing sim after. Some of
+   these (office PC, graphical desktops, laptops) could instead be
+   generations of Home Computers, using the system from item 1.
+3. **More events from real history.**
    - Moore's Law (1965): a research upgrade that makes each newer era cheaper.
    - The first "bug" (1947): a moth found in the Harvard Mark II. A dilemma.
    - 1983 video game crash, 2021 chip shortage, GPU mining rush: shortage
      events where one era costs more and pays more for a while.
-3. **A look and sound for each era.** Unlockable screen themes (green
+4. **A look and sound for each era.** Unlockable screen themes (green
    phosphor terminal, beige desktop, CRT, neon RGB) and era sounds (tube hum,
    card punch, floppy drive, modem screech). Make original versions; don't copy
    real logos or startup sounds.
-4. **Era-specific headlines.** The ticker shows headlines from the era the
+5. **Era-specific headlines.** The ticker shows headlines from the era the
    player is building.
-5. **"Which came first?" trivia** as an occasional dilemma, paying a bonus for
+6. **"Which came first?" trivia** as an occasional dilemma, paying a bonus for
    a right answer.
-6. **Pioneer notes** on history cards (Ada Lovelace, Grace Hopper and others),
+7. **Pioneer notes** on history cards (Ada Lovelace, Grace Hopper and others),
    kept factual. Managers stay fictional job titles.
 
 ## Later: systems and polish

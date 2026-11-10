@@ -7,7 +7,7 @@ chance-based rewards, and new content stays hidden ("???") until discovered.
 
 ## First minutes and UI
 
-**Roadmap:** Next: first minutes and UI.
+**Roadmap:** items 1-3 (phase 1).
 
 - **Company name:** asked once at the start, editable in More. Length limit
   and a simple word filter; it is only stored on the device. Used in ticker
@@ -34,7 +34,8 @@ chance-based rewards, and new content stays hidden ("???") until discovered.
 
 ## Sound and music
 
-**Roadmap:** Next: history theme, item 3. All music and sounds original;
+**Roadmap:** item 8, then item 18 once the Workbench has a sound card.
+All music and sounds original;
 early styles can be generated in code (Web Audio), so no recordings needed.
 
 | Sound card on the Workbench | Around | Music style |
@@ -55,7 +56,7 @@ early styles can be generated in code (Web Audio), so no recordings needed.
 
 ## Chip generations
 
-**Roadmap:** Next: PC hardware, item 1.
+**Roadmap:** item 4.
 
 ### Idea
 
@@ -139,7 +140,7 @@ The same system covers more rows: see [More row generations](#more-row-generatio
 
 ## Tab layout
 
-**Roadmap:** Next: PC hardware, item 2.
+**Roadmap:** item 2.
 
 Each tab answers one question. Today More mixes settings, the token Market
 and Research.
@@ -162,7 +163,7 @@ and Research.
 
 ## PC workbench
 
-**Roadmap:** Next: PC hardware, item 3.
+**Roadmap:** item 12.
 
 ### Idea
 
@@ -232,7 +233,7 @@ Generic names with real dates (check each against a source before shipping):
 
 ## Parts catalog
 
-**Roadmap:** Next: PC hardware, item 4 (step 1: the core build).
+**Roadmap:** item 13 (parts catalog step 1: the core build).
 
 ### Rules
 
@@ -412,8 +413,11 @@ parody in-game if they were tied to a company.
 
 ## Expansion slots
 
-**Roadmap:** Next: PC hardware, item 5 (parts catalog step 2).
+**Roadmap:** item 15 (parts catalog step 2).
 
+- **Network card:** for the dial-up and LAN-party periods.
+- **Sound card:** essential from the late 1980s; optional once sound was
+  built into boards around 2000. Mostly for period builds and the score.
 - **Second graphics card:** running two cards together really helped in the
   mid-2000s to 2010s, then faded. In game it only pays off with parts from
   those periods, with a Museum card explaining why. The way cards were linked
@@ -436,14 +440,11 @@ parody in-game if they were tied to a company.
   none), both cards must be the same maker and usually the same model, and
   the PSU and cooling must cover both. The PC picture shows the bridge or
   cable.
-- **Sound card:** essential from the late 1980s; optional once sound was
-  built into boards around 2000. Mostly for period builds and the score.
-- **Network card:** for the dial-up and LAN-party periods.
 - Slot count comes from the motherboard's form factor.
 
 ## Colors and collecting
 
-**Roadmap:** Next: PC hardware, item 6 (parts catalog step 3).
+**Roadmap:** item 19 (parts catalog step 3).
 
 - Period color schemes as cosmetic variants of parts: green circuit boards
   in the '90s, red or blue gaming boards in the 2000s, black in the 2010s,
@@ -469,7 +470,7 @@ parody in-game if they were tied to a company.
 
 ## More row generations
 
-**Roadmap:** Next: PC hardware, item 7.
+**Roadmap:** item 5.
 
 The [chip generations](#chip-generations) system applied to more rows, with
 the same rules (owned-count milestones, small bonus, a history card each):
@@ -484,7 +485,7 @@ without adding rows or a save migration.
 
 ## Hardware history events
 
-**Roadmap:** Next: PC hardware, item 8.
+**Roadmap:** item 7 (with the other history events).
 
 Short timed events in the style of the Dot-com Bubble, each tied to one era
 and shown with a countdown. All effects are fixed and shown up front; no
@@ -504,7 +505,7 @@ closed. Re-run the pacing sim if the multipliers change.
 
 ## Period build challenges
 
-**Roadmap:** Next: PC hardware, item 9.
+**Roadmap:** item 20.
 
 - A challenge names a year and a goal: "Build a 1996 gaming PC", "A 2004
   LAN-party rig", "A 1983 office PC". Only parts released by that year
@@ -516,7 +517,7 @@ closed. Re-run the pacing sim if the multipliers change.
 
 ## Monitors and cooling
 
-**Roadmap:** Next: PC hardware, item 10. From memory, check before shipping.
+**Roadmap:** monitors in item 14, cooling in item 13. From memory, check before shipping.
 
 | Monitor | Around | In game |
 |---|---|---|
@@ -542,7 +543,7 @@ screen is a real bottleneck.
 
 ## Optical drives
 
-**Roadmap:** Next: PC hardware, item 11.
+**Roadmap:** item 17.
 
 - CD-ROM drives in the early 1990s, then the speed race from 1x to about
   52x by the early 2000s; CD burners in the late 1990s; DVD drives in the
@@ -554,7 +555,7 @@ screen is a real bottleneck.
 
 ## Jumper puzzle
 
-**Roadmap:** Next: PC hardware, item 12.
+**Roadmap:** item 16.
 
 - Before plug-and-play (around 1995), cards and drives were set by hand
   with jumpers and DIP switches, and two cards wanting the same setting
@@ -567,7 +568,7 @@ screen is a real bottleneck.
 
 ## Boot screens
 
-**Roadmap:** Next: PC hardware, item 13.
+**Roadmap:** item 18.
 
 - When the Workbench PC powers on: an era start-up screen for a second or
   two. Memory counting up and a beep in the 1980s-90s, a parody OS logo
@@ -577,7 +578,7 @@ screen is a real bottleneck.
 
 ## Desk scene
 
-**Roadmap:** Later.
+**Roadmap:** item 25.
 
 - A desk around the Workbench PC with keyboard, mouse, modem and speakers.
 - Keyboards: loud clicky early boards, cheap rubber-dome boards in the
@@ -589,7 +590,7 @@ screen is a real bottleneck.
 
 ## Vintage parts
 
-**Roadmap:** Later.
+**Roadmap:** item 24 (with Museum completion).
 
 - A retired part becomes "vintage" a fixed number of game years after its
   period ends. Vintage parts in the bin add collection points and can be put
@@ -598,7 +599,7 @@ screen is a real bottleneck.
 
 ## Parts as materials
 
-**Roadmap:** Later.
+**Roadmap:** item 28.
 
 ### Idea
 
@@ -620,7 +621,7 @@ matter for the whole game.
 
 ## Long term
 
-**Roadmap:** Later: long term. Same rules: parody names, real dates, no
+**Roadmap:** items 21-31 (phase 5). Same rules: parody names, real dates, no
 chance.
 
 - **HQ picture:** steps unlock at fixed lifetime-earnings marks and survive

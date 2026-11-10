@@ -400,6 +400,21 @@ parody in-game if they were tied to a company.
 - Period color schemes as cosmetic variants of parts: green circuit boards
   in the '90s, red or blue gaming boards in the 2000s, black in the 2010s,
   colored memory heat spreaders, then RGB lighting.
+- **Case lighting** follows the real order (from memory, check before
+  shipping):
+
+  | Lighting | Around | How you pick colors in game |
+  |---|---|---|
+  | None: beige box, maybe a power and drive light | 1980s-90s | No choice |
+  | Window side panel (cut by hand at first) | late 1990s-early 2000s | Unlocks lighting |
+  | Cold cathode tubes | early-mid 2000s | One fixed color per tube (blue, red, green, UV...); add more tubes for more colors; UV tubes make UV-reactive cables and parts glow |
+  | Single-color LED fans and strips | mid-late 2000s | One color per fan or strip |
+  | RGB, one color for the whole strip at a time | mid-2010s | Any color, set for the whole strip |
+  | Addressable RGB, every LED its own color | late 2010s on | Free color picker, rainbow and wave effects |
+
+  Each lighting part takes a slot (tube, fan or strip) and needs the case
+  window and spare power plugs, so it ties into the case and supply. The PC
+  picture glows in the chosen colors.
 - Cosmetic only: they add collection points to the Bench Score and Museum
   entries, not earnings.
 - Made by recoloring the same sprite, so they cost little art.

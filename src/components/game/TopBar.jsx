@@ -18,7 +18,7 @@ export default function TopBar({ state, cps, buyMode, setBuyMode, onRunAll, canR
   return (
     <header className="safe-top safe-x sticky top-0 z-20 border-b-2 border-[var(--game-border)] bg-[var(--game-bg-95)] px-3 pb-2 backdrop-blur">
       <div className="mx-auto max-w-4xl space-y-1.5">
-        <h1 className="title-glow font-pixel text-[0.65rem] leading-none text-[var(--game-accent)]">PC TYCOON</h1>
+        <h1 className="title-glow font-pixel text-[0.65rem] leading-none text-[var(--game-accent)]">TECH EVOLUTION TYCOON</h1>
 
         <div data-cash-panel className="border-2 border-[var(--game-border-strong)] bg-[var(--game-bg-deep)] px-2 py-1 text-center shadow-[3px_3px_0_0_#000]">
           <div data-cash className="break-all font-term text-3xl leading-none text-[var(--game-success)]">{money(state.cash)}</div>

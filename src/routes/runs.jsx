@@ -3,6 +3,6 @@ import RunsPage from "@/components/game/RunsPage";
 
 export const Route = createFileRoute("/runs")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Challenges — PC Tycoon" }] }),
+  head: () => ({ meta: [{ title: "Challenges — Tech Evolution Tycoon" }] }),
   component: RunsPage,
 });

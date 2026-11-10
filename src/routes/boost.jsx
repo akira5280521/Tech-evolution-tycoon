@@ -3,6 +3,6 @@ import BoostPage from "@/components/game/BoostPage";
 
 export const Route = createFileRoute("/boost")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Upgrades — PC Tycoon" }] }),
+  head: () => ({ meta: [{ title: "Upgrades — Tech Evolution Tycoon" }] }),
   component: BoostPage,
 });

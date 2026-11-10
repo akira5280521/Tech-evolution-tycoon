@@ -3,6 +3,6 @@ import MorePage from "@/components/game/MorePage";
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Settings — PC Tycoon" }] }),
+  head: () => ({ meta: [{ title: "Settings — Tech Evolution Tycoon" }] }),
   component: MorePage,
 });

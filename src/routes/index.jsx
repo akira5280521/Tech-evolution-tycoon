@@ -8,7 +8,7 @@ export const Route = createFileRoute("/")({
   component: GamePage,
   head: () => ({
     meta: [
-      { title: "PC Tycoon — an idle history of computing" },
+      { title: "Tech Evolution Tycoon — an idle history of computing" },
       {
         name: "description",
         content: "Build a computing empire from vacuum tubes to quantum servers in this 16-bit idle tycoon game.",

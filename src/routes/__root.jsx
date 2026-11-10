@@ -18,7 +18,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "PC Tycoon" },
+      { title: "Tech Evolution Tycoon" },
       { name: "description", content: "Build a computing empire from vacuum tubes to quantum servers in this 16-bit idle tycoon game." },
     ],
     // No icon link: the platform adds the app's logo when serving.

@@ -1,7 +1,8 @@
 # Roadmap
 
 Planned updates, in order. Each one is meant to ship on its own. Nothing in
-"Next" or "Later" is in the game yet. When an item ships, move it to "Done"
+"Next" or "Later" is in the game yet. Longer designs live in
+[`docs/ideas.md`](ideas.md). When an item ships, move it to "Done"
 and list the next items under "Coming soon" in the release notes (see
 `docs/release-notes-template.md`).
 
@@ -28,6 +29,28 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
+## Next: PC hardware
+
+In this order. Designs in [`docs/ideas.md`](ideas.md).
+
+1. **Chip generations inside the Microprocessors and Graphics Cards eras.**
+   As a row passes owned-count milestones it evolves (8-bit to multi-core;
+   2D card to ray tracing): new name, picture and tagline, a small bonus, and
+   a Museum history card. No new rows, so no save migration and little
+   pacing change. [Design](ideas.md#chip-generations).
+2. **PC workbench.** A new screen with part slots (processor, graphics,
+   memory, storage, display, cooling). Each slot upgrades through
+   generations; a finished build gives an empire-wide bonus that grows with
+   the build. A long-term goal that doesn't touch the era ladder or saves.
+   [Design](ideas.md#pc-workbench).
+3. **Generations on more rows**, using the system from item 1: Home
+   Computers (8-bit micro, office PC, graphical desktop, laptop) and RGB
+   Battlestations (LAN-party tower, liquid cooling, mini PC). Can ship
+   alongside item 2. [Design](ideas.md#more-row-generations).
+4. **Hardware history events**: memory price spike, hard-drive shortage, the
+   switch from floppies to CDs. One part pays more for a while. Can ship
+   alongside item 2. [Design](ideas.md#hardware-history-events).
+
 ## Next: history theme
 
 1. **Fill the gaps in the timeline.** New eras, each with its own icon,
@@ -40,7 +63,9 @@ test shipped in 0.0.13 (see Done).
    - 2007: smartphones.
    - 2020s: AI accelerators, just before Quantum.
    Note: `biz` is saved by position, so inserting eras needs a save migration
-   that maps old rows to era ids first. Re-run the pacing sim after.
+   that maps old rows to era ids first. Re-run the pacing sim after. Some of
+   these (office PC, graphical desktops, laptops) could instead be
+   generations of Home Computers (PC hardware, item 3).
 2. **More events from real history.**
    - Moore's Law (1965): a research upgrade that makes each newer era cheaper.
    - The first "bug" (1947): a moth found in the Harvard Mark II. A dilemma.
@@ -59,6 +84,10 @@ test shipped in 0.0.13 (see Done).
 
 ## Later: systems and polish
 
+- Parts as materials: later eras use up chips, memory and drives made by
+  earlier rows, so the supply chain matters again. Biggest balance change of
+  the hardware ideas; needs full pacing tests.
+  [Design](ideas.md#parts-as-materials).
 - Investor upgrade shop (a second use for investors).
 - Space Age world, using the draft in `src/lib/worldSpace.js`.
 - Cloud save (export/import codes shipped in 0.0.12).

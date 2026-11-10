@@ -43,11 +43,16 @@ In this order. Designs in [`docs/ideas.md`](ideas.md).
    More to Board, More keeps only settings and help. Boost gets a switcher
    (Upgrades · Research, later Workbench) and Badges gets one (Badges ·
    Museum). No seventh tab. [Design](ideas.md#tab-layout).
-3. **PC workbench.** A Workbench view on the Boost tab with part slots (processor, graphics,
-   memory, storage, display, cooling). Each slot upgrades through
-   generations; a finished build gives an empire-wide bonus that grows with
-   the build. A long-term goal that doesn't touch the era ladder or saves.
-   [Design](ideas.md#pc-workbench).
+3. **PC workbench.** A Workbench view on the Boost tab with part slots
+   (processor, graphics, memory, storage, display, cooling, case). Each slot
+   upgrades through generations; a finished build gives an empire-wide bonus
+   that grows with the build. A long-term goal that doesn't touch the era
+   ladder or saves. The build is drawn as a layered pixel-art PC: each
+   installed part swaps its own layer (cooler, graphics card, memory, drives,
+   monitor), and the Case slot changes the look by period (beige desktop
+   box, beige tower, black tower with a window, glass RGB case), with
+   see-through cases showing the parts. About 30-35 sprites on one grid;
+   placeholder shapes until the art exists. [Design](ideas.md#pc-workbench).
 4. **Generations on more rows**, using the system from item 1: Home
    Computers (8-bit micro, office PC, graphical desktop, laptop) and RGB
    Battlestations (LAN-party tower, liquid cooling, mini PC). Can ship

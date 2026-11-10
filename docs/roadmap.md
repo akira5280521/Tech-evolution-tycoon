@@ -119,8 +119,26 @@ where they fit in real life; no chance-based outcomes; locked parts stay
    Battlestations (LAN-party tower, liquid cooling, mini PC). Can ship
    alongside item 3. [Design](ideas.md#more-row-generations).
 8. **Hardware history events**: memory price spike, hard-drive shortage, the
-   switch from floppies to CDs. One part pays more for a while. Can ship
+   switch from floppies to CDs, LAN parties, Y2K, the bad-capacitor years.
+   One part pays more for a while. Can ship
    alongside item 3. [Design](ideas.md#hardware-history-events).
+9. **Period build challenges**: "Build a 1996 gaming PC" with only parts
+   from that year, for a badge and a Museum card. Uses the parts catalog and
+   the existing challenges. [Design](ideas.md#period-build-challenges).
+10. **Monitors and cooling.** Monitors from green and amber screens to CRTs,
+    flat LCDs (mid-2000s), high refresh and OLED, with real resolution steps
+    capping what a strong graphics card adds. Cooling from bare heatsinks to
+    fans, tower coolers, homemade water kits and ready-made liquid coolers;
+    sets the overclock cap. [Design](ideas.md#monitors-and-cooling).
+11. **Optical drives**: CD-ROM and the 1x-to-52x speed race, burners, DVD,
+    Blu-ray, then fading out. Shares IDE cables with hard drives.
+    [Design](ideas.md#optical-drives).
+12. **Jumper puzzle**: before plug-and-play (about 1995), set jumpers and DIP
+    switches and sort out two cards wanting the same setting. Fixed answers;
+    goes away once plug-and-play arrives. [Design](ideas.md#jumper-puzzle).
+13. **Boot screens**: a short start-up screen per era (memory count-up, beep,
+    parody OS logo) when the Workbench PC powers on.
+    [Design](ideas.md#boot-screens).
 
 ## Next: history theme
 
@@ -159,6 +177,13 @@ where they fit in real life; no chance-based outcomes; locked parts stay
   earlier rows, so the supply chain matters again. Biggest balance change of
   the hardware ideas; needs full pacing tests.
   [Design](ideas.md#parts-as-materials).
+- Desk scene: keyboards (clicky, then rubber-dome, then the mechanical
+  comeback), mice (ball, then optical around 1999), modems (300 baud to 56k
+  in 1998, then broadband) and speakers around the PC.
+  [Design](ideas.md#desk-scene).
+- Vintage parts: retired parts become "vintage" after a fixed number of
+  game years and add collection points. Fixed rule, no chance.
+  [Design](ideas.md#vintage-parts).
 - Investor upgrade shop (a second use for investors).
 - Space Age world, using the draft in `src/lib/worldSpace.js`.
 - Cloud save (export/import codes shipped in 0.0.12).

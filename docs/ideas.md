@@ -447,9 +447,106 @@ chance involved.
 | Memory price spike | DRAM prices rose sharply in 2017-2018 | Home Computers pay x2, cost x1.5 |
 | Hard-drive shortage | 2011 floods hit drive factories | Storage-related era pays x2, buying paused or pricier |
 | Floppies to CDs | software moved to CD-ROM in the 1990s | A one-time choice: switch now for a boost, or later for free |
+| LAN parties | 2000s gatherings with linked PCs | Network card or linked builds pay more |
+| Y2K | the 1999-2000 date bug | Older boards need a fixed-cost patch; patched builds get a bonus |
+| Bad capacitors | faulty board capacitors around 2000-2007 | A fixed "recall": swap affected boards for a part credit, plus a Museum card |
 
 Notes: one event at a time, never during challenges, never while the app is
 closed. Re-run the pacing sim if the multipliers change.
+
+## Period build challenges
+
+**Roadmap:** Next: PC hardware, item 9.
+
+- A challenge names a year and a goal: "Build a 1996 gaming PC", "A 2004
+  LAN-party rig", "A 1983 office PC". Only parts released by that year
+  count, and the Workbench greys out the rest with the reason.
+- Goal is a Bench Score (or a list of must-haves, such as a sound card for
+  1990s gaming). Rewards are fixed: a badge, a Museum card about that year's
+  typical PC, and tokens.
+- Runs inside the existing challenge system; one at a time.
+
+## Monitors and cooling
+
+**Roadmap:** Next: PC hardware, item 10. From memory, check before shipping.
+
+| Monitor | Around | In game |
+|---|---|---|
+| Green or amber text screen | late 1970s-80s | Text only |
+| Color CRT, 640x480 | 1987 | The standard color screen for years |
+| Bigger CRTs, 800x600 to 1600x1200 | 1990s | Heavy; the desk sags |
+| Flat LCD | early-mid 2000s | Takes over from CRTs |
+| Widescreen, 1080p | late 2000s | |
+| High refresh (120-144 Hz+), 1440p, 4K | 2010s | Rewards strong graphics cards |
+| OLED | 2020s | |
+
+The monitor caps how much the graphics card adds, so a top card on an old
+screen is a real bottleneck.
+
+| Cooling | Around | In game |
+|---|---|---|
+| Bare heatsink, no fan | 1980s-early 1990s | Stock only |
+| Heatsink with a small fan | mid 1990s | Mild overclock |
+| Big tower coolers with heat pipes | 2000s | Strong |
+| Homemade water cooling kits | 2000s | Strong, more power and slot space |
+| Ready-made liquid coolers | 2010s | Extreme |
+| Oil-filled "fish tank" PC | 2000s hobby | Museum piece and period build only |
+
+## Optical drives
+
+**Roadmap:** Next: PC hardware, item 11.
+
+- CD-ROM drives in the early 1990s, then the speed race from 1x to about
+  52x by the early 2000s; CD burners in the late 1990s; DVD drives in the
+  late 1990s-2000s; Blu-ray in the late 2000s; then drives disappear from
+  cases in the 2010s.
+- Uses the IDE cable (sharing it with a hard drive as master and slave),
+  later SATA.
+- Ties into the "Floppies to CDs" event.
+
+## Jumper puzzle
+
+**Roadmap:** Next: PC hardware, item 12.
+
+- Before plug-and-play (around 1995), cards and drives were set by hand
+  with jumpers and DIP switches, and two cards wanting the same setting
+  would clash.
+- In game: installing a pre-1995 card can open a short puzzle (pick
+  settings so no two cards clash). There is always a right answer, nothing
+  random, and a "set it for me" button for a small fee in tokens.
+- Once the timeline reaches plug-and-play, the puzzle stops appearing and a
+  Museum card explains why.
+
+## Boot screens
+
+**Roadmap:** Next: PC hardware, item 13.
+
+- When the Workbench PC powers on: an era start-up screen for a second or
+  two. Memory counting up and a beep in the 1980s-90s, a parody OS logo
+  later, a quick logo on modern builds.
+- Skippable, and off by default after the first time (setting in More).
+- Text and logos are all made up; no real OS or BIOS maker names.
+
+## Desk scene
+
+**Roadmap:** Later.
+
+- A desk around the Workbench PC with keyboard, mouse, modem and speakers.
+- Keyboards: loud clicky early boards, cheap rubber-dome boards in the
+  1990s-2000s, the mechanical comeback in the 2010s. Mice: ball mice, then
+  optical around 1999, then gaming mice. Modems: 300 baud up to 56k in 1998,
+  then broadband.
+- Mostly cosmetic and collection points; the modem can tie into the
+  dial-up and LAN-party events.
+
+## Vintage parts
+
+**Roadmap:** Later.
+
+- A retired part becomes "vintage" a fixed number of game years after its
+  period ends. Vintage parts in the bin add collection points and can be put
+  in a display shelf in the Museum.
+- Fixed rule shown up front; no random values or trading prices.
 
 ## Parts as materials
 

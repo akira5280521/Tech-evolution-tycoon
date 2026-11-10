@@ -38,18 +38,23 @@ In this order. Designs in [`docs/ideas.md`](ideas.md).
    2D card to ray tracing): new name, picture and tagline, a small bonus, and
    a Museum history card. No new rows, so no save migration and little
    pacing change. [Design](ideas.md#chip-generations).
-2. **PC workbench.** A new screen with part slots (processor, graphics,
+2. **Tidy up the tabs** so each answers one question, before the Workbench
+   needs a home. Research moves from More to Boost, the Market moves from
+   More to Board, More keeps only settings and help. Boost gets a switcher
+   (Upgrades · Research, later Workbench) and Badges gets one (Badges ·
+   Museum). No seventh tab. [Design](ideas.md#tab-layout).
+3. **PC workbench.** A Workbench view on the Boost tab with part slots (processor, graphics,
    memory, storage, display, cooling). Each slot upgrades through
    generations; a finished build gives an empire-wide bonus that grows with
    the build. A long-term goal that doesn't touch the era ladder or saves.
    [Design](ideas.md#pc-workbench).
-3. **Generations on more rows**, using the system from item 1: Home
+4. **Generations on more rows**, using the system from item 1: Home
    Computers (8-bit micro, office PC, graphical desktop, laptop) and RGB
    Battlestations (LAN-party tower, liquid cooling, mini PC). Can ship
-   alongside item 2. [Design](ideas.md#more-row-generations).
-4. **Hardware history events**: memory price spike, hard-drive shortage, the
+   alongside item 3. [Design](ideas.md#more-row-generations).
+5. **Hardware history events**: memory price spike, hard-drive shortage, the
    switch from floppies to CDs. One part pays more for a while. Can ship
-   alongside item 2. [Design](ideas.md#hardware-history-events).
+   alongside item 3. [Design](ideas.md#hardware-history-events).
 
 ## Next: history theme
 
@@ -65,7 +70,7 @@ In this order. Designs in [`docs/ideas.md`](ideas.md).
    Note: `biz` is saved by position, so inserting eras needs a save migration
    that maps old rows to era ids first. Re-run the pacing sim after. Some of
    these (office PC, graphical desktops, laptops) could instead be
-   generations of Home Computers (PC hardware, item 3).
+   generations of Home Computers (PC hardware, item 4).
 2. **More events from real history.**
    - Moore's Law (1965): a research upgrade that makes each newer era cheaper.
    - The first "bug" (1947): a moth found in the Harvard Mark II. A dilemma.

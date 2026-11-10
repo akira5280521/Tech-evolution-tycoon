@@ -5,6 +5,54 @@ item in [`roadmap.md`](roadmap.md). Rules that apply to all of them: parody or
 generic names only (no real company or product names), no gambling or
 chance-based rewards, and new content stays hidden ("???") until discovered.
 
+## First minutes and UI
+
+**Roadmap:** Next: first minutes and UI.
+
+- **Company name:** asked once at the start, editable in More. Length limit
+  and a simple word filter; it is only stored on the device. Used in ticker
+  headlines and the later HQ picture.
+- **Starter goals:** 3-5 fixed goals shown in a small card above the rows
+  until done; each pays a small fixed amount, the last one a token. Teaches
+  tap, buy, manager, next era.
+- **Tabs appear when needed:** hide a tab until it has something in it, with
+  a one-line "new tab" note when it appears. Dots on tabs when something is
+  affordable or finished.
+- **Quicker first manager:** check with the pacing sim that a new player
+  can hire one within a few minutes.
+- **First prestige screen:** "You keep: ... You lose: ... You gain: N
+  investors (+X% income)". Shown before the first prestige only, then
+  available from a help link.
+- **Era arrival card:** year, era name, one history line and a sting; tap to
+  close; skipped during fast offline catch-up.
+- **Feedback:** floating "+$" numbers on manual payouts (capped so they
+  don't flood), short vibration on buy through the device's haptics,
+  hold-to-preview on Buy.
+- **Settings:** number style; reduced motion (turns off scanlines, ticker
+  scrolling and flashes); high-contrast theme; colors checked for common
+  colorblindness.
+
+## Sound and music
+
+**Roadmap:** Next: history theme, item 3. All music and sounds original;
+early styles can be generated in code (Web Audio), so no recordings needed.
+
+| Sound card on the Workbench | Around | Music style |
+|---|---|---|
+| None: PC speaker | 1981 | Single-voice beeps |
+| Early FM music card | late 1980s | Buzzy FM synth |
+| Wavetable card | mid-1990s | Sampled instruments, MIDI style |
+| CD audio | mid-1990s | Full recorded tracks |
+| Onboard sound | 2000s on | Modern mix |
+
+- The same few tunes are arranged in each style, so the upgrade is easy to
+  hear. Before the Workbench ships, the style follows the furthest era.
+- Hardware sounds play when that part is in use: floppy on save, drive seek
+  on load, modem on network events, CRT on boot, fan hum by overclock
+  level, era keyboard clacks on taps.
+- Music and effects volume sliders in More; pause when the app is in the
+  background; respect the phone's silent mode.
+
 ## Chip generations
 
 **Roadmap:** Next: PC hardware, item 1.
@@ -569,3 +617,33 @@ matter for the whole game.
   already does for raw materials.
 - Needs the full pacing test, including casual and offline players, before
   shipping.
+
+## Long term
+
+**Roadmap:** Later: long term. Same rules: parody names, real dates, no
+chance.
+
+- **HQ picture:** steps unlock at fixed lifetime-earnings marks and survive
+  prestige. Each step is one wide sprite; small details (a sign, a parking
+  lot, a satellite dish) appear with milestones.
+- **Rivals:** two or three made-up companies, each with a fixed schedule
+  shown up front ("reaches Microprocessors at 2h 00m of run time"). Beat it
+  for a bonus and a card about the kind of company it parodies. Schedules
+  get tighter on later runs. Never random, never a penalty for losing.
+- **Anniversaries:** a fixed list of real dates checked against sources
+  (for example the first microprocessor in November 1971, the first PC in
+  August 1981, the first web page in 1991). The event lasts a day or two;
+  missed rewards come back next year, so nothing is lost for good.
+- **Stats page:** lifetime earnings, prestige count, fastest run to each
+  era (as a simple chart), parts and cards collected, play time.
+- **Museum completion:** the Museum becomes a timeline wall with one shelf
+  per era; filling a shelf pays tokens and a permanent small bonus.
+- **Third prestige layer:** earned from singularity resets; buys permanent
+  unlocks rather than bigger multipliers, so pacing stays sane. Needs full
+  pacing tests.
+- **Software track:** a second set of rows (machine code, early languages,
+  operating systems, games, the web, apps). Hardware rows speed up software
+  and the other way round. Biggest content item; plan it as its own world.
+- **Free-build mode:** after the last era, a sandbox Workbench with every
+  collected part and lighting, any period, for screenshots and collection.
+

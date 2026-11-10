@@ -16,7 +16,7 @@ export default function MuseumSection({ state }) {
       {rows.map((row) => (
         <div key={row.era} className="border-2 border-[var(--game-border)] bg-[var(--game-card)] p-2">
           <h3 className="break-words font-pixel text-[0.55rem] leading-4">
-            {row.name} <span className="text-[var(--game-muted)]">· {row.date}</span>
+            {row.revealed ? row.name : "???"} <span className="text-[var(--game-muted)]">· {row.revealed ? row.date : "c. ????"}</span>
           </h3>
           <div className="mt-2 space-y-2">
             {row.cards.map((card) => (
@@ -31,7 +31,7 @@ export default function MuseumSection({ state }) {
                   </>
                 ) : (
                   <p className="break-words font-term text-base leading-5 text-[var(--game-dim)]">
-                    LOCKED · Own {card.need} {row.name} at once.
+                    {row.revealed ? `LOCKED · Own ${card.need} ${row.name} at once.` : "LOCKED · Reach this era to find it."}
                   </p>
                 )}
               </article>

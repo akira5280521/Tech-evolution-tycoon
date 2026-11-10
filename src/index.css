@@ -259,7 +259,12 @@
   left: 0;
   display: flex;
   width: max-content;
-  animation: news-ticker 63s linear infinite;
+  animation: news-ticker 126s linear infinite;
+}
+
+.news-ticker.is-paused .news-ticker-track,
+.news-ticker:hover .news-ticker-track {
+  animation-play-state: paused;
 }
 
 .news-ticker-track span {
@@ -334,6 +339,29 @@ img[src*="/icons/"] {
   padding-bottom: calc(8rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
 }
 
+/* Hide sideways overflow without making a scroll container ("hidden" would
+   stop the landscape side column from staying in place). */
+.game-clip-x {
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+/* Long era names (Microprocessors, RGB Battlestations) wrap instead of
+   running past the card on narrow phones or with large text. */
+.era-name {
+  overflow-wrap: anywhere;
+  hyphens: manual;
+}
+
+@media (max-width: 359px) {
+  .era-name { font-size: 0.75rem; line-height: 1.1rem; }
+}
+
+/* The small second line on the buy-mode buttons doesn't fit on narrow phones. */
+@media (max-width: 399px) {
+  .buy-mode-sub { display: none; }
+}
+
 @media (min-width: 481px) {
   .game-root {
     padding-bottom: calc(4.75rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
@@ -402,5 +430,23 @@ img[src*="/icons/"] {
 
   .game-frame > * {
     min-width: 0;
+  }
+}
+
+/* In the two-column landscape layout the era list is narrow, so era cards put
+   their BUY and manager buttons under the text, like on a portrait phone. */
+@media (orientation: landscape) and (min-width: 800px) and (max-width: 1099px) {
+  .game-frame .era-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .game-frame .era-actions {
+    grid-column: 1 / -1;
+    width: auto;
+    flex-direction: row;
+  }
+
+  .game-frame .era-actions > * {
+    width: auto;
   }
 }

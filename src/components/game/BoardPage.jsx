@@ -26,9 +26,9 @@ export default function BoardPage() {
         <h2 className="font-pixel text-[0.7rem] text-[var(--game-violet)]">EMPIRE BONUSES</h2>
         <dl className="mt-3 space-y-2">
           {rows.map(([label, value]) => (
-            <div key={label} className="flex items-baseline justify-between gap-3 font-pixel text-[0.55rem]">
-              <dt className="text-[var(--game-muted)]">{label}</dt>
-              <dd className={label === "INVESTORS" ? "text-[var(--game-success)]" : "text-[var(--game-fg)]"}>{value}</dd>
+            <div key={label} className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 font-pixel text-[0.55rem]">
+              <dt className="min-w-0 break-words text-[var(--game-muted)]">{label}</dt>
+              <dd className={`ml-auto min-w-0 break-all text-right ${label === "INVESTORS" ? "text-[var(--game-success)]" : "text-[var(--game-fg)]"}`}>{value}</dd>
             </div>
           ))}
         </dl>

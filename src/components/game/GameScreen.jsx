@@ -81,7 +81,7 @@ export default function GameScreen() {
   const supply = state.supply || {};
 
   return (
-    <div className="game-root min-h-screen overflow-x-hidden bg-[var(--game-bg)] text-[var(--game-fg)]">
+    <div className="game-root game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
       <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} />
       {!state.offlineReport && <DilemmaModal dilemma={state.dilemma} onChoose={chooseDilemma} />}

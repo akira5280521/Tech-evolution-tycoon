@@ -15,67 +15,18 @@ and list the next items under "Coming soon" in the release notes (see
 - **0.0.11** - Safer updater: strict link check, private staging, package,
   version and signer checks before install. Signing key out of the repo.
 - **0.0.12** - Save backup: export a save code, restore from one.
+- **0.0.13** - Display and polish: locked badges, upgrades, Museum rows and
+  projects stay hidden until discovered; badge pictures fit their frames;
+  slower news ticker that pauses when held; landscape layout (full-width era
+  cards, side column stays put, COLLECT always visible); long era names,
+  buy-mode labels, Boost tags and Board values fit on narrow phones and with
+  large text. Checked with a layout test of every screen at 26 screen sizes,
+  portrait and landscape, and text sizes 85-200%.
 
-## To change: display and polish
+## To change
 
-Notes from playtesting, plus a layout test of every screen. Do these before
-the next content update.
-
-**From playtesting**
-
-1. **Hide locked items until they're unlocked.** Grey them out and don't
-   reveal what they are:
-   - Badges tab: locked badges show the era's full picture and name. Show a
-     dark silhouette or "???" until earned.
-   - Boost tab: the next era's card shows its picture, name and both upgrade
-     names at 0 owned. Grey it out until the era is reached.
-   - Same for any other list that shows content the player hasn't reached.
-2. **Badge pictures spill out of their frames** (Badges tab, every screen
-   size). The picture draws about 150 px tall inside an 80 px frame, so it
-   covers the badge name and "Own 20 ..." line and breaks the frame's border.
-   Fix: `overflow-hidden` on the frame and `object-contain` on the image.
-3. **News ticker scrolls too fast to read.** One loop takes 63 s. Slow it to
-   about half speed (~120 s) and pause it while it's pressed.
-
-**From the layout test**
-
-4. **Landscape phones squeeze the era cards** (every phone in landscape,
-   568-932 px wide). The cards sit in a narrow right-hand column: descriptions
-   wrap one word per line, the era name slides under the BUY button, and the
-   left column is empty once you scroll. Give the era list the full width in
-   phone landscape, or put the BUY and manager buttons under the text.
-5. **Welcome Back popup hides COLLECT in landscape.** On every phone in
-   landscape the button sits below the bottom of the screen (368-408 px down on
-   320-412 px tall screens), so players have to scroll inside the popup to
-   find it. Pin COLLECT to the bottom of the popup and let only the earnings
-   list scroll.
-6. **Long era names get cut off at the card edge**: Microprocessors,
-   Transistors, RGB Battlestations, Integrated Circuits, Home Computers. Happens
-   on a Galaxy Fold cover screen (280 px) at any text size, 320 px phones at
-   normal text, most phones at 130% text and every phone at 200%. Let the name
-   wrap, or use a smaller size on narrow cards.
-7. **Buy-mode labels are cut off** ("TEN UNI...", "ALL YOU..."): 280 and
-   320 px phones at normal text, most phones at 115% text and up. Hide the small
-   second line on narrow screens, or lay the five buttons out 3 + 2.
-8. **Boost tab on small phones with large text:** the "X3 REV" / "2X SPD" tags
-   and "N owned · named upgrades below" run outside the card (280 px at 130%+,
-   320 px at 150%+, other phones at 200%).
-9. **Board tab at 200% text on 280-320 px phones:** bonus values such as
-   +9507% and X1.2 are pushed past the card edge.
-10. **Minor:** at 150% text and up (130% on tablets) the floating "+$" earnings
-    pop-ups cover the era name.
-
-No problems found on the Runs and More tabs at any size. Tablets and desktops
-are fine apart from item 2.
-
-How this was tested: 10 screens and states (game early and mid-game, with a
-dilemma, the bubble and the Welcome Back popup; Boost, Board, Runs, Badges,
-More) x 26 screen sizes (8 phones and 4 tablets, each in portrait and
-landscape, plus 2 desktops) x text sizes 85-200% (the app follows Android's
-font size from 50-200%). That's 1,240 renders with the real fonts, and every
-flagged spot was checked by screenshot. It's browser emulation, not real
-devices, and Android's text zoom was emulated by scaling font sizes, so check
-the fixes on a phone.
+Nothing open. The display and polish list from playtesting and the layout
+test shipped in 0.0.13 (see Done).
 
 ## Next: history theme
 

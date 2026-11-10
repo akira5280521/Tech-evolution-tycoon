@@ -3,7 +3,7 @@
 // Finding both cards of an era pays a one-time token bonus.
 // Company names are parody. Model numbers and specs stay real.
 import { BUSINESSES } from "./gameConfig.js";
-import { grantTokens } from "./empire.js";
+import { furthestRevealedEra, grantTokens } from "./empire.js";
 
 export const MUSEUM_SET_TOKENS = 3;
 
@@ -90,10 +90,12 @@ export function collectHistory(state) {
 
 export function museumRows(state) {
   const have = new Set(state.museum || []);
-  return BUSINESSES.map((cfg) => ({
+  const furthest = furthestRevealedEra(state);
+  return BUSINESSES.map((cfg, index) => ({
     era: cfg.id,
     name: cfg.name,
     date: cfg.era,
+    revealed: index <= furthest,
     cards: HISTORY_CARDS.filter((c) => c.era === cfg.id).map((c) => ({ ...c, found: have.has(c.id) })),
   }));
 }

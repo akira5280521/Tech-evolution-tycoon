@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { PROJECT_MS, money } from "@/lib/gameConfig";
-import { CHALLENGES, PROJECTS, activeChallengeGoal, scaledChallengeGoal } from "@/lib/empire";
+import { CHALLENGES, PROJECTS, activeChallengeGoal, projectRevealed, scaledChallengeGoal } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 
@@ -47,9 +47,19 @@ export default function RunsPage() {
       <h2 className="font-pixel text-[0.7rem] text-[var(--game-accent)]">MEGA-PROJECTS</h2>
       {PROJECTS.map((project) => {
         const done = (state.projectsDone || []).includes(project.id);
+        if (!projectRevealed(state, project)) {
+          return (
+            <Panel key={project.id}>
+              <div data-project-hidden className="opacity-60">
+                <h3 className="font-pixel text-[0.65rem] text-[var(--game-dim)]">???</h3>
+                <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">Reach more eras to reveal this project.</p>
+              </div>
+            </Panel>
+          );
+        }
         return (
           <Panel key={project.id}>
-            <h3 className="font-pixel text-[0.65rem]">{project.name}</h3>
+            <h3 className="break-words font-pixel text-[0.65rem]">{project.name}</h3>
             <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{project.blurb}</p>
             <p className="mt-1 font-term text-lg text-[var(--game-success)]">+{Math.round(project.reward * 100)}% all revenue, forever · +{project.tokens} tokens</p>
             {done && <p className="mt-2 font-pixel text-[0.55rem] text-[var(--game-success)]">FINISHED</p>}

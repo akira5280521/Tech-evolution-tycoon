@@ -22,8 +22,8 @@ android {
         applicationId "com.techevolutiontycoon.game"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 13
-        versionName "0.0.13"
+        versionCode 14
+        versionName "0.0.14"
         // Keep a 64-bit ABI beside every 32-bit one if a dependency adds native code.
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
@@ -74,11 +74,6 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
-// Stop a release build early with a clear message instead of producing an
-// unsigned APK that can't be installed.
-gradle.taskGraph.whenReady { graph ->
-    def wantsRelease = graph.allTasks.any { it.project == project && it.name.toLowerCase().contains("release") }
-    if (wantsRelease && !releaseSigningReady) {
-        throw new GradleException("No release signing key found. Create android/keystore.properties or set TET_KEYSTORE_FILE and the other TET_* variables. See docs/signing.md.")
-    }
-}
+// A configured keystore still signs the release the same way. With no keystore
+// and no TET_* variables, assembleRelease writes an unsigned APK instead.
+

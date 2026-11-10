@@ -14,7 +14,7 @@ and list the next items under "Coming soon" in the release notes (see
   Dot-com Bubble. The pop time is chosen when the stock appears and shown as a
   countdown.
 - **0.0.11** - Safer updater: strict link check, private staging, package,
-  version and signer checks before install. Signing key out of the repo.
+  version and signer checks before install.
 - **0.0.12** - Save backup: export a save code, restore from one.
 - **0.0.13** - Display and polish: locked badges, upgrades, Museum rows and
   projects stay hidden until discovered; badge pictures fit their frames;
@@ -28,6 +28,26 @@ and list the next items under "Coming soon" in the release notes (see
 
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
+
+## Next: first minutes and UI
+
+Small, cheap items that help new players; can ship between hardware items.
+In this order. [Design](ideas.md#first-minutes-and-ui).
+
+1. **Starter goals and company name.** Name your company at the start
+   (shown in headlines and later on the HQ picture), plus a short goal list
+   (buy 5 quarries, hire a first manager, unlock the next era) with a fixed
+   reward.
+2. **Tabs appear when needed.** Boost shows when the first upgrade is
+   affordable, Investors near the first prestige; "something to do" dots on
+   tabs. Also a quicker first manager and a first-prestige screen that shows
+   exactly what you keep and gain.
+3. **Era arrival screen.** When an era unlocks: a short card with the year,
+   name and one history line, with a sound sting.
+4. **Feedback and settings.** Floating "+$" on payouts, light vibration on
+   buy (can be turned off), hold Buy to preview "+$X per second", number
+   style (letters, names, scientific), reduced motion, high contrast and
+   colorblind-friendly colors.
 
 ## Next: PC hardware
 
@@ -161,9 +181,17 @@ where they fit in real life; no chance-based outcomes; locked parts stay
    - 1983 video game crash, 2021 chip shortage, GPU mining rush: shortage
      events where one era costs more and pays more for a while.
 3. **A look and sound for each era.** Unlockable screen themes (green
-   phosphor terminal, beige desktop, CRT, neon RGB) and era sounds (tube hum,
-   card punch, floppy drive, modem screech). Make original versions; don't copy
-   real logos or startup sounds.
+   phosphor terminal, beige desktop, CRT, neon RGB). Make original versions;
+   don't copy real logos or startup sounds. [Design](ideas.md#sound-and-music).
+   - **Music follows your sound card:** the same tunes arranged for the PC
+     speaker (1981), an early FM music card (late 1980s), wavetable/MIDI
+     (mid-1990s), CD audio, then a modern mix. Installing a better card on
+     the Workbench upgrades the soundtrack.
+   - **Hardware sounds:** tube hum, card punch, floppy grind on save, hard
+     drive seek clicks, modem handshake for network events, CRT thunk and
+     whine, fan hum that rises with overclock, the boot beep, era keyboard
+     clacks.
+   - Separate music and effects volume; sound pauses in the background.
 4. **Era-specific headlines.** The ticker shows headlines from the era the
    player is building.
 5. **"Which came first?" trivia** as an occasional dilemma, paying a bonus for
@@ -188,6 +216,28 @@ where they fit in real life; no chance-based outcomes; locked parts stay
 - Space Age world, using the draft in `src/lib/worldSpace.js`.
 - Cloud save (export/import codes shipped in 0.0.12).
 - A Play Store build without the sideload updater and its install permission.
+- Google Play Games achievements (badges) once on the store.
 - Notifications (factories full, research done).
 - Lower the game tick rate to save battery.
 - An "abandon challenge" button.
+
+## Later: long term
+
+In this order. [Design](ideas.md#long-term).
+
+1. **Garage-to-campus HQ**: a picture of the company that grows with
+   lifetime earnings: garage, office park, campus, space-age HQ.
+2. **Parody rival companies** racing through history at a fixed, visible
+   pace; beating one to an era pays a bonus and a Museum card.
+3. **History anniversaries** on the real calendar: a short event with a
+   fixed cosmetic or Museum card on the day.
+4. **Stats page**: lifetime earnings, fastest runs, parts collected.
+5. **Museum completion**: a timeline wall; finishing an era's set pays.
+6. **Third prestige layer** ("Legacy" or similar) kept through everything:
+   starting eras, Workbench slots, challenge modes.
+7. **Software track**: rows for programming languages, operating systems
+   and game eras alongside the hardware, each boosting the other.
+8. **Free-build mode** after the last era, with everything collected.
+
+Also: a weekly period-build challenge (the same for everyone, full reward
+even when late) and translations once the text settles.

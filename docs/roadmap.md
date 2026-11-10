@@ -38,8 +38,8 @@ test shipped in 0.0.13 (see Done).
    built.
 3. **Lock the era ladder before the Play Store.** Adding eras changes saves
    and pacing, so it is done while the player base is small.
-4. **Then the Workbench and parts**, the biggest feature, in the order its
-   pieces depend on each other.
+4. **Then the Workbench and parts**, the biggest feature, in the order the
+   parts appeared in history, as far as their links allow.
 5. **Long-term systems last**, once there is enough content to collect and
    replay.
 
@@ -101,7 +101,7 @@ folded into a neighbouring release.
    phosphor terminal, beige desktop, CRT, neon RGB) and era sounds. Music
    follows the furthest era for now (PC speaker beeps, early FM synth,
    wavetable/MIDI, CD audio, modern mix); the Workbench sound card takes
-   over later (item 17). Separate music and effects volume; sound pauses in
+   over later (item 18). Separate music and effects volume; sound pauses in
    the background. Original sounds only; no real logos or startup sounds.
    [Design](ideas.md#sound-and-music).
 
@@ -180,33 +180,38 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     - **Parts bin:** every part collected stays available to swap back in;
       parts that don't fit the current board are greyed out with the reason.
     [Design](ideas.md#parts-catalog).
-14. **Monitors and optical drives.** Monitors from green and amber screens
-    to CRTs, flat LCDs (mid-2000s), high refresh and OLED, with real
-    resolution steps capping what a strong graphics card adds. Optical
-    drives: CD-ROM and the 1x-to-52x speed race, burners, DVD, Blu-ray,
-    then fading out; they share IDE cables with hard drives.
-    [Design](ideas.md#monitors-and-cooling),
-    [optical drives](ideas.md#optical-drives).
-15. **Parts catalog, step 2: expansion slots.** A second graphics card (it
-    only pays off with mid-2000s to 2010s parts, when running two cards was
-    a real thing, then fades as it did; linked the way it really was: a
-    ribbon inside the case in 1998, a bridge on top from 2004, the red
-    maker's external cable in 2005, then ribbon bridges, then through the
-    board itself from 2013, under generic names), add-in sound cards
-    (essential from the late 1980s, optional once sound moved onto boards
-    around 2000) and network cards. Number of slots comes from the
-    motherboard. [Design](ideas.md#expansion-slots).
-16. **Jumper puzzle** (small, with item 15): before plug-and-play (about
-    1995), set jumpers and DIP switches and sort out two cards wanting the
+14. **Monitors.** From green and amber text screens (late 1970s-80s) to
+    color CRTs (640x480 in 1987), bigger CRTs, flat LCDs (mid-2000s), high
+    refresh and OLED, with real resolution steps capping what a strong
+    graphics card adds. First after the core build because the screen is the
+    oldest part of the picture. [Design](ideas.md#monitors-and-cooling).
+15. **Parts catalog, step 2: expansion slots** (the PC's add-in slots date
+    from 1981). In the order they appeared: network cards (1980s, later the
+    dial-up and LAN-party years), add-in sound cards (essential from the
+    late 1980s, optional once sound moved onto boards around 2000), then a
+    second graphics card (it only pays off with late-1990s to 2010s parts,
+    when running two cards was a real thing, then fades as it did; linked
+    the way it really was: a ribbon inside the case in 1998, a bridge on top
+    from 2004, the red maker's external cable in 2005, then ribbon bridges,
+    then through the board itself from 2013, under generic names). Number of
+    slots comes from the motherboard. [Design](ideas.md#expansion-slots).
+16. **Jumper puzzle** (small, with item 15): from the first PCs (1981) until
+    plug-and-play (about 1995), set jumpers and DIP switches and sort out two cards wanting the
     same setting. Fixed answers; goes away once plug-and-play arrives.
     [Design](ideas.md#jumper-puzzle).
-17. **Boot screens and hardware sound.** A short start-up screen per era
+17. **Optical drives.** CD-ROM drives reached home PCs in the late 1980s
+    and early 1990s, then the 1x-to-52x speed race, burners (late 1990s),
+    DVD, Blu-ray (late 2000s), then fading out in the 2010s. They share IDE
+    cables with hard drives, jumpered as master or slave, so they follow the
+    jumper puzzle. [Design](ideas.md#optical-drives).
+18. **Boot screens and hardware sound.** A short start-up screen per era
     (memory count-up, beep, parody OS logo) when the Workbench PC powers on.
     The installed sound card now picks the music style, and parts make
     their sounds: floppy grind on save, drive seek clicks, modem handshake,
     CRT thunk and whine, fan hum that rises with overclock, era keyboard
-    clacks. [Design](ideas.md#boot-screens).
-18. **Parts catalog, step 3: colors and collecting.** Period color schemes
+    clacks. After sound cards and optical drives, since the music styles
+    need them (CD audio needs a CD drive). [Design](ideas.md#boot-screens).
+19. **Parts catalog, step 3: colors and collecting.** Period color schemes
     as cosmetic variants (green boards in the '90s, red or blue gaming
     boards in the 2000s, black in the 2010s, colored memory heat spreaders,
     RGB). They add to the Bench Score's collection points and the Museum,
@@ -214,7 +219,7 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     lighting follows the real order: window panels, cold cathode tubes in
     the early-mid 2000s (one color per tube), single-color LED fans, then
     RGB and finally per-LED RGB. [Design](ideas.md#colors-and-collecting).
-19. **Period build challenges**: "Build a 1996 gaming PC" with only parts
+20. **Period build challenges**: "Build a 1996 gaming PC" with only parts
     from that year, for a badge and a Museum card, plus a weekly one that is
     the same for everyone (full reward even when late). Last in this phase
     because it needs the whole catalog. [Design](ideas.md#period-build-challenges).
@@ -223,29 +228,29 @@ where they fit in real life; no chance-based outcomes; locked parts stay
 
 In this order. [Design](ideas.md#long-term).
 
-20. **Garage-to-campus HQ**: a picture of the company that grows with
+21. **Garage-to-campus HQ**: a picture of the company that grows with
     lifetime earnings: garage, office park, campus, space-age HQ.
-21. **Parody rival companies** racing through history at a fixed, visible
+22. **Parody rival companies** racing through history at a fixed, visible
     pace; beating one to an era pays a bonus and a Museum card.
-22. **History anniversaries** on the real calendar: a short event with a
+23. **History anniversaries** on the real calendar: a short event with a
     fixed cosmetic or Museum card on the day.
-23. **Museum completion**: a timeline wall; finishing an era's set pays.
+24. **Museum completion**: a timeline wall; finishing an era's set pays.
     Vintage parts (retired parts become "vintage" after a fixed number of
     game years) go on its shelves. [Design](ideas.md#vintage-parts).
-24. **Desk scene**: keyboards (clicky, then rubber-dome, then the mechanical
+25. **Desk scene**: keyboards (clicky, then rubber-dome, then the mechanical
     comeback), mice (ball, then optical around 1999), modems (300 baud to
     56k in 1998, then broadband) and speakers around the PC.
     [Design](ideas.md#desk-scene).
-25. **Investor upgrade shop** (a second use for investors).
-26. **Third prestige layer** ("Legacy" or similar) kept through everything:
+26. **Investor upgrade shop** (a second use for investors).
+27. **Third prestige layer** ("Legacy" or similar) kept through everything:
     starting eras, Workbench slots, challenge modes.
-27. **Parts as materials**: later eras use up chips, memory and drives made
+28. **Parts as materials**: later eras use up chips, memory and drives made
     by earlier rows, so the supply chain matters again. Biggest balance
     change of the hardware ideas; needs full pacing tests.
     [Design](ideas.md#parts-as-materials).
-28. **Software track**: rows for programming languages, operating systems
+29. **Software track**: rows for programming languages, operating systems
     and game eras alongside the hardware, each boosting the other.
-29. **Space Age world**, using the draft in `src/lib/worldSpace.js`.
-30. **Free-build mode** after the last era, with everything collected.
+30. **Space Age world**, using the draft in `src/lib/worldSpace.js`.
+31. **Free-build mode** after the last era, with everything collected.
 
 Also, whenever the text settles: translations.

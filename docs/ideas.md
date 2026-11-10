@@ -34,7 +34,7 @@ chance-based rewards, and new content stays hidden ("???") until discovered.
 
 ## Sound and music
 
-**Roadmap:** item 8, then item 17 once the Workbench has a sound card.
+**Roadmap:** item 8, then item 18 once the Workbench has a sound card.
 All music and sounds original;
 early styles can be generated in code (Web Audio), so no recordings needed.
 
@@ -415,6 +415,9 @@ parody in-game if they were tied to a company.
 
 **Roadmap:** item 15 (parts catalog step 2).
 
+- **Network card:** for the dial-up and LAN-party periods.
+- **Sound card:** essential from the late 1980s; optional once sound was
+  built into boards around 2000. Mostly for period builds and the score.
 - **Second graphics card:** running two cards together really helped in the
   mid-2000s to 2010s, then faded. In game it only pays off with parts from
   those periods, with a Museum card explaining why. The way cards were linked
@@ -437,14 +440,11 @@ parody in-game if they were tied to a company.
   none), both cards must be the same maker and usually the same model, and
   the PSU and cooling must cover both. The PC picture shows the bridge or
   cable.
-- **Sound card:** essential from the late 1980s; optional once sound was
-  built into boards around 2000. Mostly for period builds and the score.
-- **Network card:** for the dial-up and LAN-party periods.
 - Slot count comes from the motherboard's form factor.
 
 ## Colors and collecting
 
-**Roadmap:** item 18 (parts catalog step 3).
+**Roadmap:** item 19 (parts catalog step 3).
 
 - Period color schemes as cosmetic variants of parts: green circuit boards
   in the '90s, red or blue gaming boards in the 2000s, black in the 2010s,
@@ -505,7 +505,7 @@ closed. Re-run the pacing sim if the multipliers change.
 
 ## Period build challenges
 
-**Roadmap:** item 19.
+**Roadmap:** item 20.
 
 - A challenge names a year and a goal: "Build a 1996 gaming PC", "A 2004
   LAN-party rig", "A 1983 office PC". Only parts released by that year
@@ -543,7 +543,7 @@ screen is a real bottleneck.
 
 ## Optical drives
 
-**Roadmap:** item 14.
+**Roadmap:** item 17.
 
 - CD-ROM drives in the early 1990s, then the speed race from 1x to about
   52x by the early 2000s; CD burners in the late 1990s; DVD drives in the
@@ -568,7 +568,7 @@ screen is a real bottleneck.
 
 ## Boot screens
 
-**Roadmap:** item 17.
+**Roadmap:** item 18.
 
 - When the Workbench PC powers on: an era start-up screen for a second or
   two. Memory counting up and a beep in the 1980s-90s, a parody OS logo
@@ -578,7 +578,7 @@ screen is a real bottleneck.
 
 ## Desk scene
 
-**Roadmap:** item 24.
+**Roadmap:** item 25.
 
 - A desk around the Workbench PC with keyboard, mouse, modem and speakers.
 - Keyboards: loud clicky early boards, cheap rubber-dome boards in the
@@ -590,7 +590,7 @@ screen is a real bottleneck.
 
 ## Vintage parts
 
-**Roadmap:** item 23 (with Museum completion).
+**Roadmap:** item 24 (with Museum completion).
 
 - A retired part becomes "vintage" a fixed number of game years after its
   period ends. Vintage parts in the bin add collection points and can be put
@@ -599,7 +599,7 @@ screen is a real bottleneck.
 
 ## Parts as materials
 
-**Roadmap:** item 27.
+**Roadmap:** item 28.
 
 ### Idea
 
@@ -621,7 +621,7 @@ matter for the whole game.
 
 ## Long term
 
-**Roadmap:** items 20-30 (phase 5). Same rules: parody names, real dates, no
+**Roadmap:** items 21-31 (phase 5). Same rules: parody names, real dates, no
 chance.
 
 - **HQ picture:** steps unlock at fixed lifetime-earnings marks and survive

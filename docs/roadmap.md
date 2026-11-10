@@ -98,7 +98,10 @@ where they fit in real life; no chance-based outcomes; locked parts stay
    [Design](ideas.md#parts-catalog).
 5. **Parts catalog, step 2: expansion slots.** A second graphics card (it
    only pays off with mid-2000s to 2010s parts, when running two cards was a
-   real thing, then fades as it did), add-in sound cards (essential from the
+   real thing, then fades as it did; linked the way it really was: a ribbon
+   inside the case in 1998, a bridge on top from 2004, the red maker's
+   external cable in 2005, then ribbon bridges, then through the board itself
+   from 2013, under generic names), add-in sound cards (essential from the
    late 1980s, optional once sound moved onto boards around 2000) and
    network cards. Number of slots comes from the motherboard.
    [Design](ideas.md#expansion-slots).

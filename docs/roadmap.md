@@ -110,7 +110,9 @@ where they fit in real life; no chance-based outcomes; locked parts stay
    the 2000s, black in the 2010s, colored memory heat spreaders, RGB). They
    add to the Bench Score's collection points and the Museum, not to
    earnings. Made by recoloring sprites, so little extra art.
-   [Design](ideas.md#colors-and-collecting).
+   Case lighting follows the real order: window panels, cold cathode
+   tubes in the early-mid 2000s (one color per tube), single-color LED fans,
+   then RGB and finally per-LED RGB. [Design](ideas.md#colors-and-collecting).
 
 7. **Generations on more rows**, using the system from item 1: Home
    Computers (8-bit micro, office PC, graphical desktop, laptop) and RGB

@@ -367,9 +367,27 @@ parody in-game if they were tied to a company.
 **Roadmap:** Next: PC hardware, item 5 (parts catalog step 2).
 
 - **Second graphics card:** running two cards together really helped in the
-  mid-2000s to 2010s (and briefly with 3D add-ins in the late 1990s), then
-  faded. In game it only pays off with parts from those periods, with a
-  Museum card explaining why.
+  mid-2000s to 2010s, then faded. In game it only pays off with parts from
+  those periods, with a Museum card explaining why. The way cards were linked
+  changed, and the game follows it (from memory, check before shipping; the
+  real feature and company names are trademarks, so use generic or parody
+  names like "Link Mode" and a parody red and green card maker):
+
+  | How cards linked | Around | Real detail for the game |
+  |---|---|---|
+  | Two 3D add-in cards joined by a short ribbon inside the case | 1998 | Each card drew every other line of the screen |
+  | Green maker: rigid bridge across the top of both cards | 2004 | Needs a board with two matching graphics slots |
+  | Red maker: "master" card plus an external cable on the back plugs | 2005 | Needed a special master edition of the card |
+  | Red maker: internal ribbon bridges | 2006-07 | Red maker was bought by a processor company in 2006 |
+  | Up to 3-4 cards linked | 2007-08 | Big power and cooling needs; a period showpiece |
+  | Red maker: no bridge, cards talk through the board | 2013 | Just two cards in the right slots |
+  | Green maker: faster bridge | 2018 | Last generation of the idea |
+  | Linking fades out | about 2020-21 | Single big cards win; bonus stops in later eras |
+
+  In game: the link type must match the cards and board (bridge, cable or
+  none), both cards must be the same maker and usually the same model, and
+  the PSU and cooling must cover both. The PC picture shows the bridge or
+  cable.
 - **Sound card:** essential from the late 1980s; optional once sound was
   built into boards around 2000. Mostly for period builds and the score.
 - **Network card:** for the dial-up and LAN-party periods.

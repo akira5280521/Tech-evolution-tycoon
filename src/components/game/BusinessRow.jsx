@@ -13,6 +13,20 @@ import { effectiveCycleMs, empireFactors, maxBuyCount, supplyFactor, upgradesOf 
 import IconTile from "./IconTile";
 import ProgressTrack from "./ProgressTrack";
 
+// Where long era names may break on a narrow card (a hyphen shows at the break).
+const SOFT = "\u00AD";
+const BREAKS = [
+  ["Microprocessors", `Micro${SOFT}processors`],
+  ["Battlestations", `Battle${SOFT}stations`],
+  ["Transistors", `Tran${SOFT}sistors`],
+  ["Integrated", `Inte${SOFT}grated`],
+  ["Computers", `Com${SOFT}puters`],
+];
+
+function breakable(name) {
+  return BREAKS.reduce((text, [word, soft]) => text.replace(word, soft), name);
+}
+
 function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, compact }) {
   const cfg = BUSINESSES[index];
   const st = row;
@@ -29,12 +43,12 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
   const canHire = !commissioning && !st.manager && st.owned > 0 && cash >= cfg.managerCost;
 
   return (
-    <div className={`grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
+    <div className={`era-row grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
       <IconTile cfg={cfg} st={st} onRun={() => onRun(index)} />
 
       <div className="min-w-0 space-y-2">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <h3 className="font-pixel text-sm text-[var(--game-fg)]">{cfg.name}</h3>
+          <h3 className="era-name min-w-0 font-pixel text-sm text-[var(--game-fg)]">{breakable(cfg.name)}</h3>
           <span className="border border-[var(--game-border-strong)] px-1 font-term text-sm leading-5 text-[var(--game-muted)]">
             {cfg.era}
           </span>
@@ -81,7 +95,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
         </div>
       </div>
 
-      <div className="col-span-2 flex gap-2 sm:col-span-1 sm:w-44 sm:flex-col sm:justify-center">
+      <div className="era-actions col-span-2 flex gap-2 sm:col-span-1 sm:w-44 sm:flex-col sm:justify-center">
         <button
           type="button"
           onClick={() => onBuy(index)}

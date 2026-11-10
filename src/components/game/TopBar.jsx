@@ -65,8 +65,8 @@ export default function TopBar({ state, cps, buyMode, setBuyMode, onRunAll, canR
                 onClick={() => setBuyMode(mode.id)}
                 className={`min-h-11 min-w-0 border-2 px-0.5 py-1 text-center shadow-[2px_2px_0_0_#000] ${buyMode === mode.id ? on : off}`}
               >
-                <span className="block truncate font-pixel text-[0.5rem] leading-4">{mode.label}</span>
-                <span className="mt-0.5 block truncate font-term text-xs leading-4">{mode.sub}</span>
+                <span className="block break-words font-pixel text-[0.5rem] leading-4 [overflow-wrap:anywhere]">{mode.label}</span>
+                <span className="buy-mode-sub mt-0.5 block break-words font-term text-xs leading-4">{mode.sub}</span>
               </button>
             ))}
           </div>

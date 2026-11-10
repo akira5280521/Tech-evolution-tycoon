@@ -182,9 +182,74 @@ Generic names with real dates (check each against a source before shipping):
   of nonstop play.
 - Art: one small icon per part generation, about 20 in total.
 
-## More row generations
+## Parts catalog
 
 **Roadmap:** Next: PC hardware, item 4.
+
+### Rules
+
+- **Names are parody or fictional.** No real company, brand or product
+  names, including defunct companies: their names may still be owned by
+  whoever bought them. Parody names must be clearly original, not
+  near-copies (get a trademark check before shipping if unsure).
+- **Dates and specs are real.** Years, socket and bus types, clock speeds,
+  core counts. The Museum can tell the real story in general terms.
+- **Compatibility is real.** A part fits only where it fit in real life.
+- **Standard names** (ISA, PCI, AGP, PCI Express, "Socket 7") are industry
+  standards rather than company brands, but include them in the same
+  trademark check, or use in-game labels like "Socket Type 7" and
+  "Graphics Port".
+
+### Processors by socket or slot
+
+Real history the catalog follows (check each before shipping):
+
+| Years | Socket or slot | Who made chips for it |
+|---|---|---|
+| 1993-1994 | The leader's first fifth-generation sockets | the market leader |
+| 1995-1999 | Socket 7 family (later "Super Socket 7", 1998) | the leader, its main rival, and smaller makers including a third-party chip designer that later became part of a chipset maker, and a short-lived low-cost newcomer |
+| 1997-1999 | Leader's cartridge slot | leader only |
+| 1999-2000 | Rival's cartridge slot (different shape) | rival only |
+| 1999-2000s | Leader's return to a socket | the leader, plus the chipset maker's processors from that third-party line |
+| 2000-2000s | Rival's own socket | rival only |
+| 2004 | Pins move from the chip to the motherboard | leader |
+
+In game: Socket 7 is the fun one, where chips from four parody makers all
+fit the same board. The two cartridge slots look alike but don't
+interchange. Each era of sockets has a matching Motherboard part.
+
+### Graphics cards by bus
+
+| Years | Bus |
+|---|---|
+| 1980s | ISA |
+| 1992-1994 | Local bus for faster 2D cards |
+| 1993-1990s | PCI |
+| 1997-2000s | AGP, a dedicated graphics slot |
+| 2004 on | PCI Express |
+
+Extra real detail: the first popular 3D add-in cards (1996) did 3D only and
+needed a separate 2D card connected by a pass-through cable. On the
+Workbench that could take a second graphics slot until all-in-one cards
+arrive.
+
+### How it plays
+
+- **Motherboard slot** sets the socket and bus. A new board opens new
+  sockets and buses, and may make old parts incompatible, which is the real
+  reason people rebuilt PCs.
+- **Install screen** lists only parts that fit the current board and
+  greys out the rest with the reason ("needs a Socket 7 board").
+- **Parody makers** each have a short line of parts with fictional model
+  names, real dates and real-style specs. Defunct makers' lines stop in the
+  year the real company left that market, with a Museum card explaining why
+  in general terms.
+- **Period builds** (see PC workbench) get richer: a "1998 Socket 7 build"
+  with an underdog chip could be its own achievement.
+
+## More row generations
+
+**Roadmap:** Next: PC hardware, item 5.
 
 The [chip generations](#chip-generations) system applied to more rows, with
 the same rules (owned-count milestones, small bonus, a history card each):
@@ -199,7 +264,7 @@ without adding rows or a save migration.
 
 ## Hardware history events
 
-**Roadmap:** Next: PC hardware, item 5.
+**Roadmap:** Next: PC hardware, item 6.
 
 Short timed events in the style of the Dot-com Bubble, each tied to one era
 and shown with a countdown. All effects are fixed and shown up front; no

@@ -67,7 +67,7 @@ function freshBiz(mode) {
 function freshState() {
   return {
     ...blankMeta(),
-    cash: 4,
+    cash: 0,
     lifetime: 0,
     investors: 0,
     streak: 1,
@@ -610,7 +610,7 @@ export function useGame() {
     const next = freshState();
     Object.assign(next, meta);
     next.biz = freshBiz(id === "glass" ? "glass" : undefined);
-    next.cash = 4;
+    next.cash = 0;
     next.lifetime = 0;
     const spec = CHALLENGES.find((entry) => entry.id === id);
     next.challenge = { id, startedAt: Date.now(), earnings: 0, goal: scaledChallengeGoal(spec, next) };
@@ -662,7 +662,7 @@ export function useGame() {
     const next = freshState();
     Object.assign(next, meta);
     next.biz = freshBiz();
-    next.cash = 4;
+    next.cash = 0;
     next.lifetime = 0;
     next.investors = nextInvestors;
     next.prestiged = true;
@@ -685,7 +685,7 @@ export function useGame() {
     const next = freshState();
     Object.assign(next, meta);
     next.biz = freshBiz();
-    next.cash = 4;
+    next.cash = 0;
     next.lifetime = 0;
     next.investors = Math.max(0, (s.investors || 0) - bill);
     next.singularities = (s.singularities || 0) + 1;

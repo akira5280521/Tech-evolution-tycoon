@@ -7,7 +7,7 @@ chance-based rewards, and new content stays hidden ("???") until discovered.
 
 ## Chip generations
 
-**Roadmap:** Next, item 1.
+**Roadmap:** Next: PC hardware, item 1.
 
 ### Idea
 
@@ -87,6 +87,102 @@ change.
 
 ### Later
 
-The same system can cover Home Computers (8-bit micros, the office PC,
-graphical desktops, laptops) and RGB Battlestations. That would cover some of
-the "fill the gaps" eras without adding rows.
+The same system covers more rows: see [More row generations](#more-row-generations).
+
+## PC workbench
+
+**Roadmap:** Next: PC hardware, item 2.
+
+### Idea
+
+A new Workbench screen where the player assembles a PC from parts. Each part
+slot upgrades through generations, and a complete build gives an empire-wide
+revenue bonus that grows as the parts get better. It's the most "PC" feature
+in the game and a long-term goal across runs.
+
+### Slots and generations
+
+Generic names with real dates (check each against a source before shipping):
+
+| Slot | Generations |
+|---|---|
+| Processor | follows the Microprocessors generations |
+| Graphics | follows the Graphics Cards generations |
+| Memory | magnetic core memory (1950s), DRAM chips (1970), DDR modules (2000) |
+| Storage | magnetic tape (1951), floppy disk (1971), hard drive in a PC (1980s), CD-ROM (mid-1980s), solid-state drive (2000s) |
+| Display | CRT monitor, flat LCD panel (2000s), OLED (2010s) |
+| Cooling | heatsink, fan, liquid cooling |
+
+### How it works
+
+- A slot's next generation unlocks when the player reaches the matching era
+  or generation, then costs tokens or data to install. Cash would reset on
+  prestige; tokens and data don't, which fits a long-term goal.
+- The build bonus is the product of the slot levels, kept inside the
+  existing soft income ceiling (for example up to +25% at a full top-tier
+  build).
+- The build survives prestige and forks.
+- Locked generations show as "???" like other locked content.
+- The screen shows the build as a pixel-art PC that changes as parts are
+  added, a good spot for the new art.
+
+### Notes
+
+- Needs new saved state (`state.workbench`), kept in `snapshotMeta`.
+- Re-run the pacing simulation: the first fork should stay around 5-7 days
+  of nonstop play.
+- Art: one small icon per part generation, about 20 in total.
+
+## More row generations
+
+**Roadmap:** Next: PC hardware, item 3.
+
+The [chip generations](#chip-generations) system applied to more rows, with
+the same rules (owned-count milestones, small bonus, a history card each):
+
+- **Home Computers:** 8-bit home micro (1977), office PC (1981), graphical
+  desktop with a mouse (1984), laptop (1990s).
+- **RGB Battlestations:** LAN-party tower (late 1990s), liquid-cooled rig
+  (2000s), small-form-factor mini PC (2010s).
+
+This also covers several of the history theme's "fill the gaps" eras
+without adding rows or a save migration.
+
+## Hardware history events
+
+**Roadmap:** Next: PC hardware, item 4.
+
+Short timed events in the style of the Dot-com Bubble, each tied to one era
+and shown with a countdown. All effects are fixed and shown up front; no
+chance involved.
+
+| Event | Real history | Effect while it runs |
+|---|---|---|
+| Memory price spike | DRAM prices rose sharply in 2017-2018 | Home Computers pay x2, cost x1.5 |
+| Hard-drive shortage | 2011 floods hit drive factories | Storage-related era pays x2, buying paused or pricier |
+| Floppies to CDs | software moved to CD-ROM in the 1990s | A one-time choice: switch now for a boost, or later for free |
+
+Notes: one event at a time, never during challenges, never while the app is
+closed. Re-run the pacing sim if the multipliers change.
+
+## Parts as materials
+
+**Roadmap:** Later.
+
+### Idea
+
+Later eras use up parts made by earlier rows: Home Computers consume chips,
+memory and drives, Graphics Cards consume chips, and so on. The current
+supply chain (sand, copper, silicon, wafers) never limits anything after the
+opening, as the pacing and layout tests showed; this would make older rows
+matter for the whole game.
+
+### Risks
+
+- The biggest balance change of the hardware ideas: a starved input stops a
+  late era, which can feel bad in an idle game. Use a soft limit (slower, not
+  stopped) like the current supply factor.
+- Offline earnings must drain inputs over time, as the 0.0.8 offline fix
+  already does for raw materials.
+- Needs the full pacing test, including casual and offline players, before
+  shipping.

@@ -42,7 +42,7 @@ keyPassword=...
 or, on a build server or cloud agent, set environment variables:
 `TET_KEYSTORE_FILE`, `TET_KEYSTORE_PASSWORD`, `TET_KEY_ALIAS`, `TET_KEY_PASSWORD`.
 
-A release build stops with an error if neither is set. Debug builds don't need it.
+When a keystore is configured, the release build signs with it the same way as before. If neither the properties file nor `TET_KEYSTORE_FILE` is set, `assembleRelease` writes an unsigned APK instead. Debug builds don't need a key.
 
 ## 3. Remove the old key from git history
 

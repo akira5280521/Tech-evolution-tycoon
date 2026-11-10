@@ -53,11 +53,22 @@ In this order. Designs in [`docs/ideas.md`](ideas.md).
    box, beige tower, black tower with a window, glass RGB case), with
    see-through cases showing the parts. About 30-35 sprites on one grid;
    placeholder shapes until the art exists. [Design](ideas.md#pc-workbench).
-4. **Generations on more rows**, using the system from item 1: Home
+4. **Parts catalog: fictional makers, real history, real compatibility.**
+   Workbench parts come from parody makers (no real company or product
+   names), including parodies of defunct companies such as the 1990s
+   third-party processor makers and 3D-card makers. Dates and specs follow
+   real PC history. Parts are interchangeable only where they were in real
+   life: processors fit by socket or slot type (several makers' chips shared
+   one socket in the mid-1990s; the cartridge slots of 1997-1999 were
+   maker-specific), and graphics cards fit by bus (ISA, local bus, PCI, AGP,
+   PCI Express). A Motherboard slot sets the socket and bus, so upgrading
+   the board is how a build moves forward, as in a real PC.
+   [Design](ideas.md#parts-catalog).
+5. **Generations on more rows**, using the system from item 1: Home
    Computers (8-bit micro, office PC, graphical desktop, laptop) and RGB
    Battlestations (LAN-party tower, liquid cooling, mini PC). Can ship
    alongside item 3. [Design](ideas.md#more-row-generations).
-5. **Hardware history events**: memory price spike, hard-drive shortage, the
+6. **Hardware history events**: memory price spike, hard-drive shortage, the
    switch from floppies to CDs. One part pays more for a while. Can ship
    alongside item 3. [Design](ideas.md#hardware-history-events).
 
@@ -75,7 +86,7 @@ In this order. Designs in [`docs/ideas.md`](ideas.md).
    Note: `biz` is saved by position, so inserting eras needs a save migration
    that maps old rows to era ids first. Re-run the pacing sim after. Some of
    these (office PC, graphical desktops, laptops) could instead be
-   generations of Home Computers (PC hardware, item 4).
+   generations of Home Computers (PC hardware, item 5).
 2. **More events from real history.**
    - Moore's Law (1965): a research upgrade that makes each newer era cheaper.
    - The first "bug" (1947): a moth found in the Harvard Mark II. A dilemma.

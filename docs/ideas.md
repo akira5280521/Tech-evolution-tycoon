@@ -89,13 +89,36 @@ change.
 
 The same system covers more rows: see [More row generations](#more-row-generations).
 
-## PC workbench
+## Tab layout
 
 **Roadmap:** Next: PC hardware, item 2.
 
+Each tab answers one question. Today More mixes settings, the token Market
+and Research.
+
+| Tab | Answers | Contents |
+|---|---|---|
+| Game | What am I building? | Era rows (chip generations show on their rows) |
+| Boost | How do I earn more? | Upgrades · Research (moved from More) · Workbench (later) |
+| Board | What do I spend? | Investors, forks, Market (moved from More) |
+| Runs | What goals can I chase? | Challenges, mega-projects |
+| Badges | What have I collected? | Badges · Museum (generation history cards go here) |
+| More | Settings and help | Orientation, updates, save backup, account, reset, how-to, daily briefing |
+
+- Add switchers instead of tabs: the six tabs already fill two rows on a
+  phone. Boost gets Upgrades · Research (· Workbench later); Badges gets
+  Badges · Museum, which also shortens a very long page.
+- Remember the last switcher choice per tab (localStorage, as a convenience).
+- Update the How to Play text and any "go to More" hints.
+- Re-run the layout test (every screen, 26 sizes, text 85-200%) after.
+
+## PC workbench
+
+**Roadmap:** Next: PC hardware, item 3.
+
 ### Idea
 
-A new Workbench screen where the player assembles a PC from parts. Each part
+A Workbench view on the Boost tab (see [Tab layout](#tab-layout)) where the player assembles a PC from parts. Each part
 slot upgrades through generations, and a complete build gives an empire-wide
 revenue bonus that grows as the parts get better. It's the most "PC" feature
 in the game and a long-term goal across runs.
@@ -126,6 +149,32 @@ Generic names with real dates (check each against a source before shipping):
 - The screen shows the build as a pixel-art PC that changes as parts are
   added, a good spot for the new art.
 
+### How it grows as hardware is added
+
+- **Slots open with the eras.** The Processor slot appears with
+  Microprocessors, Graphics with Graphics Cards, and Memory, Storage,
+  Display and Cooling with Home Computers. Slots for eras not discovered yet
+  show as "???".
+- **Part tiers come from generations.** Reaching a generation on an era row
+  makes that part installable: hitting the 64-bit generation on
+  Microprocessors unlocks the 64-bit processor part. Memory, Storage,
+  Display and Cooling tiers come from the Home Computers and RGB
+  Battlestations generations (more row generations).
+- **Install, don't buy.** Installing a part costs tokens or data, which
+  survive prestige, so the build is a long-term project across runs.
+- **Bottleneck rule.** As with a real PC, the build is held back by its
+  weakest part: the bonus grows with the average tier but can't go more than
+  two tiers above the weakest slot. That nudges balanced upgrades and
+  teaches a real idea.
+- **Period builds.** A small extra bonus when every part is from the same
+  decade (a "1984 build", a "2006 build"), with a Museum entry for each one
+  completed. Fits the history theme and rewards collecting.
+- **Events plug in.** Hardware history events can affect it: the memory
+  price spike doubles Memory install costs for a while, and the floppies to
+  CDs switch unlocks the CD drive part.
+- **Later, parts as materials.** If parts as materials ships, parts could be
+  assembled from items made by the era rows instead of bought with tokens.
+
 ### Notes
 
 - Needs new saved state (`state.workbench`), kept in `snapshotMeta`.
@@ -135,7 +184,7 @@ Generic names with real dates (check each against a source before shipping):
 
 ## More row generations
 
-**Roadmap:** Next: PC hardware, item 3.
+**Roadmap:** Next: PC hardware, item 4.
 
 The [chip generations](#chip-generations) system applied to more rows, with
 the same rules (owned-count milestones, small bonus, a history card each):
@@ -150,7 +199,7 @@ without adding rows or a save migration.
 
 ## Hardware history events
 
-**Roadmap:** Next: PC hardware, item 4.
+**Roadmap:** Next: PC hardware, item 5.
 
 Short timed events in the style of the Dot-com Bubble, each tied to one era
 and shown with a countdown. All effects are fixed and shown up front; no

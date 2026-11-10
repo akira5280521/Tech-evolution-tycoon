@@ -37,7 +37,7 @@ export default function IconTile({ cfg, st, onRun }) {
       {st.lastGain && (
         <span
           key={st.lastGain.id}
-          className="gain-pop pointer-events-none absolute left-1/2 top-0 z-10 whitespace-nowrap font-term text-lg font-bold leading-5 text-[var(--game-success)]"
+          className="gain-pop pointer-events-none absolute left-1/2 top-0 z-10 whitespace-nowrap font-term text-base font-bold leading-5 text-[var(--game-success)] [text-shadow:1px_1px_0_#000,-1px_-1px_0_#000,1px_-1px_0_#000,-1px_1px_0_#000]"
         >
           +{money(st.lastGain.amount)}
         </span>

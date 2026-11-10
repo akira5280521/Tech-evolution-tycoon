@@ -227,17 +227,17 @@ export const CHALLENGES = [
 export const PROJECTS = [
   { id: "cable", name: "TRANSCONTINENTAL CABLE", blurb: "Career earnings reach $10.00B.", reward: 0.1, tokens: 20 },
   { id: "mainframe", name: "NATIONAL MAINFRAME", blurb: "Career earnings reach $1.00T.", reward: 0.1, tokens: 20 },
-  { id: "orbital", name: "ORBITAL ARRAY", blurb: "Own 25 Quantum Servers at once.", reward: 0.1, tokens: 20 },
+  { id: "orbital", name: "ORBITAL ARRAY", blurb: "Own 25 Quantum Servers at once.", reward: 0.1, tokens: 20, eras: ["quantum"] },
   // Later projects pay a smaller bonus each so the set stays inside the soft ceiling.
-  { id: "arpanet", name: "ARPANET NODE", blurb: "Own 100 Punch Cards and 100 Transistors at once.", reward: 0.05, tokens: 15,
+  { id: "arpanet", name: "ARPANET NODE", blurb: "Own 100 Punch Cards and 100 Transistors at once.", reward: 0.05, tokens: 15, eras: ["punchcards", "transistors"],
     check: (s) => owns(s, "punchcards", 100) && owns(s, "transistors", 100) },
-  { id: "apollo", name: "APOLLO GUIDANCE COMPUTER", blurb: "Own 150 Integrated Circuits at once.", reward: 0.05, tokens: 15,
+  { id: "apollo", name: "APOLLO GUIDANCE COMPUTER", blurb: "Own 150 Integrated Circuits at once.", reward: 0.05, tokens: 15, eras: ["ics"],
     check: (s) => owns(s, "ics", 150) },
-  { id: "homebrew", name: "HOMEBREW COMPUTER CLUB", blurb: "Own 100 of every era from Punch Cards to Home Computers.", reward: 0.05, tokens: 15,
+  { id: "homebrew", name: "HOMEBREW COMPUTER CLUB", blurb: "Own 100 of every era from Punch Cards to Home Computers.", reward: 0.05, tokens: 15, eras: ["punchcards", "transistors", "ics", "cpu", "homepc"],
     check: (s) => ["punchcards", "transistors", "ics", "cpu", "homepc"].every((id) => owns(s, id, 100)) },
   { id: "y2k", name: "Y2K PATCH", blurb: "Career earnings reach $1.00Qa.", reward: 0.05, tokens: 15,
     check: (s) => (s.careerEarnings || 0) >= 1e15 },
-  { id: "lan", name: "WORLD'S BIGGEST LAN PARTY", blurb: "Own 150 Graphics Cards and 150 RGB Battlestations at once.", reward: 0.05, tokens: 15,
+  { id: "lan", name: "WORLD'S BIGGEST LAN PARTY", blurb: "Own 150 Graphics Cards and 150 RGB Battlestations at once.", reward: 0.05, tokens: 15, eras: ["gpu", "rgb"],
     check: (s) => owns(s, "gpu", 150) && owns(s, "rgb", 150) },
   { id: "timeline", name: "PARALLEL TIMELINE", blurb: "Fork the timeline once.", reward: 0.05, tokens: 15,
     check: (s) => (s.singularities || 0) >= 1 },
@@ -245,6 +245,31 @@ export const PROJECTS = [
 
 function owns(state, id, n) {
   return (state.biz?.[indexOfBusiness(id)]?.owned || 0) >= n;
+}
+
+// The furthest era the player has discovered: on screen now, or proven by a
+// badge, mastery or Museum card from an earlier run. Everything up to it is
+// discovered. Locked items for eras past it stay hidden ("???").
+export function furthestRevealedEra(state) {
+  const biz = state?.biz || [];
+  const earned = new Set(state?.badgesEarned || []);
+  const museum = state?.museum || [];
+  let furthest = 0;
+  BUSINESSES.forEach((cfg, i) => {
+    const onScreen = i === 0 || (biz[i]?.owned || 0) > 0 || (biz[i - 1]?.owned || 0) > 0;
+    const proven = earned.has(`era-${cfg.id}`) || earned.has(`master-${cfg.id}`) || museum.some((id) => id.startsWith(`${cfg.id}-`));
+    if (onScreen || proven) furthest = i;
+  });
+  return furthest;
+}
+
+export function eraRevealed(state, index) {
+  return index <= furthestRevealedEra(state);
+}
+
+export function projectRevealed(state, project) {
+  if ((state?.projectsDone || []).includes(project.id)) return true;
+  return (project.eras || []).every((id) => eraRevealed(state, indexOfBusiness(id)));
 }
 
 export const SHOP = [
@@ -755,6 +780,7 @@ const BADGE_DEFS = [
     name: cfg.name,
     desc: `Own ${ERA_BADGE_OWNED[index]} ${cfg.name}`,
     icon: cfg.icon,
+    era: index,
     earned: (s) => (s.biz?.[index]?.owned || 0) >= ERA_BADGE_OWNED[index],
   })),
   ...BUSINESSES.map((cfg, index) => ({
@@ -763,6 +789,7 @@ const BADGE_DEFS = [
     name: `${cfg.name} Mastery`,
     desc: "Reach this era's mastery count and buy both upgrades",
     icon: cfg.icon,
+    era: index,
     earned: (s) => isMastered(s, index),
   })),
   ...LIFE_BADGES.map((row) => ({
@@ -789,6 +816,7 @@ const BADGE_DEFS = [
       group: "MEGA-PROJECTS",
       name: project.name,
       desc,
+      era: row.needOwned ? indexOfBusiness("quantum") : undefined,
       earned: (s) => (row.needOwned
         ? (s.biz?.[indexOfBusiness("quantum")]?.owned || 0) >= row.needOwned
         : (s.careerEarnings || 0) >= row.need),
@@ -875,14 +903,20 @@ export function collectBadges(state) {
 
 export function badgeList(state) {
   const held = new Set(state.badgesEarned || []);
-  return BADGE_DEFS.map((badge) => ({
-    id: badge.id,
-    group: badge.group,
-    name: badge.name,
-    desc: badge.desc,
-    icon: badge.icon || "",
-    earned: held.has(badge.id) || !!badge.earned(state),
-  }));
+  const furthest = furthestRevealedEra(state);
+  return BADGE_DEFS.map((badge) => {
+    const earned = held.has(badge.id) || !!badge.earned(state);
+    return {
+      id: badge.id,
+      group: badge.group,
+      name: badge.name,
+      desc: badge.desc,
+      icon: badge.icon || "",
+      earned,
+      // Badges for eras the player hasn't discovered yet don't give them away.
+      hidden: !earned && badge.era !== undefined && badge.era > furthest,
+    };
+  });
 }
 
 export function tickDilemma(state, now) {

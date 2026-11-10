@@ -184,7 +184,7 @@ Generic names with real dates (check each against a source before shipping):
 
 ## Parts catalog
 
-**Roadmap:** Next: PC hardware, item 4.
+**Roadmap:** Next: PC hardware, item 4 (step 1: the core build).
 
 ### Rules
 
@@ -260,6 +260,24 @@ arrive.
 - Power supplies upgrade through generations: more wattage, then better
   efficiency, shown with a generic "efficiency rating" (the well-known
   certification labels are trademarks).
+- **Power plugs change with the board**, so an old supply can't feed a newer
+  board until it's replaced. From memory, check before shipping:
+
+  | Plug | Around | Real detail for the game |
+  |---|---|---|
+  | Two 6-pin board plugs side by side | 1981 (early PCs), through AT boards | Easy to swap by mistake; the rule was "black wires together in the middle" |
+  | Single 20-pin board plug | 1995 (ATX) | One keyed plug, and the PC can switch itself off |
+  | Extra 4-pin 12 V processor plug | 2000 | Processors started needing more power |
+  | 24-pin board plug | 2003-04 | The plug still used today |
+  | 4-pin drive power plug | 1980s on | Hard drives and optical drives; later fans |
+  | Small 4-pin floppy plug | mid-1980s on | 3.5-inch floppy drives |
+  | SATA power plug | 2003 | Flat plug next to the SATA data cable |
+  | 6-pin, then 8-pin graphics card plug | mid-2000s | Graphics cards outgrew what the slot could give |
+  | 16-pin high-power graphics plug | 2022 | For the biggest modern cards |
+
+  In game: the board's plug type and the supply's plugs must match, the same
+  way sockets do; the PC picture shows the right plugs; and a Museum card
+  can tell the "black wires together" story.
 
 ### Overclocking
 
@@ -275,9 +293,102 @@ arrive.
   higher levels.
 - Re-run the pacing simulation once it's built.
 
+### Motherboard
+
+The motherboard decides what else fits:
+
+| Form factor | Year | Effect in game |
+|---|---|---|
+| AT | 1984 | Big board, desktop or tower case |
+| ATX | 1995 | The long-running standard; more slots |
+| micro-ATX | 1997 | Fewer expansion slots, smaller cases |
+| mini-ITX | 2001 | One expansion slot, compact cases |
+
+Each board also has a socket or slot, a memory type and slot count, drive
+connectors and a graphics bus. Changing the board is the main upgrade step,
+and can make older parts stop fitting.
+
+### Memory
+
+| Type | Around |
+|---|---|
+| 30-pin SIMM | 1980s |
+| 72-pin SIMM | early 1990s |
+| DIMM (SDRAM) | late 1990s |
+| DDR | 2000 |
+| DDR2 | 2003 |
+| DDR3 | 2007 |
+| DDR4 | 2014 |
+| DDR5 | 2020 |
+
+Fits only the board's memory type. Matched pairs give a small dual-channel
+bonus.
+
+### Storage and cables
+
+From the very first disks, with real capacities to show how far storage came:
+
+| What | Around | Real detail for the game |
+|---|---|---|
+| Room-sized disk unit | 1956 | The first commercial hard disk: dozens of 24-inch platters in a cabinet the size of two refrigerators, holding about 3.75 MB |
+| Removable disk packs | 1960s-70s | Stacks of platters swapped by hand |
+| Sealed "Winchester" drive | 1973 | The sealed design all later hard drives follow |
+| 8-inch floppy | 1971 | Read-only at first |
+| 5.25-inch floppy | 1976 | |
+| First 5.25-inch hard drive | 1980 | 5 MB, two ribbon cables per drive (a wide control cable and a narrow data cable) |
+| PC hard drives of 10-20 MB | early 1980s | A 10 MB drive was a big selling point |
+| 3.5-inch floppy | early-mid 1980s | |
+| Faster drive interface on two cables | 1983 | |
+| Wide ribbon interface used by workstations and servers | 1980s (standard 1986) | Several devices on one cable, each with an ID |
+| IDE: controller on the drive, one 40-pin ribbon | late 1980s (standard 1994) | Two drives per cable, set as "master" and "slave" with a jumper |
+| 80-wire IDE ribbon | late 1990s | Same plug, more wires for faster transfers |
+| SATA: thin cable, one drive each | 2003 | |
+| SSD | late 2000s for home PCs | No moving parts |
+| M.2 / NVMe stick | mid-2010s | Plugs straight into the board, no cable |
+
+In game: each drive needs a matching connector on the board, cables show on
+the PC picture (fat ribbons in the beige era, thin SATA later, none for
+M.2), and IDE's two-drives-per-cable rule is a small, real puzzle. The
+earliest units are Museum and period-build pieces rather than parts that fit
+a PC. Interface names like the early drive standards should be generic or
+parody in-game if they were tied to a company.
+
+### Bench Score and parts bin
+
+- **Bench Score** (generic name) for the whole build. Performance parts raise
+  it; the weakest part and power or cooling limits hold it back; colors and
+  period builds add collection points. The income bonus comes from score
+  bands, kept small.
+- **Parts bin:** every part collected stays in the bin to swap back in.
+  Parts that don't fit the current board are greyed out with the reason.
+
+## Expansion slots
+
+**Roadmap:** Next: PC hardware, item 5 (parts catalog step 2).
+
+- **Second graphics card:** running two cards together really helped in the
+  mid-2000s to 2010s (and briefly with 3D add-ins in the late 1990s), then
+  faded. In game it only pays off with parts from those periods, with a
+  Museum card explaining why.
+- **Sound card:** essential from the late 1980s; optional once sound was
+  built into boards around 2000. Mostly for period builds and the score.
+- **Network card:** for the dial-up and LAN-party periods.
+- Slot count comes from the motherboard's form factor.
+
+## Colors and collecting
+
+**Roadmap:** Next: PC hardware, item 6 (parts catalog step 3).
+
+- Period color schemes as cosmetic variants of parts: green circuit boards
+  in the '90s, red or blue gaming boards in the 2000s, black in the 2010s,
+  colored memory heat spreaders, then RGB lighting.
+- Cosmetic only: they add collection points to the Bench Score and Museum
+  entries, not earnings.
+- Made by recoloring the same sprite, so they cost little art.
+
 ## More row generations
 
-**Roadmap:** Next: PC hardware, item 5.
+**Roadmap:** Next: PC hardware, item 7.
 
 The [chip generations](#chip-generations) system applied to more rows, with
 the same rules (owned-count milestones, small bonus, a history card each):
@@ -292,7 +403,7 @@ without adding rows or a save migration.
 
 ## Hardware history events
 
-**Roadmap:** Next: PC hardware, item 6.
+**Roadmap:** Next: PC hardware, item 8.
 
 Short timed events in the style of the Dot-com Bubble, each tied to one era
 and shown with a countdown. All effects are fixed and shown up front; no

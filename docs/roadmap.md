@@ -15,6 +15,18 @@ and list the next items under "Coming soon" in the release notes (see
 - **0.0.11** - Safer updater: strict link check, private staging, package,
   version and signer checks before install. Signing key out of the repo.
 - **0.0.12** - Save backup: export a save code, restore from one.
+- **0.0.13** - Display and polish: locked badges, upgrades, Museum rows and
+  projects stay hidden until discovered; badge pictures fit their frames;
+  slower news ticker that pauses when held; landscape layout (full-width era
+  cards, side column stays put, COLLECT always visible); long era names,
+  buy-mode labels, Boost tags and Board values fit on narrow phones and with
+  large text. Checked with a layout test of every screen at 26 screen sizes,
+  portrait and landscape, and text sizes 85-200%.
+
+## To change
+
+Nothing open. The display and polish list from playtesting and the layout
+test shipped in 0.0.13 (see Done).
 
 ## Next: history theme
 

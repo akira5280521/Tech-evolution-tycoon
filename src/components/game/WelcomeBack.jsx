@@ -17,7 +17,7 @@ export default function WelcomeBack({ report, onDismiss }) {
       aria-label="Offline earnings"
       className="fixed inset-0 z-40 flex items-center justify-center overscroll-contain bg-black/70 p-4"
     >
-      <div className="game-modal w-full max-w-md border-4 border-[var(--game-accent)] bg-[var(--game-card)] p-5 shadow-[6px_6px_0_0_#000]">
+      <div className="game-modal flex w-full max-w-md flex-col border-4 border-[var(--game-accent)] bg-[var(--game-card)] p-4 shadow-[6px_6px_0_0_#000] sm:p-5">
         <h2 className="title-glow font-pixel text-sm text-[var(--game-accent)]">WELCOME BACK!</h2>
         <p className="mt-3 font-term text-lg leading-6 text-[var(--game-fg)]">
           You were away for {awayLabel(report.awayMs)}. Your hired crew kept the machines running
@@ -27,7 +27,7 @@ export default function WelcomeBack({ report, onDismiss }) {
           {money(report.amount)}
         </p>
         {report.rows.length > 0 && (
-          <ul className="mt-3 max-h-48 space-y-1 overflow-y-auto border-2 border-[var(--game-border)] bg-[var(--game-bg)] p-2 font-term text-base leading-5 text-[var(--game-muted)]">
+          <ul data-offline-rows className="mt-3 max-h-48 min-h-[3.5rem] flex-1 space-y-1 overflow-y-auto border-2 border-[var(--game-border)] bg-[var(--game-bg)] p-2 font-term text-base leading-5 text-[var(--game-muted)]">
             {report.rows.map((row) => (
               <li key={row.name} className="flex items-baseline justify-between gap-2">
                 <span>{row.name}</span>
@@ -40,7 +40,7 @@ export default function WelcomeBack({ report, onDismiss }) {
           type="button"
           onClick={onDismiss}
           data-offline-collect
-          className="mt-4 w-full select-none border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 py-2 font-pixel text-sm uppercase text-[var(--game-accent-fg)] shadow-[3px_3px_0_0_#000] hover:bg-[var(--game-accent-hover)]"
+          className="mt-4 min-h-11 w-full shrink-0 select-none border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 py-2 font-pixel text-sm uppercase text-[var(--game-accent-fg)] shadow-[3px_3px_0_0_#000] hover:bg-[var(--game-accent-hover)]"
         >
           Collect
         </button>

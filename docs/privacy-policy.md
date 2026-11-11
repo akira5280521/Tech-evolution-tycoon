@@ -102,4 +102,4 @@ the game's release notes.
 
 ## Contact
 
-Questions or requests about this policy: **[CONTACT EMAIL]**
+Questions or requests about this policy: **akira5280622@gmail.com**

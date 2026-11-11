@@ -49,4 +49,4 @@ keep a copy of your save.
 
 ## Contact
 
-**[CONTACT EMAIL]**
+**akira5280622@gmail.com**

@@ -20,7 +20,7 @@ base44 dev     # local backend + app together
 
 ## Android app
 
-The installable app is a Capacitor wrapper around a static build of the same game. Package id `tech.evolution.tycoon`, display name Tech Evolution Tycoon, version 0.0.15 (versionCode 15). It targets Android SDK 36 (minimum 24), ships the icons, fonts, and JavaScript inside the package, keeps the save in `localStorage`, and follows the device rotation unless Settings locks portrait or landscape. Backgrounding the activity mutes audio and pauses the WebView; the existing hidden-page tick still applies the 24 hour offline budget when it wakes. The hardware back button closes a boardroom dilemma, returns from a tab to the previous screen, and leaves the app only from the game screen.
+The installable app is a Capacitor wrapper around a static build of the same game. Package id `tech.evolution.tycoon`, display name Tech Evolution Tycoon, version 0.0.16 (versionCode 16). It targets Android SDK 36 (minimum 24), ships the icons, fonts, and JavaScript inside the package, keeps the save in `localStorage`, and follows the device rotation unless Settings locks portrait or landscape. Backgrounding the activity mutes audio and pauses the WebView; the existing hidden-page tick still applies the 24 hour offline budget when it wakes. The hardware back button closes a boardroom dilemma, returns from a tab to the previous screen, and leaves the app only from the game screen.
 
 Sideloaded copies look at the public GitHub release at most once a day, and from More → Settings. The request is anonymous. Play Store installs skip it. There is no ad SDK, no analytics script, and no billing library.
 
@@ -40,8 +40,10 @@ npm run android:release
 
 Outputs:
 
-- `android/app/build/outputs/apk/release/app-release.apk`
-- `android/app/build/outputs/bundle/release/app-release.aab`
+- `android/app/build/outputs/apk/sideload/release/app-sideload-release.apk`: attach this to the GitHub release (it has the in-app updater)
+- `android/app/build/outputs/bundle/playRelease/app-play-release.aab`: upload this to Play Console
+
+The **play** build leaves out the install-packages permission and the self-updater, because Google Play doesn't allow apps to update themselves; Play delivers its updates. Don't upload the sideload build to Play.
 
 The release signing key is **not** in the repo. Keep it somewhere private and give it to the build in `android/keystore.properties` (git-ignored) or as `TET_*` environment variables. A release build stops with a message if neither is set. Setup, key rotation and history cleanup are in [`docs/signing.md`](docs/signing.md).
 

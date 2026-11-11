@@ -87,7 +87,8 @@ folded into a neighbouring release.
   `docs/play-games.md`.
 - **Play Games achievements** for the existing badges (needs achievement ids
   from Play Console).
-- **Play build without the sideload updater** and its install permission.
+- **Play build without the sideload updater** and its install permission:
+  done in 0.0.16 (`play` and `sideload` build flavors).
 - **Real art** for the four new material icons (Paper Mill, Glassworks,
   Filament Forge, Germanium Refinery are placeholders), before store
   screenshots.

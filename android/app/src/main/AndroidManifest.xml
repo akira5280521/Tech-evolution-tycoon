@@ -44,6 +44,7 @@
 
     <!-- Anonymous GitHub release check, then the APK download the user asked for. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Sideload updates only. Play installs never start this flow. -->
+    <!-- Sideload updates only. The play build removes this permission
+         (src/play/AndroidManifest.xml). -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 </manifest>

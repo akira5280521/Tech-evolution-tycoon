@@ -26,6 +26,8 @@ public class InstallSourcePlugin extends Plugin {
         }
         JSObject result = new JSObject();
         result.put("installer", installer);
+        // False in the Google Play build: no GitHub update checks or installs.
+        result.put("sideloadUpdater", BuildConfig.SIDELOAD_UPDATER);
         call.resolve(result);
     }
 }

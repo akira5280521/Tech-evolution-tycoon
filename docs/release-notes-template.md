@@ -13,7 +13,7 @@ versionCode: 9
 - What's New and Coming Soon, read from these notes
 
 ## Coming soon
-- Investor upgrade shop
+- Investor milestones
 - A second world: the Space Age
 - Cloud save backup
 ```

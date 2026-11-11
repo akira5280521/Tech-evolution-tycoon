@@ -7,7 +7,7 @@ chance-based rewards, and new content stays hidden ("???") until discovered.
 
 ## First minutes and UI
 
-**Roadmap:** items 1-3 (phase 1); the era arrival card ships with item 4.
+**Roadmap:** items 1-3 (phase 1); the era arrival card ships with item 5.
 
 - **Company name:** asked once at the start, editable in More. Length limit
   and a simple word filter; it is only stored on the device. Used in ticker
@@ -34,7 +34,7 @@ chance-based rewards, and new content stays hidden ("???") until discovered.
 
 ## Sound and music
 
-**Roadmap:** item 8, then item 16 once the Workbench has a sound card.
+**Roadmap:** item 9, then item 18 once the Workbench has a sound card.
 All music and sounds original;
 early styles can be generated in code (Web Audio), so no recordings needed.
 
@@ -54,9 +54,75 @@ early styles can be generated in code (Web Audio), so no recordings needed.
 - Music and effects volume sliders in More; pause when the app is in the
   background; respect the phone's silent mode.
 
+## Mid game
+
+**Roadmap:** item 3 (prestige guide), item 4 (investor milestones), item 8
+(contracts and mega-project order), item 11 (focus era and run records).
+The mid game runs from the first prestige (about 3 hours) to the first
+timeline fork (about 4 days nonstop, 11 days casual). No chance anywhere.
+
+### Prestige guide
+
+- The prestige button shows the gain now: investors you'd get, and the
+  income multiplier before and after.
+- It lights up (and the NEXT hint mentions it) once the prestige would at
+  least double your investors, a common idle-game rule of thumb. Before
+  that it says how far off that point is.
+
+### Investor milestones
+
+A fixed ladder, shown in full with locked rungs as "???" until the one
+before is reached. Example rungs to tune with the pacing sim:
+
+| Investors | Unlock |
+|---|---|
+| 10 | Start each run with 25 Sand Quarries |
+| 50 | Material-row managers stay hired through prestige |
+| 250 | Offline cap 36 hours |
+| 1,000 | Auto-buy for upgrades (toggle) |
+| 5,000 | Offline cap 48 hours |
+| 10,000 | Start runs at Integrated Circuits with one of each earlier row |
+
+- Unlocks are kept for good once reached, so a fork resetting investors
+  doesn't take them away.
+- This replaces the earlier "investor upgrade shop" idea: unlocks are
+  earned, not bought, so investors keep their single job (income).
+
+### Historical contracts
+
+- Each era has one or two contracts in a fixed order, offered when the era
+  is reached: a kind of customer, an order, a deadline, a reward (cash
+  minutes or tokens). Generic names like "census office", "moon program"
+  or "bank"; parody names where a real company would be needed.
+- One contract at a time; it waits until accepted, so it never runs while
+  the player is away. Fail or skip: nothing lost, it comes back later.
+- Examples: census tabulation (1890), wartime ballistics tables (1940s),
+  airline reservations (1960s), moon program guidance (1960s), office PCs
+  for a bank (1980s), Y2K patching (1999), a render farm (2000s).
+
+### Mega-projects in order
+
+Put them in historical order with goals that match: Transcontinental Cable
+(1860s telegraph) first and cheapest, then mainframe-era projects, ARPANET
+(1969), the moon program (1969), Homebrew Computer Club (1975), Y2K (1999),
+LAN parties (2000s), Orbital Array last. Rewards stay the same.
+
+### Focus era
+
+- Before a run's first purchase, pick one era (or none) to get x3 for that
+  run. Shown on the row with a small badge. Can't change mid-run.
+- Gives runs different shapes: rush the early chain, or boost a late era
+  for a faster climb.
+
+### Run records
+
+- The Runs tab keeps the best time to reach each era. Beating a record pays
+  a few tokens (once per era per fork, so it can't be farmed).
+- Shares data with the stats page (item 3).
+
 ## Chip generations
 
-**Roadmap:** item 4.
+**Roadmap:** item 5.
 
 ### Idea
 
@@ -159,7 +225,7 @@ and Research.
   phone. Boost gets Upgrades · Research (· Workbench later); Badges gets
   Badges · Museum, which also shortens a very long page.
 - **Uses for spare data** (in the Research view; roadmap item 2, with more
-  uses in item 25). Data's only use today is
+  uses in item 26). Data's only use today is
   specialties (80 each, one slot plus one per fork, three at most), and it
   keeps arriving from eras, mastery, dilemmas and research samples. Once
   the slots are full it piles up. Add lab projects that spend it, all fixed
@@ -180,7 +246,7 @@ and Research.
 
 ## PC workbench
 
-**Roadmap:** item 10.
+**Roadmap:** item 12.
 
 ### Idea
 
@@ -255,7 +321,7 @@ before shipping):
 
 ## Parts catalog
 
-**Roadmap:** item 11 (parts catalog step 1: the core build).
+**Roadmap:** item 13 (parts catalog step 1: the core build).
 
 ### Rules
 
@@ -438,7 +504,7 @@ parody in-game if they were tied to a company.
 
 ## Expansion slots
 
-**Roadmap:** item 13 (parts catalog step 2).
+**Roadmap:** item 15 (parts catalog step 2).
 
 - **Modem card:** for the dial-up years (1980s bulletin boards to the
   1990s web). 300 baud up to 56k in 1998; fades with broadband.
@@ -472,7 +538,7 @@ parody in-game if they were tied to a company.
 
 ## Colors and collecting
 
-**Roadmap:** item 17 (parts catalog step 3).
+**Roadmap:** item 19 (parts catalog step 3).
 
 - Period color schemes as cosmetic variants of parts: green circuit boards
   in the '90s, red or blue gaming boards in the 2000s, black in the 2010s,
@@ -498,7 +564,7 @@ parody in-game if they were tied to a company.
 
 ## More row generations
 
-**Roadmap:** item 5.
+**Roadmap:** item 6.
 
 The [chip generations](#chip-generations) system applied to more rows, with
 the same rules (owned-count milestones, small bonus, a history card each):
@@ -515,7 +581,7 @@ without adding rows or a save migration.
 
 ## Hardware history events
 
-**Roadmap:** item 7 (with the other history events).
+**Roadmap:** item 8 (with the other history events).
 
 Short timed events in the style of the Dot-com Bubble, each tied to one era
 and shown with a countdown. All effects are fixed and shown up front; no
@@ -535,7 +601,7 @@ closed. Re-run the pacing sim if the multipliers change.
 
 ## Period build challenges
 
-**Roadmap:** item 18.
+**Roadmap:** item 20.
 
 - A challenge names a year and a goal: "Build a 1996 gaming PC", "A 2004
   LAN-party rig", "A 1983 office PC". Only parts released by that year
@@ -547,7 +613,7 @@ closed. Re-run the pacing sim if the multipliers change.
 
 ## Monitors and cooling
 
-**Roadmap:** monitors in item 12, cooling in item 11. From memory, check before shipping.
+**Roadmap:** monitors in item 14, cooling in item 13. From memory, check before shipping.
 
 | Monitor | Around | In game |
 |---|---|---|
@@ -573,7 +639,7 @@ screen is a real bottleneck.
 
 ## Optical drives
 
-**Roadmap:** item 15.
+**Roadmap:** item 17.
 
 - CD-ROM drives in the early 1990s, then the speed race from 1x to about
   52x by the early 2000s; CD burners in the late 1990s; DVD drives in the
@@ -585,7 +651,7 @@ screen is a real bottleneck.
 
 ## Jumper puzzle
 
-**Roadmap:** item 14.
+**Roadmap:** item 16.
 
 - Before plug-and-play (around 1995), cards and drives were set by hand
   with jumpers and DIP switches, and two cards wanting the same setting
@@ -598,7 +664,7 @@ screen is a real bottleneck.
 
 ## Boot screens
 
-**Roadmap:** item 16.
+**Roadmap:** item 18.
 
 - When the Workbench PC powers on: an era start-up screen for a second or
   two. Memory counting up and a beep in the 1980s-90s, a parody OS logo
@@ -608,7 +674,7 @@ screen is a real bottleneck.
 
 ## Desk scene
 
-**Roadmap:** item 23.
+**Roadmap:** item 25.
 
 - A desk around the Workbench PC with keyboard, mouse, modem and speakers.
 - Keyboards: loud clicky early boards, cheap rubber-dome boards in the
@@ -620,7 +686,7 @@ screen is a real bottleneck.
 
 ## Vintage parts
 
-**Roadmap:** item 22 (with Museum completion).
+**Roadmap:** item 24 (with Museum completion).
 
 - A retired part becomes "vintage" a fixed number of game years after its
   period ends. Vintage parts in the bin add collection points and can be put
@@ -629,7 +695,7 @@ screen is a real bottleneck.
 
 ## Parts as materials
 
-**Roadmap:** item 27.
+**Roadmap:** item 28.
 
 ### Idea
 
@@ -651,7 +717,7 @@ matter for the whole game.
 
 ## Long term
 
-**Roadmap:** items 19-30 (phase 4). Same rules: parody names, real dates, no
+**Roadmap:** items 21-31 (phase 4). Same rules: parody names, real dates, no
 chance.
 
 - **HQ picture:** steps unlock at fixed lifetime-earnings marks and survive

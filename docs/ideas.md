@@ -316,8 +316,9 @@ before shipping):
 - Needs new saved state (`state.workbench`), kept in `snapshotMeta`.
 - Re-run the pacing simulation: the first fork should stay around 5-7 days
   of nonstop play.
-- Art: one small icon per part generation (about 20), plus the case and
-  layer sprites for the PC picture: about 30-35 sprites in all.
+- Art: the full sprite list, with years and priorities, is in
+  [`docs/art/pc-build-sprites.md`](art/pc-build-sprites.md) (45 for a first
+  Workbench, 141 in all).
 
 ## Parts catalog
 

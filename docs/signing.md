@@ -59,6 +59,8 @@ it safe again. Rotating to the new key (steps 1-2) is the real fix.
 
 ## 4. What players see
 
+The Play application id is `tech.evolution.tycoon`. `applicationId` and the Capacitor `appId` use that id. The Java namespace stays `com.techevolutiontycoon.game`. The updater checks the downloaded APK's package name and signing certificates against the installed application id, and the FileProvider authority is `${applicationId}.fileprovider`. Play detection still treats installer `com.android.vending` as a Play install. This id does not replace a phone that has `com.techevolutiontycoon.game` installed. Those players export a Save Backup from the old app, install this one, and import the backup.
+
 - **Sideloaded installs:** Android won't update an app with an APK signed by a
   different key. Players must uninstall and reinstall once, which clears local
   progress. Since 0.0.12 they can carry their save across: More → Settings → Save Backup → Export Save before uninstalling, then Restore From a Code after installing.

@@ -19,7 +19,8 @@ android {
     namespace = "com.techevolutiontycoon.game"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.techevolutiontycoon.game"
+        // Play Console id. The Java namespace above stays com.techevolutiontycoon.game.
+        applicationId "tech.evolution.tycoon"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 14

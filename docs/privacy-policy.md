@@ -1,8 +1,8 @@
 # Privacy policy — Tech Evolution Tycoon
 
-Last updated: 7 November 2026
+Last updated: 11 November 2026
 
-Tech Evolution Tycoon (`com.techevolutiontycoon.game`) is an offline idle game. This policy describes the Android app.
+Tech Evolution Tycoon (`tech.evolution.tycoon`) is an offline idle game. This policy describes the Android app.
 
 ## Data the app collects
 

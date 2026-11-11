@@ -1,5 +1,5 @@
 {
-  "appId": "com.techevolutiontycoon.game",
+  "appId": "tech.evolution.tycoon",
   "appName": "Tech Evolution Tycoon",
   "webDir": "dist/client",
   "android": {

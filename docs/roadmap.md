@@ -15,7 +15,8 @@ and list the next items under "Coming soon" in the release notes (see
   countdown.
 - **0.0.11** - Safer updater: strict link check, private staging, package,
   version and signer checks before install.
-- **0.0.12** - Save backup: export a save code, restore from one.
+- **0.0.12** - Save backup: export a save code, restore from one. (No
+  separate release; first shipped in the 0.0.13 APK.)
 - **0.0.13** - Display and polish: locked badges, upgrades, Museum rows and
   projects stay hidden until discovered; badge pictures fit their frames;
   slower news ticker that pauses when held; landscape layout (full-width era
@@ -23,11 +24,19 @@ and list the next items under "Coming soon" in the release notes (see
   buy-mode labels, Boost tags and Board values fit on narrow phones and with
   large text. Checked with a layout test of every screen at 26 screen sizes,
   portrait and landscape, and text sizes 85-200%.
+- **0.0.14** - Maintenance release. Needs a fresh install: export your save
+  first, then import it. Gameplay unchanged.
 
 ## To change
 
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
+
+## Merged, ships in the next release
+
+- New games, prestige, challenges and timeline forks start at $0 instead of
+  $4 (which couldn't buy anything). Merged after 0.0.14 was published, so
+  list it under What's new in 0.0.15.
 
 ## How the order was chosen
 
@@ -154,8 +163,9 @@ where they fit in real life; no chance-based outcomes; locked parts stay
       maker-specific). **Graphics cards** fit by bus (ISA, local bus, PCI, AGP,
       PCI Express).
     - **Memory** by real type: 30-pin and 72-pin SIMMs, DIMMs, DDR (2000),
-      DDR2 (2003), DDR3 (2007), DDR4 (2014), DDR5 (2020). Matched pairs give a
-      small dual-channel bonus.
+      DDR2 (2003), DDR3 (2007), DDR4 (2014), DDR5 (2020). Early boards need
+      SIMMs in matched sets to work at all; from the early 2000s a matched
+      pair gives a small dual-channel bonus.
     - **Storage and cables, from the start:** room-sized disk units of the
       1950s that held a few megabytes, early PC hard drives of a few to tens
       of megabytes on two ribbon cables each, then wider single cables, IDE
@@ -186,8 +196,9 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     graphics card adds. First after the core build because the screen is the
     oldest part of the picture. [Design](ideas.md#monitors-and-cooling).
 15. **Parts catalog, step 2: expansion slots** (the PC's add-in slots date
-    from 1981). In the order they appeared: network cards (1980s, later the
-    dial-up and LAN-party years), add-in sound cards (essential from the
+    from 1981). In the order they appeared: modem cards (1980s to the
+    dial-up years of the 1990s), network cards (1980s offices, then the
+    LAN-party years), add-in sound cards (essential from the
     late 1980s, optional once sound moved onto boards around 2000), then a
     second graphics card (it only pays off with late-1990s to 2010s parts,
     when running two cards was a real thing, then fades as it did; linked
@@ -196,8 +207,8 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     then through the board itself from 2013, under generic names). Number of
     slots comes from the motherboard. [Design](ideas.md#expansion-slots).
 16. **Jumper puzzle** (small, with item 15): from the first PCs (1981) until
-    plug-and-play (about 1995), set jumpers and DIP switches and sort out two cards wanting the
-    same setting. Fixed answers; goes away once plug-and-play arrives.
+    plug-and-play (about 1995), set jumpers and DIP switches and sort out
+    two cards wanting the same setting. Fixed answers; goes away once plug-and-play arrives.
     [Design](ideas.md#jumper-puzzle).
 17. **Optical drives.** CD-ROM drives reached home PCs in the late 1980s
     and early 1990s, then the 1x-to-52x speed race, burners (late 1990s),

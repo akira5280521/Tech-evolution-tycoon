@@ -31,11 +31,13 @@ signing key's password, only its public SHA-1 fingerprint.
 
 1. **Create the Play Games Services project.** Play Console > your app >
    Grow users > Play Games Services > Setup and management > Configuration.
-   Choose that the game doesn't use Google APIs yet, and create a new
+   (The app must be marked as a game in Play Console.) Choose that the game doesn't use Google APIs yet, and create a new
    project. Fill in the display name (Tech Evolution Tycoon) and category.
-2. **OAuth consent screen.** Console sends you to Google Cloud to set it up:
-   External, app name, your support email, no extra scopes. Leave it in
-   testing until you publish.
+2. **OAuth consent screen.** The Credentials section shows a Configure
+   prompt that sends you to Google Cloud: External, app name, your support
+   email, and the scopes `games`, `games_lite` and `drive.appdata` (the last
+   one is what cloud saves use). Google recommends publishing the consent
+   screen right away; it must be published before the game is.
 3. **Credentials.** Back in Configuration > Credentials, add an **Android**
    credential for package `tech.evolution.tycoon`. Create one OAuth client
    per signing certificate, using its **SHA-1**:
@@ -50,13 +52,15 @@ signing key's password, only its public SHA-1 fingerprint.
 4. **Turn on Saved games.** Configuration > Properties > Saved games: On.
 5. **Testers.** Play Games Services > Testers: add the Google accounts that
    will test. Until Play Games Services is published, only testers can sign
-   in.
-6. **Project id.** Copy the numeric **Project ID** from the Configuration
-   page into `android/app/src/main/res/values/strings.xml`:
+   in, and new testers can take a couple of hours to work.
+6. **Project id.** Copy the numeric **Project ID** shown under the game's
+   name at the top of the Configuration page (12 or more digits; it's also
+   the first part of the OAuth client ID) into `android/app/src/main/res/values/strings.xml`:
    `<string name="game_services_project_id" translatable="false">123456789012</string>`.
    It's not a secret; it ships inside every copy of the app.
-7. **Publish.** When the game goes live, use Review and publish on the Play
-   Games Services page as well as the app release.
+7. **Publish.** Publish the Play Games Services settings (Publish Game)
+   **before** the app goes to production, or players who aren't testers get
+   sign-in errors.
 8. **Data safety and privacy.** Update the Data safety form with the Play
    Games answers in `docs/play-store/data-safety.md`. The privacy policy
    already describes the cloud save.

@@ -25,6 +25,7 @@ export const BUSINESSES = [
     coef: 1.14,
     managerName: "Pit Boss",
     managerCost: 180,
+    managerNeed: 5,
     revCost: 550,
     spdCost: 52000,
     makes: { sand: 3 },
@@ -246,6 +247,7 @@ export const BUSINESSES = [
     coef: 1.14,
     managerName: "Fab Line Supervisor",
     managerCost: 18000000,
+    managerNeed: 5,
     uses: { wafers: 1 },
     speedNeed: 80,
     masteryNeed: 150,
@@ -264,6 +266,7 @@ export const BUSINESSES = [
     coef: 1.12,
     managerName: "Chip Architect",
     managerCost: 43200000,
+    managerNeed: 5,
     speedNeed: 90,
     masteryNeed: 155,
     badgeOwned: 40,
@@ -281,6 +284,7 @@ export const BUSINESSES = [
     coef: 1.11,
     managerName: "Assembly Line Boss",
     managerCost: 432000000,
+    managerNeed: 5,
     speedNeed: 110,
     masteryNeed: 165,
     badgeOwned: 50,
@@ -298,6 +302,7 @@ export const BUSINESSES = [
     coef: 1.1,
     managerName: "Silicon Engineer",
     managerCost: 3996000000,
+    managerNeed: 5,
     speedNeed: 130,
     masteryNeed: 220,
     badgeOwned: 80,
@@ -315,6 +320,7 @@ export const BUSINESSES = [
     coef: 1.09,
     managerName: "Streamer Crafter",
     managerCost: 19999999980,
+    managerNeed: 5,
     speedNeed: 160,
     masteryNeed: 220,
     badgeOwned: 100,
@@ -332,6 +338,7 @@ export const BUSINESSES = [
     coef: 1.08,
     managerName: "Cryogenics Engineer",
     managerCost: 360000000000,
+    managerNeed: 5,
     speedNeed: 190,
     masteryNeed: 250,
     badgeOwned: 150,
@@ -348,6 +355,17 @@ export const RESEARCH_MS = 20000;
 export const UPGRADE_MS = 12000;
 export const COMMISSION_MS = 8000;
 export const PROJECT_MS = 20000;
+
+// A manager can only be hired once the player owns this many of that row, so
+// each new era is run by hand for a while before it runs itself. Sand Quarry
+// and the costly eras from Integrated Circuits on need 5; the pacing sim
+// showed 10 there left casual players' later eras without managers between
+// sessions and pushed their first fork back by days.
+export const MANAGER_NEED = 10;
+
+export function managerNeed(index) {
+  return BUSINESSES[index]?.managerNeed ?? MANAGER_NEED;
+}
 
 export function blankSupply() {
   return Object.fromEntries(SUPPLY_KEYS.map((key) => [key, 0]));
@@ -533,7 +551,7 @@ export function nextMove(state) {
     for (let i = BUSINESSES.length - 1; i >= 0; i--) {
       const st = biz[i];
       const cfg = BUSINESSES[i];
-      if (!st || st.owned <= 0 || st.manager || commissioning(st)) continue;
+      if (!st || st.owned < managerNeed(i) || st.manager || commissioning(st)) continue;
       if (blockedByGlass(state, i)) continue;
       const cost = state?.shop?.freeManager ? 0 : cfg.managerCost;
       if (cash >= cost) {
@@ -587,7 +605,7 @@ export function nextMove(state) {
   for (let i = 0; i < BUSINESSES.length && !noBoss; i++) {
     const st = biz[i];
     const cfg = BUSINESSES[i];
-    if (st && st.owned > 0 && !st.manager) {
+    if (st && st.owned >= managerNeed(i) && !st.manager) {
       const short = cfg.managerCost - cash;
       if (short > 0 && (!goal || short < goal.short)) {
         goal = { short, text: `Save ${money(short)} more to hire the ${cfg.managerName}.` };

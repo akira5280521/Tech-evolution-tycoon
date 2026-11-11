@@ -16,6 +16,7 @@ import {
   costOf,
   indexOfBusiness,
   investorsFor,
+  managerNeed,
   MAX_BUY,
   milestoneMult,
   milestoneSpeed,
@@ -727,7 +728,7 @@ export function managerPrice(state, index) {
 
 export function canHireIndex(state, index) {
   const st = state.biz?.[index];
-  if (!st || st.manager || st.owned <= 0) return false;
+  if (!st || st.manager || st.owned < managerNeed(index)) return false;
   if (state.challenge?.id === "noboss") return false;
   return state.cash >= managerPrice(state, index);
 }

@@ -1,7 +1,7 @@
 // Shared access to the game's localStorage save slot, used by the game screen
 // (read/write) and the settings screen (read-only analytics).
 
-import { BUSINESSES, blankSupply } from "./gameConfig.js";
+import { BUSINESSES, blankSupply, managerNeed } from "./gameConfig.js";
 
 export const SAVE_KEY = "pc-tycoon-save-v1";
 
@@ -63,7 +63,8 @@ export function migrateSave(data) {
   }
   const biz = BUSINESSES.map((cfg, i) => {
     if (seed.has(cfg.id)) {
-      return { id: cfg.id, owned: SEED_OWNED[cfg.id] || 1, manager: true, running: false, progress: 0, activeMs: 0, commissionUntil: 0 };
+      // Enough owned that the started manager meets the hiring rule.
+      return { id: cfg.id, owned: Math.max(SEED_OWNED[cfg.id] || 1, managerNeed(i)), manager: true, running: false, progress: 0, activeMs: 0, commissionUntil: 0 };
     }
     const row = rowsById[cfg.id] || {};
     const fallback = i === 0 && !rowsById[cfg.id] && version < 4 ? 1 : 0;

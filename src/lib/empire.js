@@ -26,18 +26,14 @@ import {
 export const SINGULARITY_MAX = 4;
 export const DATA_PER_ERA = 0.008;
 export const SPECIALTY_COST = 80;
-// Per era, cheapest first. Tubes use a slightly steeper cost so the first
-// speed gate is a real wait, and later eras carry a higher mastery bar so the
-// full set takes a few weeks. A purchase cannot skip the next bar: see maxBuyCount.
-const SPEED_NEED = [30, 36, 40, 44, 150, 60, 70, 80, 90, 110, 130, 160, 190];
-const MASTERY_NEED = [72, 70, 80, 90, 220, 150, 150, 150, 155, 165, 220, 220, 250];
-
+// Speed gate, mastery bar and badge count live on each era in BUSINESSES, so
+// the order of the rows can change without shifting these numbers.
 export function speedNeed(index) {
-  return SPEED_NEED[index] ?? 150;
+  return BUSINESSES[index]?.speedNeed ?? 150;
 }
 
 export function masteryNeed(index) {
-  return MASTERY_NEED[index] ?? 200;
+  return BUSINESSES[index]?.masteryNeed ?? 200;
 }
 
 // One click stops at the next milestone, speed gate, or mastery gate.
@@ -61,25 +57,10 @@ export function forkCost(points) {
   return Math.round(8500 * Math.pow(n, 1.85));
 }
 
-const UPGRADE_NAMES = [
-  ["Screened Grit", "Washed sand sells cleaner. Each scoop pays triple.", "Second Shift", "The pit stays lit. Cycles run twice as fast."],
-  ["High-Grade Ore", "The seam runs rich. Each pull pays triple.", "Twin Drills", "Two faces at once. The cycle is cut in half."],
-  ["Zone Refine", "The still drops metal-grade silicon. Yield triples.", "Hotter Crucible", "The melt finishes sooner. Twice the speed."],
-  ["Seed Crystals", "Each pull starts true. Wafer revenue triples.", "Twin Pullers", "Two crystals grow at once. Cycles are halved."],
-  ["Tungsten Filaments", "Hotter filaments, brighter valves - the batch fetches triple.", "Batch Soldering", "Pre-tinned boards fire in half the time."],
-  ["Steel Hoppers", "The card path stops jamming. Every stack pays triple.", "Gang Punch", "One stroke cuts a whole row. Cycles run twice as fast."],
-  ["Doped Wafers", "Cleaner junctions, triple the yield from each wafer.", "Wave Soldering", "The line never waits on a hand iron. Twice the speed."],
-  ["Gold Bond Wire", "The leads stop failing. Revenue from each die triples.", "Stepper Align", "Masks land true. The fab cycle is cut in half."],
-  ["Microcode Cache", "The chip stops fetching from the slow path. Triple revenue.", "Pipelined Clock", "Instructions overlap. The cycle time is halved."],
-  ["Bundled Software", "Every desk ships with a reason to buy. Triple revenue.", "Assembly Jig", "Cases close themselves. The line runs twice as fast."],
-  ["Shader Cores", "More pixels per die. Graphics revenue triples.", "Binning Pass", "Good chips leave the tester sooner. Twice the speed."],
-  ["Addressable LEDs", "The glow is the product. Revenue triples.", "Fan Curves", "Thermals stay quiet. Cycles complete twice as fast."],
-  ["Cryo Loops", "The chandelier stays cold. Quantum revenue triples.", "Error Correction", "Fewer shots are wasted. The cycle is cut in half."],
-];
 
 export function upgradeOffer(index) {
   const cfg = BUSINESSES[index];
-  const names = UPGRADE_NAMES[index];
+  const names = cfg.upgrades || ["Revenue Upgrade", "Triple revenue.", "Speed Upgrade", "Twice the speed."];
   return {
     id: cfg.id,
     index,
@@ -233,7 +214,7 @@ export const PROJECTS = [
     check: (s) => owns(s, "punchcards", 100) && owns(s, "transistors", 100) },
   { id: "apollo", name: "APOLLO GUIDANCE COMPUTER", blurb: "Own 150 Integrated Circuits at once.", reward: 0.05, tokens: 15, eras: ["ics"],
     check: (s) => owns(s, "ics", 150) },
-  { id: "homebrew", name: "HOMEBREW COMPUTER CLUB", blurb: "Own 100 of every era from Punch Cards to Home Computers.", reward: 0.05, tokens: 15, eras: ["punchcards", "transistors", "ics", "cpu", "homepc"],
+  { id: "homebrew", name: "HOMEBREW COMPUTER CLUB", blurb: "Own 100 each of Punch Cards, Transistors, Integrated Circuits, Microprocessors and Home Computers at once.", reward: 0.05, tokens: 15, eras: ["punchcards", "transistors", "ics", "cpu", "homepc"],
     check: (s) => ["punchcards", "transistors", "ics", "cpu", "homepc"].every((id) => owns(s, id, 100)) },
   { id: "y2k", name: "Y2K PATCH", blurb: "Career earnings reach $1.00Qa.", reward: 0.05, tokens: 15,
     check: (s) => (s.careerEarnings || 0) >= 1e15 },
@@ -759,7 +740,7 @@ export function canBuyIndex(state, index) {
 
 // Owned counts for the tech-era badges. Early eras clear in minutes; the
 // later counts sit well past the first purchase, into hours and days.
-const ERA_BADGE_OWNED = [20, 18, 16, 16, 25, 25, 20, 30, 40, 50, 80, 100, 150];
+const badgeOwned = (index) => BUSINESSES[index]?.badgeOwned ?? 25;
 const LIFE_BADGES = [
   { id: "life-1", legacy: 1e3, need: 1e6, label: "$1.00M" },
   { id: "life-2", legacy: 1e6, need: 1e9, label: "$1.00B" },
@@ -778,10 +759,10 @@ const BADGE_DEFS = [
     id: `era-${cfg.id}`,
     group: "TECH ERAS",
     name: cfg.name,
-    desc: `Own ${ERA_BADGE_OWNED[index]} ${cfg.name}`,
+    desc: `Own ${badgeOwned(index)} ${cfg.name}`,
     icon: cfg.icon,
     era: index,
-    earned: (s) => (s.biz?.[index]?.owned || 0) >= ERA_BADGE_OWNED[index],
+    earned: (s) => (s.biz?.[index]?.owned || 0) >= badgeOwned(index),
   })),
   ...BUSINESSES.map((cfg, index) => ({
     id: `master-${cfg.id}`,
@@ -1039,7 +1020,10 @@ export const HEADLINES = [
   "SILICA SAND LEAVES THE PIT BY THE TONNE",
   "VACUUM TUBES STILL WARM IN THE BACK ROOM",
   "PUNCH CARDS JAM, PROFITS DO NOT",
-  "CLEANROOM FOREMAN DENIES ANY LEAK",
+  "FAB LINE SUPERVISOR DENIES ANY LEAK",
+  "GLASSBLOWERS RACE THE NEW RIBBON MACHINE",
+  "CENSUS COUNTED IN WEEKS, NOT YEARS",
+  "GERMANIUM CRYSTALS GROWN FOR THE NEW TRANSISTOR",
   "MICROPROCESSORS PRINT OVERTIME",
   "RGB FANS AUDIBLE FROM ORBIT",
   "QUANTUM CHANDELIER OBSERVED PAYING DIVIDENDS",

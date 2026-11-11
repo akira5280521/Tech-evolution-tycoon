@@ -13,7 +13,7 @@
 //      so both worlds stay worth running.
 //   4. Managers keep both worlds earning while offline; the 24h cap applies per world.
 //   5. Icons: add /icons/space/<id>.png in the same pixel style.
-// Raw materials (sand..wafers) are Earth-only, so these eras have no `uses`.
+// Raw materials (sand, paper, glass and the rest) are Earth-only, so these eras have no `uses`.
 
 export const SPACE_UNLOCK = { singularities: 1 };
 

@@ -15,6 +15,14 @@ import NewsTicker from "./NewsTicker";
 import DilemmaModal from "./DilemmaModal";
 import BubbleBanner from "./BubbleBanner";
 
+// A material shows in the supply strip once the row that makes it is on
+// screen, so materials from undiscovered eras stay hidden.
+function supplyShown(state, key) {
+  const i = BUSINESSES.findIndex((cfg) => cfg.makes && cfg.makes[key]);
+  if (i < 0) return false;
+  return i === 0 || (state.biz[i]?.owned || 0) > 0 || (state.biz[i - 1]?.owned || 0) > 0;
+}
+
 export default function GameScreen() {
   const game = useGameState();
   const { state, buyMode, setBuyMode, buy, hire, run, runAll, buyForeman, prestige, dismissOffline, chooseDilemma, cashOut } = game;
@@ -106,7 +114,7 @@ export default function GameScreen() {
           />
           <div className="safe-x mx-auto max-w-4xl px-3 pt-2">
             <p data-supply className="flex flex-wrap gap-x-3 gap-y-1 border-2 border-[var(--game-border)] bg-[var(--game-card)] px-2 py-1 font-term text-base leading-5 text-[var(--game-muted)]">
-              {SUPPLY_KEYS.map((key) => (
+              {SUPPLY_KEYS.filter((key) => supplyShown(state, key)).map((key) => (
                 <span key={key}>{key} {Math.floor(supply[key] || 0)}</span>
               ))}
             </p>

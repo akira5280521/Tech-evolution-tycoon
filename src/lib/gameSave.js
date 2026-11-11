@@ -8,11 +8,21 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 // v1 banked investors with sqrt(lifetime / 1e6). v2 uses sqrt(lifetime / 1e12),
 // which is exactly 1000× fewer investors for the same lifetime. Saves without
 // a version are v1 and are rescaled once on read. v3 keeps every badge the
-// older, easier rules had already granted. v4 inserts the sand → wafer chain
-// in front of Vacuum Tubes and keeps the old nine rows behind it.
-export const SAVE_VERSION = 4;
-const MATERIAL_COUNT = 4;
+// older, easier rules had already granted. v4 inserted the sand → wafer chain
+// in front of Vacuum Tubes. v5 stores each row with its era id and puts the
+// rows in historical order, adding the paper, glass, filament and germanium
+// rows; older saves are matched to rows by their old position.
+export const SAVE_VERSION = 5;
 const V1_INVESTOR_DIVISOR = 1000;
+// Row order of each older save version.
+const V4_ORDER = ["sand", "copper", "silicon", "wafers", "tubes", "punchcards", "transistors", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];
+const V3_ORDER = V4_ORDER.slice(4);
+// Rows that did not exist in an older save, and the era that needs each one.
+// A player who already reached that era gets the row started for them.
+const V4_MATERIALS = ["sand", "copper", "silicon", "wafers"];
+const NEW_IN_V5 = { paper: "punchcards", glass: "tubes", filament: "tubes", germanium: "transistors" };
+const SEED_OWNED = { sand: 8, copper: 4, silicon: 2, wafers: 1, paper: 2, glass: 2, filament: 2, germanium: 2 };
+const SEED_SUPPLY = { sand: 80, copper: 40, silicon: 24, wafers: 12, paper: 20, glass: 20, filament: 20, germanium: 20 };
 
 function finiteNumber(n, fallback = 0) {
   if (typeof n !== "number" || !Number.isFinite(n) || n < 0) return fallback;
@@ -30,38 +40,48 @@ export function migrateSave(data) {
   else investors = Math.floor(investors);
 
   const bizIn = Array.isArray(data.biz) ? data.biz : [];
-  const progressed = investors > 0 || bizIn.some((row, i) => {
-    const owned = finiteNumber(row?.owned, 0);
-    return i === 0 ? owned > 1 : owned > 0;
+  const order = version < 4 ? V3_ORDER : version < 5 ? V4_ORDER : null;
+  const rowsById = {};
+  bizIn.forEach((row, i) => {
+    if (!row || typeof row !== "object") return;
+    const id = order ? order[i] : typeof row.id === "string" ? row.id : BUSINESSES[i]?.id;
+    if (id && !rowsById[id]) rowsById[id] = row;
   });
-  const source = version < 4 ? Array.from({ length: MATERIAL_COUNT }, () => ({})).concat(bizIn) : bizIn;
-  const starterOwned = [8, 4, 2, 1];
+  const ownedOf = (id) => Math.floor(finiteNumber(rowsById[id]?.owned, 0));
+  const progressed = investors > 0 || Object.entries(rowsById).some(([id, row]) => {
+    const owned = finiteNumber(row?.owned, 0);
+    return id === "sand" ? owned > 1 : owned > 0;
+  });
+  // Which rows to start for the player, so a row they already reached is not
+  // stranded behind a material row they never had.
+  const seed = new Set();
+  if (version < 4 && progressed) V4_MATERIALS.forEach((id) => seed.add(id));
+  if (version < 5) {
+    for (const [id, needs] of Object.entries(NEW_IN_V5)) {
+      if (ownedOf(needs) > 0 || (version < 4 && progressed)) seed.add(id);
+    }
+  }
   const biz = BUSINESSES.map((cfg, i) => {
-    const seeded = version < 4 && i < MATERIAL_COUNT;
-    const row = !seeded && source[i] && typeof source[i] === "object" ? source[i] : {};
-    const owned = seeded
-      ? (progressed ? starterOwned[i] : i === 0 ? 1 : 0)
-      : Math.floor(finiteNumber(row.owned, 0));
+    if (seed.has(cfg.id)) {
+      return { id: cfg.id, owned: SEED_OWNED[cfg.id] || 1, manager: true, running: false, progress: 0, activeMs: 0, commissionUntil: 0 };
+    }
+    const row = rowsById[cfg.id] || {};
+    const fallback = i === 0 && !rowsById[cfg.id] && version < 4 ? 1 : 0;
     return {
-      owned,
-      manager: seeded ? progressed : !!row.manager,
-      running: seeded ? false : !!row.running,
-      progress: seeded ? 0 : Math.min(finiteNumber(row.progress, 0), cfg.cycleMs),
-      activeMs: seeded ? 0 : finiteNumber(row.activeMs, 0),
-      commissionUntil: seeded ? 0 : finiteNumber(row.commissionUntil, 0),
+      id: cfg.id,
+      owned: Math.max(fallback, Math.floor(finiteNumber(row.owned, 0))),
+      manager: !!row.manager,
+      running: !!row.running,
+      progress: Math.min(finiteNumber(row.progress, 0), cfg.cycleMs),
+      activeMs: finiteNumber(row.activeMs, 0),
+      commissionUntil: finiteNumber(row.commissionUntil, 0),
     };
   });
   const supply = blankSupply();
-  if (version < 4) {
-    if (progressed) {
-      supply.sand = 80;
-      supply.copper = 40;
-      supply.silicon = 24;
-      supply.wafers = 12;
-    }
-  } else if (data.supply && typeof data.supply === "object") {
+  if (version >= 4 && data.supply && typeof data.supply === "object") {
     for (const key of Object.keys(supply)) supply[key] = finiteNumber(data.supply[key], 0);
   }
+  for (const id of seed) if (SEED_SUPPLY[id]) supply[id] = Math.max(supply[id] || 0, SEED_SUPPLY[id]);
   const job = (raw) => {
     if (!raw || typeof raw !== "object") return null;
     if (!Number.isFinite(raw.readyAt) || !Number.isFinite(raw.startedAt) || raw.readyAt < raw.startedAt) return null;
@@ -82,12 +102,22 @@ export function migrateSave(data) {
     foreman: version < 4 ? progressed : !!data.foreman,
     sawPit: version < 4 ? progressed : !!data.sawPit,
     researchJob: version < 4 ? null : job(data.researchJob),
-    upgradeJob: version < 4 ? null : job(data.upgradeJob),
+    upgradeJob: version < 4 ? null : upgradeJob(job(data.upgradeJob), version),
     projectJob: version < 4 ? null : job(data.projectJob),
     orientation: data.orientation === "portrait" || data.orientation === "landscape" ? data.orientation : "auto",
     meta: data,
     biz,
   };
+}
+
+// An upgrade being installed names its row by position. Older saves used the
+// old order, so point it at the same era in the new order.
+function upgradeJob(raw, version) {
+  if (!raw) return null;
+  const id = version < 5 ? V4_ORDER[raw.index] : BUSINESSES[raw.index]?.id;
+  const index = BUSINESSES.findIndex((cfg) => cfg.id === id);
+  if (index < 0 || (raw.kind !== "rev" && raw.kind !== "spd")) return null;
+  return { ...raw, index };
 }
 
 export function getSaveData() {

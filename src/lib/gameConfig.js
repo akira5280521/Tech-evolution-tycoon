@@ -1,20 +1,23 @@
 // Central tuning for the idle computing-empire game: eras, milestones, and money math.
 //
-// Tier pacing (the nine businesses): a full-uptime run used to buy every era
-// by 37 minutes and then idle until 2.4h for the first investor. From Punch
-// Cards up, sticker prices and manager costs are 36× the old values. Era n
-// (Punch Cards = 1) keeps its old revenue times 1.75^(n-1), so a tier you
-// waited for is still a raise without funding the next one immediately.
-// Quantum's first purchase now lands just before the ~2.4h first prestige.
-// Vacuum Tubes take 1.8s per batch (was 0.6s). Revenue is 3 instead of 1 so
-// the opening $/s is unchanged, and a 2x speed upgrade still leaves a 0.9s cycle.
+// Pacing: the first unit of each row costs more than the row before it, and a
+// steady player opens a new row every two to four minutes through the first
+// half hour (punch cards ~10 min, tubes ~16, transistors ~21, ICs ~29). From
+// Integrated Circuits on, prices and revenue are unchanged from the earlier
+// tuning, so the first prestige (~3 h) and first fork (~4 days nonstop) stay
+// where they were. Checked with the pacing simulation after the history
+// reorder.
 
 export const BUSINESSES = [
+  // Rows run in historical order. Each material sits just before the first
+  // era that uses it: paper before punch cards, glass and filament before
+  // vacuum tubes, germanium before the first transistors, and silicon and
+  // wafers before integrated circuits. Saves store rows by id (save v5).
   {
     id: "sand",
     name: "Sand Quarry",
     era: "Raw stock",
-    tagline: "Scoop silica sand. Every computer starts as a pile of grit.",
+    tagline: "Scoop silica sand. Glass and, much later, silicon chips both start as grit.",
     icon: "/icons/sand.png",
     baseCost: 4,
     revenue: 0.4,
@@ -25,12 +28,16 @@ export const BUSINESSES = [
     revCost: 550,
     spdCost: 52000,
     makes: { sand: 3 },
+    speedNeed: 30,
+    masteryNeed: 72,
+    badgeOwned: 20,
+    upgrades: ["Screened Grit", "Washed sand sells cleaner. Each scoop pays triple.", "Second Shift", "The pit stays lit. Cycles run twice as fast."],
   },
   {
     id: "copper",
     name: "Copper Seam",
     era: "Raw stock",
-    tagline: "Wire starts in the rock. Pull copper before the foundry asks.",
+    tagline: "Wire starts in the rock. Pull copper before the tube works ask.",
     icon: "/icons/copper.png",
     baseCost: 80,
     revenue: 1.4,
@@ -41,40 +48,91 @@ export const BUSINESSES = [
     revCost: 14000,
     spdCost: 160000,
     makes: { copper: 3 },
+    speedNeed: 36,
+    masteryNeed: 70,
+    badgeOwned: 18,
+    upgrades: ["High-Grade Ore", "The seam runs rich. Each pull pays triple.", "Twin Drills", "Two faces at once. The cycle is cut in half."],
   },
   {
-    id: "silicon",
-    name: "Silicon Still",
+    id: "paper",
+    name: "Paper Mill",
+    era: "Raw stock",
+    tagline: "Press pulp into stiff, smooth card stock that can take a punch.",
+    icon: "/icons/paper.png",
+    baseCost: 300,
+    revenue: 3,
+    cycleMs: 2600,
+    coef: 1.15,
+    managerName: "Mill Hand",
+    managerCost: 6000,
+    revCost: 30000,
+    spdCost: 300000,
+    makes: { paper: 3 },
+    speedNeed: 38,
+    masteryNeed: 75,
+    badgeOwned: 17,
+    upgrades: ["Rag Content", "Cotton-rich card stock stops tearing. Each bale pays triple.", "Continuous Roll", "The machine makes one endless roll. Twice the speed."],
+  },
+  {
+    id: "punchcards",
+    name: "Punch Cards",
+    era: "c. 1890",
+    tagline: "Holes in stiff cards count a whole nation, one tabulator run at a time.",
+    icon: "/icons/punchcards.png",
+    baseCost: 1000,
+    revenue: 30,
+    cycleMs: 3000,
+    coef: 1.09,
+    managerName: "Keypunch Operator",
+    managerCost: 20000,
+    revCost: 100000,
+    spdCost: 1000000,
+    uses: { paper: 1 },
+    speedNeed: 50,
+    masteryNeed: 130,
+    badgeOwned: 25,
+    upgrades: ["Steel Hoppers", "The card path stops jamming. Every stack pays triple.", "Gang Punch", "One stroke copies a whole card. Cycles run twice as fast."],
+  },
+  {
+    id: "glass",
+    name: "Glassworks",
     era: "Refine",
-    tagline: "Melt sand down to metal-grade silicon.",
-    icon: "/icons/silicon.png",
-    baseCost: 650,
-    revenue: 4,
-    cycleMs: 2800,
+    tagline: "Melt sand into clear glass, ready to blow into bulbs and valves.",
+    icon: "/icons/glass.png",
+    baseCost: 2500,
+    revenue: 8,
+    cycleMs: 3000,
     coef: 1.15,
-    managerName: "Kiln Hand",
-    managerCost: 18000,
-    revCost: 90000,
-    spdCost: 900000,
+    managerName: "Glassblower",
+    managerCost: 30000,
+    revCost: 150000,
+    spdCost: 1500000,
     uses: { sand: 1 },
-    makes: { silicon: 3 },
+    makes: { glass: 3 },
+    speedNeed: 40,
+    masteryNeed: 80,
+    badgeOwned: 16,
+    upgrades: ["Borosilicate Batch", "Tougher glass takes the heat. Each melt pays triple.", "Ribbon Machine", "Bulbs blown from a moving ribbon of glass. Twice the speed."],
   },
   {
-    id: "wafers",
-    name: "Wafer Bench",
-    era: "Grow",
-    tagline: "Draw silicon into wafers and lace them with copper.",
-    icon: "/icons/wafers.png",
-    baseCost: 4200,
-    revenue: 14,
-    cycleMs: 3600,
+    id: "filament",
+    name: "Filament Forge",
+    era: "Refine",
+    tagline: "Draw tungsten and nickel into fine wire for the glowing heart of a tube.",
+    icon: "/icons/filament.png",
+    baseCost: 4000,
+    revenue: 12,
+    cycleMs: 3200,
     coef: 1.15,
-    managerName: "Crystal Puller",
-    managerCost: 120000,
-    revCost: 700000,
-    spdCost: 6000000,
-    uses: { silicon: 1, copper: 1 },
-    makes: { wafers: 6 },
+    managerName: "Wire Drawer",
+    managerCost: 50000,
+    revCost: 250000,
+    spdCost: 2500000,
+    makes: { filament: 3 },
+    speedNeed: 42,
+    masteryNeed: 85,
+    badgeOwned: 16,
+    upgrades: ["Ductile Tungsten", "Tungsten that bends into wire. Each spool pays triple.", "Diamond Dies", "Wire pulled through diamond dies runs twice as fast."],
   },
   {
     id: "tubes",
@@ -82,40 +140,99 @@ export const BUSINESSES = [
     era: "c. 1946",
     tagline: "Room-sized computers, soldered together one glowing glass valve at a time.",
     icon: "/icons/tubes.png",
-    baseCost: 4,
-    revenue: 3,
-    cycleMs: 1800,
-    uses: { wafers: 1 },
-    coef: 1.071,
+    baseCost: 7000,
+    revenue: 200,
+    cycleMs: 3000,
+    coef: 1.11,
     managerName: "Lab Technician",
-    managerCost: 1000,
+    managerCost: 200000,
+    revCost: 1000000,
+    spdCost: 10000000,
+    uses: { glass: 1, copper: 1, filament: 1 },
+    speedNeed: 60,
+    masteryNeed: 150,
+    badgeOwned: 25,
+    upgrades: ["Getter Flash", "A flash of metal soaks up the last of the air. Each batch fetches triple.", "Batch Soldering", "Pre-tinned chassis wire up in half the time."],
   },
   {
-    id: "punchcards",
-    name: "Punch Cards",
-    era: "c. 1951",
-    tagline: "Feed the mainframe a stack of holes and it pays you back in bytes.",
-    icon: "/icons/punchcards.png",
-    baseCost: 2160,
-    revenue: 60,
-    cycleMs: 3000,
-    coef: 1.14,
-    managerName: "Keypunch Operator",
-    managerCost: 540000,
+    id: "germanium",
+    name: "Germanium Refinery",
+    era: "Refine",
+    tagline: "Pull germanium from smelter dust. The first transistors were made of it.",
+    icon: "/icons/germanium.png",
+    baseCost: 12000,
+    revenue: 24,
+    cycleMs: 3400,
+    coef: 1.15,
+    managerName: "Furnace Chemist",
+    managerCost: 200000,
+    revCost: 1000000,
+    spdCost: 8000000,
+    makes: { germanium: 3 },
+    speedNeed: 44,
+    masteryNeed: 90,
+    badgeOwned: 16,
+    upgrades: ["Zone Refining", "A molten zone sweeps the impurities out. Yield triples.", "Tandem Furnaces", "Two furnaces share the load. Cycles are halved."],
   },
   {
     id: "transistors",
     name: "Transistors",
-    era: "c. 1958",
+    era: "c. 1954",
     tagline: "Solid-state switches replace the glowing glass. Smaller, cooler, faster.",
     icon: "/icons/transistors.png",
     baseCost: 25920,
     revenue: 945,
     cycleMs: 6000,
     coef: 1.14,
-    managerName: "Cleanroom Foreman",
+    managerName: "Junction Tech",
     managerCost: 3600000,
-    uses: { wafers: 1 },
+    uses: { germanium: 1 },
+    speedNeed: 70,
+    masteryNeed: 150,
+    badgeOwned: 20,
+    upgrades: ["Alloy Junctions", "Cleaner junctions, triple the yield from each crystal.", "Wave Soldering", "The line never waits on a hand iron. Twice the speed."],
+  },
+  {
+    id: "silicon",
+    name: "Silicon Still",
+    era: "Refine",
+    tagline: "Refine sand into ultra-pure silicon. It takes over from germanium.",
+    icon: "/icons/silicon.png",
+    baseCost: 40000,
+    revenue: 60,
+    cycleMs: 2800,
+    coef: 1.15,
+    managerName: "Kiln Hand",
+    managerCost: 1000000,
+    revCost: 5000000,
+    spdCost: 40000000,
+    uses: { sand: 1 },
+    makes: { silicon: 3 },
+    speedNeed: 40,
+    masteryNeed: 80,
+    badgeOwned: 16,
+    upgrades: ["Float Zone", "A molten zone carries the impurities away. Yield triples.", "Hotter Crucible", "The melt finishes sooner. Twice the speed."],
+  },
+  {
+    id: "wafers",
+    name: "Wafer Bench",
+    era: "Grow",
+    tagline: "Pull one big silicon crystal and slice it into wafers.",
+    icon: "/icons/wafers.png",
+    baseCost: 90000,
+    revenue: 140,
+    cycleMs: 3600,
+    coef: 1.15,
+    managerName: "Crystal Puller",
+    managerCost: 2500000,
+    revCost: 12000000,
+    spdCost: 100000000,
+    uses: { silicon: 1 },
+    makes: { wafers: 6 },
+    speedNeed: 44,
+    masteryNeed: 90,
+    badgeOwned: 16,
+    upgrades: ["Seed Crystals", "Each pull starts true. Wafer revenue triples.", "Twin Pullers", "Two crystals grow at once. Cycles are halved."],
   },
   {
     id: "ics",
@@ -130,6 +247,10 @@ export const BUSINESSES = [
     managerName: "Fab Line Supervisor",
     managerCost: 18000000,
     uses: { wafers: 1 },
+    speedNeed: 80,
+    masteryNeed: 150,
+    badgeOwned: 30,
+    upgrades: ["Gold Bond Wire", "The leads stop failing. Revenue from each die triples.", "Mask Aligner", "Masks land true. The fab cycle is cut in half."],
   },
   {
     id: "cpu",
@@ -143,6 +264,10 @@ export const BUSINESSES = [
     coef: 1.12,
     managerName: "Chip Architect",
     managerCost: 43200000,
+    speedNeed: 90,
+    masteryNeed: 155,
+    badgeOwned: 40,
+    upgrades: ["Microcode Cache", "The chip stops fetching from the slow path. Triple revenue.", "Pipelined Clock", "Instructions overlap. The cycle time is halved."],
   },
   {
     id: "homepc",
@@ -156,6 +281,10 @@ export const BUSINESSES = [
     coef: 1.11,
     managerName: "Assembly Line Boss",
     managerCost: 432000000,
+    speedNeed: 110,
+    masteryNeed: 165,
+    badgeOwned: 50,
+    upgrades: ["Bundled Software", "Every desk ships with a reason to buy. Triple revenue.", "Assembly Jig", "Cases close themselves. The line runs twice as fast."],
   },
   {
     id: "gpu",
@@ -169,11 +298,15 @@ export const BUSINESSES = [
     coef: 1.1,
     managerName: "Silicon Engineer",
     managerCost: 3996000000,
+    speedNeed: 130,
+    masteryNeed: 220,
+    badgeOwned: 80,
+    upgrades: ["Shader Cores", "More pixels per die. Graphics revenue triples.", "Binning Pass", "Good chips leave the tester sooner. Twice the speed."],
   },
   {
     id: "rgb",
     name: "RGB Battlestations",
-    era: "c. 2010",
+    era: "c. 2015",
     tagline: "More glow, more frames, more profit. The fans never sleep.",
     icon: "/icons/rgb.png",
     baseCost: 6449725440,
@@ -182,11 +315,15 @@ export const BUSINESSES = [
     coef: 1.09,
     managerName: "Streamer Crafter",
     managerCost: 19999999980,
+    speedNeed: 160,
+    masteryNeed: 220,
+    badgeOwned: 100,
+    upgrades: ["Addressable LEDs", "The glow is the product. Revenue triples.", "Fan Curves", "Thermals stay quiet. Cycles complete twice as fast."],
   },
   {
     id: "quantum",
     name: "Quantum Servers",
-    era: "c. 2025",
+    era: "c. 2019",
     tagline: "Superpositioned profits, observed daily inside a golden chandelier.",
     icon: "/icons/quantum.png",
     baseCost: 77396705280,
@@ -195,13 +332,17 @@ export const BUSINESSES = [
     coef: 1.08,
     managerName: "Cryogenics Engineer",
     managerCost: 360000000000,
+    speedNeed: 190,
+    masteryNeed: 250,
+    badgeOwned: 150,
+    upgrades: ["Cryo Loops", "The chandelier stays cold. Quantum revenue triples.", "Error Correction", "Fewer shots are wasted. The cycle is cut in half."],
   },
 ];
 
 // Ordered by owned count. The product tops out at ×144 (2^4 × 3^2) once a
 // business reaches 220 — there is no milestone past that, so this multiplier
 // cannot grow forever.
-export const SUPPLY_KEYS = ["sand", "copper", "silicon", "wafers"];
+export const SUPPLY_KEYS = ["sand", "copper", "paper", "glass", "filament", "germanium", "silicon", "wafers"];
 export const FOREMAN_COST = 25000;
 export const RESEARCH_MS = 20000;
 export const UPGRADE_MS = 12000;
@@ -209,7 +350,7 @@ export const COMMISSION_MS = 8000;
 export const PROJECT_MS = 20000;
 
 export function blankSupply() {
-  return { sand: 0, copper: 0, silicon: 0, wafers: 0 };
+  return Object.fromEntries(SUPPLY_KEYS.map((key) => [key, 0]));
 }
 
 export function indexOfBusiness(id) {
@@ -223,7 +364,7 @@ export function blockedByGlass(state, index) {
 export function formatFlow(flow) {
   if (!flow) return "";
   return Object.entries(flow)
-    .map(([key, count]) => `${count} ${key}`)
+    .map(([key, count]) => `${count} ${count === 1 && key.endsWith("s") ? key.slice(0, -1) : key}`)
     .join(", ");
 }
 

@@ -68,8 +68,9 @@ technology visibly evolves on screen, which is the point of the game.
 
 ### Why generations, not new eras
 
-- **Saves stay safe.** `biz` is saved by position, so inserting rows needs a
-  save migration. Generations live inside an existing row.
+- **Saves stay simple.** Generations live inside an existing row, so no new
+  rows or save changes are needed. (Saves store rows by era id since v5, so
+  new rows are possible too, but each one shifts pacing.)
 - **Pacing barely moves.** The ladder is already tuned; new rows would mean
   re-tuning all of it.
 - **It reuses what exists:** milestones, the Museum and the "???" hiding rule.

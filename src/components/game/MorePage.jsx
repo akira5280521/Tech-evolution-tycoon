@@ -155,7 +155,7 @@ function OrientationSetting({ value, onChange }) {
 function HowTo() {
   const lines = [
     "Tap a machine to run one batch. The bar fills over the cycle, then it pays. Hire its manager and it keeps running.",
-    "Sand, copper, silicon, and wafers feed the later machines. A dry line still pays a little so the bar never freezes.",
+    "Material rows feed the eras that use them: paper for punch cards, glass, copper and filament for tubes, germanium for the first transistors, and silicon wafers for chips. A dry line still pays a little so the bar never freezes.",
     "The Foreman unlocks Run All. Until then, each machine starts on its own.",
     "Buy x1, x10, x100, NEXT, or MAX. NEXT buys exactly enough to reach the next milestone or gate, then the next 25. At 25, 50 and 100 owned the cycle runs twice as fast. Later milestones multiply profit.",
     "Prestige on the game tab recruits investors. The first one needs $1T lifetime earnings.",

@@ -34,6 +34,8 @@ test shipped in 0.0.13 (see Done).
 
 ## Merged, ships in the next release
 
+- Google Play Games sign-in and cloud save (More > Settings > Account). Off
+  until the Play Games project id is added; see `docs/play-games.md`.
 - New games, prestige, challenges and timeline forks start at $0 instead of
   $4 (which couldn't buy anything). Merged after 0.0.14 was published, so
   list it under What's new in 0.0.15.
@@ -135,9 +137,9 @@ folded into a neighbouring release.
 10. **Stats page** (small): lifetime earnings, prestige count, fastest run to
     each era, cards collected, play time.
 11. **Play Store release.** A store build without the sideload updater and
-    its install permission, Google Play Games achievements (badges), cloud
-    save (export/import codes shipped in 0.0.12), and notifications
-    (factories full, research done).
+    its install permission, Google Play Games achievements (badges), and
+    notifications (factories full, research done). Play Games sign-in and
+    cloud save are already built; they switch on with the project id.
 
 ## Next: phase 4, the PC workbench
 

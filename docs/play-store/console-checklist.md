@@ -10,5 +10,6 @@ The repo can produce the signed Android App Bundle. These steps only exist in th
 6. **Data safety.** Enter the answers in `data-safety.md`.
 7. **Content rating.** Complete the IARC questionnaire using `content-rating.md`, then submit so Console issues the certificate.
 8. **Declarations.** Ads: no. News: no. Government: no. Financial features: no. Health: no. Target audience: general, not the Families program, unless you separately meet the Designed for Families rules.
-9. **App access.** Declare that every feature works without a sign-in.
-10. **Release.** Put the AAB in the closed-testing track, add the testers, wait out the new-account requirement, then promote the same bundle to production. Pricing: free. Choose the countries you want.
+9. **App access.** Declare that every feature works without a sign-in (Play Games sign-in is optional).
+10. **Play Games Services** (sign-in and cloud save): follow `docs/play-games.md`, then update the Data safety answers as it describes.
+11. **Release.** Put the AAB in the closed-testing track, add the testers, wait out the new-account requirement, then promote the same bundle to production. Pricing: free. Choose the countries you want.

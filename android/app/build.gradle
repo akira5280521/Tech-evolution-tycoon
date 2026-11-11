@@ -23,8 +23,8 @@ android {
         applicationId "tech.evolution.tycoon"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 14
-        versionName "0.0.14"
+        versionCode 15
+        versionName "0.0.15"
         // Keep a 64-bit ABI beside every 32-bit one if a dependency adds native code.
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"

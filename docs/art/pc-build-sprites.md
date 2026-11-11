@@ -22,6 +22,21 @@ plus the desk scene, item 25). Designs are in [`docs/ideas.md`](../ideas.md).
 - File names: `public/icons/parts/<group>-<name>.png` for parts-bin icons,
   `public/pc/<group>-<name>.png` for picture layers.
 
+## Two looks for every part (decided)
+
+- **Flat, straight-on** for the PC picture, so every part lines up on the
+  motherboard. This is the drawing the artist makes.
+- **Angled 3/4 view with depth** for parts-bin icons and the install screen,
+  where a part is shown on its own. It is made from the flat drawing (tilted
+  and given thickness), so a part still needs only one design. Small text
+  doesn't survive the tilt: put a bigger, simpler maker mark on the angled
+  version instead of the model name.
+
+Drafts of both looks are in [`examples/`](examples/): processors and graphics
+cards flat and angled, and two motherboards and two sound cards flat. Names
+on them (Silicore, Arcadia, Verdant, Rubicon, Kestrel, Tonewave, Auralis) are
+made up.
+
 ## How the PC picture is built
 
 The picture looks straight at the motherboard: a tower with its side panel
@@ -38,9 +53,9 @@ case.
 7. Lighting glow (a soft colored overlay)
 8. Monitor beside the case (separate, not on the board grid)
 
-A part's **parts-bin icon** can be its layer sprite on the icon background,
-so most parts need one drawing, not two. Parts marked "icon only" never
-appear in the picture.
+A part's **parts-bin icon** is the angled version of its layer sprite, on
+the icon background, so most parts need one drawing, not two. Parts marked
+"icon only" never appear in the picture.
 
 ## The list
 

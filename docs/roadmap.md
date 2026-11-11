@@ -63,6 +63,11 @@ folded into a neighbouring release.
    until they have something in them (Boost when the first upgrade is
    affordable, Investors near the first prestige), with "something to do"
    dots. Done together because both change the same tab bar.
+   **Uses for spare data:** once every specialty slot is filled, data has
+   nothing to buy until the next fork, so dilemma choices that pay data go
+   to waste. With Research moving to Boost, add lab projects that spend
+   spare data: a faster upgrade install, a short income boost, or data
+   traded for era tokens, each at a fixed price shown up front.
    [Design](ideas.md#tab-layout).
 3. **Feedback and settings.** Floating "+$" on payouts, light vibration on
    buy (can be turned off), hold Buy to preview "+$X per second", number

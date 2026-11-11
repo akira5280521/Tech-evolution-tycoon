@@ -157,6 +157,21 @@ and Research.
 - Add switchers instead of tabs: the six tabs already fill two rows on a
   phone. Boost gets Upgrades · Research (· Workbench later); Badges gets
   Badges · Museum, which also shortens a very long page.
+- **Uses for spare data** (in the Research view). Data's only use today is
+  specialties (80 each, one slot plus one per fork, three at most), and it
+  keeps arriving from eras, mastery, dilemmas and research samples. Once
+  the slots are full it piles up. Add lab projects that spend it, all fixed
+  and shown up front, no chance:
+  - **Rush install:** spend data to finish the current upgrade install now.
+  - **Lab sprint:** a short income boost (for example +10% for 10 minutes)
+    for a fixed amount of data; one at a time, inside the soft income
+    ceiling.
+  - **Patent filing:** trade data for era tokens at a fixed rate, with a
+    daily cap so it can't replace the token Market.
+  - Later the Workbench can take data for installs, as already planned.
+  - When every slot is full, dilemma choices that pay data say what the
+    data can still buy, so the choice isn't a dead pick.
+  - Re-run the pacing sim with the boost and token rate.
 - Remember the last switcher choice per tab (localStorage, as a convenience).
 - Update the How to Play text and any "go to More" hints.
 - Re-run the layout test (every screen, 26 sizes, text 85-200%) after.

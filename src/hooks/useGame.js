@@ -175,7 +175,8 @@ function pack(s) {
     projectJob: s.projectJob || null,
     challenge: s.challenge,
     dilemma: s.dilemma,
-    biz: s.biz.map((b) => ({
+    biz: s.biz.map((b, i) => ({
+      id: BUSINESSES[i].id,
       owned: b.owned,
       manager: b.manager,
       running: b.running,

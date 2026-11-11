@@ -123,15 +123,15 @@ folded into a neighbouring release.
 
 9. **Fill the gaps in the timeline.** New eras, each with its own icon,
    manager, two history cards and upgrade names:
-   - Before the tubes: the Jacquard loom (1804) and Hollerith's census
-     tabulator (1890). Punch cards are older than tube computers.
+   - Before punch cards: the Jacquard loom (1804). (Punch Cards already moved
+     to c. 1890, Hollerith's census tabulator, ahead of the tubes.)
    - Mid-1990s: dial-up internet and the World Wide Web.
    - 2007: smartphones.
    - 2020s: AI accelerators, just before Quantum.
    The office PC (1981), graphical desktops (1984) and laptops are covered
-   by Home Computers generations (item 5) instead. `biz` is saved by
-   position, so this first switches saves to era ids, which also makes every
-   later new row safe. Re-run the pacing sim after.
+   by Home Computers generations (item 5) instead. Saves already store rows
+   by era id (save v5, with the history reorder), so new rows can go
+   anywhere. Re-run the pacing sim after.
 10. **Stats page** (small): lifetime earnings, prestige count, fastest run to
     each era, cards collected, play time.
 11. **Play Store release.** A store build without the sideload updater and

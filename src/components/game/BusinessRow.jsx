@@ -5,6 +5,7 @@ import {
   buyCount,
   costOf,
   formatFlow,
+  managerNeed,
   milestoneMult,
   money,
   nextMilestone,
@@ -40,7 +41,9 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
   const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
   const perCycle = cfg.revenue * rev * st.owned * mult * empireFactors(state, Date.now()).total * supplyFactor(state, cfg);
   const commissioning = (st.commissionUntil || 0) > Date.now();
-  const canHire = !commissioning && !st.manager && st.owned > 0 && cash >= cfg.managerCost;
+  const hireNeed = managerNeed(index);
+  const hireLocked = st.owned < hireNeed;
+  const canHire = !commissioning && !st.manager && !hireLocked && cash >= cfg.managerCost;
 
   return (
     <div className={`era-row grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
@@ -131,7 +134,9 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
             }`}
           >
             Hire {cfg.managerName}
-            <span className="block text-sm leading-4">{money(cfg.managerCost)}</span>
+            <span className="block text-sm leading-4">
+              {hireLocked ? `at ${hireNeed} owned · you have ${st.owned}` : money(cfg.managerCost)}
+            </span>
           </button>
         )}
       </div>

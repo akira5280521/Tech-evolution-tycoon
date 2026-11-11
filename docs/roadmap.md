@@ -218,8 +218,9 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     swaps its own layer (cooler, graphics card, memory, drives, monitor),
     and the Case slot changes the look by period (beige desktop box, beige
     tower, black tower with a window, glass RGB case), with see-through
-    cases showing the parts. About 30-35 sprites on one grid; placeholder
-    shapes until the art exists. [Design](ideas.md#pc-workbench).
+    cases showing the parts. About 45 sprites on one grid to start; placeholder
+    shapes until the art exists; the sprite list is in
+    `docs/art/pc-build-sprites.md`. [Design](ideas.md#pc-workbench).
 13. **Parts catalog, step 1: the core build.** Workbench parts from parody
     makers, real dates and specs, real compatibility (rules above). Slots:
     motherboard, processor, graphics, memory, storage, power supply, cooling

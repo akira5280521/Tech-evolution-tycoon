@@ -15,6 +15,7 @@ import TokenShop from "./TokenShop";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
+import AccountPanel from "./AccountPanel";
 
 const TABS = [
   { id: "howto", label: "HOW TO PLAY" },
@@ -70,14 +71,11 @@ export default function MorePage() {
           <OrientationSetting value={state.orientation || "auto"} onChange={setOrientation} />
           <AnalyticsPanel data={data} />
           <CheckForUpdatesButton />
+          <AccountPanel state={state} onExport={exportSave} onImport={importSave} />
           <SaveBackup state={state} onExport={exportSave} onImport={importSave} />
           <button type="button" onClick={reset} className="min-h-11 border-2 border-[var(--game-danger)] px-3 font-pixel text-[0.55rem] text-[var(--game-danger)]">
             RESET SAVE
           </button>
-          <Panel>
-            <h2 className="font-pixel text-[0.6rem]">ACCOUNT</h2>
-            <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">Coming soon</p>
-          </Panel>
           <AppVersionFooter />
         </div>
       )}

@@ -12,6 +12,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(InstallSourcePlugin.class);
         registerPlugin(AppUpdatePlugin.class);
         registerPlugin(ScreenOrientationPlugin.class);
+        registerPlugin(PlayGamesPlugin.class);
         super.onCreate(savedInstanceState);
         // Draw behind the status and gesture bars so CSS safe-area insets
         // pad the bottom nav instead of hiding it under the system UI.

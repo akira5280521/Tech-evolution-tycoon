@@ -4,4 +4,8 @@
     <string name="title_activity_main">Tech Evolution Tycoon</string>
     <string name="package_name">tech.evolution.tycoon</string>
     <string name="custom_url_scheme">tech.evolution.tycoon</string>
+    <!-- Play Games Services project id from Play Console (Play Games Services >
+         Configuration). Numbers only. Empty means Play Games is off in this build.
+         See docs/play-games.md. -->
+    <string name="game_services_project_id" translatable="false"></string>
 </resources>

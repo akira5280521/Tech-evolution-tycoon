@@ -6,11 +6,22 @@ Tech Evolution Tycoon (`tech.evolution.tycoon`) is an offline idle game. This po
 
 ## Data the app collects
 
-The app does not collect personal data. It does not create an account, does not ask for your name or email, and does not include advertising or analytics.
+The app does not collect personal data. It does not create an account of its own, does not ask for your name or email, and does not include advertising or analytics. The optional Google Play Games sign-in is described below.
 
 ## Data that stays on your device
 
 Your empire — cash, businesses, upgrades, and settings — is stored only in the app's local storage on the device. Uninstalling the app, or clearing its storage, deletes that save. The developer does not receive a copy.
+
+## Google Play Games (optional)
+
+On copies installed from Google Play, you can sign in with Google Play Games
+in More > Settings > Account. If you do, the game keeps a copy of your save
+in your Play Games cloud save so you can restore it on another phone, and
+shows your Play Games name. That copy is stored by Google under your Google
+account and Google's privacy policy; this developer does not receive it.
+You can turn auto cloud save off in the same panel, and delete the cloud data
+from your Play Games profile or Google Account. Without signing in, nothing
+leaves the device.
 
 ## Network
 
@@ -20,7 +31,7 @@ If you tap Update, the app downloads that release's APK with the system download
 
 Copies installed from Google Play do not run this check and do not download an APK. Play delivers those updates.
 
-The game itself does not send gameplay or diagnostics anywhere.
+The game itself does not send gameplay or diagnostics anywhere, apart from the optional Play Games cloud save above. The Play Games software from Google may send Google its own diagnostics.
 
 ## Children
 

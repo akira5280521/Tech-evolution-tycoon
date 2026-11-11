@@ -23,8 +23,8 @@ android {
         applicationId "tech.evolution.tycoon"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 15
-        versionName "0.0.15"
+        versionCode 16
+        versionName "0.0.16"
         // Keep a 64-bit ABI beside every 32-bit one if a dependency adds native code.
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
@@ -35,6 +35,24 @@ android {
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
+    }
+    // Two builds of the same app:
+    //  - play:     the Google Play bundle. No install-packages permission and
+    //              no self-update; Play delivers updates (Play policy).
+    //  - sideload: the APK on GitHub releases, with the in-app updater.
+    flavorDimensions = ["store"]
+    productFlavors {
+        play {
+            dimension "store"
+            buildConfigField "boolean", "SIDELOAD_UPDATER", "false"
+        }
+        sideload {
+            dimension "store"
+            buildConfigField "boolean", "SIDELOAD_UPDATER", "true"
+        }
+    }
+    buildFeatures {
+        buildConfig = true
     }
     signingConfigs {
         release {

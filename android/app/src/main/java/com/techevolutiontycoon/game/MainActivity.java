@@ -10,7 +10,8 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(InstallSourcePlugin.class);
-        registerPlugin(AppUpdatePlugin.class);
+        // The Google Play build has no self-updater (Play delivers updates).
+        if (BuildConfig.SIDELOAD_UPDATER) registerPlugin(AppUpdatePlugin.class);
         registerPlugin(ScreenOrientationPlugin.class);
         registerPlugin(PlayGamesPlugin.class);
         super.onCreate(savedInstanceState);

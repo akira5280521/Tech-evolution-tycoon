@@ -12,7 +12,11 @@ async function readInstaller() {
   const { registerPlugin } = await import("@capacitor/core");
   const InstallSource = registerPlugin("InstallSource");
   const result = await InstallSource.getInstaller();
-  return typeof result?.installer === "string" ? result.installer : null;
+  return {
+    installer: typeof result?.installer === "string" ? result.installer : null,
+    // Builds before the Play/sideload split don't send this; treat them as sideload.
+    sideloadUpdater: result?.sideloadUpdater !== false,
+  };
 }
 
 async function installedVersionCode() {
@@ -49,12 +53,15 @@ export function UpdateCheckProvider({ children }) {
       if (!isNativeApp()) return;
       setNative(true);
       let installer = null;
+      let sideloadUpdater = true;
       try {
-        installer = await readInstaller();
+        ({ installer, sideloadUpdater } = await readInstaller());
       } catch {
         installer = null;
       }
-      if (installer === PLAY_INSTALLER) {
+      // Installed from Play, or the Play build installed some other way:
+      // Play handles updates, so never check GitHub.
+      if (installer === PLAY_INSTALLER || !sideloadUpdater) {
         if (!cancel) setPlayInstall(true);
         return;
       }

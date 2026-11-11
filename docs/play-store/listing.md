@@ -1,6 +1,6 @@
 # Store listing — Tech Evolution Tycoon
 
-Package: `com.techevolutiontycoon.game`
+Package: `tech.evolution.tycoon`
 
 ## Short description (80 characters max)
 

@@ -120,7 +120,7 @@ export default function GameScreen() {
             </p>
             {!state.sawPit && (
               <p data-onboard className="mt-2 border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-2 font-term text-lg leading-6 text-[var(--game-fg)]">
-                Tap the Sand Quarry picture. The bar fills, then the scoop pays. Extra taps wait until it finishes.
+                Tap the Timber Camp picture. The bar fills, then the load of logs pays. Extra taps wait until it finishes.
               </p>
             )}
           </div>

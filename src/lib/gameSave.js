@@ -11,8 +11,9 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 // older, easier rules had already granted. v4 inserted the sand → wafer chain
 // in front of Vacuum Tubes. v5 stores each row with its era id and puts the
 // rows in historical order, adding the paper, glass, filament and germanium
-// rows; older saves are matched to rows by their old position.
-export const SAVE_VERSION = 5;
+// rows; older saves are matched to rows by their old position. v6 adds the
+// Timber Camp as the first row (wood for the Paper Mill).
+export const SAVE_VERSION = 6;
 const V1_INVESTOR_DIVISOR = 1000;
 // Row order of each older save version.
 const V4_ORDER = ["sand", "copper", "silicon", "wafers", "tubes", "punchcards", "transistors", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];
@@ -21,8 +22,10 @@ const V3_ORDER = V4_ORDER.slice(4);
 // A player who already reached that era gets the row started for them.
 const V4_MATERIALS = ["sand", "copper", "silicon", "wafers"];
 const NEW_IN_V5 = { paper: "punchcards", glass: "tubes", filament: "tubes", germanium: "transistors" };
-const SEED_OWNED = { sand: 8, copper: 4, silicon: 2, wafers: 1, paper: 2, glass: 2, filament: 2, germanium: 2 };
-const SEED_SUPPLY = { sand: 80, copper: 40, silicon: 24, wafers: 12, paper: 20, glass: 20, filament: 20, germanium: 20 };
+const NEW_IN_V6 = { timber: "paper" };
+const SEED_OWNED = { sand: 8, copper: 4, silicon: 2, wafers: 1, paper: 2, glass: 2, filament: 2, germanium: 2, timber: 2 };
+// Stock to start a seeded row's material with, keyed by row id.
+const SEED_SUPPLY = { sand: 80, copper: 40, silicon: 24, wafers: 12, paper: 20, glass: 20, filament: 20, germanium: 20, timber: 20 };
 
 function finiteNumber(n, fallback = 0) {
   if (typeof n !== "number" || !Number.isFinite(n) || n < 0) return fallback;
@@ -50,7 +53,8 @@ export function migrateSave(data) {
   const ownedOf = (id) => Math.floor(finiteNumber(rowsById[id]?.owned, 0));
   const progressed = investors > 0 || Object.entries(rowsById).some(([id, row]) => {
     const owned = finiteNumber(row?.owned, 0);
-    return id === "sand" ? owned > 1 : owned > 0;
+    // The free starter row (sand before v6, timber from v6) doesn't count.
+    return id === "sand" || id === "timber" ? owned > 1 : owned > 0;
   });
   // Which rows to start for the player, so a row they already reached is not
   // stranded behind a material row they never had.
@@ -61,13 +65,21 @@ export function migrateSave(data) {
       if (ownedOf(needs) > 0 || (version < 4 && progressed)) seed.add(id);
     }
   }
+  if (version < 6) {
+    for (const [id, needs] of Object.entries(NEW_IN_V6)) {
+      // A save from before v5 had no paper row yet; it gets paper seeded
+      // above whenever it reached punch cards, so check that too.
+      if (ownedOf(needs) > 0 || seed.has(needs)) seed.add(id);
+    }
+  }
   const biz = BUSINESSES.map((cfg, i) => {
     if (seed.has(cfg.id)) {
       // Enough owned that the started manager meets the hiring rule.
       return { id: cfg.id, owned: Math.max(SEED_OWNED[cfg.id] || 1, managerNeed(i)), manager: true, running: false, progress: 0, activeMs: 0, commissionUntil: 0 };
     }
     const row = rowsById[cfg.id] || {};
-    const fallback = i === 0 && !rowsById[cfg.id] && version < 4 ? 1 : 0;
+    // Every new game starts with one of the first row; older saves get it too.
+    const fallback = i === 0 && !rowsById[cfg.id] && version < 6 ? 1 : 0;
     return {
       id: cfg.id,
       owned: Math.max(fallback, Math.floor(finiteNumber(row.owned, 0))),
@@ -82,7 +94,12 @@ export function migrateSave(data) {
   if (version >= 4 && data.supply && typeof data.supply === "object") {
     for (const key of Object.keys(supply)) supply[key] = finiteNumber(data.supply[key], 0);
   }
-  for (const id of seed) if (SEED_SUPPLY[id]) supply[id] = Math.max(supply[id] || 0, SEED_SUPPLY[id]);
+  for (const id of seed) {
+    const makes = BUSINESSES.find((cfg) => cfg.id === id)?.makes || {};
+    for (const key of Object.keys(makes)) {
+      if (key in supply && SEED_SUPPLY[id]) supply[key] = Math.max(supply[key] || 0, SEED_SUPPLY[id]);
+    }
+  }
   const job = (raw) => {
     if (!raw || typeof raw !== "object") return null;
     if (!Number.isFinite(raw.readyAt) || !Number.isFinite(raw.startedAt) || raw.readyAt < raw.startedAt) return null;

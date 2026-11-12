@@ -32,7 +32,17 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
-## Merged, ships in the next release (0.0.15)
+## Merged, ships in the next release (0.0.17)
+
+- **Timber Camp** is the new first row: trees make wood, the Paper Mill turns
+  it into card stock for Punch Cards (c. 1890). Sand Quarry and Copper Seam
+  now come after Punch Cards, right before the glass and wire that vacuum
+  tubes need. Paper went from rags to wood pulp in the 1840s-1880s, so the
+  1890 cards were made from trees. Save v6; existing players with a Paper
+  Mill get a Timber Camp started with its manager.
+
+## In the closed test build (0.0.15-0.0.16)
+
 
 - Eras in historical order: Sand Quarry, Copper Seam, **Paper Mill**, Punch
   Cards (c. 1890), **Glassworks**, **Filament Forge**, Vacuum Tubes (c. 1946),
@@ -41,8 +51,8 @@ test shipped in 0.0.13 (see Done).
   filament; the first transistors from germanium. Four new rows with
   managers, upgrades and Museum cards. Saves are stored by era id (save v5)
   and older saves carry over.
-- Managers unlock after owning enough of a row: 5 Sand Quarries, 10 of each
-  row up to Wafer Bench, 5 of each era from Integrated Circuits on.
+- Managers unlock after owning enough of a row: 5 of the first row, 10 of
+  each row up to Wafer Bench, 5 of each era from Integrated Circuits on.
 - New games, prestige, challenges and timeline forks start at $0 instead of
   $4 (which couldn't buy anything).
 - The header says Tech Evolution Tycoon; the supply strip only shows
@@ -89,9 +99,9 @@ folded into a neighbouring release.
   from Play Console).
 - **Play build without the sideload updater** and its install permission:
   done in 0.0.16 (`play` and `sideload` build flavors).
-- **Real art** for the four new material icons (Paper Mill, Glassworks,
-  Filament Forge, Germanium Refinery are placeholders), before store
-  screenshots.
+- **Real art** for the five new material icons (Timber Camp, Paper Mill,
+  Glassworks, Filament Forge, Germanium Refinery are placeholders), before
+  store screenshots.
 - Later in this group: notifications (factories full, research done).
 
 ## Next: phase 1, the first minutes and the mid game

@@ -304,8 +304,9 @@ Too big or too old to fit a PC; shown as Museum and period-build pieces.
 - **Generation row icons** (items 5-6): 7 processor, 7 graphics, 4 Home
   Computers and 3 RGB Battlestations generations, in the big era-icon style.
   The processor and graphics part icons above can borrow their look.
-- **Real art for the four material rows** (Paper Mill, Glassworks, Filament
-  Forge, Germanium Refinery): placeholders now, see "Now" on the roadmap.
+- **Real art for the five material rows** (Timber Camp, Paper Mill,
+  Glassworks, Filament Forge, Germanium Refinery): placeholders now, see
+  "Now" on the roadmap.
 
 ## Totals
 

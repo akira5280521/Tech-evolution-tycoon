@@ -2,7 +2,7 @@
 //
 // Pacing: the first unit of each row costs more than the row before it, and a
 // steady player opens a new row every two to four minutes through the first
-// half hour (punch cards ~10 min, tubes ~16, transistors ~21, ICs ~29). From
+// half hour (punch cards ~7 min, tubes ~14, transistors ~20, ICs ~27). From
 // Integrated Circuits on, prices and revenue are unchanged from the earlier
 // tuning, so the first prestige (~3 h) and first fork (~4 days nonstop) stay
 // where they were. Checked with the pacing simulation after the history

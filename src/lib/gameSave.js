@@ -18,6 +18,7 @@ const V1_INVESTOR_DIVISOR = 1000;
 // Row order of each older save version.
 const V4_ORDER = ["sand", "copper", "silicon", "wafers", "tubes", "punchcards", "transistors", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];
 const V3_ORDER = V4_ORDER.slice(4);
+const V5_ORDER = ["sand", "copper", "paper", "punchcards", "glass", "filament", "tubes", "germanium", "transistors", "silicon", "wafers", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];
 // Rows that did not exist in an older save, and the era that needs each one.
 // A player who already reached that era gets the row started for them.
 const V4_MATERIALS = ["sand", "copper", "silicon", "wafers"];
@@ -128,14 +129,15 @@ export function migrateSave(data) {
   };
 }
 
-// An upgrade being installed names its row by position. Older saves used the
-// old order, so point it at the same era in the new order.
+// An upgrade being installed names its row. Saves from v6 on store the era id;
+// older ones only the position in that version's order, so map it across.
 function upgradeJob(raw, version) {
   if (!raw) return null;
-  const id = version < 5 ? V4_ORDER[raw.index] : BUSINESSES[raw.index]?.id;
+  const known = typeof raw.id === "string" && BUSINESSES.some((cfg) => cfg.id === raw.id);
+  const id = known ? raw.id : version < 5 ? V4_ORDER[raw.index] : version < 6 ? V5_ORDER[raw.index] : BUSINESSES[raw.index]?.id;
   const index = BUSINESSES.findIndex((cfg) => cfg.id === id);
   if (index < 0 || (raw.kind !== "rev" && raw.kind !== "spd")) return null;
-  return { ...raw, index };
+  return { ...raw, index, id };
 }
 
 export function getSaveData() {

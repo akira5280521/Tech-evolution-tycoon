@@ -589,7 +589,8 @@ export function buyUpgrade(state, index, kind, now = Date.now()) {
   if (owned < piece.need) return false;
   if (!(state.cash >= piece.cost) || !Number.isFinite(piece.cost)) return false;
   state.cash -= piece.cost;
-  state.upgradeJob = { index, kind, startedAt: now, readyAt: now + UPGRADE_MS };
+  // id as well as index, so a save still finds the row if the rows are reordered.
+  state.upgradeJob = { index, id: BUSINESSES[index].id, kind, startedAt: now, readyAt: now + UPGRADE_MS };
   state.modStamp = (state.modStamp || 0) + 1;
   return true;
 }

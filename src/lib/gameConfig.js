@@ -2,7 +2,7 @@
 //
 // Pacing: the first unit of each row costs more than the row before it, and a
 // steady player opens a new row every two to four minutes through the first
-// half hour (punch cards ~10 min, tubes ~16, transistors ~21, ICs ~29). From
+// half hour (punch cards ~7 min, tubes ~14, transistors ~20, ICs ~27). From
 // Integrated Circuits on, prices and revenue are unchanged from the earlier
 // tuning, so the first prestige (~3 h) and first fork (~4 days nonstop) stay
 // where they were. Checked with the pacing simulation after the history
@@ -10,64 +10,46 @@
 
 export const BUSINESSES = [
   // Rows run in historical order. Each material sits just before the first
-  // era that uses it: paper before punch cards, glass and filament before
-  // vacuum tubes, germanium before the first transistors, and silicon and
-  // wafers before integrated circuits. Saves store rows by id (save v5).
+  // era that uses it: wood and paper before punch cards (1890); sand,
+  // copper, glass and filament before vacuum tubes (1946); germanium before
+  // the first transistors; silicon and wafers before integrated circuits.
+  // Saves store rows by id (save v5 and later).
   {
-    id: "sand",
-    name: "Sand Quarry",
+    id: "timber",
+    name: "Timber Camp",
     era: "Raw stock",
-    tagline: "Scoop silica sand. Glass and, much later, silicon chips both start as grit.",
-    icon: "/icons/sand.png",
+    tagline: "Fell trees and float the logs to the mill. Paper starts in the forest.",
+    icon: "/icons/timber.png",
     baseCost: 4,
     revenue: 0.4,
     cycleMs: 2200,
     coef: 1.14,
-    managerName: "Pit Boss",
+    managerName: "Feller",
     managerCost: 180,
     managerNeed: 5,
     revCost: 550,
     spdCost: 52000,
-    makes: { sand: 3 },
+    makes: { wood: 3 },
     speedNeed: 30,
     masteryNeed: 72,
     badgeOwned: 20,
-    upgrades: ["Screened Grit", "Washed sand sells cleaner. Each scoop pays triple.", "Second Shift", "The pit stays lit. Cycles run twice as fast."],
-  },
-  {
-    id: "copper",
-    name: "Copper Seam",
-    era: "Raw stock",
-    tagline: "Wire starts in the rock. Pull copper before the tube works ask.",
-    icon: "/icons/copper.png",
-    baseCost: 80,
-    revenue: 1.4,
-    cycleMs: 2400,
-    coef: 1.15,
-    managerName: "Drift Miner",
-    managerCost: 2400,
-    revCost: 14000,
-    spdCost: 160000,
-    makes: { copper: 3 },
-    speedNeed: 36,
-    masteryNeed: 70,
-    badgeOwned: 18,
-    upgrades: ["High-Grade Ore", "The seam runs rich. Each pull pays triple.", "Twin Drills", "Two faces at once. The cycle is cut in half."],
+    upgrades: ["Crosscut Saws", "Two-man saws bite faster. Each load pays triple.", "Log Flume", "The logs ride the water to the mill. Twice the speed."],
   },
   {
     id: "paper",
     name: "Paper Mill",
     era: "Raw stock",
-    tagline: "Press pulp into stiff, smooth card stock that can take a punch.",
+    tagline: "Grind logs to pulp and press it into stiff card stock that can take a punch.",
     icon: "/icons/paper.png",
-    baseCost: 300,
-    revenue: 3,
-    cycleMs: 2600,
+    baseCost: 80,
+    revenue: 1.4,
+    cycleMs: 2400,
     coef: 1.15,
     managerName: "Mill Hand",
-    managerCost: 6000,
-    revCost: 30000,
-    spdCost: 300000,
+    managerCost: 2400,
+    revCost: 14000,
+    spdCost: 160000,
+    uses: { wood: 1 },
     makes: { paper: 3 },
     speedNeed: 38,
     masteryNeed: 75,
@@ -80,19 +62,59 @@ export const BUSINESSES = [
     era: "c. 1890",
     tagline: "Holes in stiff cards count a whole nation, one tabulator run at a time.",
     icon: "/icons/punchcards.png",
-    baseCost: 1000,
-    revenue: 30,
+    baseCost: 300,
+    revenue: 12,
     cycleMs: 3000,
     coef: 1.09,
     managerName: "Keypunch Operator",
-    managerCost: 20000,
-    revCost: 100000,
-    spdCost: 1000000,
+    managerCost: 6000,
+    revCost: 30000,
+    spdCost: 300000,
     uses: { paper: 1 },
     speedNeed: 50,
     masteryNeed: 130,
     badgeOwned: 25,
     upgrades: ["Steel Hoppers", "The card path stops jamming. Every stack pays triple.", "Gang Punch", "One stroke copies a whole card. Cycles run twice as fast."],
+  },
+  {
+    id: "sand",
+    name: "Sand Quarry",
+    era: "Raw stock",
+    tagline: "Scoop silica sand for the glassworks. Much later, silicon chips start as grit too.",
+    icon: "/icons/sand.png",
+    baseCost: 1000,
+    revenue: 6,
+    cycleMs: 2200,
+    coef: 1.14,
+    managerName: "Pit Boss",
+    managerCost: 15000,
+    revCost: 75000,
+    spdCost: 750000,
+    makes: { sand: 3 },
+    speedNeed: 30,
+    masteryNeed: 72,
+    badgeOwned: 20,
+    upgrades: ["Screened Grit", "Washed sand sells cleaner. Each scoop pays triple.", "Second Shift", "The pit stays lit. Cycles run twice as fast."],
+  },
+  {
+    id: "copper",
+    name: "Copper Seam",
+    era: "Raw stock",
+    tagline: "Wire starts in the rock. Pull copper before the tube works ask.",
+    icon: "/icons/copper.png",
+    baseCost: 1700,
+    revenue: 9,
+    cycleMs: 2400,
+    coef: 1.15,
+    managerName: "Drift Miner",
+    managerCost: 25000,
+    revCost: 125000,
+    spdCost: 1250000,
+    makes: { copper: 3 },
+    speedNeed: 36,
+    masteryNeed: 70,
+    badgeOwned: 18,
+    upgrades: ["High-Grade Ore", "The seam runs rich. Each pull pays triple.", "Twin Drills", "Two faces at once. The cycle is cut in half."],
   },
   {
     id: "glass",
@@ -349,7 +371,7 @@ export const BUSINESSES = [
 // Ordered by owned count. The product tops out at ×144 (2^4 × 3^2) once a
 // business reaches 220 — there is no milestone past that, so this multiplier
 // cannot grow forever.
-export const SUPPLY_KEYS = ["sand", "copper", "paper", "glass", "filament", "germanium", "silicon", "wafers"];
+export const SUPPLY_KEYS = ["wood", "paper", "sand", "copper", "glass", "filament", "germanium", "silicon", "wafers"];
 export const FOREMAN_COST = 25000;
 export const RESEARCH_MS = 20000;
 export const UPGRADE_MS = 12000;
@@ -357,7 +379,7 @@ export const COMMISSION_MS = 8000;
 export const PROJECT_MS = 20000;
 
 // A manager can only be hired once the player owns this many of that row, so
-// each new era is run by hand for a while before it runs itself. Sand Quarry
+// each new era is run by hand for a while before it runs itself. Timber Camp
 // and the costly eras from Integrated Circuits on need 5; the pacing sim
 // showed 10 there left casual players' later eras without managers between
 // sessions and pushed their first fork back by days.

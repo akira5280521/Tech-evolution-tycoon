@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import BottomTabs from "./BottomTabs";
+import { TipCard } from "./HintSheet";
 
 export function BackButton({ to = "/" }) {
   return (
@@ -27,6 +28,7 @@ export default function ScreenShell({ title, subtitle, children, backTo = "/" })
       </header>
       <main className="safe-x mx-auto max-w-4xl space-y-3 px-3 py-4">{children}</main>
       <BottomTabs />
+      <TipCard />
     </div>
   );
 }

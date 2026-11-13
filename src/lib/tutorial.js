@@ -77,8 +77,9 @@ export const TUTORIAL_STEPS = [
   },
 ];
 
+// tips / tipsOff belong to the one-time feature tips (src/lib/tips.js).
 export function blankTutorial() {
-  return { seen: [], done: false, skipped: false, replay: false };
+  return { seen: [], done: false, skipped: false, replay: false, tips: [], tipsOff: false };
 }
 
 // Read a saved tutorial record. A save from before the tutorial existed counts
@@ -93,6 +94,8 @@ export function readTutorial(raw, hasProgress) {
     done: !!raw.done,
     skipped: !!raw.skipped,
     replay: !!raw.replay,
+    tips: Array.isArray(raw.tips) ? raw.tips.filter((id) => typeof id === "string").slice(0, 100) : [],
+    tipsOff: !!raw.tipsOff,
   };
 }
 

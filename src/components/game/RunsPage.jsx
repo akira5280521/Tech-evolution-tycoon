@@ -3,6 +3,7 @@ import { PROJECT_MS, money } from "@/lib/gameConfig";
 import { CHALLENGES, PROJECTS, activeChallengeGoal, projectRevealed, scaledChallengeGoal } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
+import { HelpTip } from "./HintSheet";
 
 export default function RunsPage() {
   const { state, startChallenge } = useGameState();
@@ -13,8 +14,13 @@ export default function RunsPage() {
     return () => clearInterval(id);
   }, []);
   return (
-    <ScreenShell title="CHALLENGES" subtitle="Special runs and long builds with rewards that never reset.">
-      <h2 className="font-pixel text-[0.7rem] text-[var(--game-accent)]">CHALLENGE RUNS</h2>
+    <ScreenShell title="CHALLENGES" subtitle="Optional harder runs and big goals. Their rewards are kept forever.">
+      <h2 className="flex items-center gap-2 font-pixel text-[0.7rem] text-[var(--game-accent)]">
+        CHALLENGE RUNS <HelpTip term="challenge" />
+      </h2>
+      <p className="font-term text-lg leading-6 text-[var(--game-muted)]">
+        One run with special rules. Starting one resets your machines and cash like a prestige does, but you keep investors.
+      </p>
       {CHALLENGES.map((challenge) => {
         const done = (state.challengesDone || []).includes(challenge.id);
         const active = state.challenge?.id === challenge.id;
@@ -24,7 +30,7 @@ export default function RunsPage() {
             <h3 className="font-pixel text-[0.7rem]">{challenge.name}</h3>
             <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{challenge.blurb}</p>
             <p className="mt-2 font-term text-lg leading-6">
-              Goal: {money(active ? activeChallengeGoal(state) : scaledChallengeGoal(challenge, state))} this run · <span className="text-[var(--game-success)]">+10% all revenue, forever</span>
+              Goal: {money(active ? activeChallengeGoal(state) : scaledChallengeGoal(challenge, state))} this run · <span className="text-[var(--game-success)]">+10% all income, forever</span>
             </p>
             {active && (
               <p className="mt-1 font-term text-base text-[var(--game-accent)]">
@@ -44,7 +50,10 @@ export default function RunsPage() {
           </Panel>
         );
       })}
-      <h2 className="font-pixel text-[0.7rem] text-[var(--game-accent)]">MEGA-PROJECTS</h2>
+      <h2 className="flex items-center gap-2 font-pixel text-[0.7rem] text-[var(--game-accent)]">
+        MEGA-PROJECTS <HelpTip term="projects" />
+      </h2>
+      <p className="font-term text-lg leading-6 text-[var(--game-muted)]">These finish on their own once you reach the goal. Nothing to start.</p>
       {PROJECTS.map((project) => {
         const done = (state.projectsDone || []).includes(project.id);
         if (!projectRevealed(state, project)) {
@@ -61,7 +70,7 @@ export default function RunsPage() {
           <Panel key={project.id}>
             <h3 className="break-words font-pixel text-[0.65rem]">{project.name}</h3>
             <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{project.blurb}</p>
-            <p className="mt-1 font-term text-lg text-[var(--game-success)]">+{Math.round(project.reward * 100)}% all revenue, forever · +{project.tokens} tokens</p>
+            <p className="mt-1 font-term text-lg text-[var(--game-success)]">+{Math.round(project.reward * 100)}% all income, forever · +{project.tokens} tokens</p>
             {done && <p className="mt-2 font-pixel text-[0.55rem] text-[var(--game-success)]">FINISHED</p>}
             {!done && state.projectJob?.id === project.id && (
               <div className="mt-2">

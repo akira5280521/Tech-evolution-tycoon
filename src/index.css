@@ -454,3 +454,37 @@ img[src*="/icons/"] {
   0%, 100% { border-color: var(--game-accent); }
   50% { border-color: var(--game-fg); }
 }
+
+/* Tips and "?" explanations: a card just above the tab bar, or beside it in
+   landscape. --tabbar-h already includes the navigation-bar space. */
+.hint-sheet {
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: calc(var(--tabbar-h, 8rem) + 0.5rem);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+@media (orientation: landscape) {
+  .hint-sheet {
+    left: calc(6.5rem + var(--safe-area-inset-left, env(safe-area-inset-left, 0px)));
+    bottom: calc(0.75rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+  }
+}
+
+/* How to Play sections: the + turns into a - when a section is open. */
+.howto-section > summary {
+  list-style: none;
+}
+.howto-section > summary::-webkit-details-marker {
+  display: none;
+}
+.howto-section[open] .howto-caret {
+  transform: rotate(45deg);
+}
+
+/* A tip moves to the top when it would cover the thing it points at. */
+.hint-sheet.hint-sheet-top {
+  top: calc(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) + 0.75rem);
+  bottom: auto;
+}

@@ -34,6 +34,25 @@ test shipped in 0.0.13 (see Done).
 
 ## Merged, ships in the next release (0.0.18)
 
+- **Plain words for new players.** A tester new to idle games found terms
+  like prestige, fork and singularity confusing. The game now explains them
+  in everyday words: the Investors panel says what starting over does and
+  when it unlocks (exact numbers moved behind "Details"), and the confirm
+  boxes list what you lose and
+  what you keep. Board, Boost, Runs and Research use the same plain words.
+- **One-time tips (tutorial part 2):** the first time something new shows
+  up (buy modes, the Foreman, upgrades, tokens, research, starting over,
+  challenges, forking, the stock bubble) and on the first visit to each tab,
+  a short card explains it and outlines it on screen. "No more tips" turns
+  them off; More > How to Play turns them back on.
+- **"?" buttons** next to game terms open a one-line explanation.
+- **How to Play** is now short sections you can open (The basics,
+  Materials, Managers, Buying faster, Upgrades, Starting over, What you
+  keep forever, Challenges, The bigger reset, While you're away) plus a
+  "Words to know" list.
+- Fixed: Era Mastery said "permanent", but it lasts for the run.
+- The top bar says "earned this run" instead of "lifetime", since that
+  number resets when you start over.
 - The end of every page now scrolls clear of the tab bar on phones with the
   3-button navigation bar or large text (a tester couldn't read the end of
   How to Play). Page headers on Boost, Board, Runs, Badges and More stay at
@@ -124,16 +143,21 @@ folded into a neighbouring release.
 
 [Design](ideas.md#first-minutes-and-ui).
 
-1. **Tutorial, part 2: one-time tips** as each feature unlocks (a row runs
-   out of materials, first affordable upgrade, the x2 milestone, buy modes,
-   first dilemma, first Museum card, offline earnings, near the first
-   prestige, Research, the Market, Challenges, a timeline fork). Part 1, the
-   guided start, ships in 0.0.17. Then **starter goals and company name**:
-   name your company at the start (shown in headlines and later on the HQ
-   picture), plus a short goal list (buy 5 Timber Camps, hire a first
-   manager, unlock the next era) with a fixed reward. Also: a quicker first manager, a first-prestige screen that shows
-   exactly what you keep and gain, an "abandon challenge" button, and a
-   lower game tick rate to save battery.
+1. **The Jacquard Loom (1804), then starter goals.** Moved up from item 10
+   because it fills the first gap a new player meets: the Paper Mill jumps
+   straight to Punch Cards (1890). The loom wove patterns from chains of
+   punched cards, the first machine run by stored instructions. A new row
+   between the Paper Mill and Punch Cards that uses the Paper Mill's card
+   stock, with its own icon, manager, upgrade names and history cards (the
+   Museum's Jacquard Loom card moves to it). Re-run the pacing sim. Then
+   **starter goals and company name**: name your company at the start
+   (shown in headlines and later on the HQ picture), plus a short goal list
+   (buy 5 Timber Camps, hire a first manager, unlock the next era) with a
+   fixed reward. Also: the last few one-time tips (a row running out of
+   materials, the first dilemma, offline earnings), a quicker first
+   manager, a first-prestige screen that shows exactly what you keep and
+   gain, an "abandon challenge" button, and a lower game tick rate to save
+   battery. (Tutorial part 2, the one-time tips, ships in 0.0.18.)
 2. **Tidy up the tabs, and show them when needed.** Research moves from More
    to Boost, the Market moves from More to Board, More keeps only settings
    and help. Boost gets a switcher (Upgrades · Research, later Workbench)
@@ -218,14 +242,13 @@ folded into a neighbouring release.
 
 10. **Fill the gaps in the timeline.** New eras, each with its own icon,
    manager, two history cards and upgrade names, in historical order:
-   - Before punch cards: the Jacquard loom (1804), which used punched cards
-     to weave patterns.
    - After the tubes: mainframes (c. 1951, the first commercial computers),
      before the Germanium Refinery. Punch Cards moved to 1890, so the
      1950s mainframe years are now a gap.
    - Mid-1990s: dial-up internet and the World Wide Web.
    - 2007: smartphones.
    - Mid-2010s to 2020s: AI accelerators, just before Quantum (c. 2019).
+   The Jacquard loom (1804) moved up to item 1.
    The office PC (1981), graphical desktops (1984) and laptops are covered
    by Home Computers generations (item 6) instead. Saves store rows by era
    id, so new rows can go anywhere. Re-run the pacing sim after.

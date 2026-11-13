@@ -1,11 +1,12 @@
 import { Play } from "lucide-react";
 import { FOREMAN_COST, money } from "@/lib/gameConfig";
+import { HelpTip } from "./HintSheet";
 
 const MODES = [
   { id: "x1", label: "X1", sub: "ONE UNIT" },
   { id: "x10", label: "X10", sub: "TEN UNITS" },
   { id: "x100", label: "X100", sub: "HUNDRED" },
-  { id: "NEXT", label: "NEXT", sub: "TO GATE" },
+  { id: "NEXT", label: "NEXT", sub: "NEXT GOAL" },
   { id: "MAX", label: "MAX", sub: "ALL YOU CAN" },
 ];
 
@@ -23,7 +24,7 @@ export default function TopBar({ state, cps, buyMode, setBuyMode, onRunAll, canR
         <div data-cash-panel className="border-2 border-[var(--game-border-strong)] bg-[var(--game-bg-deep)] px-2 py-1 text-center shadow-[3px_3px_0_0_#000]">
           <div data-cash className="break-all font-term text-3xl leading-none text-[var(--game-success)]">{money(state.cash)}</div>
           <div className="font-term text-base leading-5 text-[var(--game-success)]">
-            {money(cps)}/s · lifetime {money(state.lifetime)}
+            {money(cps)}/s · {money(state.lifetime)} this run
           </div>
         </div>
 
@@ -54,7 +55,9 @@ export default function TopBar({ state, cps, buyMode, setBuyMode, onRunAll, canR
         )}
 
         <div>
-          <p className="font-pixel text-[0.55rem] leading-none text-[var(--game-fg)]">BUY</p>
+          <p className="flex items-center gap-2 font-pixel text-[0.55rem] leading-none text-[var(--game-fg)]">
+            BUY <HelpTip term="buymodes" />
+          </p>
           <div data-buy-modes className="mt-1 grid grid-cols-5 gap-1">
             {MODES.map((mode) => (
               <button

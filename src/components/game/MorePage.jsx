@@ -212,17 +212,17 @@ const HOW_TO = [
   },
   {
     id: "prestige",
-    title: "STARTING OVER (PRESTIGE)",
+    title: "PRESTIGE (STARTING OVER)",
     lines: [
-      "Once you've earned $1T in one run, the START OVER button lets you trade in the whole run for investors. You lose your cash, machines, managers and upgrades.",
-      "Every investor makes all income higher, forever, so the next run goes much faster. The more you earn before starting over, the more investors join. Idle games call this prestige, and it's how you get really big numbers.",
+      "Once you've earned $1T in one run, the PRESTIGE button lets you start over and trade in the whole run for investors. You lose your cash, machines, managers and upgrades.",
+      "Every investor makes all income higher, forever, so the next run goes much faster. The more you earn before you prestige, the more investors join. It's how you get really big numbers.",
     ],
   },
   {
     id: "keep",
     title: "WHAT YOU KEEP FOREVER",
     lines: [
-      "Investors, research data and your research picks, era tokens, badges, Museum cards, and the rewards from challenges and mega-projects all stay when you start over.",
+      "Investors, research data and your research picks, era tokens, badges, Museum cards, and the rewards from challenges and mega-projects all stay when you prestige.",
       "Research: every era you own makes a little research data. Spend it in MORE > RESEARCH on a bonus you keep.",
       "Era tokens come from new eras, milestones, projects and the free Daily Crate. Spend them in the shop on the BOARD tab.",
     ],
@@ -239,7 +239,7 @@ const HOW_TO = [
     id: "fork",
     title: "THE BIGGER RESET (FORK)",
     lines: [
-      "Much later, with thousands of investors, you can fork the timeline on the BOARD tab. It spends investors to start over with a multiplier you keep forever (up to x4), a higher income limit, and another research slot.",
+      "Much later, with thousands of investors, you can fork the timeline on the BOARD tab. It spends investors to start over like a prestige, with a multiplier you keep forever (up to x4), a higher income limit, and another research slot.",
     ],
   },
   {
@@ -322,7 +322,7 @@ export function ResearchBody({ state, onCommit }) {
         </p>
         <p className="font-term text-5xl leading-none text-[var(--game-success)]">{(state.data || 0).toFixed(1)}</p>
         <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
-          +{rate.toFixed(2)} a second from the {establishedCount(state)} {establishedCount(state) === 1 ? "era" : "eras"} you own and {masteredCount(state)} mastered. Data is never lost, even when you start over.
+          +{rate.toFixed(2)} a second from the {establishedCount(state)} {establishedCount(state) === 1 ? "era" : "eras"} you own and {masteredCount(state)} mastered. Data is never lost, even when you prestige.
         </p>
       </Panel>
       <Panel>

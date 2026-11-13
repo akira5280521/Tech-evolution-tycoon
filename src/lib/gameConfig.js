@@ -620,7 +620,7 @@ export function nextMove(state) {
   const claim = investorsFor(state?.lifetime);
   if (claim >= 1) {
     const noun = claim === 1 ? "investor" : "investors";
-    return `Start over (prestige) to recruit ${claim} ${noun}.`;
+    return `Prestige to recruit ${claim} ${noun}.`;
   }
 
   let goal = null;

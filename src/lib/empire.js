@@ -811,7 +811,7 @@ const BADGE_DEFS = [
     id: "time-prestige",
     group: "TIMELINE",
     name: "First Investor",
-    desc: "Start over (prestige) at least once",
+    desc: "Prestige at least once",
     earned: (s) => !!s.prestiged,
   },
   {

@@ -708,7 +708,7 @@ export function useGame() {
     const nextInvestors = s.investors + gained;
     if (!Number.isFinite(nextInvestors) || nextInvestors < 0) return;
     const noun = gained === 1 ? "investor" : "investors";
-    if (!window.confirm(`Start over with ${gained} new ${noun}?\n\nYou lose your cash, machines, managers and upgrades.\nYou keep your investors (each one boosts all income forever), research, tokens and badges.`)) return;
+    if (!window.confirm(`Prestige and start over with ${gained} new ${noun}?\n\nYou lose your cash, machines, managers and upgrades.\nYou keep your investors (each one boosts all income forever), research, tokens and badges.`)) return;
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);

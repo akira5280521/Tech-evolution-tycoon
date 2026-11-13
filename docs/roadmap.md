@@ -37,8 +37,8 @@ test shipped in 0.0.13 (see Done).
 - **Plain words for new players.** A tester new to idle games found terms
   like prestige, fork and singularity confusing. The game now explains them
   in everyday words: the Investors panel says what starting over does and
-  when it unlocks (exact numbers moved behind "Details"), the PRESTIGE
-  button is now START OVER, and the confirm boxes list what you lose and
+  when it unlocks (exact numbers moved behind "Details"), and the confirm
+  boxes list what you lose and
   what you keep. Board, Boost, Runs and Research use the same plain words.
 - **One-time tips (tutorial part 2):** the first time something new shows
   up (buy modes, the Foreman, upgrades, tokens, research, starting over,

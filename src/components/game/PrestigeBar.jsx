@@ -14,9 +14,9 @@ export default function PrestigeBar({ state, onPrestige }) {
 
   let line;
   if (claimable > 0) {
-    line = `Start over now and ${claimable} new ${claimable === 1 ? "investor joins" : "investors join"}. Keep going to get more: the next one comes at ${nextAt} earned this run.`;
+    line = `Prestige now and ${claimable} new ${claimable === 1 ? "investor joins" : "investors join"}. Keep going to get more: the next one comes at ${nextAt} earned this run.`;
   } else if (investors === 0) {
-    line = `Later, you can start over for a permanent boost. Once you've earned ${firstAt} in one run, you can trade it in for investors. Each one makes everything earn more, forever.`;
+    line = `Later, you can prestige for a permanent boost. Once you've earned ${firstAt} in one run, you can start over and trade the run in for investors. Each one makes everything earn more, forever.`;
   } else {
     line = `Your next investor comes at ${nextAt} earned this run.`;
   }
@@ -48,7 +48,7 @@ export default function PrestigeBar({ state, onPrestige }) {
           </button>
           {details && (
             <p className="font-term text-sm leading-4 text-[var(--game-dim)]">
-              Starting over (prestige) resets your cash, machines, managers and upgrades. Investors, research, tokens and badges stay. The first 100 investors add +5% each, the next 400 add +1% each, and every one after that adds +0.07%. All bonuses together approach an income limit that rises when you fork the timeline.
+              A prestige resets your cash, machines, managers and upgrades. Investors, research, tokens and badges stay. The first 100 investors add +5% each, the next 400 add +1% each, and every one after that adds +0.07%. All bonuses together approach an income limit that rises when you fork the timeline.
             </p>
           )}
         </div>
@@ -63,7 +63,7 @@ export default function PrestigeBar({ state, onPrestige }) {
               : "cursor-not-allowed border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-dim)]"
           }`}
         >
-          <span className="font-pixel text-sm uppercase">Start over</span>
+          <span className="font-pixel text-sm uppercase">Prestige</span>
           <span className="block font-term text-lg leading-5">
             {claimable >= 1 ? `+${claimable} investor${claimable === 1 ? "" : "s"}` : `at ${firstAt}`}
           </span>

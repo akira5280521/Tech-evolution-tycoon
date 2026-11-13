@@ -3,7 +3,7 @@
 
 export const DAILY_TIPS = [
   "Hire a manager and that machine keeps paying while the app is closed.",
-  "Earn $1T in one run and you can start over for your first investor.",
+  "Earn $1T in one run and you can prestige for your first investor.",
   "Milestones at 25, 50, 100, 150, 200, and 220 multiply a whole era.",
   "Run All fires every machine that still needs a click.",
   "A closed app keeps earning, but only for twenty-four hours.",

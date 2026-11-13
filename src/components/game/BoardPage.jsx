@@ -42,7 +42,7 @@ export default function BoardPage() {
           <span>Income limit: X{factors.ceiling.toFixed(0)}. Forking raises it.</span> <HelpTip term="ceiling" />
         </p>
         <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
-          You have {state.investors || 0} investors. Get more with START OVER on the GAME tab.
+          You have {state.investors || 0} investors. Get more with PRESTIGE on the GAME tab.
         </p>
         <div className="mt-3">
           <GoldButton disabled={!ready} onClick={forkTimeline} dataAttr="fork">

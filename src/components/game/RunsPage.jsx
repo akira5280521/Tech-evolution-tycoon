@@ -19,7 +19,7 @@ export default function RunsPage() {
         CHALLENGE RUNS <HelpTip term="challenge" />
       </h2>
       <p className="font-term text-lg leading-6 text-[var(--game-muted)]">
-        One run with special rules. Starting one resets your machines and cash like starting over does, but you keep investors.
+        One run with special rules. Starting one resets your machines and cash like a prestige does, but you keep investors.
       </p>
       {CHALLENGES.map((challenge) => {
         const done = (state.challengesDone || []).includes(challenge.id);

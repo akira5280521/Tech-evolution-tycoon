@@ -25,19 +25,19 @@ export const GLOSSARY = {
   },
   upgrades: {
     term: "UPGRADES",
-    text: "Each machine has two: one makes it pay 3 times as much, one makes it twice as fast. They cost cash and take 12 seconds to install. Starting over removes them, so you buy them again each run.",
+    text: "Each machine has two: one makes it pay 3 times as much, one makes it twice as fast. They cost cash and take 12 seconds to install. A prestige removes them, so you buy them again each run.",
   },
   mastery: {
     term: "ERA MASTERY",
     text: "Own enough of one machine and buy both of its upgrades: +5% to all income for the rest of that run. Mastered eras also make extra research data.",
   },
   prestige: {
-    term: "PRESTIGE (STARTING OVER)",
+    term: "PRESTIGE",
     text: "Trade in your whole run for investors. You lose your cash, machines, managers and upgrades, but every investor makes all income higher, forever, so the next run is much faster. The first investor comes once you've earned $1T in one run; 4 come at $16T, 10 at $100T.",
   },
   investors: {
     term: "INVESTORS",
-    text: "You get them by starting over (prestige) and they stay through every reset. The first 100 add +5% income each, the next 400 add +1% each, and after that each adds a little more.",
+    text: "You get them when you prestige, and they stay through every reset. The first 100 add +5% income each, the next 400 add +1% each, and after that each adds a little more.",
   },
   fork: {
     term: "FORK THE TIMELINE",
@@ -53,7 +53,7 @@ export const GLOSSARY = {
   },
   research: {
     term: "RESEARCH DATA",
-    text: "Every era you own makes a little data each second, and mastered eras make more. Data is never lost, even when you start over. Spend it in MORE > RESEARCH.",
+    text: "Every era you own makes a little data each second, and mastered eras make more. Data is never lost, even when you prestige. Spend it in MORE > RESEARCH.",
   },
   specialty: {
     term: "COMPANY SPECIALTY",

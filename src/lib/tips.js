@@ -6,7 +6,7 @@
 //
 // Like the tutorial, tips add no money or speed. They only explain.
 
-import { BUSINESSES, FOREMAN_COST, investorsFor } from "./gameConfig.js";
+import { BUSINESSES, FOREMAN_COST, investorsFor, shortMaterial } from "./gameConfig.js";
 import { dataPerSecond, forkCost, singularityMult, upgradeOffer, upgradesOf } from "./empire.js";
 import { tutorialActive } from "./tutorial.js";
 
@@ -53,6 +53,14 @@ export const TIPS = [
     text: "You have enough investors to fork the timeline on the BOARD tab. It's like a prestige, but it spends investors to give you a big multiplier that you keep forever, and opens another research slot.",
     target: '[data-tab="board"]',
     when: (s) => !s.challenge && forkReady(s),
+  },
+  {
+    id: "running-low",
+    page: "game",
+    title: "RUNNING LOW",
+    text: "A machine has run out of a material, so it pays much less. Buy more of the row that makes it, hire that row's manager, or buy its x3 upgrade on the BOOST tab to make 3 times as much.",
+    target: "[data-supply]",
+    when: (s) => !!shortMaterial(s) && (s.lifetime || 0) > 0,
   },
   {
     id: "foreman",

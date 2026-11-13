@@ -182,7 +182,7 @@ const HOW_TO = [
     id: "materials",
     title: "MATERIALS",
     lines: [
-      "Some machines use what an earlier one makes: wood for paper, paper for punch cards, sand for glass, glass, copper and filament for vacuum tubes, germanium for the first transistors, and silicon wafers for chips.",
+      "Some machines use what an earlier one makes: wood for paper, paper for the Jacquard loom and punch cards, sand for glass, glass, copper and filament for vacuum tubes, germanium for the first transistors, and silicon wafers for chips.",
       "The strip at the top shows what you have. If a material runs out, the machine that needs it pays much less until more is made, so keep the earlier rows growing too.",
     ],
   },
@@ -206,7 +206,7 @@ const HOW_TO = [
     id: "upgrades",
     title: "UPGRADES",
     lines: [
-      "On the BOOST tab each machine has two upgrades: one makes it pay 3 times as much, one makes it twice as fast. They take 12 seconds to install.",
+      "On the BOOST tab each machine has two upgrades: one makes it pay 3 times as much (and on a material row, make 3 times the material), one makes it twice as fast. They take 12 seconds to install.",
       "Own enough of a machine and buy both of its upgrades to master that era: +5% to all income for the rest of the run.",
     ],
   },

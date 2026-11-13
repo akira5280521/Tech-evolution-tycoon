@@ -5,7 +5,7 @@
 export const GLOSSARY = {
   materials: {
     term: "MATERIALS",
-    text: "Some machines use what an earlier one makes: the Paper Mill turns wood into card stock, glass works need sand, and so on. The strip at the top shows what you have. If a material runs out, the machine that needs it pays much less until more is made.",
+    text: "Some machines use what an earlier one makes: the Paper Mill turns wood into card stock, glass works need sand, and so on. Each one makes 1 per cycle until you buy its x3 upgrade, which makes it 3. The strip at the top shows what you have. If a material runs out, the machine that needs it pays much less until more is made.",
   },
   manager: {
     term: "MANAGER",
@@ -25,7 +25,7 @@ export const GLOSSARY = {
   },
   upgrades: {
     term: "UPGRADES",
-    text: "Each machine has two: one makes it pay 3 times as much, one makes it twice as fast. They cost cash and take 12 seconds to install. A prestige removes them, so you buy them again each run.",
+    text: "Each machine has two: one makes it pay 3 times as much (on a material row it also makes 3 times the material), one makes it twice as fast. They cost cash and take 12 seconds to install. A prestige removes them, so you buy them again each run.",
   },
   mastery: {
     term: "ERA MASTERY",

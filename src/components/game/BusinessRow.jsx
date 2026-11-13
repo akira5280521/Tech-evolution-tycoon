@@ -10,7 +10,7 @@ import {
   money,
   nextMilestone,
 } from "@/lib/gameConfig";
-import { effectiveCycleMs, empireFactors, maxBuyCount, supplyFactor, upgradesOf } from "@/lib/empire";
+import { effectiveCycleMs, empireFactors, makesOf, maxBuyCount, supplyFactor, upgradesOf } from "@/lib/empire";
 import IconTile from "./IconTile";
 import ProgressTrack from "./ProgressTrack";
 
@@ -81,7 +81,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
           <p className="font-term text-base leading-5 text-[var(--game-muted)]">
             {cfg.uses ? `Uses ${formatFlow(cfg.uses)} / cycle` : ""}
             {cfg.uses && cfg.makes ? " · " : ""}
-            {cfg.makes ? `Makes ${formatFlow(cfg.makes)} each` : ""}
+            {cfg.makes ? `Makes ${formatFlow(makesOf(state, cfg))} each` : ""}
           </p>
         )}
         <div className="flex flex-wrap justify-between gap-x-3 font-term text-base leading-5 text-[var(--game-muted)]">

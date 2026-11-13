@@ -325,6 +325,15 @@ export function supplyFactor(state, cfg) {
   return 0.15 + 0.85 * Math.min(1, cover);
 }
 
+// What one unit of a material row makes per cycle. The row's x3 upgrade
+// triples the material as well as the pay, so early on each unit makes 1.
+export const MATERIAL_UPGRADE_MULT = 3;
+export function makesOf(state, cfg) {
+  if (!cfg?.makes) return null;
+  const mult = upgradesOf(state, cfg.id).rev ? MATERIAL_UPGRADE_MULT : 1;
+  return Object.fromEntries(Object.entries(cfg.makes).map(([key, n]) => [key, (Number(n) || 0) * mult]));
+}
+
 function moveSupply(state, cfg, cycles, owned) {
   if (!cfg?.uses && !cfg?.makes) return;
   const supply = ensureSupply(state);
@@ -339,7 +348,7 @@ function moveSupply(state, cfg, cycles, owned) {
     }
   }
   if (cfg.makes && count > 0) {
-    for (const [key, make] of Object.entries(cfg.makes)) {
+    for (const [key, make] of Object.entries(makesOf(state, cfg))) {
       const add = (Number(make) || 0) * count * n;
       const next = (supply[key] || 0) + add;
       supply[key] = Number.isFinite(next) ? Math.min(SUPPLY_CAP, Math.max(0, next)) : supply[key] || 0;
@@ -1032,6 +1041,8 @@ export const HEADLINES = [
   { era: "always", text: "MINISTRY OF COMPUTING ANNOUNCES A GRANT" },
   { era: "timber", text: "SPRING LOG DRIVE REACHES THE PAPER MILL" },
   { era: "paper", text: "PAPER MILL SWITCHES FROM RAGS TO WOOD PULP" },
+  { era: "loom", text: "LYON WEAVERS PROTEST THE CARD-READING LOOM" },
+  { era: "loom", text: "THE DRAW BOY'S JOB GOES TO A CHAIN OF CARDS" },
   { era: "punchcards", text: "CENSUS COUNTED IN WEEKS, NOT YEARS" },
   { era: "punchcards", text: "PUNCH CARDS JAM, PROFITS DO NOT" },
   { era: "sand", text: "SILICA SAND LEAVES THE PIT BY THE TONNE" },

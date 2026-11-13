@@ -2,7 +2,8 @@
 //
 // Pacing: the first unit of each row costs more than the row before it, and a
 // steady player opens a new row every two to four minutes through the first
-// half hour (punch cards ~7 min, tubes ~14, transistors ~20, ICs ~27). From
+// half hour (Jacquard loom ~6 min, punch cards ~7, tubes ~14, transistors
+// ~19, ICs ~27). From
 // Integrated Circuits on, prices and revenue are unchanged from the earlier
 // tuning, so the first prestige (~3 h) and first fork (~4 days nonstop) stay
 // where they were. Checked with the pacing simulation after the history
@@ -10,7 +11,8 @@
 
 export const BUSINESSES = [
   // Rows run in historical order. Each material sits just before the first
-  // era that uses it: wood and paper before punch cards (1890); sand,
+  // era that uses it: wood and paper before the Jacquard loom (1804) and
+  // punch cards (1890); sand,
   // copper, glass and filament before vacuum tubes (1946); germanium before
   // the first transistors; silicon and wafers before integrated circuits.
   // Saves store rows by id (save v5 and later).
@@ -29,11 +31,11 @@ export const BUSINESSES = [
     managerNeed: 5,
     revCost: 550,
     spdCost: 52000,
-    makes: { wood: 3 },
+    makes: { wood: 1 },
     speedNeed: 30,
     masteryNeed: 72,
     badgeOwned: 20,
-    upgrades: ["Crosscut Saws", "Two-man saws bite faster. Each load pays triple.", "Log Flume", "The logs ride the water to the mill. Twice the speed."],
+    upgrades: ["Crosscut Saws", "Two-man saws bite faster. Triple the wood, and each load pays triple.", "Log Flume", "The logs ride the water to the mill. Twice the speed."],
   },
   {
     id: "paper",
@@ -50,11 +52,31 @@ export const BUSINESSES = [
     revCost: 14000,
     spdCost: 160000,
     uses: { wood: 1 },
-    makes: { paper: 3 },
+    makes: { paper: 1 },
     speedNeed: 38,
     masteryNeed: 75,
     badgeOwned: 17,
-    upgrades: ["Rag Content", "Cotton-rich card stock stops tearing. Each bale pays triple.", "Continuous Roll", "The machine makes one endless roll. Twice the speed."],
+    upgrades: ["Rag Content", "Cotton-rich card stock stops tearing. Triple the card stock, and each bale pays triple.", "Continuous Roll", "The machine makes one endless roll. Twice the speed."],
+  },
+  {
+    id: "loom",
+    name: "Jacquard Loom",
+    era: "c. 1804",
+    tagline: "A chain of punched cards tells the loom which threads to lift. The first stored instructions.",
+    icon: "/icons/loom.png",
+    baseCost: 150,
+    revenue: 4,
+    cycleMs: 2600,
+    coef: 1.12,
+    managerName: "Master Weaver",
+    managerCost: 3600,
+    revCost: 20000,
+    spdCost: 220000,
+    uses: { paper: 1 },
+    speedNeed: 40,
+    masteryNeed: 100,
+    badgeOwned: 20,
+    upgrades: ["Silk Brocade", "Patterns too fine for any hand weaver. Each bolt pays triple.", "Steam Drive", "An engine works the loom instead of feet. Twice the speed."],
   },
   {
     id: "punchcards",
@@ -90,11 +112,11 @@ export const BUSINESSES = [
     managerCost: 15000,
     revCost: 75000,
     spdCost: 750000,
-    makes: { sand: 3 },
+    makes: { sand: 1 },
     speedNeed: 30,
     masteryNeed: 72,
     badgeOwned: 20,
-    upgrades: ["Screened Grit", "Washed sand sells cleaner. Each scoop pays triple.", "Second Shift", "The pit stays lit. Cycles run twice as fast."],
+    upgrades: ["Screened Grit", "Washed sand sells cleaner. Triple the sand, and each scoop pays triple.", "Second Shift", "The pit stays lit. Cycles run twice as fast."],
   },
   {
     id: "copper",
@@ -110,11 +132,11 @@ export const BUSINESSES = [
     managerCost: 25000,
     revCost: 125000,
     spdCost: 1250000,
-    makes: { copper: 3 },
+    makes: { copper: 1 },
     speedNeed: 36,
     masteryNeed: 70,
     badgeOwned: 18,
-    upgrades: ["High-Grade Ore", "The seam runs rich. Each pull pays triple.", "Twin Drills", "Two faces at once. The cycle is cut in half."],
+    upgrades: ["High-Grade Ore", "The seam runs rich. Triple the copper, and each pull pays triple.", "Twin Drills", "Two faces at once. The cycle is cut in half."],
   },
   {
     id: "glass",
@@ -131,11 +153,11 @@ export const BUSINESSES = [
     revCost: 150000,
     spdCost: 1500000,
     uses: { sand: 1 },
-    makes: { glass: 3 },
+    makes: { glass: 1 },
     speedNeed: 40,
     masteryNeed: 80,
     badgeOwned: 16,
-    upgrades: ["Borosilicate Batch", "Tougher glass takes the heat. Each melt pays triple.", "Ribbon Machine", "Bulbs blown from a moving ribbon of glass. Twice the speed."],
+    upgrades: ["Borosilicate Batch", "Tougher glass takes the heat. Triple the glass, and each melt pays triple.", "Ribbon Machine", "Bulbs blown from a moving ribbon of glass. Twice the speed."],
   },
   {
     id: "filament",
@@ -151,11 +173,11 @@ export const BUSINESSES = [
     managerCost: 50000,
     revCost: 250000,
     spdCost: 2500000,
-    makes: { filament: 3 },
+    makes: { filament: 1 },
     speedNeed: 42,
     masteryNeed: 85,
     badgeOwned: 16,
-    upgrades: ["Ductile Tungsten", "Tungsten that bends into wire. Each spool pays triple.", "Diamond Dies", "Wire pulled through diamond dies runs twice as fast."],
+    upgrades: ["Ductile Tungsten", "Tungsten that bends into wire. Triple the filament, and each spool pays triple.", "Diamond Dies", "Wire pulled through diamond dies runs twice as fast."],
   },
   {
     id: "tubes",
@@ -191,11 +213,11 @@ export const BUSINESSES = [
     managerCost: 200000,
     revCost: 1000000,
     spdCost: 8000000,
-    makes: { germanium: 3 },
+    makes: { germanium: 1 },
     speedNeed: 44,
     masteryNeed: 90,
     badgeOwned: 16,
-    upgrades: ["Zone Refining", "A molten zone sweeps the impurities out. Yield triples.", "Tandem Furnaces", "Two furnaces share the load. Cycles are halved."],
+    upgrades: ["Zone Refining", "A molten zone sweeps the impurities out. Triple the germanium, and triple the pay.", "Tandem Furnaces", "Two furnaces share the load. Cycles are halved."],
   },
   {
     id: "transistors",
@@ -230,11 +252,11 @@ export const BUSINESSES = [
     revCost: 5000000,
     spdCost: 40000000,
     uses: { sand: 1 },
-    makes: { silicon: 3 },
+    makes: { silicon: 1 },
     speedNeed: 40,
     masteryNeed: 80,
     badgeOwned: 16,
-    upgrades: ["Float Zone", "A molten zone carries the impurities away. Yield triples.", "Hotter Crucible", "The melt finishes sooner. Twice the speed."],
+    upgrades: ["Float Zone", "A molten zone carries the impurities away. Triple the silicon, and triple the pay.", "Hotter Crucible", "The melt finishes sooner. Twice the speed."],
   },
   {
     id: "wafers",
@@ -251,11 +273,11 @@ export const BUSINESSES = [
     revCost: 12000000,
     spdCost: 100000000,
     uses: { silicon: 1 },
-    makes: { wafers: 6 },
+    makes: { wafers: 2 },
     speedNeed: 44,
     masteryNeed: 90,
     badgeOwned: 16,
-    upgrades: ["Seed Crystals", "Each pull starts true. Wafer revenue triples.", "Twin Pullers", "Two crystals grow at once. Cycles are halved."],
+    upgrades: ["Seed Crystals", "Each pull starts true. Triple the wafers, and triple the pay.", "Twin Pullers", "Two crystals grow at once. Cycles are halved."],
   },
   {
     id: "ics",
@@ -560,6 +582,23 @@ function rateOf(cfg, owned) {
 // The single best thing to do with the empire as it stands. Hire beats a new
 // era, which beats clicking an idle machine, which beats another copy of
 // something you already run.
+// A row that is short of a material, and the row that makes it, or null.
+export function shortMaterial(state) {
+  const biz = Array.isArray(state?.biz) ? state.biz : [];
+  const supply = state?.supply || {};
+  if (state?.challenge?.id === "glass") return null;
+  for (let i = 0; i < BUSINESSES.length; i++) {
+    const cfg = BUSINESSES[i];
+    if (!cfg.uses || !(biz[i]?.owned > 0)) continue;
+    for (const [key, need] of Object.entries(cfg.uses)) {
+      if ((supply[key] || 0) >= need) continue;
+      const p = BUSINESSES.findIndex((c) => c.makes && c.makes[key]);
+      if (p >= 0) return { user: i, maker: p, key };
+    }
+  }
+  return null;
+}
+
 export function nextMove(state) {
   const biz = Array.isArray(state?.biz) ? state.biz : [];
   const cash = Number.isFinite(state?.cash) ? state.cash : 0;
@@ -568,6 +607,23 @@ export function nextMove(state) {
   const glass = state?.challenge?.id === "glass";
   const now = Date.now();
   const commissioning = (st) => (st?.commissionUntil || 0) > now;
+
+  // A dry row pays much less: point at the cheapest way to feed it.
+  const short = shortMaterial(state);
+  if (short) {
+    const maker = BUSINESSES[short.maker];
+    const mst = biz[short.maker] || {};
+    const user = BUSINESSES[short.user].name;
+    const tripled = !!state?.upgrades?.[maker.id]?.rev;
+    if (!tripled && Number.isFinite(maker.revCost) && cash >= maker.revCost) {
+      return `${user} is short of ${short.key}. Buy the ${maker.name}'s x3 upgrade on the BOOST tab to make 3 times as much.`;
+    }
+    if (!noBoss && !mst.manager && (mst.owned || 0) >= managerNeed(short.maker) && cash >= maker.managerCost) {
+      return `${user} is short of ${short.key}. Hire the ${maker.managerName} so the ${maker.name} keeps making it.`;
+    }
+    const cost = costOf(maker, mst.owned || 0, 1);
+    if (Number.isFinite(cost) && cash >= cost) return `${user} is short of ${short.key}. Buy another ${maker.name} for ${money(cost)}.`;
+  }
 
   if (!noBoss) {
     for (let i = BUSINESSES.length - 1; i >= 0; i--) {

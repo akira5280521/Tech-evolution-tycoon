@@ -19,7 +19,7 @@ export const TUTORIAL_STEPS = [
   {
     id: "welcome",
     title: "WELCOME, FOUNDER",
-    text: "It's 1890 and you're starting a company that will build the computer age. Let's earn your first dollar.",
+    text: "It's the 1800s and you're starting a company that will build the computer age. Let's earn your first dollar.",
     target: "[data-cash-panel]",
     manual: true,
     button: "LET'S GO",
@@ -63,9 +63,9 @@ export const TUTORIAL_STEPS = [
   {
     id: "history",
     title: "REAL HISTORY",
-    text: "Punch Cards, 1890: your first real step into computing. Each era you reach unlocks history cards in the Museum (Badges tab).",
-    target: '[data-buy="punchcards"]',
-    done: (s) => ownedOf(s, "punchcards") >= 1,
+    text: "The Jacquard Loom, 1804: the first machine run by instructions on punched cards. Buy one. Each era you reach unlocks history cards in the Museum (Badges tab).",
+    target: '[data-buy="loom"]',
+    done: (s) => ownedOf(s, "loom") >= 1,
   },
   {
     id: "finish",

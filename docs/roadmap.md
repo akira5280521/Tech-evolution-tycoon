@@ -34,6 +34,20 @@ test shipped in 0.0.13 (see Done).
 
 ## Merged, ships in the next release (0.0.18)
 
+- **New era: the Jacquard Loom (c. 1804)**, between the Paper Mill and
+  Punch Cards. The first machine run by instructions on punched cards; it
+  uses the Paper Mill's card stock. Own icon, the Master Weaver manager,
+  two upgrades (Silk Brocade, Steam Drive), two Museum cards (the loom, and
+  Ada Lovelace on weaving algebra) and two headlines. The tutorial's
+  history step now points at it. Saves that already reached Punch Cards
+  get the loom started with its manager (save v7). Pacing sim: the loom
+  opens at about 6 minutes; later eras, the first prestige (about 3 hours)
+  and the first fork (about 4 days nonstop) are unchanged.
+- **Materials gather 1 at a time** per machine until that row's x3 upgrade,
+  which now triples the material as well as the pay (it was 3 from the
+  start, so the upgrade did little for material rows). When a row runs
+  short, a one-time tip and the Next Move hint say which row to feed and
+  how (more machines, its manager, or its x3 upgrade).
 - **Plain words for new players.** A tester new to idle games found terms
   like prestige, fork and singularity confusing. The game now explains them
   in everyday words: the Investors panel says what starting over does and
@@ -143,14 +157,7 @@ folded into a neighbouring release.
 
 [Design](ideas.md#first-minutes-and-ui).
 
-1. **The Jacquard Loom (1804), then starter goals.** Moved up from item 10
-   because it fills the first gap a new player meets: the Paper Mill jumps
-   straight to Punch Cards (1890). The loom wove patterns from chains of
-   punched cards, the first machine run by stored instructions. A new row
-   between the Paper Mill and Punch Cards that uses the Paper Mill's card
-   stock, with its own icon, manager, upgrade names and history cards (the
-   Museum's Jacquard Loom card moves to it). Re-run the pacing sim. Then
-   **starter goals and company name**: name your company at the start
+1. **Starter goals and company name**: name your company at the start
    (shown in headlines and later on the HQ picture), plus a short goal list
    (buy 5 Timber Camps, hire a first manager, unlock the next era) with a
    fixed reward. Also: the last few one-time tips (a row running out of
@@ -248,7 +255,7 @@ folded into a neighbouring release.
    - Mid-1990s: dial-up internet and the World Wide Web.
    - 2007: smartphones.
    - Mid-2010s to 2020s: AI accelerators, just before Quantum (c. 2019).
-   The Jacquard loom (1804) moved up to item 1.
+   The Jacquard loom (1804) shipped in 0.0.18.
    The office PC (1981), graphical desktops (1984) and laptops are covered
    by Home Computers generations (item 6) instead. Saves store rows by era
    id, so new rows can go anywhere. Re-run the pacing sim after.

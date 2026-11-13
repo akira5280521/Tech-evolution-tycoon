@@ -12,8 +12,9 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 // in front of Vacuum Tubes. v5 stores each row with its era id and puts the
 // rows in historical order, adding the paper, glass, filament and germanium
 // rows; older saves are matched to rows by their old position. v6 adds the
-// Timber Camp as the first row (wood for the Paper Mill).
-export const SAVE_VERSION = 6;
+// Timber Camp as the first row (wood for the Paper Mill). v7 adds the
+// Jacquard Loom (1804) between the Paper Mill and Punch Cards.
+export const SAVE_VERSION = 7;
 const V1_INVESTOR_DIVISOR = 1000;
 // Row order of each older save version.
 const V4_ORDER = ["sand", "copper", "silicon", "wafers", "tubes", "punchcards", "transistors", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];
@@ -24,6 +25,7 @@ const V5_ORDER = ["sand", "copper", "paper", "punchcards", "glass", "filament", 
 const V4_MATERIALS = ["sand", "copper", "silicon", "wafers"];
 const NEW_IN_V5 = { paper: "punchcards", glass: "tubes", filament: "tubes", germanium: "transistors" };
 const NEW_IN_V6 = { timber: "paper" };
+const NEW_IN_V7 = { loom: "punchcards" };
 const SEED_OWNED = { sand: 8, copper: 4, silicon: 2, wafers: 1, paper: 2, glass: 2, filament: 2, germanium: 2, timber: 2 };
 // Stock to start a seeded row's material with, keyed by row id.
 const SEED_SUPPLY = { sand: 80, copper: 40, silicon: 24, wafers: 12, paper: 20, glass: 20, filament: 20, germanium: 20, timber: 20 };
@@ -70,6 +72,13 @@ export function migrateSave(data) {
     for (const [id, needs] of Object.entries(NEW_IN_V6)) {
       // A save from before v5 had no paper row yet; it gets paper seeded
       // above whenever it reached punch cards, so check that too.
+      if (ownedOf(needs) > 0 || seed.has(needs)) seed.add(id);
+    }
+  }
+  if (version < 7) {
+    for (const [id, needs] of Object.entries(NEW_IN_V7)) {
+      // Anyone who reached punch cards (or got them seeded above) already
+      // passed the loom's place in history, so it starts with its weaver.
       if (ownedOf(needs) > 0 || seed.has(needs)) seed.add(id);
     }
   }

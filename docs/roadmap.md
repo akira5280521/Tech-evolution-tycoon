@@ -32,7 +32,14 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
-## Merged, ships in the next release (0.0.17)
+## Merged, ships in the next release (0.0.18)
+
+- The end of every page now scrolls clear of the tab bar on phones with the
+  3-button navigation bar or large text (a tester couldn't read the end of
+  How to Play). Page headers on Boost, Board, Runs, Badges and More stay at
+  the top while scrolling instead of sliding under the status bar.
+
+## In 0.0.17
 
 - **Tutorial for new players:** an 8-step guided start on the Game screen
   (tap, buy, a new row, materials, hire a manager, the first history era).

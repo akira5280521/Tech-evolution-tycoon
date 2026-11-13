@@ -166,7 +166,7 @@ export default function GameScreen() {
         </main>
       </div>
 
-      <footer className="safe-x safe-bottom mx-auto max-w-4xl px-3 pb-4 pt-2 font-term text-base leading-5 text-[var(--game-dim)]">
+      <footer className="safe-x mx-auto max-w-4xl px-3 pb-4 pt-2 font-term text-base leading-5 text-[var(--game-dim)]">
         <p className="border-t-2 border-[var(--game-border)] pt-3">
           Progress saves on this device. Close the app and a hired crew keeps earning for up to 24 hours.
         </p>

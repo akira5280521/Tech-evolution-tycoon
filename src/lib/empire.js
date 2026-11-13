@@ -1017,31 +1017,66 @@ export function investorsReady(state) {
   return investorsFor(state.lifetime || 0);
 }
 
+// Ticker headlines, each tied to the era it belongs to, so the news never
+// runs ahead of history. "always" lines fit any time; "prestige" lines need
+// at least one prestige.
 export const HEADLINES = [
-  "PRICES SOAR AS GAMERS CHASE THE NEXT FRAME",
-  "SILICA SAND LEAVES THE PIT BY THE TONNE",
-  "VACUUM TUBES STILL WARM IN THE BACK ROOM",
-  "PUNCH CARDS JAM, PROFITS DO NOT",
-  "FAB LINE SUPERVISOR DENIES ANY LEAK",
-  "GLASSBLOWERS RACE THE NEW RIBBON MACHINE",
-  "SPRING LOG DRIVE REACHES THE PAPER MILL",
-  "CENSUS COUNTED IN WEEKS, NOT YEARS",
-  "GERMANIUM CRYSTALS GROWN FOR THE NEW TRANSISTOR",
-  "MICROPROCESSORS PRINT OVERTIME",
-  "RGB FANS AUDIBLE FROM ORBIT",
-  "QUANTUM CHANDELIER OBSERVED PAYING DIVIDENDS",
-  "MINISTRY OF COMPUTING ANNOUNCES A GRANT",
-  "COPPER PRICES TICK UP, MINERS TICK DOWN",
-  "WAFER BENCH WORKERS DEMAND BETTER STOOLS",
-  "INTERN REWIRES TOASTER, PATENTS PENDING",
-  "MAINFRAME FILLS ENTIRE GYM, STILL WANTS MORE",
-  "MOON LANDING CREDITS YOUR GUIDANCE CHIPS",
-  "HOME COMPUTER SALES BEAT TYPEWRITERS FOR THE FIRST TIME",
-  "EXPERTS: 640K SHOULD BE ENOUGH FOR ANYBODY",
-  "DIAL-UP SCREECH NAMED CITY'S NEW ANTHEM",
-  "MILLENNIUM BUG FAILS TO BITE",
-  "GPU SHORTAGE: GAMERS QUEUE AROUND THE BLOCK",
-  "LAN PARTY ENTERS DAY THREE, PIZZA SUPPLY HOLDS",
-  "QUANTUM SERVER BOTH ON AND OFF, ANALYSTS SAY",
-  "INVESTORS ASK IF THE TIMELINE CAN BE FORKED",
+  { era: "always", text: "MINISTRY OF COMPUTING ANNOUNCES A GRANT" },
+  { era: "timber", text: "SPRING LOG DRIVE REACHES THE PAPER MILL" },
+  { era: "paper", text: "PAPER MILL SWITCHES FROM RAGS TO WOOD PULP" },
+  { era: "punchcards", text: "CENSUS COUNTED IN WEEKS, NOT YEARS" },
+  { era: "punchcards", text: "PUNCH CARDS JAM, PROFITS DO NOT" },
+  { era: "sand", text: "SILICA SAND LEAVES THE PIT BY THE TONNE" },
+  { era: "copper", text: "COPPER PRICES TICK UP, MINERS TICK DOWN" },
+  { era: "glass", text: "GLASSBLOWERS RACE THE NEW RIBBON MACHINE" },
+  { era: "filament", text: "TUNGSTEN WIRE FINALLY BENDS WITHOUT SNAPPING" },
+  { era: "tubes", text: "VACUUM TUBES STILL WARM IN THE BACK ROOM" },
+  { era: "tubes", text: "NEW COMPUTER FILLS AN ENTIRE ROOM, STILL WANTS MORE" },
+  { era: "tubes", text: "MOTH FOUND IN A RELAY, ENGINEERS LOG THE FIRST BUG" },
+  { era: "germanium", text: "GERMANIUM CRYSTALS GROWN FOR THE NEW TRANSISTOR" },
+  { era: "transistors", text: "POCKET RADIO GOES ON SALE IN TIME FOR CHRISTMAS" },
+  { era: "silicon", text: "SILICON TAKES THE HEAT GERMANIUM COULDN'T" },
+  { era: "wafers", text: "WAFER BENCH WORKERS DEMAND BETTER STOOLS" },
+  { era: "ics", text: "MOON LANDING CREDITS YOUR GUIDANCE CHIPS" },
+  { era: "ics", text: "FAB LINE SUPERVISOR DENIES ANY LEAK" },
+  { era: "cpu", text: "CALCULATOR MAKER ORDERS A CHIP THAT CAN DO ANYTHING" },
+  { era: "cpu", text: "MICROPROCESSORS PRINT OVERTIME" },
+  { era: "homepc", text: "THREE HOME COMPUTERS LAUNCH IN ONE YEAR" },
+  { era: "homepc", text: "EXPERTS: 640K SHOULD BE ENOUGH FOR ANYBODY" },
+  { era: "homepc", text: "INTERN REWIRES TOASTER, PATENTS PENDING" },
+  { era: "homepc", text: "DIAL-UP SCREECH NAMED CITY'S NEW ANTHEM" },
+  { era: "gpu", text: "PRICES SOAR AS GAMERS CHASE THE NEXT FRAME" },
+  { era: "gpu", text: "MILLENNIUM BUG FAILS TO BITE" },
+  { era: "gpu", text: "LAN PARTY ENTERS DAY THREE, PIZZA SUPPLY HOLDS" },
+  { era: "rgb", text: "RGB FANS AUDIBLE FROM ORBIT" },
+  { era: "rgb", text: "GPU SHORTAGE: GAMERS QUEUE AROUND THE BLOCK" },
+  { era: "quantum", text: "QUANTUM CHANDELIER OBSERVED PAYING DIVIDENDS" },
+  { era: "quantum", text: "QUANTUM SERVER BOTH ON AND OFF, ANALYSTS SAY" },
+  { era: "prestige", text: "INVESTORS ASK IF THE TIMELINE CAN BE FORKED" },
 ];
+
+// How many headlines run at once: the newest eras first, so the ticker talks
+// about what's happening now rather than the 1890 census forever.
+const HEADLINE_COUNT = 8;
+
+// The furthest era owned in this run (-1 if none).
+export function currentEraIndex(state) {
+  const biz = state?.biz || [];
+  for (let i = biz.length - 1; i >= 0; i--) if ((biz[i]?.owned || 0) > 0) return i;
+  return -1;
+}
+
+// Headlines for where the player is in history right now.
+export function headlinesFor(state) {
+  const reached = currentEraIndex(state);
+  const indexOf = (id) => BUSINESSES.findIndex((cfg) => cfg.id === id);
+  const dated = HEADLINES
+    .map((h) => ({ ...h, at: indexOf(h.era) }))
+    .filter((h) => h.at >= 0 && h.at <= reached)
+    .sort((a, b) => b.at - a.at)
+    .slice(0, HEADLINE_COUNT)
+    .map((h) => h.text);
+  const extra = HEADLINES.filter((h) => h.era === "always" || (h.era === "prestige" && (state?.prestiged || (state?.investors || 0) > 0))).map((h) => h.text);
+  const lines = [...dated, ...extra];
+  return lines.length ? lines : [HEADLINES[0].text];
+}

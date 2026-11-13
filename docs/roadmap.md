@@ -34,6 +34,12 @@ test shipped in 0.0.13 (see Done).
 
 ## Merged, ships in the next release (0.0.17)
 
+- **Tutorial for new players:** an 8-step guided start on the Game screen
+  (tap, buy, a new row, materials, hire a manager, the first history era).
+  A coach bubble points at one thing at a time and moves on when the player
+  does it; it never blocks play. Skip any time; replay from More > How to
+  Play. Dilemmas wait until it's over. Existing players aren't shown it.
+
 - The news ticker follows history: each headline belongs to an era and only
   shows once you've reached it, newest era first (no moon landing in 1890).
 
@@ -111,10 +117,14 @@ folded into a neighbouring release.
 
 [Design](ideas.md#first-minutes-and-ui).
 
-1. **Starter goals and company name.** Name your company at the start
-   (shown in headlines and later on the HQ picture), plus a short goal list
-   (buy 5 quarries, hire a first manager, unlock the next era) with a fixed
-   reward. Also: a quicker first manager, a first-prestige screen that shows
+1. **Tutorial, part 2: one-time tips** as each feature unlocks (a row runs
+   out of materials, first affordable upgrade, the x2 milestone, buy modes,
+   first dilemma, first Museum card, offline earnings, near the first
+   prestige, Research, the Market, Challenges, a timeline fork). Part 1, the
+   guided start, ships in 0.0.17. Then **starter goals and company name**:
+   name your company at the start (shown in headlines and later on the HQ
+   picture), plus a short goal list (buy 5 Timber Camps, hire a first
+   manager, unlock the next era) with a fixed reward. Also: a quicker first manager, a first-prestige screen that shows
    exactly what you keep and gain, an "abandon challenge" button, and a
    lower game tick rate to save battery.
 2. **Tidy up the tabs, and show them when needed.** Research moves from More

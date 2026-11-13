@@ -40,6 +40,7 @@ import {
   snapshotMeta,
   tickDilemma,
 } from "@/lib/empire";
+import { blankTutorial, readTutorial, TUTORIAL_STEPS } from "@/lib/tutorial";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { HISTORY_CARDS, collectHistory } from "@/lib/history";
 import { applyOrientation } from "@/lib/orientation";
@@ -114,6 +115,8 @@ function applySavedMeta(state, raw) {
   state.lastDilemma = typeof m.lastDilemma === "string" ? m.lastDilemma : null;
   state.nextWindfallAt = num(m.nextWindfallAt);
   state.prestiged = !!m.prestiged;
+  // Saves from before the tutorial: anyone with real progress has played already.
+  state.tutorial = readTutorial(m.tutorial, num(m.careerEarnings) > 0 || num(raw?.investors) > 0 || (raw?.biz || []).some((b, i) => (b?.owned || 0) > (i === 0 ? 1 : 0)));
   state.badgesEarned = Array.isArray(m.badgesEarned) ? m.badgesEarned.filter((id) => typeof id === "string") : [];
   state.museum = Array.isArray(m.museum) ? m.museum.filter((id) => HISTORY_CARDS.some((c) => c.id === id)) : [];
   state.bubble = cleanBubble(m.bubble);
@@ -169,6 +172,7 @@ function pack(s) {
     supply: s.supply,
     foreman: !!s.foreman,
     sawPit: !!s.sawPit,
+    tutorial: s.tutorial || null,
     orientation: s.orientation || "auto",
     researchJob: s.researchJob || null,
     upgradeJob: s.upgradeJob || null,
@@ -650,6 +654,32 @@ export function useGame() {
     bump();
   }, [bump]);
 
+  // Tutorial: a manual step's button, skipping, and replaying from Help.
+  const tutorialNext = useCallback((id) => {
+    const s = stateRef.current;
+    const t = s.tutorial || blankTutorial();
+    if (!TUTORIAL_STEPS.some((step) => step.id === id) || t.seen.includes(id)) return;
+    const seen = [...t.seen, id];
+    const finished = id === TUTORIAL_STEPS[TUTORIAL_STEPS.length - 1].id;
+    s.tutorial = { ...t, seen, done: finished || t.done, replay: finished ? false : t.replay };
+    saveNow();
+    bump();
+  }, [bump, saveNow]);
+
+  const tutorialSkip = useCallback(() => {
+    const s = stateRef.current;
+    s.tutorial = { ...(s.tutorial || blankTutorial()), skipped: true, replay: false };
+    saveNow();
+    bump();
+  }, [bump, saveNow]);
+
+  const tutorialReplay = useCallback(() => {
+    const s = stateRef.current;
+    s.tutorial = { ...blankTutorial(), replay: true };
+    saveNow();
+    bump();
+  }, [bump, saveNow]);
+
   const prestige = useCallback(() => {
     const s = stateRef.current;
     if (s.challenge) return;
@@ -764,5 +794,8 @@ export function useGame() {
     touchBriefing,
     exportSave,
     importSave,
+    tutorialNext,
+    tutorialSkip,
+    tutorialReplay,
   };
 }

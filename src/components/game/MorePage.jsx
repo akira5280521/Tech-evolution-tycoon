@@ -51,7 +51,8 @@ export default function MorePage() {
   const location = useLocation();
   const hash = (location.hash || "#settings").replace("#", "");
   const tab = TABS.some((entry) => entry.id === hash) ? hash : "settings";
-  const { state, reset, purchaseShop, chooseSpecialty, setOrientation, touchBriefing, exportSave, importSave } = useGameState();
+  const { state, reset, purchaseShop, chooseSpecialty, setOrientation, touchBriefing, exportSave, importSave, tutorialReplay } = useGameState();
+  const navigate = useNavigate();
   const data = getSaveData();
 
   if (tab === "research") {
@@ -83,6 +84,21 @@ export default function MorePage() {
         <>
           <DailyBriefing state={state} onRoll={touchBriefing} />
           <NextMove state={state} />
+          <Panel>
+            <h2 className="font-pixel text-[0.6rem]">TUTORIAL</h2>
+            <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">Walk through the basics again on the Game screen.</p>
+            <div className="mt-3">
+              <GoldButton
+                dataAttr="tutorial-replay"
+                onClick={() => {
+                  tutorialReplay();
+                  navigate({ to: "/" });
+                }}
+              >
+                <span className="font-pixel text-[0.6rem]">REPLAY TUTORIAL</span>
+              </GoldButton>
+            </div>
+          </Panel>
           <HowTo />
         </>
       )}

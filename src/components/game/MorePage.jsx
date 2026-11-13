@@ -16,6 +16,8 @@ import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
 import AccountPanel from "./AccountPanel";
+import { HelpTip } from "./HintSheet";
+import { GLOSSARY, GLOSSARY_ORDER } from "@/lib/glossary";
 
 const TABS = [
   { id: "howto", label: "HOW TO PLAY" },
@@ -51,7 +53,7 @@ export default function MorePage() {
   const location = useLocation();
   const hash = (location.hash || "#settings").replace("#", "");
   const tab = TABS.some((entry) => entry.id === hash) ? hash : "settings";
-  const { state, reset, purchaseShop, chooseSpecialty, setOrientation, touchBriefing, exportSave, importSave, tutorialReplay } = useGameState();
+  const { state, reset, purchaseShop, chooseSpecialty, setOrientation, touchBriefing, exportSave, importSave, tutorialReplay, setTipsOff } = useGameState();
   const navigate = useNavigate();
   const data = getSaveData();
 
@@ -99,7 +101,7 @@ export default function MorePage() {
               </GoldButton>
             </div>
           </Panel>
-          <HowTo />
+          <HowTo tipsOff={!!state.tutorial?.tipsOff} onTips={setTipsOff} />
         </>
       )}
       {tab === "stats" && <Stats state={state} />}
@@ -166,26 +168,129 @@ function OrientationSetting({ value, onChange }) {
   );
 }
 
-function HowTo() {
-  const lines = [
-    "Tap a machine to run one batch. The bar fills over the cycle, then it pays. Once you own enough of a machine (the Hire button shows how many), hire its manager and it keeps running.",
-    "Material rows feed the eras that use them: wood for paper, paper for punch cards, sand for glass, glass, copper and filament for tubes, germanium for the first transistors, and silicon wafers for chips. A dry line still pays a little so the bar never freezes.",
-    "The Foreman unlocks Run All. Until then, each machine starts on its own.",
-    "Buy x1, x10, x100, NEXT, or MAX. NEXT buys exactly enough to reach the next milestone or gate, then the next 25. At 25, 50 and 100 owned the cycle runs twice as fast. Later milestones multiply profit.",
-    "Prestige on the game tab recruits investors. The first one needs $1T lifetime earnings.",
-    "Cash upgrades reset when you prestige, fork, or start a challenge, and are bought again each run. Research, investors and singularity stay. Mastery returns once you own enough and buy both upgrades again.",
-    "Era tokens pay for the shop on the Board tab. Only the daily crate is free from the start.",
-    "Fork the timeline once you can pay the investor bill. Each fork costs more. Singularity maxes at x4, and the income ceiling rises with it instead of cutting off flat.",
-    "Close the tab and hired crews earn for up to 24 hours. Sound goes quiet while the app is hidden.",
-  ];
+const HOW_TO = [
+  {
+    id: "basics",
+    title: "THE BASICS",
+    lines: [
+      "Tap a machine's picture to start it. The bar fills up, then it pays you.",
+      "Spend the money on more machines. Every one you own adds to each payout, and the price goes up a little each time.",
+      "Owning a machine opens the next one in history. Each new era pays much more than the last.",
+    ],
+  },
+  {
+    id: "materials",
+    title: "MATERIALS",
+    lines: [
+      "Some machines use what an earlier one makes: wood for paper, paper for punch cards, sand for glass, glass, copper and filament for vacuum tubes, germanium for the first transistors, and silicon wafers for chips.",
+      "The strip at the top shows what you have. If a material runs out, the machine that needs it pays much less until more is made, so keep the earlier rows growing too.",
+    ],
+  },
+  {
+    id: "managers",
+    title: "MANAGERS AND THE FOREMAN",
+    lines: [
+      "Once you own enough of a machine (the Hire button shows how many), hire its manager. A manager keeps that machine running by itself, even while the app is closed, for up to 24 hours.",
+      "The Foreman is a one-time hire that adds a RUN ALL button, which starts every machine that doesn't have a manager yet.",
+    ],
+  },
+  {
+    id: "buying",
+    title: "BUYING FASTER",
+    lines: [
+      "The buttons at the top pick how many you buy per tap: X1, X10, X100, NEXT (just enough to reach the next goal) or MAX (as many as you can afford).",
+      "Owning 25, 50 and 100 of one machine makes it run twice as fast each time. Bigger counts after that make it pay more.",
+    ],
+  },
+  {
+    id: "upgrades",
+    title: "UPGRADES",
+    lines: [
+      "On the BOOST tab each machine has two upgrades: one makes it pay 3 times as much, one makes it twice as fast. They take 12 seconds to install.",
+      "Own enough of a machine and buy both of its upgrades to master that era: +5% to all income for the rest of the run.",
+    ],
+  },
+  {
+    id: "prestige",
+    title: "STARTING OVER (PRESTIGE)",
+    lines: [
+      "Once you've earned $1T in one run, the START OVER button lets you trade in the whole run for investors. You lose your cash, machines, managers and upgrades.",
+      "Every investor makes all income higher, forever, so the next run goes much faster. The more you earn before starting over, the more investors join. Idle games call this prestige, and it's how you get really big numbers.",
+    ],
+  },
+  {
+    id: "keep",
+    title: "WHAT YOU KEEP FOREVER",
+    lines: [
+      "Investors, research data and your research picks, era tokens, badges, Museum cards, and the rewards from challenges and mega-projects all stay when you start over.",
+      "Research: every era you own makes a little research data. Spend it in MORE > RESEARCH on a bonus you keep.",
+      "Era tokens come from new eras, milestones, projects and the free Daily Crate. Spend them in the shop on the BOARD tab.",
+    ],
+  },
+  {
+    id: "extras",
+    title: "CHALLENGES AND PROJECTS",
+    lines: [
+      "The RUNS tab has optional challenges: one run with special rules, like no managers. Win one for +10% income forever.",
+      "Mega-projects finish on their own once you reach their goal, and each gives a bonus you keep plus tokens.",
+    ],
+  },
+  {
+    id: "fork",
+    title: "THE BIGGER RESET (FORK)",
+    lines: [
+      "Much later, with thousands of investors, you can fork the timeline on the BOARD tab. It spends investors to start over with a multiplier you keep forever (up to x4), a higher income limit, and another research slot.",
+    ],
+  },
+  {
+    id: "away",
+    title: "WHILE YOU'RE AWAY",
+    lines: ["Close the app and machines with a manager keep earning for up to 24 hours. You'll see what they made when you come back."],
+  },
+];
+
+function HowTo({ tipsOff, onTips }) {
   return (
-    <Panel>
-      <ul className="space-y-2">
-        {lines.map((line) => (
-          <li key={line} className="font-term text-lg leading-6">{line}</li>
-        ))}
-      </ul>
-    </Panel>
+    <>
+      {HOW_TO.map((section, i) => (
+        <details key={section.id} data-howto={section.id} open={i === 0} className="howto-section border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]">
+          <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">
+            {section.title}
+            <span aria-hidden="true" className="howto-caret shrink-0 text-[var(--game-muted)]">+</span>
+          </summary>
+          <ul className="space-y-2 px-3 pb-3">
+            {section.lines.map((line) => (
+              <li key={line} className="font-term text-lg leading-6">{line}</li>
+            ))}
+          </ul>
+        </details>
+      ))}
+      <details data-howto="words" className="howto-section border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]">
+        <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">
+          WORDS TO KNOW
+          <span aria-hidden="true" className="howto-caret shrink-0 text-[var(--game-muted)]">+</span>
+        </summary>
+        <dl className="space-y-3 px-3 pb-3">
+          {GLOSSARY_ORDER.map((id) => (
+            <div key={id}>
+              <dt className="font-pixel text-[0.55rem] leading-5 text-[var(--game-fg)]">{GLOSSARY[id].term}</dt>
+              <dd className="font-term text-lg leading-6 text-[var(--game-muted)]">{GLOSSARY[id].text}</dd>
+            </div>
+          ))}
+        </dl>
+      </details>
+      <Panel>
+        <h2 className="font-pixel text-[0.6rem]">TIPS</h2>
+        <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
+          {tipsOff ? "Tips are off. Turn them on to see a short note the first time each new thing appears." : "A short note explains each new thing the first time it appears. Tap a ? anywhere for a quick explanation."}
+        </p>
+        <div className="mt-3">
+          <GoldButton dataAttr="tips-toggle" onClick={() => onTips(!tipsOff)}>
+            <span className="font-pixel text-[0.6rem]">{tipsOff ? "TURN TIPS ON" : "TURN TIPS OFF"}</span>
+          </GoldButton>
+        </div>
+      </Panel>
+    </>
   );
 }
 
@@ -212,19 +317,21 @@ export function ResearchBody({ state, onCommit }) {
   return (
     <>
       <Panel>
-        <p className="font-pixel text-[0.55rem] text-[var(--game-muted)]">DATA BANK</p>
+        <p className="flex items-center gap-2 font-pixel text-[0.55rem] text-[var(--game-muted)]">
+          RESEARCH DATA <HelpTip term="research" />
+        </p>
         <p className="font-term text-5xl leading-none text-[var(--game-success)]">{(state.data || 0).toFixed(1)}</p>
         <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
-          +{rate.toFixed(2)}/s from {establishedCount(state)} established {establishedCount(state) === 1 ? "era" : "eras"} and {masteredCount(state)} mastered. Research is permanent - no reset ever takes it.
+          +{rate.toFixed(2)} a second from the {establishedCount(state)} {establishedCount(state) === 1 ? "era" : "eras"} you own and {masteredCount(state)} mastered. Data is never lost, even when you start over.
         </p>
       </Panel>
       <Panel>
         <h2 className="flex items-center gap-2 font-pixel text-[0.7rem]">
           <FlaskConical className="h-4 w-4 text-[var(--game-accent)]" aria-hidden="true" />
-          COMPANY SPECIALTY
+          COMPANY SPECIALTY <HelpTip term="specialty" />
         </h2>
         <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
-          Pick one branch for good. The other two are lost until the timeline is forked. Slots open: {slots}. Committed: {picked.length}.
+          Pick a bonus to keep forever. You have {slots} {slots === 1 ? "slot" : "slots"} and have used {picked.length}. Forking the timeline opens another.
         </p>
         {SPECIALTIES.map((spec) => {
           const owned = picked.includes(spec.id);
@@ -240,10 +347,10 @@ export function ResearchBody({ state, onCommit }) {
               </div>
               <p className="mt-2 font-term text-lg leading-6">{spec.blurb}</p>
               {owned ? (
-                <p className="mt-2 font-pixel text-[0.55rem] text-[var(--game-success)]">COMMITTED</p>
+                <p className="mt-2 font-pixel text-[0.55rem] text-[var(--game-success)]">YOURS</p>
               ) : job ? (
                 <div className="mt-2">
-                  <p className="font-pixel text-[0.55rem] text-[var(--game-accent)]">CALIBRATING</p>
+                  <p className="font-pixel text-[0.55rem] text-[var(--game-accent)]">RESEARCHING</p>
                   <div className="mt-2 h-5 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]">
                     <div className="h-full bg-[var(--game-accent)]" style={{ width: `${pct}%` }} />
                   </div>
@@ -251,7 +358,7 @@ export function ResearchBody({ state, onCommit }) {
               ) : (
                 <div className="mt-2">
                   <GoldButton disabled={!open} onClick={() => onCommit(spec.id)} dataAttr={spec.id}>
-                    <span className="font-pixel text-[0.6rem]">COMMIT TO {spec.name}</span>
+                    <span className="font-pixel text-[0.6rem]">PICK {spec.name}</span>
                   </GoldButton>
                 </div>
               )}

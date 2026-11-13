@@ -34,8 +34,8 @@ export default function AnalyticsPanel({ data }) {
   const top = topIndex >= 0 ? BUSINESSES[topIndex] : null;
 
   const stats = [
-    { label: "Lifetime earnings", value: money(Number(data.lifetime) || 0), valueClass: "text-[var(--game-success)]" },
-    { label: "Prestige points earned", value: String(Number(data.investors) || 0), valueClass: "text-[var(--game-accent)]" },
+    { label: "Earned this run", value: money(Number(data.lifetime) || 0), valueClass: "text-[var(--game-success)]" },
+    { label: "Investors", value: String(Number(data.investors) || 0), valueClass: "text-[var(--game-accent)]" },
     {
       label: "Most-played tech era",
       value: top ? `${top.name} (${top.era}) · ${durationLabel(times[topIndex])}` : "None recorded yet",

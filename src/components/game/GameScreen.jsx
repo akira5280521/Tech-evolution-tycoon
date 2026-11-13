@@ -15,6 +15,7 @@ import NewsTicker from "./NewsTicker";
 import DilemmaModal from "./DilemmaModal";
 import BubbleBanner from "./BubbleBanner";
 import CoachMark from "./CoachMark";
+import { HelpTip, TipCard } from "./HintSheet";
 import { tutorialActive } from "@/lib/tutorial";
 
 // A material shows in the supply strip once the row that makes it is on
@@ -119,6 +120,7 @@ export default function GameScreen() {
               {SUPPLY_KEYS.filter((key) => supplyShown(state, key)).map((key) => (
                 <span key={key}>{key} {Math.floor(supply[key] || 0)}</span>
               ))}
+              <HelpTip term="materials" className="ml-auto" />
             </p>
             {!state.sawPit && !tutorialActive(state) && (
               <p data-onboard className="mt-2 border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-2 font-term text-lg leading-6 text-[var(--game-fg)]">
@@ -173,6 +175,7 @@ export default function GameScreen() {
       </footer>
       <BottomTabs />
       <CoachMark state={state} onNext={tutorialNext} onSkip={tutorialSkip} />
+      <TipCard />
     </div>
   );
 }

@@ -175,9 +175,9 @@ function pickDilemma(lastId) {
 }
 
 export const SPECIALTIES = [
-  { id: "scale", name: "SCALE", cost: SPECIALTY_COST, blurb: "+25% all revenue, forever." },
+  { id: "scale", name: "SCALE", cost: SPECIALTY_COST, blurb: "+25% all income, forever." },
   { id: "velocity", name: "VELOCITY", cost: SPECIALTY_COST, blurb: "Every production cycle 8% faster, forever." },
-  { id: "signal", name: "SIGNAL", cost: SPECIALTY_COST, blurb: "+10% all revenue, forever." },
+  { id: "signal", name: "SIGNAL", cost: SPECIALTY_COST, blurb: "+10% all income, forever." },
 ];
 
 export const CHALLENGES = [
@@ -811,7 +811,7 @@ const BADGE_DEFS = [
     id: "time-prestige",
     group: "TIMELINE",
     name: "First Investor",
-    desc: "Prestige at least once",
+    desc: "Start over (prestige) at least once",
     earned: (s) => !!s.prestiged,
   },
   {
@@ -832,7 +832,7 @@ const BADGE_DEFS = [
     id: "time-lab",
     group: "TIMELINE",
     name: "Specialty",
-    desc: "Commit to two research branches",
+    desc: "Pick two research bonuses",
     earned: (s) => (s.specialties || []).length >= 2,
   },
   {
@@ -949,7 +949,7 @@ export function describeEffects(effects) {
   if (effects.tokens) parts.push(`+${effects.tokens} era token${effects.tokens === 1 ? "" : "s"}`);
   if (effects.data) parts.push(`+${effects.data} data`);
   if (effects.cash) parts.push(`${effects.cash} seconds of income`);
-  if (effects.boost) parts.push(`Revenue x1.15 for ${effects.boost} minutes`);
+  if (effects.boost) parts.push(`Income x1.15 for ${effects.boost} minutes`);
   return parts.join(", ");
 }
 
@@ -1009,7 +1009,7 @@ export function snapshotMeta(state, options = {}) {
     supply: { ...ensureSupply(state) },
     foreman: !!state.foreman,
     sawPit: !!state.sawPit,
-    tutorial: { ...(state.tutorial || blankTutorial()), seen: [...(state.tutorial?.seen || [])] },
+    tutorial: { ...(state.tutorial || blankTutorial()), seen: [...(state.tutorial?.seen || [])], tips: [...(state.tutorial?.tips || [])] },
     orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
     // Research and projects are permanent, so a job already paid for keeps its
     // clock. A cash-upgrade job does not: the fresh run would install it free.

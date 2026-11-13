@@ -2,11 +2,12 @@ import { BUSINESSES, UPGRADE_MS, money } from "@/lib/gameConfig";
 import { isMastered, masteryNeed, upgradeOffer, upgradesOf } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
+import { HelpTip } from "./HintSheet";
 
 export default function BoostPage() {
   const { state, purchaseUpgrade } = useGameState();
   return (
-    <ScreenShell title="UPGRADES" subtitle="Named boosts for each era. Cash upgrades reset on prestige and are bought again.">
+    <ScreenShell title="UPGRADES" subtitle="Make machines pay more or run faster. Bought again after each start-over.">
       {BUSINESSES.map((cfg, index) => {
         const owned = state.biz[index]?.owned || 0;
         if (index > 0 && owned <= 0 && (state.biz[index - 1]?.owned || 0) <= 0) return null;
@@ -33,14 +34,17 @@ export default function BoostPage() {
               <img src={cfg.icon} alt="" className="pixel-art h-[64px] w-[64px] shrink-0 border-2 border-[var(--game-border-strong)] object-contain" />
               <div className="min-w-0">
                 <h2 className="break-words font-term text-2xl leading-6">{cfg.name}</h2>
-                <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{owned} owned · named upgrades below</p>
+                <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{owned} owned</p>
               </div>
             </div>
             <UpgradeCard piece={offer.rev} owned={owned} bought={up.rev} cash={state.cash} job={state.upgradeJob} index={index} onBuy={() => purchaseUpgrade(index, "rev")} />
             <UpgradeCard piece={offer.spd} owned={owned} bought={up.spd} cash={state.cash} job={state.upgradeJob} index={index} onBuy={() => purchaseUpgrade(index, "spd")} />
-            <p className="mt-3 break-words font-term text-base leading-5 text-[var(--game-muted)]">
-              ERA MASTERY: {owned >= masteryNeed(index) ? "✓" : "X"} {Math.min(owned, masteryNeed(index))}/{masteryNeed(index)} owned · {up.rev && up.spd ? "✓" : "X"} both upgrades
-              {mastered ? " · permanent +5% all" : " → permanent +5% all"}
+            <p className="mt-3 flex items-start gap-2 break-words font-term text-base leading-5 text-[var(--game-muted)]">
+              <span>
+                ERA MASTERY: {owned >= masteryNeed(index) ? "✓" : "X"} {Math.min(owned, masteryNeed(index))}/{masteryNeed(index)} owned · {up.rev && up.spd ? "✓" : "X"} both upgrades
+                {mastered ? " · +5% to all income this run" : " → +5% to all income this run"}
+              </span>
+              <HelpTip term="mastery" />
             </p>
           </Panel>
         );
@@ -77,7 +81,7 @@ function UpgradeCard({ piece, owned, bought, cash, onBuy, job, index }) {
         <p className="mt-2 font-pixel text-[0.55rem] text-[var(--game-success)]">OWNED</p>
       ) : installing ? (
         <div className="mt-2">
-          <p className="font-pixel text-[0.55rem] text-[var(--game-accent)]">INSTALLING</p>
+          <p className="font-pixel text-[0.55rem] text-[var(--game-accent)]">INSTALLING (12 SECONDS)</p>
           <div className="mt-2 h-5 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]">
             <div className="h-full bg-[var(--game-accent)]" style={{ width: `${pct}%` }} />
           </div>

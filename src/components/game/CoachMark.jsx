@@ -78,8 +78,13 @@ export default function CoachMark({ state, onNext, onSkip }) {
   const vw = view.w || (typeof window !== "undefined" ? window.innerWidth : 390);
   const vh = view.h || (typeof window !== "undefined" ? window.innerHeight : 800);
   const width = Math.min(vw - 24, 380);
-  // Keep clear of the bottom tab bar.
-  const floor = vh - 132;
+  // Keep clear of the bottom tab bar (its real height, set by BottomTabs).
+  let barH = 132;
+  if (typeof document !== "undefined") {
+    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tabbar-h"));
+    if (Number.isFinite(v)) barH = v + 12;
+  }
+  const floor = vh - barH;
   let top;
   let left = (vw - width) / 2;
   if (rect) {

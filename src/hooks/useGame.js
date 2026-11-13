@@ -598,7 +598,7 @@ export function useGame() {
   const chooseSpecialty = useCallback(
     (id) => {
       if (!beginResearch(stateRef.current, id, Date.now())) return;
-      toast("Calibrating", { description: "The lab needs 20 seconds on this branch." });
+      toast("Researching", { description: "The lab needs 20 seconds to finish." });
       saveNow();
       bump();
     },
@@ -610,7 +610,7 @@ export function useGame() {
     if (s.challenge) return;
     if ((s.challengesDone || []).includes(id)) return;
     const label = id === "glass" ? "Glass Ceiling" : id === "noboss" ? "No Bosses" : "Speedrun";
-    if (!window.confirm(`Start ${label}? This run's cash, machines and cash upgrades reset. Investors, research and singularity stay.`)) return;
+    if (!window.confirm(`Start the ${label} challenge?\n\nYou lose this run's cash, machines, managers and upgrades.\nYou keep investors, research, tokens and badges.`)) return;
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
@@ -675,7 +675,27 @@ export function useGame() {
 
   const tutorialReplay = useCallback(() => {
     const s = stateRef.current;
-    s.tutorial = { ...blankTutorial(), replay: true };
+    const t = s.tutorial || blankTutorial();
+    s.tutorial = { ...blankTutorial(), replay: true, tips: [...(t.tips || [])], tipsOff: !!t.tipsOff };
+    saveNow();
+    bump();
+  }, [bump, saveNow]);
+
+  // One-time tips: mark one seen, turn them all off, or bring them back.
+  const tipSeen = useCallback((id) => {
+    const s = stateRef.current;
+    const t = s.tutorial || blankTutorial();
+    if ((t.tips || []).includes(id)) return;
+    s.tutorial = { ...t, tips: [...(t.tips || []), id] };
+    saveNow();
+    bump();
+  }, [bump, saveNow]);
+
+  const setTipsOff = useCallback((off) => {
+    const s = stateRef.current;
+    const t = s.tutorial || blankTutorial();
+    // Turning tips back on shows them all again from the start.
+    s.tutorial = { ...t, tipsOff: !!off, tips: off ? [...(t.tips || [])] : [] };
     saveNow();
     bump();
   }, [bump, saveNow]);
@@ -688,7 +708,7 @@ export function useGame() {
     const nextInvestors = s.investors + gained;
     if (!Number.isFinite(nextInvestors) || nextInvestors < 0) return;
     const noun = gained === 1 ? "investor" : "investors";
-    if (!window.confirm(`Reset your empire to recruit ${gained} ${noun}? Cash upgrades are bought again next run. Investors, research and singularity stay.`)) return;
+    if (!window.confirm(`Start over with ${gained} new ${noun}?\n\nYou lose your cash, machines, managers and upgrades.\nYou keep your investors (each one boosts all income forever), research, tokens and badges.`)) return;
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
@@ -702,7 +722,7 @@ export function useGame() {
     stateRef.current = next;
     saveNow();
     bump();
-    toast(`${gained} ${noun} joined!`, { description: "Investors stayed. Cash upgrades reset with the machines." });
+    toast(`${gained} ${noun} joined!`, { description: "Everything now earns more. Rebuild faster than before." });
   }, [bump]);
 
   const forkTimeline = useCallback(() => {
@@ -711,7 +731,7 @@ export function useGame() {
     const bill = forkCost(s.singularities || 0);
     if ((s.investors || 0) < bill) return;
     if (singularityMult((s.singularities || 0) + 1) <= singularityMult(s.singularities || 0)) return;
-    if (!window.confirm(`Fork the timeline? This spends ${bill} investors, resets the machines and cash upgrades, and adds one singularity point (max x4). Research and tokens stay.`)) return;
+    if (!window.confirm(`Fork the timeline?\n\nThis spends ${bill} investors and starts your run over (cash, machines, managers and upgrades).\nYou get: income x${singularityMult((s.singularities || 0) + 1).toFixed(1)} forever (now x${singularityMult(s.singularities || 0).toFixed(1)}) and another research slot.\nYou keep: your other investors, research, tokens and badges.`)) return;
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
@@ -725,7 +745,7 @@ export function useGame() {
     stateRef.current = next;
     saveNow();
     bump();
-    toast("Timeline forked", { description: `Singularity x${singularityMult(next.singularities).toFixed(1)}. Another research branch can be committed.` });
+    toast("Timeline forked", { description: `Income x${singularityMult(next.singularities).toFixed(1)} forever. Another research slot is open.` });
   }, [bump]);
 
   const reset = useCallback(() => {
@@ -797,5 +817,7 @@ export function useGame() {
     tutorialNext,
     tutorialSkip,
     tutorialReplay,
+    tipSeen,
+    setTipsOff,
   };
 }

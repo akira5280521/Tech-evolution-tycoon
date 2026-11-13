@@ -450,3 +450,13 @@ img[src*="/icons/"] {
     width: auto;
   }
 }
+/* Tutorial spotlight: a gentle pulse, off when motion is reduced. */
+@media (prefers-reduced-motion: no-preference) {
+  .coach-spot {
+    animation: coach-pulse 1.6s ease-in-out infinite;
+  }
+}
+@keyframes coach-pulse {
+  0%, 100% { border-color: var(--game-accent); }
+  50% { border-color: var(--game-fg); }
+}

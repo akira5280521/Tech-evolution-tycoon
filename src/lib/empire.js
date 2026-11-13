@@ -3,6 +3,7 @@
 // singularity. Every Empire Bonuses source multiplies, then a soft ceiling
 // that rises with singularity points keeps the product finite.
 
+import { blankTutorial } from "./tutorial.js";
 import {
   BUSINESSES,
   COMMISSION_MS,
@@ -288,6 +289,7 @@ export function blankMeta() {
     supply: blankSupply(),
     foreman: false,
     sawPit: false,
+    tutorial: blankTutorial(),
     orientation: "auto",
     researchJob: null,
     upgradeJob: null,
@@ -911,7 +913,12 @@ export function tickDilemma(state, now) {
     state.nextDilemmaAt = now + 6 * 60 * 1000;
     notes.push({ type: "expire" });
   }
-  if (!state.dilemma && now >= (state.dilemmaDeferUntil || 0) && now >= (state.nextDilemmaAt || 0)) {
+  // The guided start runs one thing at a time: dilemmas wait until it ends.
+  const tutorialRunning = !!state.tutorial && !state.tutorial.done && !state.tutorial.skipped;
+  if (tutorialRunning && !state.dilemma) {
+    state.nextDilemmaAt = Math.max(state.nextDilemmaAt || 0, now + 60 * 1000);
+  }
+  if (!tutorialRunning && !state.dilemma && now >= (state.dilemmaDeferUntil || 0) && now >= (state.nextDilemmaAt || 0)) {
     const pick = pickDilemma(state.lastDilemma);
     state.lastDilemma = pick.id;
     state.dilemma = { id: pick.id, expiresAt: now + 45 * 1000 };
@@ -1002,6 +1009,7 @@ export function snapshotMeta(state, options = {}) {
     supply: { ...ensureSupply(state) },
     foreman: !!state.foreman,
     sawPit: !!state.sawPit,
+    tutorial: { ...(state.tutorial || blankTutorial()), seen: [...(state.tutorial?.seen || [])] },
     orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
     // Research and projects are permanent, so a job already paid for keeps its
     // clock. A cash-upgrade job does not: the fresh run would install it free.

@@ -14,6 +14,8 @@ import BottomTabs from "./BottomTabs";
 import NewsTicker from "./NewsTicker";
 import DilemmaModal from "./DilemmaModal";
 import BubbleBanner from "./BubbleBanner";
+import CoachMark from "./CoachMark";
+import { tutorialActive } from "@/lib/tutorial";
 
 // A material shows in the supply strip once the row that makes it is on
 // screen, so materials from undiscovered eras stay hidden.
@@ -25,7 +27,7 @@ function supplyShown(state, key) {
 
 export default function GameScreen() {
   const game = useGameState();
-  const { state, buyMode, setBuyMode, buy, hire, run, runAll, buyForeman, prestige, dismissOffline, chooseDilemma, cashOut } = game;
+  const { state, buyMode, setBuyMode, buy, hire, run, runAll, buyForeman, prestige, dismissOffline, chooseDilemma, cashOut, tutorialNext, tutorialSkip } = game;
   const [, bumpTick] = useState(0);
   const [pullDist, setPullDist] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
@@ -118,7 +120,7 @@ export default function GameScreen() {
                 <span key={key}>{key} {Math.floor(supply[key] || 0)}</span>
               ))}
             </p>
-            {!state.sawPit && (
+            {!state.sawPit && !tutorialActive(state) && (
               <p data-onboard className="mt-2 border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-2 font-term text-lg leading-6 text-[var(--game-fg)]">
                 Tap the Timber Camp picture. The bar fills, then the load of logs pays. Extra taps wait until it finishes.
               </p>
@@ -170,6 +172,7 @@ export default function GameScreen() {
         </p>
       </footer>
       <BottomTabs />
+      <CoachMark state={state} onNext={tutorialNext} onSkip={tutorialSkip} />
     </div>
   );
 }

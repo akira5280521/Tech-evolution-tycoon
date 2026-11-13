@@ -1,10 +1,16 @@
-import { useState } from "react";
-import { HEADLINES } from "@/lib/empire";
+import { useMemo, useState } from "react";
+import { currentEraIndex, headlinesFor } from "@/lib/empire";
 
 // Scrolls slowly enough to read. Hold a finger (or the mouse) on it to pause.
-export default function NewsTicker() {
+// Headlines follow the era the player has reached, newest first.
+export default function NewsTicker({ state }) {
   const [paused, setPaused] = useState(false);
-  const line = HEADLINES.join("   ·   ");
+  const era = currentEraIndex(state);
+  const prestiged = !!(state?.prestiged || (state?.investors || 0) > 0);
+  // Only rebuilt when a new era opens, so the scroll doesn't restart every tick.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const lines = useMemo(() => headlinesFor(state), [era, prestiged]);
+  const line = lines.join("   ·   ");
   const hold = () => setPaused(true);
   const release = () => setPaused(false);
   return (
@@ -18,7 +24,7 @@ export default function NewsTicker() {
       onContextMenu={(event) => event.preventDefault()}
       className={`news-ticker relative h-8 select-none overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] ${paused ? "is-paused" : ""}`}
     >
-      <p className="truncate px-3 text-center font-pixel text-[0.55rem] uppercase leading-8 text-[var(--game-muted)] motion-safe:hidden">{HEADLINES[0]}</p>
+      <p className="truncate px-3 text-center font-pixel text-[0.55rem] uppercase leading-8 text-[var(--game-muted)] motion-safe:hidden">{lines[0]}</p>
       <div className="news-ticker-track hidden font-pixel text-[0.55rem] uppercase leading-8 text-[var(--game-muted)] motion-safe:flex">
         <span>{line}</span>
         <span aria-hidden="true">{line}</span>

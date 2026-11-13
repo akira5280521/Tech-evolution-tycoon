@@ -41,6 +41,9 @@ test shipped in 0.0.13 (see Done).
   1890 cards were made from trees. Save v6; existing players with a Paper
   Mill get a Timber Camp started with its manager.
 
+- The news ticker follows history: each headline belongs to an era and only
+  shows once you've reached it, newest era first (no moon landing in 1890).
+
 ## In the closed test build (0.0.15-0.0.16)
 
 
@@ -161,8 +164,8 @@ folded into a neighbouring release.
    predates this era's 2015 date, so it belongs to the history events
    instead.
    [Design](ideas.md#more-row-generations).
-7. **Headlines, pioneers and trivia** (small, text only). The ticker shows
-   headlines from the era being built; pioneer notes on history cards (Ada
+7. **Headlines, pioneers and trivia** (small, text only). The ticker already
+   follows the era being built (0.0.17); add more headlines per era, and pioneer notes on history cards (Ada
    Lovelace, Grace Hopper and others), kept factual, with managers staying
    fictional job titles; "Which came first?" trivia as an occasional
    dilemma paying a bonus for a right answer.

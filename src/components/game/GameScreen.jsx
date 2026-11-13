@@ -127,7 +127,7 @@ export default function GameScreen() {
         </div>
 
         <main className="safe-x mx-auto min-w-0 max-w-4xl space-y-2 overflow-x-hidden px-3 py-2">
-          <NewsTicker />
+          <NewsTicker state={state} />
           <BubbleBanner state={state} onCashOut={cashOut} />
           {state.challenge && (
             <p className="break-words border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-3 font-term text-lg leading-6 text-[var(--game-accent)]">

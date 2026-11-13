@@ -32,12 +32,10 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
-## Waiting for 0.0.18
+## Merged, ships in the next release (0.0.17)
 
 - The news ticker follows history: each headline belongs to an era and only
   shows once you've reached it, newest era first (no moon landing in 1890).
-
-## Merged, in 0.0.17
 
 - **Timber Camp** is the new first row: trees make wood, the Paper Mill turns
   it into card stock for Punch Cards (c. 1890). Sand Quarry and Copper Seam
@@ -167,7 +165,7 @@ folded into a neighbouring release.
    instead.
    [Design](ideas.md#more-row-generations).
 7. **Headlines, pioneers and trivia** (small, text only). The ticker already
-   follows the era being built (0.0.18); add more headlines per era, and pioneer notes on history cards (Ada
+   follows the era being built (0.0.17); add more headlines per era, and pioneer notes on history cards (Ada
    Lovelace, Grace Hopper and others), kept factual, with managers staying
    fictional job titles; "Which came first?" trivia as an occasional
    dilemma paying a bonus for a right answer.

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { BUSINESSES, SUPPLY_KEYS, blockedByGlass, money } from "@/lib/gameConfig";
+import { BUSINESSES, ERA_GATE, SUPPLY_KEYS, blockedByGlass, eraOpen, frontierEra, money, pluralName } from "@/lib/gameConfig";
 import { activeChallengeGoal, incomePerSecond } from "@/lib/empire";
 import { PREFS_EVENT, readPrefs } from "@/lib/gamePrefs";
 import { setSoundEnabled } from "@/lib/sfx";
@@ -23,7 +23,7 @@ import { tutorialActive } from "@/lib/tutorial";
 function supplyShown(state, key) {
   const i = BUSINESSES.findIndex((cfg) => cfg.makes && cfg.makes[key]);
   if (i < 0) return false;
-  return i === 0 || (state.biz[i]?.owned || 0) > 0 || (state.biz[i - 1]?.owned || 0) > 0;
+  return eraOpen(state, i);
 }
 
 export default function GameScreen() {
@@ -86,9 +86,7 @@ export default function GameScreen() {
   const cps = incomePerSecond(state, Date.now());
   const glass = state.challenge?.id === "glass";
   const canRunAll = !!state.foreman && state.biz.some((st, i) => st.owned > 0 && !st.manager && !st.running && !blockedByGlass(state, i) && !((st.commissionUntil || 0) > Date.now()));
-  const firstLocked = glass
-    ? -1
-    : BUSINESSES.findIndex((_, i) => i > 0 && state.biz[i - 1].owned === 0 && state.biz[i].owned === 0);
+  const firstLocked = glass ? -1 : frontierEra(state);
   const supply = state.supply || {};
 
   return (
@@ -142,8 +140,7 @@ export default function GameScreen() {
 
           {BUSINESSES.map((cfg, i) => {
             if (blockedByGlass(state, i)) return null;
-            const visible = i === 0 || state.biz[i - 1].owned > 0 || state.biz[i].owned > 0;
-            if (!visible) return null;
+            if (!eraOpen(state, i)) return null;
             return (
               <BusinessRow
                 key={cfg.id}
@@ -164,7 +161,9 @@ export default function GameScreen() {
             );
           })}
 
-          {firstLocked >= 0 && <LockedRow prevName={BUSINESSES[firstLocked - 1].name.replace(/s$/, "")} />}
+          {firstLocked > 0 && (
+            <LockedRow prevName={pluralName(BUSINESSES[firstLocked - 1].name)} have={state.biz[firstLocked - 1]?.owned || 0} need={ERA_GATE} />
+          )}
         </main>
       </div>
 

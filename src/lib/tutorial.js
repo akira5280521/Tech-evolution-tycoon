@@ -39,10 +39,17 @@ export const TUTORIAL_STEPS = [
     done: (s) => ownedOf(s, "timber") >= 2,
   },
   {
+    id: "manager",
+    title: "HIRE A MANAGER",
+    text: "Own 5 Timber Camps, then hire its manager. A manager keeps the row running for you, even while the app is closed.",
+    target: '[data-hire="timber"]',
+    done: (s) => managerOf(s, "timber"),
+  },
+  {
     id: "next-row",
     title: "A NEW ROW",
-    text: "Owning a row opens the next one. Save up and buy a Paper Mill.",
-    target: '[data-buy="paper"]',
+    text: "Own 10 Timber Camps to open the next row, then buy a Paper Mill.",
+    target: '[data-buy="paper"], [data-locked-era]',
     done: (s) => ownedOf(s, "paper") >= 1,
   },
   {
@@ -54,17 +61,10 @@ export const TUTORIAL_STEPS = [
     button: "GOT IT",
   },
   {
-    id: "manager",
-    title: "HIRE A MANAGER",
-    text: "Own 5 Timber Camps, then hire its manager. A manager keeps the row running for you, even while the app is closed.",
-    target: '[data-hire="timber"]',
-    done: (s) => managerOf(s, "timber"),
-  },
-  {
     id: "history",
     title: "REAL HISTORY",
-    text: "The Jacquard Loom, 1804: the first machine run by instructions on punched cards. Buy one. Each era you reach unlocks history cards in the Museum (Badges tab).",
-    target: '[data-buy="loom"]',
+    text: "Own 10 Paper Mills to open the Jacquard Loom (1804), the first machine run by instructions on punched cards. Each era you reach unlocks history cards in the Museum (Badges tab).",
+    target: '[data-buy="loom"], [data-locked-era]',
     done: (s) => ownedOf(s, "loom") >= 1,
   },
   {

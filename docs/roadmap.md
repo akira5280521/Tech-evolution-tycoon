@@ -32,7 +32,26 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
-## Merged, ships in the next release (0.0.18)
+## Merged, ships in the next release (0.0.19)
+
+- **Own 10 of an era to open the next one.** Before, buying one opened the
+  next era, and the pacing sim showed players reaching Microprocessors in
+  about 36 minutes with only 3-4 upgrades bought. Now the next era shows as
+  "???" with a counter (for example 6/10) until you own 10 of the one before
+  it. The NEXT buy button stops at 10, and the Next Move hint and the
+  tutorial explain it. Pacing sim (nonstop): Microprocessors at about 55
+  minutes (72 for a slower player) with about 17 upgrades bought on the way;
+  the first prestige stays at about 3 hours and the first fork at about 4
+  days. Eras you already own stay open.
+- Safer save codes and saves: a compressed code that expands past 4 MB is
+  refused instead of freezing the game; challenge and project rewards only
+  count real, distinct ones; a research, upgrade or project timer can't be
+  longer than a minute, and finishes if the phone's clock is set back; a row's
+  start-up timer and the daily streak are kept in range.
+- Note: a Speedrun challenge started before your first prestige may not be
+  winnable in 90 minutes now; after the first prestige it takes about 30.
+
+## In 0.0.18
 
 - **New era: the Jacquard Loom (c. 1804)**, between the Paper Mill and
   Punch Cards. The first machine run by instructions on punched cards; it

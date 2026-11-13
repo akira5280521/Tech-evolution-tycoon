@@ -175,7 +175,7 @@ const HOW_TO = [
     lines: [
       "Tap a machine's picture to start it. The bar fills up, then it pays you.",
       "Spend the money on more machines. Every one you own adds to each payout, and the price goes up a little each time.",
-      "Owning a machine opens the next one in history. Each new era pays much more than the last.",
+      "Own 10 of a machine to open the next one in history. Each new era pays much more than the last.",
     ],
   },
   {

@@ -423,6 +423,32 @@ export function blockedByGlass(state, index) {
   return state?.challenge?.id === "glass" && BUSINESSES[index]?.id !== "tubes";
 }
 
+// Owning this many of an era opens the next one. Before 0.0.19 one was
+// enough, and the pacing sim showed players racing through every era to
+// Microprocessors in about half an hour with almost no upgrades bought. At
+// 10 the early eras take about an hour and upgrades fit in between.
+export const ERA_GATE = 10;
+
+// "10 Timber Camps", "10 Sand Quarries", "10 Wafer Benches", "10 Punch Cards".
+export function pluralName(name) {
+  const n = String(name || "");
+  if (/s$/.test(n)) return n;
+  if (/[^aeiou]y$/.test(n)) return `${n.slice(0, -1)}ies`;
+  if (/(ch|sh|x)$/.test(n)) return `${n}es`;
+  return `${n}s`;
+}
+
+// Can row `index` be bought? The first row always; any row already owned
+// (old saves, Glass Ceiling's starting tubes); otherwise once the row before
+// it reaches ERA_GATE.
+export function eraOpen(state, index) {
+  if (index <= 0) return true;
+  if (blockedByGlass(state, index)) return false;
+  const biz = state?.biz || [];
+  if ((biz[index]?.owned || 0) > 0) return true;
+  return (biz[index - 1]?.owned || 0) >= ERA_GATE;
+}
+
 export function formatFlow(flow) {
   if (!flow) return "";
   return Object.entries(flow)
@@ -599,6 +625,18 @@ export function shortMaterial(state) {
   return null;
 }
 
+// The first era that isn't open yet, if the one before it is owned (so the
+// player is working toward it), or -1.
+export function frontierEra(state) {
+  const biz = state?.biz || [];
+  for (let i = 1; i < BUSINESSES.length; i++) {
+    if (blockedByGlass(state, i)) continue;
+    if (eraOpen(state, i)) continue;
+    return (biz[i - 1]?.owned || 0) > 0 ? i : -1;
+  }
+  return -1;
+}
+
 export function nextMove(state) {
   const biz = Array.isArray(state?.biz) ? state.biz : [];
   const cash = Number.isFinite(state?.cash) ? state.cash : 0;
@@ -640,16 +678,24 @@ export function nextMove(state) {
 
   for (let i = 1; i < BUSINESSES.length; i++) {
     if (blockedByGlass(state, i)) continue;
-    const prev = biz[i - 1];
     const st = biz[i];
-    const prevOwned = prev && prev.owned > 0;
-    const glassOpen = glass && BUSINESSES[i].id === "tubes";
-    if ((!prevOwned && !glassOpen) || (st && st.owned > 0)) continue;
+    if ((st && st.owned > 0) || !eraOpen(state, i)) continue;
     const cost = costOf(BUSINESSES[i], 0, 1);
     if (Number.isFinite(cost) && cash >= cost) {
       return `Buy your first ${BUSINESSES[i].name} for ${money(cost)}.`;
     }
     break;
+  }
+
+  // The next era is still locked: work toward owning ERA_GATE of the last one.
+  const front = frontierEra(state);
+  if (front > 0 && !glass) {
+    const prevCfg = BUSINESSES[front - 1];
+    const have = biz[front - 1]?.owned || 0;
+    const cost = costOf(prevCfg, have, 1);
+    if (Number.isFinite(cost) && cash >= cost) {
+      return `Buy another ${prevCfg.name} for ${money(cost)}. Own ${ERA_GATE} ${pluralName(prevCfg.name)} to open the next era (${have}/${ERA_GATE}).`;
+    }
   }
 
   for (let i = 0; i < BUSINESSES.length; i++) {
@@ -663,7 +709,7 @@ export function nextMove(state) {
   for (let i = 0; i < BUSINESSES.length; i++) {
     const st = biz[i];
     const owned = st ? st.owned : 0;
-    if (!(i === 0 || (biz[i - 1] && biz[i - 1].owned > 0) || owned > 0)) continue;
+    if (!eraOpen(state, i)) continue;
     const cfg = BUSINESSES[i];
     const cost = costOf(cfg, owned, 1);
     const delta = rateOf(cfg, owned + 1) - rateOf(cfg, owned);
@@ -692,11 +738,8 @@ export function nextMove(state) {
   }
   for (let i = 1; i < BUSINESSES.length; i++) {
     if (blockedByGlass(state, i)) continue;
-    const prev = biz[i - 1];
     const st = biz[i];
-    const prevOwned = prev && prev.owned > 0;
-    const glassOpen = glass && BUSINESSES[i].id === "tubes";
-    if ((!prevOwned && !glassOpen) || (st && st.owned > 0)) continue;
+    if ((st && st.owned > 0) || !eraOpen(state, i)) continue;
     const cost = costOf(BUSINESSES[i], 0, 1);
     const short = cost - cash;
     if (Number.isFinite(short) && short > 0 && (!goal || short < goal.short)) {

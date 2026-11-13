@@ -7,6 +7,7 @@ import { blankTutorial } from "./tutorial.js";
 import {
   BUSINESSES,
   COMMISSION_MS,
+  ERA_GATE,
   MILESTONES,
   PROJECT_MS,
   RESEARCH_MS,
@@ -15,6 +16,7 @@ import {
   blankSupply,
   blockedByGlass,
   costOf,
+  eraOpen,
   indexOfBusiness,
   investorsFor,
   managerNeed,
@@ -47,6 +49,8 @@ export function maxBuyCount(owned, index) {
   const speed = speedNeed(index);
   const mastery = masteryNeed(index);
   if (speed > have) gates.push(speed);
+  // NEXT stops at the count that opens the next era.
+  if (index < BUSINESSES.length - 1 && ERA_GATE > have) gates.push(ERA_GATE);
   if (mastery > have) gates.push(mastery);
   if (!gates.length) return MAX_BUY;
   return Math.max(1, Math.min(MAX_BUY, Math.min(...gates) - have));
@@ -234,12 +238,11 @@ function owns(state, id, n) {
 // badge, mastery or Museum card from an earlier run. Everything up to it is
 // discovered. Locked items for eras past it stay hidden ("???").
 export function furthestRevealedEra(state) {
-  const biz = state?.biz || [];
   const earned = new Set(state?.badgesEarned || []);
   const museum = state?.museum || [];
   let furthest = 0;
   BUSINESSES.forEach((cfg, i) => {
-    const onScreen = i === 0 || (biz[i]?.owned || 0) > 0 || (biz[i - 1]?.owned || 0) > 0;
+    const onScreen = eraOpen(state, i);
     const proven = earned.has(`era-${cfg.id}`) || earned.has(`master-${cfg.id}`) || museum.some((id) => id.startsWith(`${cfg.id}-`));
     if (onScreen || proven) furthest = i;
   });
@@ -557,12 +560,21 @@ function projectReady(state, id) {
   return !!spec?.check?.(state);
 }
 
+// Research, upgrades and projects take 12-20 seconds. A job that claims to
+// take longer came from an edited save; cap it so it can't block that slot.
+const MAX_JOB_MS = 60 * 1000;
+
 function timedJob(job) {
   if (!job || typeof job !== "object") return null;
   if (!Number.isFinite(job.readyAt) || !Number.isFinite(job.startedAt)) return null;
   if (job.readyAt < job.startedAt) return null;
+  if (job.readyAt - job.startedAt > MAX_JOB_MS) return { ...job, readyAt: job.startedAt + MAX_JOB_MS };
   return job;
 }
+
+// Done, or the device clock was moved back past the start (a job would
+// otherwise wait until the clock caught up again, possibly days).
+const jobDone = (job, now) => now >= job.readyAt || now < job.startedAt - 5000;
 
 function copyTimedJob(job) {
   const clean = timedJob(job);
@@ -611,21 +623,21 @@ export function finishTimedWork(state, now) {
   if (!Number.isFinite(now) || now < 1e11) return notes;
   const research = timedJob(state.researchJob);
   state.researchJob = research;
-  if (research && now >= research.readyAt) {
+  if (research && jobDone(research, now)) {
     state.researchJob = null;
     if (commitSpecialty(state, research.id)) notes.push({ type: "research", id: research.id });
   }
   const upgrade = timedJob(state.upgradeJob);
   state.upgradeJob = upgrade;
-  if (upgrade && now >= upgrade.readyAt) {
+  if (upgrade && jobDone(upgrade, now)) {
     state.upgradeJob = null;
     if (applyUpgradeFlag(state, upgrade.index, upgrade.kind)) notes.push({ type: "upgrade" });
   }
   const project = timedJob(state.projectJob);
   state.projectJob = project;
-  if (project && now >= project.readyAt) {
+  if (project && jobDone(project, now)) {
     state.projectJob = null;
-    if (!(state.projectsDone || []).includes(project.id)) {
+    if (PROJECTS.some((entry) => entry.id === project.id) && !(state.projectsDone || []).includes(project.id)) {
       const spec = PROJECTS.find((entry) => entry.id === project.id);
       state.projectsDone = [...(state.projectsDone || []), project.id];
       if (spec) grantTokens(state, `project:${project.id}`, spec.tokens);
@@ -747,8 +759,7 @@ export function canHireIndex(state, index) {
 
 export function canBuyIndex(state, index) {
   if (blockedByGlass(state, index)) return false;
-  if (index > 0 && !(state.biz?.[index - 1]?.owned > 0 || state.biz?.[index]?.owned > 0)) return false;
-  return true;
+  return eraOpen(state, index);
 }
 
 // Owned counts for the tech-era badges. Early eras clear in minutes; the

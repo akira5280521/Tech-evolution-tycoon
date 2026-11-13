@@ -423,7 +423,7 @@ export function blockedByGlass(state, index) {
   return state?.challenge?.id === "glass" && BUSINESSES[index]?.id !== "tubes";
 }
 
-// Owning this many of an era opens the next one. Before 0.0.19 one was
+// Owning this many of an era opens the next one. Before 0.0.18 one was
 // enough, and the pacing sim showed players racing through every era to
 // Microprocessors in about half an hour with almost no upgrades bought. At
 // 10 the early eras take about an hour and upgrades fit in between.

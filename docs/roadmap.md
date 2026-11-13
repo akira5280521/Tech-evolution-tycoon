@@ -32,7 +32,7 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
-## Merged, ships in the next release (0.0.19)
+## Merged, ships in the next release (0.0.18)
 
 - **Own 10 of an era to open the next one.** Before, buying one opened the
   next era, and the pacing sim showed players reaching Microprocessors in
@@ -50,8 +50,6 @@ test shipped in 0.0.13 (see Done).
   start-up timer and the daily streak are kept in range.
 - Note: a Speedrun challenge started before your first prestige may not be
   winnable in 90 minutes now; after the first prestige it takes about 30.
-
-## In 0.0.18
 
 - **New era: the Jacquard Loom (c. 1804)**, between the Paper Mill and
   Punch Cards. The first machine run by instructions on punched cards; it

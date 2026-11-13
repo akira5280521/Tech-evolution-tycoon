@@ -335,8 +335,12 @@ img[src*="/icons/"] {
   overflow: auto;
 }
 
-.game-root {
-  padding-bottom: calc(8rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+/* Room at the end of every page for the fixed tab bar. --tabbar-h is the
+   bar's measured height (set by BottomTabs, safe area included); the
+   fallback covers the first frame before it's measured. */
+.game-root,
+.screen-shell {
+  padding-bottom: calc(var(--tabbar-h, 8rem) + 1rem);
 }
 
 /* Hide sideways overflow without making a scroll container ("hidden" would
@@ -362,20 +366,10 @@ img[src*="/icons/"] {
   .buy-mode-sub { display: none; }
 }
 
-@media (min-width: 481px) {
-  .game-root {
-    padding-bottom: calc(4.75rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
-  }
-}
-
 @media (orientation: portrait) and (max-width: 480px) {
   .safe-nav .tab-bar {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .game-root {
-    padding-bottom: calc(11rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
   }
 }
 

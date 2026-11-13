@@ -14,7 +14,7 @@ export function BackButton({ to = "/" }) {
 
 export default function ScreenShell({ title, subtitle, children, backTo = "/" }) {
   return (
-    <div className="screen-shell min-h-screen overflow-x-hidden bg-[var(--game-bg)] text-[var(--game-fg)]">
+    <div className="screen-shell game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
       <header className="safe-top safe-x sticky top-0 z-20 border-b-2 border-[var(--game-border)] bg-[var(--game-bg-95)] px-3 pb-3">
         <div className="mx-auto flex max-w-4xl items-start justify-between gap-3">
@@ -25,7 +25,7 @@ export default function ScreenShell({ title, subtitle, children, backTo = "/" })
           <BackButton to={backTo} />
         </div>
       </header>
-      <main className="safe-x mx-auto max-w-4xl space-y-3 px-3 py-4 pb-28">{children}</main>
+      <main className="safe-x mx-auto max-w-4xl space-y-3 px-3 py-4">{children}</main>
       <BottomTabs />
     </div>
   );

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Flag, Gamepad2, Package, Settings, Trophy, Zap } from "lucide-react";
 
@@ -14,9 +14,39 @@ const TABS = [
 const tabScroll = Object.fromEntries(TABS.map((tab) => [tab.id, 0]));
 const tabStacks = Object.fromEntries(TABS.map((tab) => [tab.id, []]));
 
+// Tell the page how tall the tab bar really is (two rows on narrow phones,
+// taller with big system text or a 3-button navigation bar), so the end of
+// every page can scroll clear of it. In landscape the bar sits on the left
+// and takes no bottom space.
+function useTabBarHeight(ref) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof window === "undefined") return undefined;
+    const root = document.documentElement;
+    const update = () => {
+      const r = el.getBoundingClientRect();
+      const atBottom = r.bottom >= window.innerHeight - 1 && r.width > r.height;
+      root.style.setProperty("--tabbar-h", `${atBottom ? Math.ceil(r.height) : 0}px`);
+    };
+    update();
+    const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : null;
+    // border-box: the safe-area padding changes the outer size, not the content.
+    ro?.observe(el, { box: "border-box" });
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+    };
+  }, [ref]);
+}
+
 export default function BottomTabs() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const navRef = useRef(null);
+  useTabBarHeight(navRef);
 
   // When a tab's route becomes active, restore the position it left off at.
   // The small delay lets the 200ms screen transition finish rendering first.
@@ -50,6 +80,7 @@ export default function BottomTabs() {
 
   return (
     <nav
+      ref={navRef}
       aria-label="Main navigation"
       className="safe-nav fixed inset-x-0 bottom-0 z-30 w-full border-t-2 border-[var(--game-border)] bg-[var(--game-bg)]"
     >

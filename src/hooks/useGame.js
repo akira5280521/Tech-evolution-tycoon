@@ -16,6 +16,7 @@ import {
 } from "@/lib/gameConfig";
 import {
   CHALLENGES,
+  PROJECTS,
   scaledChallengeGoal,
   beginResearch,
   blankMeta,
@@ -100,8 +101,11 @@ function applySavedMeta(state, raw) {
       if (row && typeof row === "object") state.upgrades[cfg.id] = { rev: !!row.rev, spd: !!row.spd };
     }
   }
-  state.challengesDone = Array.isArray(m.challengesDone) ? m.challengesDone.filter((id) => typeof id === "string") : [];
-  state.projectsDone = Array.isArray(m.projectsDone) ? m.projectsDone.filter((id) => typeof id === "string") : [];
+  // Only real, distinct ids: each one is a permanent income bonus, so a
+  // hand-edited code must not repeat or invent them.
+  const known = (list, ids) => (Array.isArray(list) ? [...new Set(list.filter((id) => ids.includes(id)))] : []);
+  state.challengesDone = known(m.challengesDone, CHALLENGES.map((c) => c.id));
+  state.projectsDone = known(m.projectsDone, PROJECTS.map((p) => p.id));
   const shop = m.shop && typeof m.shop === "object" ? m.shop : {};
   state.shop = {
     freeManager: !!shop.freeManager,
@@ -203,7 +207,7 @@ function loadSave() {
     if (Number.isFinite(data.cash) && data.cash >= 0) state.cash = data.cash;
     if (Number.isFinite(data.lifetime) && data.lifetime >= 0) state.lifetime = data.lifetime;
     if (Number.isFinite(data.investors) && data.investors >= 0) state.investors = Math.floor(data.investors);
-    state.streak = data.streak || 1;
+    state.streak = Math.min(10000, Math.max(1, Math.floor(num(data.streak, 1))));
     state.briefingDay = data.briefingDay || null;
     applySavedMeta(state, data);
     (Array.isArray(data.biz) ? data.biz : []).forEach((b, i) => {
@@ -216,7 +220,9 @@ function loadSave() {
       state.biz[i].progress = Math.min(progress, cfg.cycleMs);
       state.biz[i].running = !!b.running && !state.biz[i].manager && owned > 0;
       state.biz[i].activeMs = Number.isFinite(b.activeMs) && b.activeMs > 0 ? b.activeMs : 0;
-      state.biz[i].commissionUntil = Number.isFinite(b.commissionUntil) ? b.commissionUntil : 0;
+      // A start-up timer can't be longer than a real one (a bad clock or an
+      // edited code would otherwise lock the row).
+      state.biz[i].commissionUntil = Number.isFinite(b.commissionUntil) ? Math.min(b.commissionUntil, Date.now() + COMMISSION_MS) : 0;
     });
     state.supply = data.supply;
     ensureSupply(state);

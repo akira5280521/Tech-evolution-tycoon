@@ -12,6 +12,8 @@ const PLAIN = "TET1";
 const ZIPPED = "TET1Z";
 // A real save is a few KB; this only stops a pasted novel from freezing the page.
 export const MAX_CODE_LENGTH = 2_000_000;
+// A compressed code can expand enormously ("zip bomb"); stop reading past this.
+export const MAX_SAVE_BYTES = 4_000_000;
 
 const CRC_TABLE = (() => {
   const table = new Uint32Array(256);
@@ -44,9 +46,27 @@ function fromBase64Url(text) {
   return bytes;
 }
 
-async function runStream(bytes, stream) {
-  const out = new Blob([bytes]).stream().pipeThrough(stream);
-  return new Uint8Array(await new Response(out).arrayBuffer());
+async function runStream(bytes, stream, maxBytes = Infinity) {
+  const reader = new Blob([bytes]).stream().pipeThrough(stream).getReader();
+  const chunks = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.length;
+    if (total > maxBytes) {
+      await reader.cancel().catch(() => {});
+      throw new Error("save too large");
+    }
+    chunks.push(value);
+  }
+  const out = new Uint8Array(total);
+  let at = 0;
+  for (const c of chunks) {
+    out.set(c, at);
+    at += c.length;
+  }
+  return out;
 }
 
 function canCompress() {
@@ -98,7 +118,7 @@ export async function decodeSave(code) {
         inflate = null;
       }
       if (!inflate) return { ok: false, error: "This device can't open compressed save codes. Update Android System WebView and try again." };
-      bytes = await runStream(bytes, inflate);
+      bytes = await runStream(bytes, inflate, MAX_SAVE_BYTES);
     }
     data = JSON.parse(new TextDecoder().decode(bytes));
   } catch {

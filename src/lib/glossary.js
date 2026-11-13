@@ -17,7 +17,7 @@ export const GLOSSARY = {
   },
   buymodes: {
     term: "BUY BUTTONS",
-    text: "Choose how many you buy per tap. X1, X10 and X100 buy that many. NEXT buys just enough to reach the next goal, like a speed-up or an upgrade unlock. MAX buys as many as you can afford.",
+    text: "Choose how many you buy per tap. X1, X10 and X100 buy that many. NEXT buys just enough to reach the next goal, like a speed-up, an upgrade unlock or the 10 that open the next era. MAX buys as many as you can afford.",
   },
   speedups: {
     term: "SPEED-UPS",

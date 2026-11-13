@@ -1,4 +1,4 @@
-import { BUSINESSES, UPGRADE_MS, money } from "@/lib/gameConfig";
+import { BUSINESSES, UPGRADE_MS, eraOpen, money } from "@/lib/gameConfig";
 import { isMastered, masteryNeed, upgradeOffer, upgradesOf } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
@@ -10,7 +10,7 @@ export default function BoostPage() {
     <ScreenShell title="UPGRADES" subtitle="Make machines pay more or run faster. Bought again after each prestige.">
       {BUSINESSES.map((cfg, index) => {
         const owned = state.biz[index]?.owned || 0;
-        if (index > 0 && owned <= 0 && (state.biz[index - 1]?.owned || 0) <= 0) return null;
+        if (!eraOpen(state, index)) return null;
         const offer = upgradeOffer(index);
         const up = upgradesOf(state, cfg.id);
         const mastered = isMastered(state, index);

@@ -8,6 +8,7 @@ import { readPrefs, writePrefs } from "@/lib/gamePrefs";
 import { setSoundEnabled } from "@/lib/sfx";
 import { useGameState } from "./GameState";
 import AnalyticsPanel from "./AnalyticsPanel";
+import BadgesPage from "./BadgesPage";
 import AppVersionFooter from "./AppVersion";
 import DailyBriefing from "./DailyBriefing";
 import NextMove from "./NextMove";
@@ -23,7 +24,7 @@ const TABS = [
   { id: "howto", label: "HOW TO PLAY" },
   { id: "settings", label: "SETTINGS" },
   { id: "stats", label: "STATS" },
-  { id: "research", label: "RESEARCH" },
+  { id: "badges", label: "BADGES" },
   { id: "market", label: "MARKET" },
 ];
 
@@ -57,13 +58,7 @@ export default function MorePage() {
   const navigate = useNavigate();
   const data = getSaveData();
 
-  if (tab === "research") {
-    return (
-      <ScreenShell title={"RESEARCH\nLAB"} subtitle="">
-        <ResearchBody state={state} onCommit={chooseSpecialty} />
-      </ScreenShell>
-    );
-  }
+  if (tab === "badges") return <BadgesPage top={<MoreLinks active="badges" />} />;
 
   return (
     <ScreenShell title={"GAME\nSETTINGS"} subtitle="">
@@ -223,7 +218,7 @@ const HOW_TO = [
     title: "WHAT YOU KEEP FOREVER",
     lines: [
       "Investors, research data and your research picks, era tokens, badges, Museum cards, and the rewards from challenges and mega-projects all stay when you prestige.",
-      "Research: every era you own makes a little research data. Spend it in MORE > RESEARCH on a bonus you keep.",
+      "Research: every era you own makes a little research data. Spend it on the RESEARCH tab on a bonus you keep.",
       "Era tokens come from new eras, milestones, projects and the free Daily Crate. Spend them in the shop on the BOARD tab.",
     ],
   },
@@ -307,6 +302,16 @@ function Stats({ state }) {
         );
       })}
     </Panel>
+  );
+}
+
+// The Research Lab, on its own tab in the main navigation.
+export function ResearchPage() {
+  const { state, chooseSpecialty } = useGameState();
+  return (
+    <ScreenShell title={"RESEARCH\nLAB"} subtitle="">
+      <ResearchBody state={state} onCommit={chooseSpecialty} />
+    </ScreenShell>
   );
 }
 

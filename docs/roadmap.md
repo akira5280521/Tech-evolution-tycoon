@@ -34,9 +34,8 @@ test shipped in 0.0.13 (see Done).
 
 ## Ships in 0.0.19
 
-PRs #48-#50 are on main. The version is still 0.0.18 (versionCode 18), so
-bump versionName to 0.0.19 and versionCode to 19 before a build. The closed
-test is still the 0.0.18 Play bundle.
+PRs #48-#50 are in this release. versionName is 0.0.19 and versionCode is
+19. The Play closed test stays on the 0.0.18 bundle until this one is uploaded.
 
 - **Landscape fixes from two testers' phones:** the side tab bar no longer
   loses its width to the camera cutout (labels were wrapping one letter per

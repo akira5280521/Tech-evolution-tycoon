@@ -313,14 +313,24 @@ export function ensureSupply(state) {
   return next;
 }
 
+// How many copies of a row the player owns (at least 1, for previews).
+function ownedOf(state, cfg) {
+  const i = BUSINESSES.findIndex((c) => c.id === cfg?.id);
+  const n = state?.biz?.[i]?.owned;
+  return Number.isFinite(n) && n > 1 ? n : 1;
+}
+
 // A dry machine still pays a floor so the bar never freezes on an empty bin.
-export function supplyFactor(state, cfg) {
+// Every copy of a row needs its own share, so 50 Glass Works need 50 sand a
+// cycle, not 1. `cycles` covers a batch of cycles paid at once (offline).
+export function supplyFactor(state, cfg, cycles = 1) {
   if (!cfg?.uses) return 1;
   if (state?.challenge?.id === "glass" && cfg.id === "tubes") return 1;
   const supply = ensureSupply(state);
+  const batch = ownedOf(state, cfg) * (Number.isFinite(cycles) && cycles > 1 ? cycles : 1);
   let cover = 1;
   for (const [key, need] of Object.entries(cfg.uses)) {
-    const want = Number(need) || 0;
+    const want = (Number(need) || 0) * batch;
     if (want <= 0) continue;
     cover = Math.min(cover, (supply[key] || 0) / want);
   }
@@ -343,16 +353,25 @@ function moveSupply(state, cfg, cycles, owned) {
   const n = Number.isFinite(cycles) && cycles > 0 ? cycles : 0;
   const count = Number.isFinite(owned) && owned > 0 ? owned : 0;
   const skipDraw = state?.challenge?.id === "glass" && cfg.id === "tubes";
+  // Share of the batch the bins can cover. A row that turns one material
+  // into another (sand into glass) only makes as much as it had inputs for.
+  let cover = 1;
   if (cfg.uses && !skipDraw) {
     for (const [key, need] of Object.entries(cfg.uses)) {
-      const want = (Number(need) || 0) * n;
+      const want = (Number(need) || 0) * n * count;
+      if (want > 0) cover = Math.min(cover, (supply[key] || 0) / want);
+    }
+    if (!Number.isFinite(cover) || cover < 0) cover = 0;
+    for (const [key, need] of Object.entries(cfg.uses)) {
+      // Each copy draws its own share, just as each copy of a maker adds one.
+      const want = (Number(need) || 0) * n * count * cover;
       const have = supply[key] || 0;
       supply[key] = Math.max(0, have - Math.min(have, want));
     }
   }
   if (cfg.makes && count > 0) {
     for (const [key, make] of Object.entries(makesOf(state, cfg))) {
-      const add = (Number(make) || 0) * count * n;
+      const add = (Number(make) || 0) * count * n * cover;
       const next = (supply[key] || 0) + add;
       supply[key] = Number.isFinite(next) ? Math.min(SUPPLY_CAP, Math.max(0, next)) : supply[key] || 0;
     }
@@ -492,7 +511,7 @@ export function creditCycles(state, index, cycles, now = 0) {
   const st = state.biz?.[index];
   if (!st || st.owned <= 0) return 0;
   const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
-  const factor = supplyFactor(state, cfg);
+  const factor = supplyFactor(state, cfg, cycles);
   moveSupply(state, cfg, cycles, st.owned);
   const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor;
   return creditAmount(state, amount, now);

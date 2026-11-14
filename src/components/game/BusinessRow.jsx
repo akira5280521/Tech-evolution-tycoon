@@ -79,7 +79,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
         )}
         {(cfg.uses || cfg.makes) && !compact && (
           <p className="font-term text-base leading-5 text-[var(--game-muted)]">
-            {cfg.uses ? `Uses ${formatFlow(cfg.uses)} / cycle` : ""}
+            {cfg.uses ? `Uses ${formatFlow(cfg.uses)} each` : ""}
             {cfg.uses && cfg.makes ? " · " : ""}
             {cfg.makes ? `Makes ${formatFlow(makesOf(state, cfg))} each` : ""}
           </p>

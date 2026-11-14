@@ -79,6 +79,8 @@ export default function BottomTabs() {
   };
 
   return (
+    <>
+    <div className="status-scrim" aria-hidden="true" />
     <nav
       ref={navRef}
       aria-label="Main navigation"
@@ -119,5 +121,6 @@ export default function BottomTabs() {
         })}
       </div>
     </nav>
+    </>
   );
 }

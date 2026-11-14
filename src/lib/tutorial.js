@@ -63,7 +63,7 @@ export const TUTORIAL_STEPS = [
   {
     id: "history",
     title: "REAL HISTORY",
-    text: "Own 10 Paper Mills to open the Jacquard Loom (1804), the first machine run by instructions on punched cards. Each era you reach unlocks history cards in the Museum (Badges tab).",
+    text: "Own 10 Paper Mills to open the Jacquard Loom (1804), the first machine run by instructions on punched cards. Each era you reach unlocks history cards in the Museum (MORE > BADGES).",
     target: '[data-buy="loom"], [data-locked-era]',
     done: (s) => ownedOf(s, "loom") >= 1,
   },

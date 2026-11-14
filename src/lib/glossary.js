@@ -53,7 +53,7 @@ export const GLOSSARY = {
   },
   research: {
     term: "RESEARCH DATA",
-    text: "Every era you own makes a little data each second, and mastered eras make more. Data is never lost, even when you prestige. Spend it in MORE > RESEARCH.",
+    text: "Every era you own makes a little data each second, and mastered eras make more. Data is never lost, even when you prestige. Spend it on the RESEARCH tab.",
   },
   specialty: {
     term: "COMPANY SPECIALTY",

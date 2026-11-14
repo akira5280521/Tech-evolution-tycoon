@@ -305,8 +305,8 @@ function announce(notes) {
     if (note.type === "projectstart") toast("Project started", { description: "Crews are on site. Give them a moment." });
     if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
     if (note.type === "history") {
-      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum on the Badges tab." });
-      else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum on the Badges tab." });
+      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum in MORE > BADGES." });
+      else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum in MORE > BADGES." });
     }
     if (note.type === "bubble") toast("DOT-COM BUBBLE!", { description: "Your web stock is soaring. The banner counts down to the pop." });
     if (note.type === "bubblepop") toast("The bubble popped", { description: "The web stock is worth nothing now. Sell sooner next time." });

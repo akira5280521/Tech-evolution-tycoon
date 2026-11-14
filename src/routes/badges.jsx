@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import BadgesPage from "@/components/game/BadgesPage";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
+// Badges moved into the More menu; old links land there.
 export const Route = createFileRoute("/badges")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Badges — Tech Evolution Tycoon" }] }),
-  component: BadgesPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/more", hash: "badges", replace: true });
+  },
 });

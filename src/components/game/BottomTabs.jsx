@@ -1,14 +1,14 @@
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { Flag, Gamepad2, Package, Settings, Trophy, Zap } from "lucide-react";
+import { FlaskConical, Flag, Gamepad2, Package, Settings, Zap } from "lucide-react";
 
 const TABS = [
   { id: "game", label: "GAME", to: "/", icon: Gamepad2, isActive: (p) => p === "/" },
   { id: "boost", label: "BOOST", to: "/boost", icon: Zap, isActive: (p) => p.startsWith("/boost") },
   { id: "board", label: "BOARD", to: "/board", icon: Package, isActive: (p) => p.startsWith("/board") },
   { id: "runs", label: "RUNS", to: "/runs", icon: Flag, isActive: (p) => p.startsWith("/runs") },
-  { id: "badges", label: "BADGES", to: "/badges", icon: Trophy, isActive: (p) => p.startsWith("/badges") },
-  { id: "more", label: "MORE", to: "/more", icon: Settings, isActive: (p) => p.startsWith("/more") || p.startsWith("/settings") },
+  { id: "research", label: "RESEARCH", to: "/research", icon: FlaskConical, isActive: (p) => p.startsWith("/research") },
+  { id: "more", label: "MORE", to: "/more", icon: Settings, isActive: (p) => p.startsWith("/more") || p.startsWith("/settings") || p.startsWith("/badges") },
 ];
 
 const tabScroll = Object.fromEntries(TABS.map((tab) => [tab.id, 0]));

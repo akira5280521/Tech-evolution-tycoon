@@ -591,8 +591,8 @@ without adding rows or a save migration.
 ## Hardware history events
 
 **Roadmap:** closed testing (step 1, the early eras) and item 3 (the rest).
-The event system
-(eras each event fits, one-time events once a game) shipped in 0.0.19.
+The event system (eras each event fits, one-time events once a game) shipped
+in 0.0.19.
 
 Short timed events in the style of the Dot-com Bubble, each tied to one era
 and shown with a countdown. All effects are fixed and shown up front; no

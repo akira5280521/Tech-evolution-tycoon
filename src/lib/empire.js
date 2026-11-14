@@ -314,6 +314,54 @@ export function ensureSupply(state) {
 }
 
 // A dry machine still pays a floor so the bar never freezes on an empty bin.
+// How many cycles the stockpile covers for this row (Infinity if it uses
+// nothing). Fractional: 0.5 means half of one cycle's materials are there.
+export function supplyCover(state, cfg) {
+  if (!cfg?.uses) return Infinity;
+  if (state?.challenge?.id === "glass" && cfg.id === "tubes") return Infinity;
+  const supply = ensureSupply(state);
+  let cover = Infinity;
+  for (const [key, need] of Object.entries(cfg.uses)) {
+    const want = Number(need) || 0;
+    if (want <= 0) continue;
+    cover = Math.min(cover, Math.max(0, supply[key] || 0) / want);
+  }
+  return Number.isFinite(cover) || cover === Infinity ? cover : 0;
+}
+
+// Pay several rows' cycles at once (an offline slice) the way they'd be paid
+// one lap at a time: rows run in order, so a material is made before the rows
+// that use it, and rows that use the same material split what's there in
+// proportion to how much each needs. Returns each row's earnings.
+export function creditBatch(state, due, now) {
+  const gains = new Array(due.length).fill(0);
+  const supply = ensureSupply(state);
+  const pool = {};
+  const demand = {};
+  BUSINESSES.forEach((cfg, i) => {
+    if (!(due[i] > 0) || !cfg.uses) return;
+    for (const [key, need] of Object.entries(cfg.uses)) demand[key] = (demand[key] || 0) + (Number(need) || 0) * due[i];
+  });
+  BUSINESSES.forEach((cfg, i) => {
+    const cycles = due[i];
+    if (!(cycles > 0)) return;
+    let cover;
+    if (cfg.uses) {
+      cover = Infinity;
+      for (const [key, need] of Object.entries(cfg.uses)) {
+        const want = (Number(need) || 0) * cycles;
+        if (want <= 0) continue;
+        // Every maker of a material comes before the rows that use it.
+        if (!(key in pool)) pool[key] = Math.max(0, supply[key] || 0);
+        const share = demand[key] > 0 ? (pool[key] * want) / demand[key] : 0;
+        cover = Math.min(cover, share / (Number(need) || 1));
+      }
+    }
+    gains[i] = creditCycles(state, i, cycles, now, cover);
+  });
+  return gains;
+}
+
 export function supplyFactor(state, cfg) {
   if (!cfg?.uses) return 1;
   if (state?.challenge?.id === "glass" && cfg.id === "tubes") return 1;
@@ -337,15 +385,18 @@ export function makesOf(state, cfg) {
   return Object.fromEntries(Object.entries(cfg.makes).map(([key, n]) => [key, (Number(n) || 0) * mult]));
 }
 
-function moveSupply(state, cfg, cycles, owned) {
+// usedCycles: how many cycles' worth of materials to take (the covered ones;
+// defaults to all). Makers always make for every cycle.
+function moveSupply(state, cfg, cycles, owned, usedCycles = cycles) {
   if (!cfg?.uses && !cfg?.makes) return;
   const supply = ensureSupply(state);
   const n = Number.isFinite(cycles) && cycles > 0 ? cycles : 0;
+  const used = Number.isFinite(usedCycles) && usedCycles > 0 ? Math.min(usedCycles, n) : 0;
   const count = Number.isFinite(owned) && owned > 0 ? owned : 0;
   const skipDraw = state?.challenge?.id === "glass" && cfg.id === "tubes";
   if (cfg.uses && !skipDraw) {
     for (const [key, need] of Object.entries(cfg.uses)) {
-      const want = (Number(need) || 0) * n;
+      const want = (Number(need) || 0) * used;
       const have = supply[key] || 0;
       supply[key] = Math.max(0, have - Math.min(have, want));
     }
@@ -486,15 +537,24 @@ export function incomePerSecond(state, now = 0) {
   return sum;
 }
 
-export function creditCycles(state, index, cycles, now = 0) {
+// cover (optional): how many cycles this row's share of the stockpile covers,
+// when several rows are paid from the same stockpile at once (offline).
+export function creditCycles(state, index, cycles, now = 0, cover = undefined) {
   if (cycles <= 0) return 0;
   const cfg = BUSINESSES[index];
   const st = state.biz?.[index];
   if (!st || st.owned <= 0) return 0;
   const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
-  const factor = supplyFactor(state, cfg);
-  moveSupply(state, cfg, cycles, st.owned);
-  const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor;
+  // Only the cycles the stockpile actually covers pay in full; the rest pay
+  // 15%. Checking the stockpile once for a whole batch (offline catch-up, or
+  // the first tick after the app comes back) let every cycle in the batch pay
+  // in full as long as one cycle's worth was there, so a short row earned up
+  // to 50% more while the app was closed than while it was open.
+  const have = supplyCover(state, cfg);
+  const full = Math.min(cycles, Number.isFinite(cover) ? Math.min(cover, have) : have);
+  const paidCycles = 0.15 * cycles + 0.85 * full;
+  moveSupply(state, cfg, cycles, st.owned, full);
+  const amount = paidCycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total;
   return creditAmount(state, amount, now);
 }
 

@@ -26,6 +26,7 @@ import {
   buyUpgrade,
   canBuyIndex,
   canHireIndex,
+  creditBatch,
   creditCycles,
   dataPerSecond,
   effectiveCycleMs,
@@ -53,6 +54,7 @@ import { playBuy, playCollect } from "@/lib/sfx";
 const SAVE_INTERVAL_MS = 5000;
 // 24 hours / 720 = 2 minute slices at the cap; shorter absences slice finer.
 const OFFLINE_SLICES = 720;
+const OFFLINE_ROUNDS = 16;
 
 function freshBiz(mode) {
   return BUSINESSES.map((cfg, i) => ({
@@ -257,17 +259,26 @@ function loadSave() {
         // rest of the absence pays at the new rate. The whole loop is still
         // bounded by the 24 hour cap applied above.
         finishTimedWork(state, mid);
-        state.biz.forEach((st, i) => {
-          if (!st.manager || st.owned <= 0) return;
+        const due = state.biz.map((st, i) => {
+          if (!st.manager || st.owned <= 0) return 0;
           const cycle = effectiveCycleMs(BUSINESSES[i], state);
-          if (!(cycle > 0)) return;
+          if (!(cycle > 0)) return 0;
           st.activeMs += step;
           st.progress += step;
           const cycles = Math.floor(st.progress / cycle);
-          if (cycles <= 0) return;
+          if (cycles <= 0) return 0;
           st.progress = Math.max(0, st.progress - cycles * cycle);
-          gains[i] += creditCycles(state, i, cycles, mid);
+          return cycles;
         });
+        // Pay the slice in small rounds, the way laps arrive while the app is
+        // open: a material is made before it's used, and rows that use the
+        // same material share it instead of the first row taking it all.
+        for (let r = 0; r < OFFLINE_ROUNDS; r++) {
+          const part = due.map((cycles) => (cycles > 0 ? Math.floor((cycles * (r + 1)) / OFFLINE_ROUNDS) - Math.floor((cycles * r) / OFFLINE_ROUNDS) : 0));
+          creditBatch(state, part, mid).forEach((amount, i) => {
+            gains[i] += amount;
+          });
+        }
       }
       gains.forEach((amount, i) => {
         if (amount > 0) {
@@ -376,7 +387,10 @@ export function useGame() {
         const already = next.paidLaps || 0;
         next.progress = elapsed % cycle;
         if (laps > already) {
-          const gain = creditCycles(s, i, laps - already, wall);
+          // Coming back after the app sat in the background pays at most the
+          // same 24 hours a closed app gets.
+          const capLaps = Math.max(1, Math.floor(OFFLINE_CAP_MS / cycle));
+          const gain = creditCycles(s, i, Math.min(laps - already, capLaps), wall);
           next.paidLaps = laps;
           if (gain > 0) next.lastGain = { id: ++s.gainSeq, amount: gain };
         }

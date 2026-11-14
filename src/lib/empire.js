@@ -94,9 +94,14 @@ export function upgradeOffer(index) {
 //   boost: minutes of the x1.15 revenue boost
 // Which dilemma appears is random, and the same one does not appear twice in a
 // row. Each choice's reward is fixed.
+// from / to: the first and last era (row id) the event fits; the player's
+// furthest era must be inside that span. No `from` means any era.
+// once: a real one-time event in history (the Millennium Bug). It happens at
+// most once a game, even across prestige and forks.
 export const DILEMMAS = [
   {
     id: "grant",
+    from: "tubes", // governments fund computing from ENIAC on
     title: "GOVERNMENT GRANT",
     text: "The Ministry of Computing offers a research grant - in two shapes.",
     choices: [
@@ -115,6 +120,7 @@ export const DILEMMAS = [
   },
   {
     id: "expo",
+    from: "homepc", // computer fairs start in the late 1970s
     title: "COMPUTER EXPO",
     text: "You have a booth at the biggest trade show of the year.",
     choices: [
@@ -133,6 +139,7 @@ export const DILEMMAS = [
   },
   {
     id: "cover",
+    from: "cpu", // computing magazines start in the mid 1970s
     title: "MAGAZINE COVER",
     text: "A computing magazine wants your flagship machine on the front page.",
     choices: [
@@ -142,6 +149,7 @@ export const DILEMMAS = [
   },
   {
     id: "overclock",
+    from: "cpu",
     title: "OVERCLOCK THE LINE",
     text: "The engineers swear the machines can run hotter. The fire marshal is less sure.",
     choices: [
@@ -151,6 +159,7 @@ export const DILEMMAS = [
   },
   {
     id: "hackathon",
+    from: "gpu", // hackathons start in 1999
     title: "WEEKEND HACKATHON",
     text: "Local hackers want to use your servers for a 48-hour coding marathon.",
     choices: [
@@ -160,6 +169,10 @@ export const DILEMMAS = [
   },
   {
     id: "y2k",
+    // The Millennium Bug: the late home-computer years, and only once a game.
+    from: "homepc",
+    to: "gpu",
+    once: true,
     title: "MILLENNIUM BUG",
     text: "Clients panic that every clock will roll back to 1900 at midnight.",
     choices: [
@@ -173,9 +186,30 @@ export function dilemmaSpec(id) {
   return DILEMMAS.find((d) => d.id === id) || DILEMMAS[0];
 }
 
-function pickDilemma(lastId) {
-  const pool = DILEMMAS.filter((d) => d.id !== lastId);
-  return pool[Math.floor(Math.random() * pool.length)] || DILEMMAS[0];
+// True when the player's furthest era is between `from` and `to` (row ids).
+export function inEraSpan(state, from, to) {
+  const reached = currentEraIndex(state);
+  const start = from ? BUSINESSES.findIndex((cfg) => cfg.id === from) : 0;
+  const end = to ? BUSINESSES.findIndex((cfg) => cfg.id === to) : BUSINESSES.length - 1;
+  return reached >= 0 && reached >= start && reached <= end;
+}
+
+// One-time world events that already happened this game.
+export function eventDone(state, id) {
+  return (state?.eventsDone || []).includes(id);
+}
+
+export function markEventDone(state, id) {
+  if (eventDone(state, id)) return;
+  state.eventsDone = [...(state.eventsDone || []), id];
+}
+
+// Events that fit the player's era and haven't used up their one time.
+// The last one shown sits out a turn unless it's the only choice.
+function pickDilemma(state) {
+  const fits = DILEMMAS.filter((d) => inEraSpan(state, d.from, d.to) && !(d.once && eventDone(state, d.id)));
+  const pool = fits.length > 1 ? fits.filter((d) => d.id !== state.lastDilemma) : fits;
+  return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
 }
 
 export const SPECIALTIES = [
@@ -283,6 +317,7 @@ export function blankMeta() {
     dilemma: null,
     lastDilemma: null,
     museum: [],
+    eventsDone: [],
     bubble: null,
     nextBubbleAt: 0,
     dilemmaDeferUntil: 0,
@@ -959,10 +994,16 @@ export function tickDilemma(state, now) {
     state.nextDilemmaAt = Math.max(state.nextDilemmaAt || 0, now + 60 * 1000);
   }
   if (!tutorialRunning && !state.dilemma && now >= (state.dilemmaDeferUntil || 0) && now >= (state.nextDilemmaAt || 0)) {
-    const pick = pickDilemma(state.lastDilemma);
-    state.lastDilemma = pick.id;
-    state.dilemma = { id: pick.id, expiresAt: now + 45 * 1000 };
-    notes.push({ type: "dilemma" });
+    const pick = pickDilemma(state);
+    if (pick) {
+      state.lastDilemma = pick.id;
+      if (pick.once) markEventDone(state, pick.id);
+      state.dilemma = { id: pick.id, expiresAt: now + 45 * 1000 };
+      notes.push({ type: "dilemma" });
+    } else {
+      // Nothing fits this era right now: look again in a few minutes.
+      state.nextDilemmaAt = now + 6 * 60 * 1000;
+    }
   }
   if (now >= (state.nextWindfallAt || 0) && incomePerSecond(state, now) > 0) {
     const amount = Math.max(100, incomePerSecond(state, now) * 30);
@@ -1045,6 +1086,7 @@ export function snapshotMeta(state, options = {}) {
     briefingDay: state.briefingDay || null,
     badgesEarned: [...(state.badgesEarned || [])],
     museum: [...(state.museum || [])],
+    eventsDone: [...(state.eventsDone || [])],
     nextBubbleAt: state.nextBubbleAt || 0,
     supply: { ...ensureSupply(state) },
     foreman: !!state.foreman,

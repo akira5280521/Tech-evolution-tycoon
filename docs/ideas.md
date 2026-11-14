@@ -7,7 +7,7 @@ chance-based rewards, and new content stays hidden ("???") until discovered.
 
 ## First minutes and UI
 
-**Roadmap:** items 1-3 (phase 1); the era arrival card ships with item 5.
+**Roadmap:** items 1-5 (phase 1); the era arrival card ships with item 6.
 
 - **Company name:** asked once at the start, editable in More. Length limit
   and a simple word filter; it is only stored on the device. Used in ticker
@@ -118,11 +118,11 @@ LAN parties (2000s), Orbital Array last. Rewards stay the same.
 
 - The Runs tab keeps the best time to reach each era. Beating a record pays
   a few tokens (once per era per fork, so it can't be farmed).
-- Shares data with the stats page (item 3).
+- Shares data with the stats page (item 4).
 
 ## Chip generations
 
-**Roadmap:** item 5.
+**Roadmap:** item 6.
 
 ### Idea
 
@@ -209,21 +209,23 @@ The same system covers more rows: see [More row generations](#more-row-generatio
 
 **Roadmap:** item 2.
 
-Each tab answers one question. Today More mixes settings, the token Market
-and Research.
+Each tab answers one question. Research became its own main tab in 0.0.19
+(in Badges' old place) and Badges moved into More, so the table below is
+updated to match. Today More mixes settings, help, Badges and the token
+Market.
 
 | Tab | Answers | Contents |
 |---|---|---|
 | Game | What am I building? | Era rows (chip generations show on their rows) |
-| Boost | How do I earn more? | Upgrades · Research (moved from More) · Workbench (later) |
+| Boost | How do I earn more? | Upgrades · Workbench (later) |
+| Research | What do I spend data on? | Specialties, lab projects (main tab since 0.0.19) |
 | Board | What do I spend? | Investors, forks, Market (moved from More) |
 | Runs | What goals can I chase? | Challenges, mega-projects |
-| Badges | What have I collected? | Badges · Museum (generation history cards go here) |
-| More | Settings and help | Orientation, updates, save backup, account, reset, how-to, daily briefing |
+| More | Settings, help and collection | Orientation, updates, save backup, account, reset, how-to, daily briefing, Badges · Museum (generation history cards go here) |
 
 - Add switchers instead of tabs: the six tabs already fill two rows on a
-  phone. Boost gets Upgrades · Research (· Workbench later); Badges gets
-  Badges · Museum, which also shortens a very long page.
+  phone. Boost gets Upgrades · Workbench later; Badges gets Badges ·
+  Museum, which also shortens a very long page.
 - **Uses for spare data** (in the Research view; roadmap item 2, with more
   uses in item 26). Data's only use today is
   specialties (80 each, one slot plus one per fork, three at most), and it
@@ -582,7 +584,8 @@ without adding rows or a save migration.
 
 ## Hardware history events
 
-**Roadmap:** item 8 (with the other history events).
+**Roadmap:** items 3 (early eras) and 8 (the rest). The event system
+(eras each event fits, one-time events once a game) shipped in 0.0.19.
 
 Short timed events in the style of the Dot-com Bubble, each tied to one era
 and shown with a countdown. All effects are fixed and shown up front; no

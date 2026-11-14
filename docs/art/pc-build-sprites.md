@@ -301,7 +301,7 @@ Too big or too old to fit a PC; shown as Museum and period-build pieces.
 
 ## Related art elsewhere (not the PC build area)
 
-- **Generation row icons** (items 5-6): 7 processor, 7 graphics, 4 Home
+- **Generation row icons** (items 6-7): 7 processor, 7 graphics, 4 Home
   Computers and 3 RGB Battlestations generations, in the big era-icon style.
   The processor and graphics part icons above can borrow their look.
 - **Real art for the five material rows** (Timber Camp, Paper Mill,

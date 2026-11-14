@@ -320,7 +320,8 @@ function ownedOf(state, cfg) {
   return Number.isFinite(n) && n > 1 ? n : 1;
 }
 
-// A dry machine still pays a floor so the bar never freezes on an empty bin.
+// A machine only pays for what its materials cover: half the sand it needs
+// pays half, and an empty bin pays nothing. The bar keeps cycling either way.
 // Every copy of a row needs its own share, so 50 Glass Works need 50 sand a
 // cycle, not 1. `cycles` covers a batch of cycles paid at once (offline).
 export function supplyFactor(state, cfg, cycles = 1) {
@@ -335,7 +336,7 @@ export function supplyFactor(state, cfg, cycles = 1) {
     cover = Math.min(cover, (supply[key] || 0) / want);
   }
   if (!Number.isFinite(cover) || cover < 0) cover = 0;
-  return 0.15 + 0.85 * Math.min(1, cover);
+  return Math.min(1, cover);
 }
 
 // What one unit of a material row makes per cycle. The row's x3 upgrade

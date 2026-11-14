@@ -58,7 +58,7 @@ export const TIPS = [
     id: "running-low",
     page: "game",
     title: "RUNNING LOW",
-    text: "A machine has run out of a material, so it pays much less. Buy more of the row that makes it, hire that row's manager, or buy its x3 upgrade on the BOOST tab to make 3 times as much.",
+    text: "A machine has run out of a material, so it has stopped paying. Buy more of the row that makes it, hire that row's manager, or buy its x3 upgrade on the BOOST tab to make 3 times as much.",
     target: "[data-supply]",
     when: (s) => !!shortMaterial(s) && (s.lifetime || 0) > 0,
   },

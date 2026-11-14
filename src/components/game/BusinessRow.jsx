@@ -39,7 +39,12 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
   const cycle = effectiveCycleMs(cfg, state);
   const cycleSeconds = (cycle / 1000).toFixed(cycle % 1000 ? 1 : 0);
   const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
-  const perCycle = cfg.revenue * rev * st.owned * mult * empireFactors(state, Date.now()).total * supplyFactor(state, cfg);
+  const fed = supplyFactor(state, cfg);
+  const perCycle = cfg.revenue * rev * st.owned * mult * empireFactors(state, Date.now()).total * fed;
+  // The materials this row is short of right now, for the warning line.
+  const shortOf = st.owned > 0 && fed < 1 && cfg.uses
+    ? Object.entries(cfg.uses).filter(([key, need]) => (state.supply?.[key] || 0) < need * st.owned).map(([key]) => key)
+    : [];
   const commissioning = (st.commissionUntil || 0) > Date.now();
   const hireNeed = managerNeed(index);
   const hireLocked = st.owned < hireNeed;
@@ -82,6 +87,11 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
             {cfg.uses ? `Uses ${formatFlow(cfg.uses)} each` : ""}
             {cfg.uses && cfg.makes ? " · " : ""}
             {cfg.makes ? `Makes ${formatFlow(makesOf(state, cfg))} each` : ""}
+          </p>
+        )}
+        {shortOf.length > 0 && (
+          <p data-short className="font-term text-base leading-5 text-[var(--game-danger)]">
+            {fed <= 0 ? `Out of ${shortOf.join(" and ")}: making nothing` : `Short of ${shortOf.join(" and ")}: running at ${Math.round(fed * 100)}%`}
           </p>
         )}
         <div className="flex flex-wrap justify-between gap-x-3 font-term text-base leading-5 text-[var(--game-muted)]">

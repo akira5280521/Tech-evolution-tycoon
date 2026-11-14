@@ -647,7 +647,7 @@ export function nextMove(state) {
   const now = Date.now();
   const commissioning = (st) => (st?.commissionUntil || 0) > now;
 
-  // A dry row pays much less: point at the cheapest way to feed it.
+  // A dry row pays nothing: point at the cheapest way to feed it.
   const short = shortMaterial(state);
   if (short) {
     const maker = BUSINESSES[short.maker];

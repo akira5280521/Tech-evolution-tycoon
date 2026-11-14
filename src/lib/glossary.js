@@ -5,7 +5,7 @@
 export const GLOSSARY = {
   materials: {
     term: "MATERIALS",
-    text: "Some machines use what an earlier one makes: the Paper Mill turns wood into card stock, glass works need sand, and so on. Each one makes 1 per cycle until you buy its x3 upgrade, which makes it 3. The strip at the top shows what you have. If a material runs out, the machine that needs it pays much less until more is made.",
+    text: "Some machines use what an earlier one makes: the Paper Mill turns wood into card stock, glass works need sand, and so on. Each one makes 1 per cycle until you buy its x3 upgrade, which makes it 3. The strip at the top shows what you have. If a material runs out, the machine that needs it stops paying until more is made.",
   },
   manager: {
     term: "MANAGER",

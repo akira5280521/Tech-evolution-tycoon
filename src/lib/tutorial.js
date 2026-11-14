@@ -55,7 +55,7 @@ export const TUTORIAL_STEPS = [
   {
     id: "materials",
     title: "MATERIALS",
-    text: "The Paper Mill turns wood from the Timber Camp into card stock. This strip shows what you have. If a row runs out, it pays much less.",
+    text: "The Paper Mill turns wood from the Timber Camp into card stock. This strip shows what you have. If a row runs out, it stops paying.",
     target: "[data-supply]",
     manual: true,
     button: "GOT IT",

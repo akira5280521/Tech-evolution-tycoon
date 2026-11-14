@@ -124,6 +124,7 @@ function applySavedMeta(state, raw) {
   state.badgesEarned = Array.isArray(m.badgesEarned) ? m.badgesEarned.filter((id) => typeof id === "string") : [];
   state.museum = Array.isArray(m.museum) ? m.museum.filter((id) => HISTORY_CARDS.some((c) => c.id === id)) : [];
   state.bubble = cleanBubble(m.bubble);
+  state.eventsDone = Array.isArray(m.eventsDone) ? [...new Set(m.eventsDone.filter((id) => typeof id === "string"))] : [];
   state.nextBubbleAt = num(m.nextBubbleAt);
   state.modStamp = 1;
   const orient = raw?.orientation;
@@ -171,6 +172,7 @@ function pack(s) {
     prestiged: !!s.prestiged,
     badgesEarned: s.badgesEarned || [],
     museum: s.museum || [],
+    eventsDone: s.eventsDone || [],
     bubble: s.bubble || null,
     nextBubbleAt: s.nextBubbleAt || 0,
     supply: s.supply,

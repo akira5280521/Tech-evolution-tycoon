@@ -178,7 +178,7 @@ const HOW_TO = [
     title: "MATERIALS",
     lines: [
       "Some machines use what an earlier one makes: wood for paper, paper for the Jacquard loom and punch cards, sand for glass, glass, copper and filament for vacuum tubes, germanium for the first transistors, and silicon wafers for chips.",
-      "The strip at the top shows what you have. If a material runs out, the machine that needs it pays much less until more is made, so keep the earlier rows growing too.",
+      "The strip at the top shows what you have. If a material runs out, the machine that needs it stops paying until more is made, so keep the earlier rows growing too.",
     ],
   },
   {

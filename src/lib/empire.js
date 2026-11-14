@@ -94,9 +94,14 @@ export function upgradeOffer(index) {
 //   boost: minutes of the x1.15 revenue boost
 // Which dilemma appears is random, and the same one does not appear twice in a
 // row. Each choice's reward is fixed.
+// from / to: the first and last era (row id) the event fits; the player's
+// furthest era must be inside that span. No `from` means any era.
+// once: a real one-time event in history (the Millennium Bug). It happens at
+// most once a game, even across prestige and forks.
 export const DILEMMAS = [
   {
     id: "grant",
+    from: "tubes", // governments fund computing from ENIAC on
     title: "GOVERNMENT GRANT",
     text: "The Ministry of Computing offers a research grant - in two shapes.",
     choices: [
@@ -115,6 +120,7 @@ export const DILEMMAS = [
   },
   {
     id: "expo",
+    from: "homepc", // computer fairs start in the late 1970s
     title: "COMPUTER EXPO",
     text: "You have a booth at the biggest trade show of the year.",
     choices: [
@@ -133,6 +139,7 @@ export const DILEMMAS = [
   },
   {
     id: "cover",
+    from: "cpu", // computing magazines start in the mid 1970s
     title: "MAGAZINE COVER",
     text: "A computing magazine wants your flagship machine on the front page.",
     choices: [
@@ -142,6 +149,7 @@ export const DILEMMAS = [
   },
   {
     id: "overclock",
+    from: "cpu",
     title: "OVERCLOCK THE LINE",
     text: "The engineers swear the machines can run hotter. The fire marshal is less sure.",
     choices: [
@@ -151,6 +159,7 @@ export const DILEMMAS = [
   },
   {
     id: "hackathon",
+    from: "gpu", // hackathons start in 1999
     title: "WEEKEND HACKATHON",
     text: "Local hackers want to use your servers for a 48-hour coding marathon.",
     choices: [
@@ -160,6 +169,10 @@ export const DILEMMAS = [
   },
   {
     id: "y2k",
+    // The Millennium Bug: the late home-computer years, and only once a game.
+    from: "homepc",
+    to: "gpu",
+    once: true,
     title: "MILLENNIUM BUG",
     text: "Clients panic that every clock will roll back to 1900 at midnight.",
     choices: [
@@ -173,9 +186,30 @@ export function dilemmaSpec(id) {
   return DILEMMAS.find((d) => d.id === id) || DILEMMAS[0];
 }
 
-function pickDilemma(lastId) {
-  const pool = DILEMMAS.filter((d) => d.id !== lastId);
-  return pool[Math.floor(Math.random() * pool.length)] || DILEMMAS[0];
+// True when the player's furthest era is between `from` and `to` (row ids).
+export function inEraSpan(state, from, to) {
+  const reached = currentEraIndex(state);
+  const start = from ? BUSINESSES.findIndex((cfg) => cfg.id === from) : 0;
+  const end = to ? BUSINESSES.findIndex((cfg) => cfg.id === to) : BUSINESSES.length - 1;
+  return reached >= 0 && reached >= start && reached <= end;
+}
+
+// One-time world events that already happened this game.
+export function eventDone(state, id) {
+  return (state?.eventsDone || []).includes(id);
+}
+
+export function markEventDone(state, id) {
+  if (eventDone(state, id)) return;
+  state.eventsDone = [...(state.eventsDone || []), id];
+}
+
+// Events that fit the player's era and haven't used up their one time.
+// The last one shown sits out a turn unless it's the only choice.
+function pickDilemma(state) {
+  const fits = DILEMMAS.filter((d) => inEraSpan(state, d.from, d.to) && !(d.once && eventDone(state, d.id)));
+  const pool = fits.length > 1 ? fits.filter((d) => d.id !== state.lastDilemma) : fits;
+  return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
 }
 
 export const SPECIALTIES = [
@@ -283,6 +317,7 @@ export function blankMeta() {
     dilemma: null,
     lastDilemma: null,
     museum: [],
+    eventsDone: [],
     bubble: null,
     nextBubbleAt: 0,
     dilemmaDeferUntil: 0,
@@ -313,19 +348,30 @@ export function ensureSupply(state) {
   return next;
 }
 
-// A dry machine still pays a floor so the bar never freezes on an empty bin.
-export function supplyFactor(state, cfg) {
+// How many copies of a row the player owns (at least 1, for previews).
+function ownedOf(state, cfg) {
+  const i = BUSINESSES.findIndex((c) => c.id === cfg?.id);
+  const n = state?.biz?.[i]?.owned;
+  return Number.isFinite(n) && n > 1 ? n : 1;
+}
+
+// A machine only pays for what its materials cover: half the sand it needs
+// pays half, and an empty bin pays nothing. The bar keeps cycling either way.
+// Every copy of a row needs its own share, so 50 Glass Works need 50 sand a
+// cycle, not 1. `cycles` covers a batch of cycles paid at once (offline).
+export function supplyFactor(state, cfg, cycles = 1) {
   if (!cfg?.uses) return 1;
   if (state?.challenge?.id === "glass" && cfg.id === "tubes") return 1;
   const supply = ensureSupply(state);
+  const batch = ownedOf(state, cfg) * (Number.isFinite(cycles) && cycles > 1 ? cycles : 1);
   let cover = 1;
   for (const [key, need] of Object.entries(cfg.uses)) {
-    const want = Number(need) || 0;
+    const want = (Number(need) || 0) * batch;
     if (want <= 0) continue;
     cover = Math.min(cover, (supply[key] || 0) / want);
   }
   if (!Number.isFinite(cover) || cover < 0) cover = 0;
-  return 0.15 + 0.85 * Math.min(1, cover);
+  return Math.min(1, cover);
 }
 
 // What one unit of a material row makes per cycle. The row's x3 upgrade
@@ -343,16 +389,25 @@ function moveSupply(state, cfg, cycles, owned) {
   const n = Number.isFinite(cycles) && cycles > 0 ? cycles : 0;
   const count = Number.isFinite(owned) && owned > 0 ? owned : 0;
   const skipDraw = state?.challenge?.id === "glass" && cfg.id === "tubes";
+  // Share of the batch the bins can cover. A row that turns one material
+  // into another (sand into glass) only makes as much as it had inputs for.
+  let cover = 1;
   if (cfg.uses && !skipDraw) {
     for (const [key, need] of Object.entries(cfg.uses)) {
-      const want = (Number(need) || 0) * n;
+      const want = (Number(need) || 0) * n * count;
+      if (want > 0) cover = Math.min(cover, (supply[key] || 0) / want);
+    }
+    if (!Number.isFinite(cover) || cover < 0) cover = 0;
+    for (const [key, need] of Object.entries(cfg.uses)) {
+      // Each copy draws its own share, just as each copy of a maker adds one.
+      const want = (Number(need) || 0) * n * count * cover;
       const have = supply[key] || 0;
       supply[key] = Math.max(0, have - Math.min(have, want));
     }
   }
   if (cfg.makes && count > 0) {
     for (const [key, make] of Object.entries(makesOf(state, cfg))) {
-      const add = (Number(make) || 0) * count * n;
+      const add = (Number(make) || 0) * count * n * cover;
       const next = (supply[key] || 0) + add;
       supply[key] = Number.isFinite(next) ? Math.min(SUPPLY_CAP, Math.max(0, next)) : supply[key] || 0;
     }
@@ -492,7 +547,7 @@ export function creditCycles(state, index, cycles, now = 0) {
   const st = state.biz?.[index];
   if (!st || st.owned <= 0) return 0;
   const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
-  const factor = supplyFactor(state, cfg);
+  const factor = supplyFactor(state, cfg, cycles);
   moveSupply(state, cfg, cycles, st.owned);
   const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor;
   return creditAmount(state, amount, now);
@@ -939,10 +994,16 @@ export function tickDilemma(state, now) {
     state.nextDilemmaAt = Math.max(state.nextDilemmaAt || 0, now + 60 * 1000);
   }
   if (!tutorialRunning && !state.dilemma && now >= (state.dilemmaDeferUntil || 0) && now >= (state.nextDilemmaAt || 0)) {
-    const pick = pickDilemma(state.lastDilemma);
-    state.lastDilemma = pick.id;
-    state.dilemma = { id: pick.id, expiresAt: now + 45 * 1000 };
-    notes.push({ type: "dilemma" });
+    const pick = pickDilemma(state);
+    if (pick) {
+      state.lastDilemma = pick.id;
+      if (pick.once) markEventDone(state, pick.id);
+      state.dilemma = { id: pick.id, expiresAt: now + 45 * 1000 };
+      notes.push({ type: "dilemma" });
+    } else {
+      // Nothing fits this era right now: look again in a few minutes.
+      state.nextDilemmaAt = now + 6 * 60 * 1000;
+    }
   }
   if (now >= (state.nextWindfallAt || 0) && incomePerSecond(state, now) > 0) {
     const amount = Math.max(100, incomePerSecond(state, now) * 30);
@@ -1025,6 +1086,7 @@ export function snapshotMeta(state, options = {}) {
     briefingDay: state.briefingDay || null,
     badgesEarned: [...(state.badgesEarned || [])],
     museum: [...(state.museum || [])],
+    eventsDone: [...(state.eventsDone || [])],
     nextBubbleAt: state.nextBubbleAt || 0,
     supply: { ...ensureSupply(state) },
     foreman: !!state.foreman,

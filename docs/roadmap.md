@@ -34,6 +34,10 @@ test shipped in 0.0.13 (see Done).
 
 ## Ships in 0.0.19
 
+PRs #48-#50 are on main. The version is still 0.0.18 (versionCode 18), so
+bump versionName to 0.0.19 and versionCode to 19 before a build. The closed
+test is still the 0.0.18 Play bundle.
+
 - **Landscape fixes from two testers' phones:** the side tab bar no longer
   loses its width to the camera cutout (labels were wrapping one letter per
   line), the empty strip between the tab bar and the page is gone, and text
@@ -153,127 +157,130 @@ test shipped in 0.0.13 (see Done).
 
 ## How the order was chosen
 
-1. **The Play Store launch first**, because it is already under way (see
-   Now).
-2. **New players next.** The opening minutes decide whether people keep
-   playing, and these items are small. The early history events (item 3)
-   moved here in 0.0.19: the event system they need already exists, and
-   the early eras had only two events. Shipping them during the closed test
-   also gives the production application real changes to report.
-3. **Mid-game goals right after**: investor milestones (item 5) give every
-   prestige something to unlock, before more content is added.
-4. **Content on systems that already exist** (generations, events, sound),
-   then the missing eras in one release (item 10), so pacing changes once.
-   Saves store rows by era id since 0.0.15, so new eras are safe after
-   launch.
-5. **Then the Workbench and parts**, the biggest feature, in the order the
-   parts appeared in history, as far as their links allow.
-6. **Long-term systems last**, once there is enough content to collect and
-   replay.
+1. **Closed testing first**, while the Play launch is under way (see Now):
+   real icons, parody names, tester fixes, sound and settings, investor
+   milestones, Play Games, starter goals, Research lab projects and the rest
+   of the tab tidy-up, and the early history events. Investor milestones go
+   out before launch so live saves aren't disrupted.
+2. **After launch, Phase 1.** Chip generations and the era arrival screen
+   (item 1), generations on more rows (item 2), then history events step 2
+   with headlines, pioneers and trivia (item 3).
+3. **Then history on what's already there:** a look and sound for each era
+   (item 4), the missing eras in one release (item 5) so pacing changes once,
+   and Focus era (item 6). Saves store rows by era id since 0.0.15, so new
+   eras are safe after launch.
+4. **Then the Workbench and parts** (items 7-15), in the order the parts
+   appeared in history, as far as their links allow.
+5. **Long-term systems last** (items 16-26), once there is enough content to
+   collect and replay.
 
 Each numbered item is roughly one release. Items marked "small" can be
 folded into a neighbouring release.
 
-## Now: Google Play launch (in progress)
+## Now: Closed testing (pre-launch)
 
-- **Closed test.** The app bundle is uploaded. Google needs at least 12
-  testers opted in for 14 days in a row before applying for production.
-  Collect feedback during the test; the production application asks what
-  changed because of it. See `docs/play-store/console-checklist.md`.
-- **0.0.15 release** with everything in "Merged" above, version bumped so
-  it isn't confused with the GitHub 0.0.14.
-- **Switch on Play Games:** add the Android credentials (app signing key
-  and upload key SHA-1s), turn on Saved games, add testers, put the project
-  id in `strings.xml`, then update the Data safety answers. See
+The 0.0.18 Play bundle is the current closed-test build. Google still needs
+at least 12 testers opted in for 14 days in a row, then an application for
+production. See `docs/play-store/console-checklist.md`. Phase 1 starts when
+the game is live on Google Play after all testing. Work that already shipped
+in 0.0.18, or that is merged for 0.0.19, is not repeated here.
+
+- **Real icons** for all 9 placeholder material businesses: Timber Camp,
+  Paper Mill, Sand Quarry, Copper Seam, Glassworks, Filament Forge,
+  Germanium Refinery, Silicon Still and Wafer Bench, before store screenshots.
+- **Approve parody company names.**
+- **Bug and balance fixes from testers.** The landscape fixes from testers'
+  phones ship in 0.0.19 (see above).
+- **Sound pauses in the background**, plus separate music and effects volume.
+  Era themes and era music wait for item 4.
+- **Feedback and settings.** Floating "+$" on payouts, light vibration on
+  buy (can be turned off), hold Buy to preview "+$X per second", number
+  style (letters, names, scientific), reduced motion, high contrast and
+  colorblind-friendly colors. Plus a **stats page**: lifetime earnings,
+  prestige count, best time to each era with a small token reward for beating
+  it (these run records move here from the Runs tab), cards collected, play
+  time. And a **prestige guide**: the prestige button shows what a prestige
+  would give right now ("+340 investors, income x1.8") and lights up once it
+  would at least double your investors.
+  [Design](ideas.md#first-minutes-and-ui). [Design](ideas.md#mid-game).
+- **Investor milestones.** Fixed investor counts that unlock things for
+  good, shown on the prestige screen as "Next unlock at 1,000 investors":
+  start runs with Sand Quarries, material-row managers kept through
+  prestige (worth more now that materials run out), auto-buy for upgrades,
+  a longer offline cap (24 h to 36 h to 48 h), start runs at a later era.
+  Replaces the separate investor upgrade shop. Done before launch so live
+  saves aren't disrupted. Re-run the pacing sim.
+  [Design](ideas.md#mid-game).
+- **Play Games sign-in and cloud save.** Add the Android credentials (app
+  signing key and upload key SHA-1s), turn on Saved games, add testers, put
+  the project id in `strings.xml`, then update the Data safety answers. See
   `docs/play-games.md`.
 - **Play Games achievements** for the existing badges (needs achievement ids
   from Play Console).
-- **Play build without the sideload updater** and its install permission:
-  done in 0.0.16 (`play` and `sideload` build flavors).
-- **Real art** for the five new material icons (Timber Camp, Paper Mill,
-  Glassworks, Filament Forge, Germanium Refinery are placeholders), before
-  store screenshots.
-- Later in this group: notifications (factories full, research done).
+- **Notifications** (factories full, research done).
+- **Starter goals and company name**: name your company at the start
+  (shown in headlines and later on the HQ picture), plus a short goal list
+  (buy 5 Timber Camps, hire a first manager, unlock the next era) with a
+  fixed reward. Also: the last few one-time tips (the first dilemma,
+  offline earnings), a quicker first manager, a first-prestige screen that
+  shows exactly what you keep and gain, an "abandon challenge" button, and
+  a lower game tick rate to save battery. Tutorial part 2 shipped in 0.0.18,
+  including the "row ran out of materials" tip; 0.0.19 adds a red warning
+  on the row itself. Paired with the new tutorial.
+  [Design](ideas.md#first-minutes-and-ui).
+- **Research lab projects, then the rest of the tab tidy-up**, paired with
+  the tutorial. Research became a main tab in the 0.0.19 changes (in Badges'
+  old place; Badges and the Museum moved into More). Once every specialty
+  slot is filled, data has nothing to buy until the next fork, so a main tab
+  sits empty most of the game and dilemma choices that pay data go to waste.
+  Add lab projects that spend spare data on the Research tab: a faster
+  upgrade install, a short income boost, or data traded for era tokens, each
+  at a fixed price shown up front. Then: the Market moves from More to Board,
+  so More keeps settings, help and Badges; Badges gets a switcher (Badges ·
+  Museum); tabs stay hidden until they have something in them (Boost when the
+  first upgrade is affordable, Investors near the first prestige), with
+  "something to do" dots. Six tabs, no seventh. Claude's current version of
+  the tab tidy-up is the one to follow.
+  [Design](ideas.md#tab-layout).
+- **History events, step 1: the early eras.** The event system it needs
+  ships in 0.0.19: each event names the eras it fits, and real one-time
+  events happen once a game (Y2K and the Dot-com Bubble already work this
+  way). Before Vacuum Tubes there are only two events (the patent troll and
+  the intern), so start there. **Historical contracts**: real kinds of
+  customers place a fixed order with a deadline and a set reward, in a set
+  order as eras are reached, never random ("Census office: 200 Punch Cards
+  in 10 minutes", 1890; then wartime code-breaking and ballistics orders for
+  the tube era). Now that materials run out (0.0.19), contracts also give
+  the material chain a reason to be built up. Plus the first era events,
+  each once a game: the first "bug" (1947, a moth in the Harvard Mark II, a
+  dilemma) and Moore's Law (1965, a research upgrade that makes each newer
+  era cheaper). Also put the mega-projects in historical order with goals
+  that match their era (the 1860s Transcontinental Cable currently needs
+  $10B, later than several 1970s-90s projects).
+  [Design](ideas.md#mid-game). [Design](ideas.md#hardware-history-events).
 
-## Next: phase 1, the first minutes and the mid game
+## Next: phase 1, after launch
 
-[Design](ideas.md#first-minutes-and-ui).
+Starts when the game is live on Google Play after all testing. First
+post-launch content. [Design](ideas.md#chip-generations).
 
-1. **Starter goals and company name**: name your company at the start
-   (shown in headlines and later on the HQ picture), plus a short goal list
-   (buy 5 Timber Camps, hire a first manager, unlock the next era) with a
-   fixed reward. Also: the last few one-time tips (the first dilemma,
-   offline earnings), a quicker first
-   manager, a first-prestige screen that shows exactly what you keep and
-   gain, an "abandon challenge" button, and a lower game tick rate to save
-   battery. (Tutorial part 2, the one-time tips, ships in 0.0.18; the
-   "row ran out of materials" tip shipped there too, and 0.0.19 adds a red
-   warning on the row itself.)
-2. **Research lab projects, then the rest of the tab tidy-up.** Research
-   became a main tab in 0.0.19 (in Badges' old place; Badges and the Museum
-   moved into More). Once every specialty slot is filled, data has nothing
-   to buy until the next fork, so a main tab sits empty most of the game
-   and dilemma choices that pay data go to waste. Add lab projects that
-   spend spare data on the Research tab: a faster upgrade install, a short
-   income boost, or data traded for era tokens, each at a fixed price shown
-   up front. Then: the Market moves from More to Board, so More keeps
-   settings, help and Badges; Badges gets a switcher (Badges · Museum);
-   tabs stay hidden until they have something in them (Boost when the
-   first upgrade is affordable, Investors near the first prestige), with
-   "something to do" dots. Six tabs, no seventh. [Design](ideas.md#tab-layout).
-3. **History events, step 1: the early eras.** Moved up from phase 2
-   because the event system it needs shipped in 0.0.19: each event names
-   the eras it fits, and real one-time events happen once a game (Y2K and
-   the Dot-com Bubble already work this way). Before Vacuum Tubes there are
-   only two events (the patent troll and the intern), so start there.
-   **Historical contracts**: real kinds of customers place a fixed order
-   with a deadline and a set reward, in a set order as eras are reached,
-   never random ("Census office: 200 Punch Cards in 10 minutes", 1890;
-   then wartime code-breaking and ballistics orders for the tube era).
-   Now that materials run out (0.0.19), contracts also give the material
-   chain a reason to be built up. Plus the first era events, each once a
-   game: the first "bug" (1947, a moth in the Harvard Mark II, a dilemma)
-   and Moore's Law (1965, a research upgrade that makes each newer era
-   cheaper). Also put the mega-projects in historical order with goals that
-   match their era (the 1860s Transcontinental Cable currently needs $10B,
-   later than several 1970s-90s projects). [Design](ideas.md#mid-game).
-   [Design](ideas.md#hardware-history-events).
-4. **Feedback and settings.** Floating "+$" on payouts, light vibration on
-   buy (can be turned off), hold Buy to preview "+$X per second", number
-   style (letters, names, scientific), reduced motion, high contrast and
-   colorblind-friendly colors. Plus a **stats page** (small): lifetime
-   earnings, prestige count, fastest run to each era, cards collected, play
-   time. And a **prestige guide** (small): the prestige button shows what a
-   prestige would give right now ("+340 investors, income x1.8") and lights
-   up once it would at least double your investors.
-   [Design](ideas.md#mid-game).
-5. **Investor milestones.** Fixed investor counts that unlock things for
-   good, shown on the prestige screen as "Next unlock at 1,000 investors":
-   start runs with Sand Quarries, material-row managers kept through
-   prestige (worth more now that materials run out), auto-buy for upgrades,
-   a longer offline cap (24 h to 36 h to
-   48 h), start runs at a later era. Replaces the separate investor upgrade
-   shop. Gives every prestige in the mid game (first prestige to first
-   fork) something to aim for. Re-run the pacing sim.
-   [Design](ideas.md#mid-game).
-
-## Next: phase 2, history on what's already there
-
-6. **Chip generations and the era arrival screen.** Microprocessors and
+1. **Chip generations and the era arrival screen.** Microprocessors and
    Graphics Cards evolve as they pass owned-count milestones (8-bit to
    multi-core; 2D card to ray tracing): new name, picture and tagline, a
    small bonus, and a Museum history card. No new rows, so no save
    migration. New eras and new generations both get a short arrival card
    with the year, name, one history line and a sound sting.
    [Design](ideas.md#chip-generations).
-7. **Generations on more rows**, using the same system: Home Computers
+
+2. **Generations on more rows**, using the same system: Home Computers
    (8-bit micro 1977, office PC 1981, graphical desktop 1984, laptop late
    1980s) and RGB Battlestations (glass-panel RGB tower mid-2010s, custom
    liquid loop, compact small-form-factor build 2020s). The LAN-party tower
    predates this era's 2015 date, so it belongs to the history events
    instead.
    [Design](ideas.md#more-row-generations).
-8. **History events, step 2, with headlines, pioneers and trivia.** The
+
+3. **History events, step 2, with headlines, pioneers and trivia.** The
    rest of the history events, each tied to its eras and in the order they
    happened: the 1983 video game crash, floppies to CDs (early-mid 1990s),
    LAN parties (late 1990s-2000s), the bad-capacitor years (about
@@ -287,15 +294,18 @@ folded into a neighbouring release.
    with managers staying fictional job titles, and "Which came first?"
    trivia as an occasional dilemma paying a bonus for a right answer.
    [Design](ideas.md#hardware-history-events).
-9. **A look and sound for each era.** Unlockable screen themes (green
+
+## Next: phase 2, history on what's already there
+
+4. **A look and sound for each era.** Unlockable screen themes (green
    phosphor terminal, beige desktop, CRT, neon RGB) and era sounds. Music
    follows the furthest era for now (PC speaker beeps, early FM synth,
    wavetable/MIDI, CD audio, modern mix); the Workbench sound card takes
-   over later (item 18). Separate music and effects volume; sound pauses in
-   the background. Original sounds only; no real logos or startup sounds.
+   over later (item 13). Sound pause and separate volume sliders are in
+   closed testing, not here. Original sounds only; no real logos or startup sounds.
    [Design](ideas.md#sound-and-music).
 
-10. **Fill the gaps in the timeline.** New eras, each with its own icon,
+5. **Fill the gaps in the timeline.** New eras, each with its own icon,
    manager, two history cards and upgrade names, in historical order:
    - After the tubes: mainframes (c. 1951, the first commercial computers),
      before the Germanium Refinery. Punch Cards moved to 1890, so the
@@ -305,13 +315,13 @@ folded into a neighbouring release.
    - Mid-2010s to 2020s: AI accelerators, just before Quantum (c. 2019).
    The Jacquard loom (1804) shipped in 0.0.18.
    The office PC (1981), graphical desktops (1984) and laptops are covered
-   by Home Computers generations (item 7) instead. Saves store rows by era
+   by Home Computers generations (item 2) instead. Saves store rows by era
    id, so new rows can go anywhere. Re-run the pacing sim after.
 
-11. **Focus era and run records.** At the start of a run, pick one era to
-    get x3 for that run (rush the early chain or boost a late era; no
-    chance). The Runs tab keeps your best time to reach each era, with a
-    small token reward for beating it. [Design](ideas.md#mid-game).
+6. **Focus era.** At the start of a run, pick one era to get x3 for that
+    run (rush the early chain or boost a late era; no chance). Best times
+    per era, with a small token reward for beating one, live on the stats
+    page in closed testing. [Design](ideas.md#mid-game).
 
 ## Next: phase 3, the PC workbench
 
@@ -320,7 +330,7 @@ defunct companies and product lines; real dates and specs; parts fit only
 where they fit in real life; no chance-based outcomes; locked parts stay
 "???". Check every date against a source before shipping.
 
-12. **PC workbench.** A Workbench view on the Boost tab with part slots
+7. **PC workbench.** A Workbench view on the Boost tab with part slots
     (processor, graphics, memory, storage, display, cooling, power supply,
     case). A finished build gives an empire-wide bonus that grows with the
     build. The build is drawn as a layered pixel-art PC: each installed part
@@ -330,7 +340,8 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     cases showing the parts. About 45 sprites on one grid to start; placeholder
     shapes until the art exists; the sprite list is in
     `docs/art/pc-build-sprites.md`. [Design](ideas.md#pc-workbench).
-13. **Parts catalog, step 1: the core build.** Workbench parts from parody
+
+8. **Parts catalog, step 1: the core build.** Workbench parts from parody
     makers, real dates and specs, real compatibility (rules above). Slots:
     motherboard, processor, graphics, memory, storage, power supply, cooling
     and case, plus a parts bin and the Bench Score.
@@ -370,12 +381,14 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     - **Parts bin:** every part collected stays available to swap back in;
       parts that don't fit the current board are greyed out with the reason.
     [Design](ideas.md#parts-catalog).
-14. **Monitors.** From green and amber text screens (late 1970s-80s) to
+
+9. **Monitors.** From green and amber text screens (late 1970s-80s) to
     color CRTs (640x480 in 1987), bigger CRTs, flat LCDs (mid-2000s), high
     refresh and OLED, with real resolution steps capping what a strong
     graphics card adds. First after the core build because the screen is the
     oldest part of the picture. [Design](ideas.md#monitors-and-cooling).
-15. **Parts catalog, step 2: expansion slots** (the PC's add-in slots date
+
+10. **Parts catalog, step 2: expansion slots** (the PC's add-in slots date
     from 1981). In the order they appeared: modem cards (1980s to the
     dial-up years of the 1990s), network cards (1980s offices, then the
     LAN-party years), add-in sound cards (essential from the
@@ -386,23 +399,27 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     from 2004, the red maker's external cable in 2005, then ribbon bridges,
     then through the board itself from 2013, under generic names). Number of
     slots comes from the motherboard. [Design](ideas.md#expansion-slots).
-16. **Jumper puzzle** (small, with item 15): from the first PCs (1981) until
+
+11. **Jumper puzzle** (small, with item 10): from the first PCs (1981) until
     plug-and-play (about 1995), set jumpers and DIP switches and sort out
     two cards wanting the same setting. Fixed answers; goes away once plug-and-play arrives.
     [Design](ideas.md#jumper-puzzle).
-17. **Optical drives.** CD-ROM drives reached home PCs in the late 1980s
+
+12. **Optical drives.** CD-ROM drives reached home PCs in the late 1980s
     and early 1990s, then the 1x-to-52x speed race, burners (late 1990s),
     DVD, Blu-ray (late 2000s), then fading out in the 2010s. They share IDE
     cables with hard drives, jumpered as master or slave, so they follow the
     jumper puzzle. [Design](ideas.md#optical-drives).
-18. **Boot screens and hardware sound.** A short start-up screen per era
+
+13. **Boot screens and hardware sound.** A short start-up screen per era
     (memory count-up, beep, parody OS logo) when the Workbench PC powers on.
     The installed sound card now picks the music style, and parts make
     their sounds: floppy grind on save, drive seek clicks, modem handshake,
     CRT thunk and whine, fan hum that rises with overclock, era keyboard
     clacks. After sound cards and optical drives, since the music styles
     need them (CD audio needs a CD drive). [Design](ideas.md#boot-screens).
-19. **Parts catalog, step 3: colors and collecting.** Period color schemes
+
+14. **Parts catalog, step 3: colors and collecting.** Period color schemes
     as cosmetic variants (green boards in the '90s, red or blue gaming
     boards in the 2000s, black in the 2010s, colored memory heat spreaders,
     RGB). They add to the Bench Score's collection points and the Museum,
@@ -410,7 +427,8 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     lighting follows the real order: window panels, cold cathode tubes in
     the early-mid 2000s (one color per tube), single-color LED fans, then
     RGB and finally per-LED RGB. [Design](ideas.md#colors-and-collecting).
-20. **Period build challenges**: "Build a 1996 gaming PC" with only parts
+
+15. **Period build challenges**: "Build a 1996 gaming PC" with only parts
     from that year, for a badge and a Museum card, plus a weekly one that is
     the same for everyone (full reward even when late). Last in this phase
     because it needs the whole catalog. [Design](ideas.md#period-build-challenges).
@@ -419,33 +437,45 @@ where they fit in real life; no chance-based outcomes; locked parts stay
 
 In this order. [Design](ideas.md#long-term).
 
-21. **Garage-to-campus HQ**: a picture of the company that grows with
+16. **Garage-to-campus HQ**: a picture of the company that grows with
     lifetime earnings: garage, office park, campus, space-age HQ.
-22. **Parody rival companies** racing through history at a fixed, visible
+
+17. **Parody rival companies** racing through history at a fixed, visible
     pace; beating one to an era pays a bonus and a Museum card.
-23. **History anniversaries** on the real calendar: a short event with a
+
+18. **History anniversaries** on the real calendar: a short event with a
     fixed cosmetic or Museum card on the day.
-24. **Museum completion**: a timeline wall; finishing an era's set pays.
+
+19. **Museum completion**: a timeline wall; finishing an era's set pays.
     Vintage parts (retired parts become "vintage" after a fixed number of
     game years) go on its shelves. [Design](ideas.md#vintage-parts).
-25. **Desk scene**: keyboards (clicky, then rubber-dome, then the mechanical
+
+20. **Desk scene**: keyboards (clicky, then rubber-dome, then the mechanical
     comeback), mice (ball, then optical around 1999), modems (300 baud to
     56k in 1998, then broadband) and speakers around the PC.
     [Design](ideas.md#desk-scene).
-26. **More research uses for data**: era research (a small permanent
+
+21. **More research uses for data**: era research (a small permanent
     per-era upgrade ladder that keeps soaking up data), archive research
     (reveal one "???" Museum card or generation early, name and year only)
     and forecasting (see the next event or dilemma a few minutes ahead).
     Fixed prices, no chance. [Design](ideas.md#tab-layout).
-27. **Third prestige layer** ("Legacy" or similar) kept through everything:
+
+22. **Third prestige layer** ("Legacy" or similar) kept through everything:
     starting eras, Workbench slots, challenge modes.
-28. **Parts as materials**: later eras use up chips, memory and drives made
+
+23. **Parts as materials**: later eras use up chips, memory and drives made
     by earlier rows, so the supply chain matters again. Biggest balance
     change of the hardware ideas; needs full pacing tests.
     [Design](ideas.md#parts-as-materials).
-29. **Software track**: rows for programming languages, operating systems
+
+24. **Software track**: rows for programming languages, operating systems
     and game eras alongside the hardware, each boosting the other.
-30. **Space Age world**, using the draft in `src/lib/worldSpace.js`.
-31. **Free-build mode** after the last era, with everything collected.
+
+25. **Space Age world**, using the draft in `src/lib/worldSpace.js`.
+
+26. **Free-build mode** after the last era, with everything collected.
+
+Also, whenever the text settles: translations.
 
 Also, whenever the text settles: translations.

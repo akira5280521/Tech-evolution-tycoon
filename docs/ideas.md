@@ -7,7 +7,8 @@ chance-based rewards, and new content stays hidden ("???") until discovered.
 
 ## First minutes and UI
 
-**Roadmap:** items 1-5 (phase 1); the era arrival card ships with item 6.
+**Roadmap:** closed testing (pre-launch) for starter goals, the tab tidy-up
+and feedback. The era arrival card ships with item 1, after launch.
 
 - **Company name:** asked once at the start, editable in More. Length limit
   and a simple word filter; it is only stored on the device. Used in ticker
@@ -34,7 +35,9 @@ chance-based rewards, and new content stays hidden ("???") until discovered.
 
 ## Sound and music
 
-**Roadmap:** item 9, then item 18 once the Workbench has a sound card.
+**Roadmap:** item 4 (a look and sound for each era), then item 13 once the
+Workbench has a sound card. Separate volume sliders and pause-in-background
+are closed-test work, not part of item 4.
 All music and sounds original;
 early styles can be generated in code (Web Audio), so no recordings needed.
 
@@ -56,8 +59,10 @@ early styles can be generated in code (Web Audio), so no recordings needed.
 
 ## Mid game
 
-**Roadmap:** item 3 (prestige guide), item 4 (investor milestones), item 8
-(contracts and mega-project order), item 11 (focus era and run records).
+**Roadmap:** closed testing for the prestige guide, investor milestones and
+early-era contracts (history events, step 1). Later contracts are in item 3.
+Focus era is item 6. Best times per era moved to the stats page in closed
+testing.
 The mid game runs from the first prestige (about 3 hours) to the first
 timeline fork (about 4 days nonstop, 11 days casual). No chance anywhere.
 
@@ -116,13 +121,13 @@ LAN parties (2000s), Orbital Array last. Rewards stay the same.
 
 ### Run records
 
-- The Runs tab keeps the best time to reach each era. Beating a record pays
-  a few tokens (once per era per fork, so it can't be farmed).
-- Shares data with the stats page (item 4).
+- Best time to reach each era moves off the Runs tab onto the stats page in
+  closed testing. Beating a record pays a few tokens (once per era per fork,
+  so it can't be farmed).
 
 ## Chip generations
 
-**Roadmap:** item 6.
+**Roadmap:** item 1.
 
 ### Idea
 
@@ -207,7 +212,8 @@ The same system covers more rows: see [More row generations](#more-row-generatio
 
 ## Tab layout
 
-**Roadmap:** item 2.
+**Roadmap:** closed testing (Research lab projects, then the rest of the tab
+tidy-up), paired with the tutorial.
 
 Each tab answers one question. Research became its own main tab in 0.0.19
 (in Badges' old place) and Badges moved into More, so the table below is
@@ -226,8 +232,8 @@ Market.
 - Add switchers instead of tabs: the six tabs already fill two rows on a
   phone. Boost gets Upgrades · Workbench later; Badges gets Badges ·
   Museum, which also shortens a very long page.
-- **Uses for spare data** (in the Research view; roadmap item 2, with more
-  uses in item 26). Data's only use today is
+- **Uses for spare data** (in the Research view; closed testing, with more
+  uses in item 21). Data's only use today is
   specialties (80 each, one slot plus one per fork, three at most), and it
   keeps arriving from eras, mastery, dilemmas and research samples. Once
   the slots are full it piles up. Add lab projects that spend it, all fixed
@@ -248,7 +254,7 @@ Market.
 
 ## PC workbench
 
-**Roadmap:** item 12.
+**Roadmap:** item 7.
 
 ### Idea
 
@@ -259,8 +265,8 @@ in the game and a long-term goal across runs.
 
 ### Slots and generations
 
-The simple version that ships first (item 12). The [parts catalog](#parts-catalog)
-(item 13 on) replaces these tiers with real parts, adds the Motherboard,
+The simple version that ships first (item 7). The [parts catalog](#parts-catalog)
+(item 8 on) replaces these tiers with real parts, adds the Motherboard,
 Power Supply and Case slots, and replaces the build bonus below with the
 Bench Score. Generic names with real dates (check each against a source
 before shipping):
@@ -324,7 +330,7 @@ before shipping):
 
 ## Parts catalog
 
-**Roadmap:** item 13 (parts catalog step 1: the core build).
+**Roadmap:** item 8 (parts catalog step 1: the core build).
 
 ### Rules
 
@@ -507,7 +513,7 @@ parody in-game if they were tied to a company.
 
 ## Expansion slots
 
-**Roadmap:** item 15 (parts catalog step 2).
+**Roadmap:** item 10 (parts catalog step 2).
 
 - **Modem card:** for the dial-up years (1980s bulletin boards to the
   1990s web). 300 baud up to 56k in 1998; fades with broadband.
@@ -541,7 +547,7 @@ parody in-game if they were tied to a company.
 
 ## Colors and collecting
 
-**Roadmap:** item 19 (parts catalog step 3).
+**Roadmap:** item 14 (parts catalog step 3).
 
 - Period color schemes as cosmetic variants of parts: green circuit boards
   in the '90s, red or blue gaming boards in the 2000s, black in the 2010s,
@@ -567,7 +573,7 @@ parody in-game if they were tied to a company.
 
 ## More row generations
 
-**Roadmap:** item 6.
+**Roadmap:** item 2.
 
 The [chip generations](#chip-generations) system applied to more rows, with
 the same rules (owned-count milestones, small bonus, a history card each):
@@ -584,8 +590,9 @@ without adding rows or a save migration.
 
 ## Hardware history events
 
-**Roadmap:** items 3 (early eras) and 8 (the rest). The event system
-(eras each event fits, one-time events once a game) shipped in 0.0.19.
+**Roadmap:** closed testing (step 1, the early eras) and item 3 (the rest).
+The event system (eras each event fits, one-time events once a game) shipped
+in 0.0.19.
 
 Short timed events in the style of the Dot-com Bubble, each tied to one era
 and shown with a countdown. All effects are fixed and shown up front; no
@@ -605,7 +612,7 @@ closed. Re-run the pacing sim if the multipliers change.
 
 ## Period build challenges
 
-**Roadmap:** item 20.
+**Roadmap:** item 15.
 
 - A challenge names a year and a goal: "Build a 1996 gaming PC", "A 2004
   LAN-party rig", "A 1983 office PC". Only parts released by that year
@@ -617,7 +624,7 @@ closed. Re-run the pacing sim if the multipliers change.
 
 ## Monitors and cooling
 
-**Roadmap:** monitors in item 14, cooling in item 13. From memory, check before shipping.
+**Roadmap:** monitors in item 9, cooling in item 8. From memory, check before shipping.
 
 | Monitor | Around | In game |
 |---|---|---|
@@ -643,7 +650,7 @@ screen is a real bottleneck.
 
 ## Optical drives
 
-**Roadmap:** item 17.
+**Roadmap:** item 12.
 
 - CD-ROM drives in the early 1990s, then the speed race from 1x to about
   52x by the early 2000s; CD burners in the late 1990s; DVD drives in the
@@ -655,7 +662,7 @@ screen is a real bottleneck.
 
 ## Jumper puzzle
 
-**Roadmap:** item 16.
+**Roadmap:** item 11.
 
 - Before plug-and-play (around 1995), cards and drives were set by hand
   with jumpers and DIP switches, and two cards wanting the same setting
@@ -668,7 +675,7 @@ screen is a real bottleneck.
 
 ## Boot screens
 
-**Roadmap:** item 18.
+**Roadmap:** item 13.
 
 - When the Workbench PC powers on: an era start-up screen for a second or
   two. Memory counting up and a beep in the 1980s-90s, a parody OS logo
@@ -678,7 +685,7 @@ screen is a real bottleneck.
 
 ## Desk scene
 
-**Roadmap:** item 25.
+**Roadmap:** item 20.
 
 - A desk around the Workbench PC with keyboard, mouse, modem and speakers.
 - Keyboards: loud clicky early boards, cheap rubber-dome boards in the
@@ -690,7 +697,7 @@ screen is a real bottleneck.
 
 ## Vintage parts
 
-**Roadmap:** item 24 (with Museum completion).
+**Roadmap:** item 19 (with Museum completion).
 
 - A retired part becomes "vintage" a fixed number of game years after its
   period ends. Vintage parts in the bin add collection points and can be put
@@ -699,7 +706,7 @@ screen is a real bottleneck.
 
 ## Parts as materials
 
-**Roadmap:** item 28.
+**Roadmap:** item 23.
 
 ### Idea
 
@@ -721,7 +728,7 @@ matter for the whole game.
 
 ## Long term
 
-**Roadmap:** items 21-31 (phase 4). Same rules: parody names, real dates, no
+**Roadmap:** items 16-26 (phase 4). Same rules: parody names, real dates, no
 chance.
 
 - **HQ picture:** steps unlock at fixed lifetime-earnings marks and survive
@@ -735,8 +742,10 @@ chance.
   (for example the first microprocessor in November 1971, the first PC in
   August 1981, the first web page in 1991). The event lasts a day or two;
   missed rewards come back next year, so nothing is lost for good.
-- **Stats page** (roadmap item 3): lifetime earnings, prestige count, fastest run to each
-  era (as a simple chart), parts and cards collected, play time.
+- **Stats page** (closed testing): lifetime earnings, prestige count, best time
+  to each era (as a simple chart, with a small token reward for beating it;
+  these records move here from the Runs tab), parts and cards collected, play
+  time.
 - **Museum completion:** the Museum becomes a timeline wall with one shelf
   per era; filling a shelf pays tokens and a permanent small bonus.
 - **Third prestige layer:** earned from singularity resets; buys permanent

@@ -32,7 +32,20 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
-## Merged, ships in the next release (0.0.18)
+## Merged, ships in the next release (0.0.19)
+
+- **Fixed: the game earned more while closed than while open.** Testers
+  found closed-app earnings beating open play. When a row was short of a
+  material, the catch-up for time away checked the stockpile once for a
+  whole batch of cycles, so every cycle paid in full if one cycle's worth
+  was there. A short row earned up to 50% more closed than open. Now only
+  the cycles the stockpile covers pay in full, rows that use the same
+  material share it, and a closed app earns the same as an open one
+  (checked on five factories over 15 minutes to 24 hours: within 3%).
+- Coming back to an app left in the background now pays at most 24 hours,
+  the same as a closed app (before, it had no limit).
+
+## In 0.0.18
 
 - **Own 10 of an era to open the next one.** Before, buying one opened the
   next era, and the pacing sim showed players reaching Microprocessors in

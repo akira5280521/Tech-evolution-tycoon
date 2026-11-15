@@ -617,7 +617,8 @@ export function shortMaterial(state) {
     const cfg = BUSINESSES[i];
     if (!cfg.uses || !(biz[i]?.owned > 0)) continue;
     for (const [key, need] of Object.entries(cfg.uses)) {
-      if ((supply[key] || 0) >= need) continue;
+      // Every copy needs its own share each cycle.
+      if ((supply[key] || 0) >= need * biz[i].owned) continue;
       const p = BUSINESSES.findIndex((c) => c.makes && c.makes[key]);
       if (p >= 0) return { user: i, maker: p, key };
     }
@@ -646,7 +647,7 @@ export function nextMove(state) {
   const now = Date.now();
   const commissioning = (st) => (st?.commissionUntil || 0) > now;
 
-  // A dry row pays much less: point at the cheapest way to feed it.
+  // A dry row pays nothing: point at the cheapest way to feed it.
   const short = shortMaterial(state);
   if (short) {
     const maker = BUSINESSES[short.maker];

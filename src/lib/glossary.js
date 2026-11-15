@@ -5,7 +5,7 @@
 export const GLOSSARY = {
   materials: {
     term: "MATERIALS",
-    text: "Some machines use what an earlier one makes: the Paper Mill turns wood into card stock, glass works need sand, and so on. Each one makes 1 per cycle until you buy its x3 upgrade, which makes it 3. The strip at the top shows what you have. If a material runs out, the machine that needs it pays much less until more is made.",
+    text: "Some machines use what an earlier one makes: the Paper Mill turns wood into card stock, glass works need sand, and so on. Each one makes 1 per cycle until you buy its x3 upgrade, which makes it 3. The strip at the top shows what you have. If a material runs out, the machine that needs it stops paying until more is made.",
   },
   manager: {
     term: "MANAGER",
@@ -53,7 +53,7 @@ export const GLOSSARY = {
   },
   research: {
     term: "RESEARCH DATA",
-    text: "Every era you own makes a little data each second, and mastered eras make more. Data is never lost, even when you prestige. Spend it in MORE > RESEARCH.",
+    text: "Every era you own makes a little data each second, and mastered eras make more. Data is never lost, even when you prestige. Spend it on the RESEARCH tab.",
   },
   specialty: {
     term: "COMPANY SPECIALTY",

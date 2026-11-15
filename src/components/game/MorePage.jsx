@@ -8,6 +8,7 @@ import { readPrefs, writePrefs } from "@/lib/gamePrefs";
 import { setSoundEnabled } from "@/lib/sfx";
 import { useGameState } from "./GameState";
 import AnalyticsPanel from "./AnalyticsPanel";
+import BadgesPage from "./BadgesPage";
 import AppVersionFooter from "./AppVersion";
 import DailyBriefing from "./DailyBriefing";
 import NextMove from "./NextMove";
@@ -23,7 +24,7 @@ const TABS = [
   { id: "howto", label: "HOW TO PLAY" },
   { id: "settings", label: "SETTINGS" },
   { id: "stats", label: "STATS" },
-  { id: "research", label: "RESEARCH" },
+  { id: "badges", label: "BADGES" },
   { id: "market", label: "MARKET" },
 ];
 
@@ -57,13 +58,7 @@ export default function MorePage() {
   const navigate = useNavigate();
   const data = getSaveData();
 
-  if (tab === "research") {
-    return (
-      <ScreenShell title={"RESEARCH\nLAB"} subtitle="">
-        <ResearchBody state={state} onCommit={chooseSpecialty} />
-      </ScreenShell>
-    );
-  }
+  if (tab === "badges") return <BadgesPage top={<MoreLinks active="badges" />} />;
 
   return (
     <ScreenShell title={"GAME\nSETTINGS"} subtitle="">
@@ -149,7 +144,7 @@ function OrientationSetting({ value, onChange }) {
   return (
     <Panel>
       <h2 className="font-pixel text-[0.6rem]">ORIENTATION</h2>
-      <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">Auto follows the device. Portrait and landscape hold the screen still.</p>
+      <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">Auto follows your phone, including its auto-rotate switch. Portrait and landscape keep the game that way.</p>
       <div className="mt-3 grid grid-cols-3 gap-2">
         {modes.map(([id, label]) => (
           <button
@@ -183,7 +178,7 @@ const HOW_TO = [
     title: "MATERIALS",
     lines: [
       "Some machines use what an earlier one makes: wood for paper, paper for the Jacquard loom and punch cards, sand for glass, glass, copper and filament for vacuum tubes, germanium for the first transistors, and silicon wafers for chips.",
-      "The strip at the top shows what you have. If a material runs out, the machine that needs it pays much less until more is made, so keep the earlier rows growing too.",
+      "The strip at the top shows what you have. If a material runs out, the machine that needs it stops paying until more is made, so keep the earlier rows growing too.",
     ],
   },
   {
@@ -223,7 +218,7 @@ const HOW_TO = [
     title: "WHAT YOU KEEP FOREVER",
     lines: [
       "Investors, research data and your research picks, era tokens, badges, Museum cards, and the rewards from challenges and mega-projects all stay when you prestige.",
-      "Research: every era you own makes a little research data. Spend it in MORE > RESEARCH on a bonus you keep.",
+      "Research: every era you own makes a little research data. Spend it on the RESEARCH tab on a bonus you keep.",
       "Era tokens come from new eras, milestones, projects and the free Daily Crate. Spend them in the shop on the BOARD tab.",
     ],
   },
@@ -307,6 +302,16 @@ function Stats({ state }) {
         );
       })}
     </Panel>
+  );
+}
+
+// The Research Lab, on its own tab in the main navigation.
+export function ResearchPage() {
+  const { state, chooseSpecialty } = useGameState();
+  return (
+    <ScreenShell title={"RESEARCH\nLAB"} subtitle="">
+      <ResearchBody state={state} onCommit={chooseSpecialty} />
+    </ScreenShell>
   );
 }
 

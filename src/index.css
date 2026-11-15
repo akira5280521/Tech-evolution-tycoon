@@ -325,6 +325,28 @@ img[src*="/icons/"] {
   image-rendering: crisp-edges;
 }
 
+/* An opaque strip behind the status bar, so page text never scrolls under
+   the clock and battery icons (most visible in the landscape list column,
+   which has no sticky header of its own). */
+.status-scrim {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  height: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  background: var(--game-bg);
+  pointer-events: none;
+}
+
+/* Tab labels stay on one line; a long one is cut with … instead of wrapping
+   letter by letter. */
+[data-tab-label] {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .safe-x {
   padding-left: max(0.75rem, var(--safe-area-inset-left, env(safe-area-inset-left, 0px)));
   padding-right: max(0.75rem, var(--safe-area-inset-right, env(safe-area-inset-right, 0px)));
@@ -379,12 +401,17 @@ img[src*="/icons/"] {
     right: auto;
     bottom: 0;
     left: 0;
-    width: 5.75rem;
+    /* The cutout padding is added to the bar, not taken out of it, so the
+       icons and labels always get the full 5.75rem. */
+    width: calc(5.75rem + var(--safe-area-inset-left, env(safe-area-inset-left, 0px)));
     height: auto;
     border-top-width: 0;
     border-right: 2px solid var(--game-border);
     padding-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
     padding-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+    /* The bar is on the left, so the right-hand navigation bar's inset
+       doesn't belong here (it was squeezing the tabs). */
+    padding-right: 0;
   }
 
   .safe-nav .tab-bar {

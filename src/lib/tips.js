@@ -25,7 +25,7 @@ function forkReady(s) {
   return (s.investors || 0) >= forkCost(pts) && singularityMult(pts + 1) > singularityMult(pts);
 }
 
-// page: "game", "boost", "board", "runs", "badges" or "more#<section>".
+// page: "game", "boost", "board", "runs", "research" or "more#<section>".
 // target: optional CSS selector to outline while the tip is up.
 // when: checked against the live game state; omitted means "on first visit".
 export const TIPS = [
@@ -58,7 +58,7 @@ export const TIPS = [
     id: "running-low",
     page: "game",
     title: "RUNNING LOW",
-    text: "A machine has run out of a material, so it pays much less. Buy more of the row that makes it, hire that row's manager, or buy its x3 upgrade on the BOOST tab to make 3 times as much.",
+    text: "A machine has run out of a material, so it has stopped paying. Buy more of the row that makes it, hire that row's manager, or buy its x3 upgrade on the BOOST tab to make 3 times as much.",
     target: "[data-supply]",
     when: (s) => !!shortMaterial(s) && (s.lifetime || 0) > 0,
   },
@@ -106,8 +106,8 @@ export const TIPS = [
     id: "research",
     page: "game",
     title: "RESEARCH DATA",
-    text: "Every era you own makes research data, slowly. Data is never lost, even when you prestige. Spend it in MORE > RESEARCH on a bonus you keep forever.",
-    target: '[data-tab="more"]',
+    text: "Every era you own makes research data, slowly. Data is never lost, even when you prestige. Spend it on the RESEARCH tab on a bonus you keep forever.",
+    target: '[data-tab="research"]',
     when: (s) => (s.data || 0) >= 1 && dataPerSecond(s) > 0,
   },
   {
@@ -148,13 +148,13 @@ export const TIPS = [
   },
   {
     id: "page-research",
-    page: "more#research",
+    page: "research",
     title: "THE RESEARCH LAB",
     text: "Spend research data on one company bonus. It's permanent, but you only get one slot at first, so pick the one you like. Forking the timeline opens another slot.",
   },
   {
     id: "page-badges",
-    page: "badges",
+    page: "more#badges",
     title: "BADGES & MUSEUM",
     text: "Badges are goals to aim for. The Museum fills with real history cards as you reach each era.",
   },

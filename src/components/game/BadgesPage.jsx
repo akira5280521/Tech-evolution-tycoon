@@ -3,13 +3,15 @@ import { useGameState } from "./GameState";
 import ScreenShell from "./chrome";
 import MuseumSection from "./MuseumSection";
 
-export default function BadgesPage() {
+// `top` lets the More menu put its section buttons above the collection.
+export default function BadgesPage({ top = null }) {
   const { state } = useGameState();
   const badges = badgeList(state);
   const earned = badges.filter((badge) => badge.earned).length;
   const groups = [...new Set(badges.map((badge) => badge.group))];
   return (
     <ScreenShell title={"BADGE\nCOLLECTION"} subtitle="">
+      {top}
       <p className="font-pixel text-sm text-[var(--game-accent)]">{earned} / {badges.length} COLLECTED</p>
       <p className="font-term text-lg leading-6 text-[var(--game-muted)]">
         Earn badges by unlocking new tech eras, stacking massive lifetime profit, mastering eras, and collapsing the timeline.

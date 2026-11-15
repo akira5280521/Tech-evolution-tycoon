@@ -54,7 +54,6 @@ import { playBuy, playCollect } from "@/lib/sfx";
 const SAVE_INTERVAL_MS = 5000;
 // 24 hours / 720 = 2 minute slices at the cap; shorter absences slice finer.
 const OFFLINE_SLICES = 720;
-const OFFLINE_ROUNDS = 16;
 
 function freshBiz(mode) {
   return BUSINESSES.map((cfg, i) => ({
@@ -126,6 +125,7 @@ function applySavedMeta(state, raw) {
   state.badgesEarned = Array.isArray(m.badgesEarned) ? m.badgesEarned.filter((id) => typeof id === "string") : [];
   state.museum = Array.isArray(m.museum) ? m.museum.filter((id) => HISTORY_CARDS.some((c) => c.id === id)) : [];
   state.bubble = cleanBubble(m.bubble);
+  state.eventsDone = Array.isArray(m.eventsDone) ? [...new Set(m.eventsDone.filter((id) => typeof id === "string"))] : [];
   state.nextBubbleAt = num(m.nextBubbleAt);
   state.modStamp = 1;
   const orient = raw?.orientation;
@@ -173,6 +173,7 @@ function pack(s) {
     prestiged: !!s.prestiged,
     badgesEarned: s.badgesEarned || [],
     museum: s.museum || [],
+    eventsDone: s.eventsDone || [],
     bubble: s.bubble || null,
     nextBubbleAt: s.nextBubbleAt || 0,
     supply: s.supply,
@@ -270,15 +271,12 @@ function loadSave() {
           st.progress = Math.max(0, st.progress - cycles * cycle);
           return cycles;
         });
-        // Pay the slice in small rounds, the way laps arrive while the app is
-        // open: a material is made before it's used, and rows that use the
-        // same material share it instead of the first row taking it all.
-        for (let r = 0; r < OFFLINE_ROUNDS; r++) {
-          const part = due.map((cycles) => (cycles > 0 ? Math.floor((cycles * (r + 1)) / OFFLINE_ROUNDS) - Math.floor((cycles * r) / OFFLINE_ROUNDS) : 0));
-          creditBatch(state, part, mid).forEach((amount, i) => {
-            gains[i] += amount;
-          });
-        }
+        // Pay the slice the way laps arrive while the app is open: materials
+        // are made before they're used, and rows that use the same material
+        // share it instead of the first row in line taking the whole bin.
+        creditBatch(state, due, mid).forEach((amount, i) => {
+          gains[i] += amount;
+        });
       }
       gains.forEach((amount, i) => {
         if (amount > 0) {
@@ -316,8 +314,8 @@ function announce(notes) {
     if (note.type === "projectstart") toast("Project started", { description: "Crews are on site. Give them a moment." });
     if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
     if (note.type === "history") {
-      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum on the Badges tab." });
-      else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum on the Badges tab." });
+      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum in MORE > BADGES." });
+      else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum in MORE > BADGES." });
     }
     if (note.type === "bubble") toast("DOT-COM BUBBLE!", { description: "Your web stock is soaring. The banner counts down to the pop." });
     if (note.type === "bubblepop") toast("The bubble popped", { description: "The web stock is worth nothing now. Sell sooner next time." });

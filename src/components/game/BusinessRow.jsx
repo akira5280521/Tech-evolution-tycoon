@@ -51,7 +51,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
   const canHire = !commissioning && !st.manager && !hireLocked && cash >= cfg.managerCost;
 
   return (
-    <div className={`era-row grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
+    <div data-row={cfg.id} className={`era-row grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
       <IconTile cfg={cfg} st={st} onRun={() => onRun(index)} />
 
       <div className="min-w-0 space-y-2">

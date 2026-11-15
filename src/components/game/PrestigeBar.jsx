@@ -48,7 +48,7 @@ export default function PrestigeBar({ state, onPrestige }) {
           </button>
           {details && (
             <p className="font-term text-sm leading-4 text-[var(--game-dim)]">
-              A prestige resets your cash, machines, managers and upgrades. Investors, research, tokens and badges stay. The first 100 investors add +5% each, the next 400 add +1% each, and every one after that adds +0.07%. All bonuses together approach an income limit that rises when you fork the timeline.
+              A prestige resets your cash, businesses, managers and upgrades. Investors, research, tokens and badges stay. The first 100 investors add +5% each, the next 400 add +1% each, and every one after that adds +0.07%. All bonuses together approach an income limit that rises when you fork the timeline.
             </p>
           )}
         </div>

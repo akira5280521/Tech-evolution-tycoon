@@ -541,7 +541,8 @@ export function incomePerSecond(state, now = 0) {
   return sum;
 }
 
-export function creditCycles(state, index, cycles, now = 0) {
+// rate: share of the normal pay (OFFLINE_RATE for time away).
+export function creditCycles(state, index, cycles, now = 0, rate = 1) {
   if (cycles <= 0) return 0;
   const cfg = BUSINESSES[index];
   const st = state.biz?.[index];
@@ -549,8 +550,94 @@ export function creditCycles(state, index, cycles, now = 0) {
   const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
   const factor = supplyFactor(state, cfg, cycles);
   moveSupply(state, cfg, cycles, st.owned);
-  const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor;
+  const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor * rate;
   return creditAmount(state, amount, now);
+}
+
+// Pay several rows' cycles at once (an offline slice) the way they'd be paid
+// one lap at a time. Rows run in order, so a material is made before the rows
+// that use it; rows that use the same material split what's in the bin in
+// proportion to what each needs, instead of the first row taking it all.
+// Returns each row's earnings.
+export function creditBatch(state, due, now, rate = 1) {
+  const gains = new Array(due.length).fill(0);
+  // Note: ensureSupply replaces state.supply, so always read it fresh.
+  const bin = () => ensureSupply(state);
+  const demand = {};
+  BUSINESSES.forEach((cfg, i) => {
+    if (!(due[i] > 0) || !cfg.uses) return;
+    const owned = state.biz?.[i]?.owned || 0;
+    for (const [key, need] of Object.entries(cfg.uses)) demand[key] = (demand[key] || 0) + (Number(need) || 0) * due[i] * owned;
+  });
+  const left = {};
+  BUSINESSES.forEach((cfg, i) => {
+    const cycles = due[i];
+    if (!(cycles > 0)) return;
+    if (!cfg.uses) {
+      gains[i] = creditCycles(state, i, cycles, now, rate);
+      return;
+    }
+    // Every maker of a material comes before the rows that use it, so the bin
+    // holds this slice's output by the time the first user is paid. Each user
+    // gets the bin times its part of what the users still to be paid need.
+    const owned = state.biz?.[i]?.owned || 0;
+    const held = {};
+    const supply = bin();
+    for (const [key, need] of Object.entries(cfg.uses)) {
+      if (!(key in left)) left[key] = demand[key] || 0;
+      const want = (Number(need) || 0) * cycles * owned;
+      const have = supply[key] || 0;
+      const share = left[key] > 0 ? Math.min(have, (have * want) / left[key]) : 0;
+      held[key] = have - share;
+      supply[key] = share;
+      left[key] -= want;
+    }
+    gains[i] = creditCycles(state, i, cycles, now, rate);
+    // Put back what this row wasn't given, plus anything it didn't use.
+    const after = bin();
+    for (const key of Object.keys(held)) after[key] = held[key] + (after[key] || 0);
+  });
+  return gains;
+}
+
+// Pay for time away (app closed or in the background): managed rows run
+// through it in slices so materials drain as they're used, a boost only
+// covers the slices it overlapped, and timed work finishes at the right
+// moment. Pays `rate` of the normal amount. Returns the total and per-row
+// earnings for the welcome-back report.
+const AWAY_SLICES = 720;
+export function replayAway(state, elapsed, end, rate = 1) {
+  const gains = new Array(BUSINESSES.length).fill(0);
+  if (!(elapsed > 0)) return { gain: 0, rows: [] };
+  const start = end - elapsed;
+  const step = elapsed / AWAY_SLICES;
+  for (let k = 0; k < AWAY_SLICES; k++) {
+    const mid = start + step * (k + 0.5);
+    finishTimedWork(state, mid);
+    const due = state.biz.map((st, i) => {
+      if (!st.manager || st.owned <= 0) return 0;
+      const cycle = effectiveCycleMs(BUSINESSES[i], state);
+      if (!(cycle > 0)) return 0;
+      st.activeMs = (st.activeMs || 0) + step;
+      st.progress = (st.progress || 0) + step;
+      const cycles = Math.floor(st.progress / cycle);
+      if (cycles <= 0) return 0;
+      st.progress = Math.max(0, st.progress - cycles * cycle);
+      return cycles;
+    });
+    creditBatch(state, due, mid, rate).forEach((amount, i) => {
+      gains[i] += amount;
+    });
+  }
+  const rows = [];
+  let gain = 0;
+  gains.forEach((amount, i) => {
+    if (amount > 0) {
+      gain += amount;
+      rows.push({ name: BUSINESSES[i].name, amount });
+    }
+  });
+  return { gain, rows };
 }
 
 export function creditAmount(state, amount, now = 0) {

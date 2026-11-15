@@ -7,7 +7,7 @@ import { HelpTip } from "./HintSheet";
 export default function BoostPage() {
   const { state, purchaseUpgrade } = useGameState();
   return (
-    <ScreenShell title="UPGRADES" subtitle="Make machines pay more or run faster. Bought again after each prestige.">
+    <ScreenShell title="UPGRADES" subtitle="Make businesses pay more or run faster. Bought again after each prestige.">
       {BUSINESSES.map((cfg, index) => {
         const owned = state.biz[index]?.owned || 0;
         if (!eraOpen(state, index)) return null;

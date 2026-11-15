@@ -36,7 +36,7 @@ export default function BoardPage() {
           ))}
         </dl>
         <p className="mt-3 font-term text-lg leading-6">
-          All together, every machine earns <span className="text-[var(--game-success)]">X{factors.total.toFixed(2)}</span>.
+          All together, every business earns <span className="text-[var(--game-success)]">X{factors.total.toFixed(2)}</span>.
         </p>
         <p className="mt-1 flex items-center gap-2 font-term text-base leading-5 text-[var(--game-muted)]">
           <span>Income limit: X{factors.ceiling.toFixed(0)}. Forking raises it.</span> <HelpTip term="ceiling" />

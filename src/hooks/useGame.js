@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { applyBriefing } from "@/lib/briefing";
 import {
+  AWAY_GRACE_MS,
   AWAY_MODAL_MS,
   BUSINESSES,
   COMMISSION_MS,
   FOREMAN_COST,
   MAX_BUY,
   OFFLINE_CAP_MS,
+  OFFLINE_RATE,
   buyCount,
   cappedTick,
   costOf,
@@ -26,6 +28,7 @@ import {
   buyUpgrade,
   canBuyIndex,
   canHireIndex,
+  replayAway,
   creditCycles,
   dataPerSecond,
   effectiveCycleMs,
@@ -52,7 +55,6 @@ import { playBuy, playCollect } from "@/lib/sfx";
 
 const SAVE_INTERVAL_MS = 5000;
 // 24 hours / 720 = 2 minute slices at the cap; shorter absences slice finer.
-const OFFLINE_SLICES = 720;
 
 function freshBiz(mode) {
   return BUSINESSES.map((cfg, i) => ({
@@ -151,7 +153,6 @@ function pack(s) {
     cash: Number.isFinite(s.cash) && s.cash >= 0 ? s.cash : 0,
     lifetime: Number.isFinite(s.lifetime) && s.lifetime >= 0 ? s.lifetime : 0,
     investors: Number.isFinite(s.investors) && s.investors >= 0 ? Math.floor(s.investors) : 0,
-    lastSeen: Date.now(),
     briefingDay: s.briefingDay,
     streak: s.streak || 1,
     careerEarnings: s.careerEarnings || 0,
@@ -180,6 +181,9 @@ function pack(s) {
     sawPit: !!s.sawPit,
     tutorial: s.tutorial || null,
     orientation: s.orientation || "auto",
+    // While the app is in the background nothing is paid live, so a reload
+    // must replay from the moment it was hidden.
+    lastSeen: s.hiddenAt || Date.now(),
     researchJob: s.researchJob || null,
     upgradeJob: s.upgradeJob || null,
     projectJob: s.projectJob || null,
@@ -243,40 +247,12 @@ function loadSave() {
     collectBadges(state);
     const elapsed = Math.min(Math.max(Date.now() - (data.lastSeen || Date.now()), 0), OFFLINE_CAP_MS);
     let offlineGain = 0;
-    const rows = [];
-    const now = Date.now();
+    let rows = [];
     if (elapsed > 0) {
       state.data = (state.data || 0) + dataPerSecond(state) * (elapsed / 1000);
-      // Replay the absence in slices so supply drains as it is used, the boost
-      // only covers the slices it overlapped, and timed challenges see the
-      // real moment each payout happened.
-      const start = now - elapsed;
-      const step = elapsed / OFFLINE_SLICES;
-      const gains = new Array(BUSINESSES.length).fill(0);
-      for (let k = 0; k < OFFLINE_SLICES; k++) {
-        const mid = start + step * (k + 0.5);
-        // Resolve an upgrade or project at the moment it finished, so the
-        // rest of the absence pays at the new rate. The whole loop is still
-        // bounded by the 24 hour cap applied above.
-        finishTimedWork(state, mid);
-        state.biz.forEach((st, i) => {
-          if (!st.manager || st.owned <= 0) return;
-          const cycle = effectiveCycleMs(BUSINESSES[i], state);
-          if (!(cycle > 0)) return;
-          st.activeMs += step;
-          st.progress += step;
-          const cycles = Math.floor(st.progress / cycle);
-          if (cycles <= 0) return;
-          st.progress = Math.max(0, st.progress - cycles * cycle);
-          gains[i] += creditCycles(state, i, cycles, mid);
-        });
-      }
-      gains.forEach((amount, i) => {
-        if (amount > 0) {
-          offlineGain += amount;
-          rows.push({ name: BUSINESSES[i].name, amount });
-        }
-      });
+      // Managers earn at OFFLINE_RATE while the app is closed.
+      const rate = elapsed < AWAY_GRACE_MS ? 1 : OFFLINE_RATE;
+      ({ gain: offlineGain, rows } = replayAway(state, elapsed, Date.now(), rate));
     }
     if (offlineGain > 0 && elapsed >= AWAY_MODAL_MS) {
       state.offlineReport = { amount: offlineGain, awayMs: elapsed, rows };
@@ -349,6 +325,7 @@ export function useGame() {
     // A late timer still pays the laps that already finished, and only once.
     const settleIndex = (i, dt) => {
       const s = stateRef.current;
+      if (s.hiddenAt) return false;
       const st = s.biz[i];
       if (!st || st.owned <= 0) return false;
       const wall = Date.now();
@@ -429,8 +406,44 @@ export function useGame() {
       dueTimers.set(i, { key, id });
     };
 
+    // In the background the game stops paying live. Coming back pays the
+    // time away like a closed app: at OFFLINE_RATE (full for a quick look),
+    // up to the 24 hour cap, with the welcome-back report for long absences.
+    const onVisibility = () => {
+      const s = stateRef.current;
+      if (isPageHidden()) {
+        if (!s.hiddenAt) s.hiddenAt = Date.now();
+        return;
+      }
+      if (!s.hiddenAt) return;
+      const now = Date.now();
+      const away = Math.min(Math.max(0, now - s.hiddenAt), OFFLINE_CAP_MS);
+      s.hiddenAt = 0;
+      // Start every row's clock from where the replay leaves it.
+      s.biz = s.biz.map((st) => {
+        if (!st.manager || !st.cycleStart) return st;
+        const cycle = st.cycleAt || effectiveCycleMs(BUSINESSES[s.biz.indexOf(st)], s);
+        const into = cycle > 0 ? Math.max(0, now - away - st.cycleStart) % cycle : 0;
+        return { ...st, progress: into, cycleStart: 0, paidLaps: 0 };
+      });
+      if (away > 0) {
+        s.data = (s.data || 0) + dataPerSecond(s) * (away / 1000);
+        const { gain, rows } = replayAway(s, away, now, away < AWAY_GRACE_MS ? 1 : OFFLINE_RATE);
+        if (gain > 0 && away >= AWAY_MODAL_MS) s.offlineReport = { amount: gain, awayMs: away, rows };
+      }
+      lastWall = now;
+      awayBudget = OFFLINE_CAP_MS;
+      bump();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    if (isPageHidden()) onVisibility();
+
     const iv = setInterval(() => {
       const wall = Date.now();
+      if (stateRef.current.hiddenAt) {
+        lastWall = wall;
+        return;
+      }
       collectBadges(stateRef.current);
       const raw = Math.max(0, wall - lastWall);
       lastWall = wall;
@@ -462,6 +475,7 @@ export function useGame() {
       if (dirty) bump();
     }, 100);
     return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
       clearInterval(iv);
       dueTimers.forEach((entry) => clearTimeout(entry.id));
       dueTimers.clear();

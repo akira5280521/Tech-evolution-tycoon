@@ -136,7 +136,11 @@ export default function GameScreen() {
               Challenge running: {state.challenge.id} · {money(state.challenge.earnings)} / {money(activeChallengeGoal(state))} this run.
             </p>
           )}
-          <PrestigeBar state={state} onPrestige={prestige} />
+          {/* Prestige only matters much later; a brand-new player sees it once
+              the run has earned $1B (a thousandth of the first investor). */}
+          {((state.investors || 0) > 0 || state.prestiged || (state.lifetime || 0) >= 1e9) && (
+            <PrestigeBar state={state} onPrestige={prestige} />
+          )}
 
           {BUSINESSES.map((cfg, i) => {
             if (blockedByGlass(state, i)) return null;
@@ -169,7 +173,7 @@ export default function GameScreen() {
 
       <footer className="safe-x mx-auto max-w-4xl px-3 pb-4 pt-2 font-term text-base leading-5 text-[var(--game-dim)]">
         <p className="border-t-2 border-[var(--game-border)] pt-3">
-          Progress saves on this device. Close the app and a hired crew keeps earning for up to 24 hours.
+          Progress saves on this device. Close the app and managers keep earning at half speed for up to 24 hours.
         </p>
       </footer>
       <BottomTabs />

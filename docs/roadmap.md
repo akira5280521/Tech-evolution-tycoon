@@ -34,9 +34,8 @@ test shipped in 0.0.13 (see Done).
 
 ## Ships in 0.0.19
 
-PRs #48-#50 are on main. The version is still 0.0.18 (versionCode 18), so
-bump versionName to 0.0.19 and versionCode to 19 before a build. The closed
-test is still the 0.0.18 Play bundle.
+PRs #48-#50 and #47 are on main, version 0.0.19 (versionCode 19). The
+closed test is still the 0.0.18 Play bundle.
 
 - **Landscape fixes from two testers' phones:** the side tab bar no longer
   loses its width to the camera cutout (labels were wrapping one letter per
@@ -58,6 +57,29 @@ test is still the 0.0.18 Play bundle.
   prestige and forks: the Dot-com Bubble and Y2K, both only during Home
   Computers to Graphics Cards. The bubble now arrives 5-15 minutes into that
   stretch instead of every 40-80 minutes, so it isn't missed.
+- **A tutorial for people who've never played an idle game.** A tester
+  said it assumed you'd played one: what is a machine, why tap it, what's
+  the goal, what order do things come in? It now opens with the goal
+  (grow through the real history of computing, 19 eras, then prestige),
+  points at the new ERA counter at the top (for example ERA 3/19), the
+  cash panel and a whole business row (picture, bar, owned count, BUY,
+  Hire) before asking for the first tap, and ends with what comes next.
+  The game says "business" everywhere instead of "machine", How to Play
+  starts with The Goal, and the Investors panel stays out of the way until
+  the run has earned $1B.
+- **The game follows the phone's auto-rotate switch.** With auto-rotate
+  off, it no longer turns on its own (it used the sensor and ignored the
+  switch). The Portrait and Landscape settings still hold it.
+- **Closed earns half of open.** Testers earned more with the app closed
+  than open. Now managers earn at half speed while the app is closed or in
+  the background (a look at another app under 30 seconds still counts as
+  playing), for up to 24 hours, so keeping the game open pays about twice
+  as well. Time away is paid fairly: makers first, and businesses that use
+  the same material split it (before, the first one in line took the whole
+  bin). In the background the game stops paying live and pays the time
+  away when you come back, with the welcome-back report. Checked on five
+  factories over 15 minutes to 24 hours (49-50% of open) and in the app
+  (51%).
 
 ## In 0.0.18
 

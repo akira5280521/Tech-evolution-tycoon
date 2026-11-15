@@ -34,8 +34,8 @@ test shipped in 0.0.13 (see Done).
 
 ## Ships in 0.0.19
 
-PRs #48-#50 and #47 are on main, version 0.0.19 (versionCode 19). The
-closed test is still the 0.0.18 Play bundle.
+PRs #48-#50 shipped in the uploaded 0.0.19 Play bundle (versionCode 19).
+This release is 0.0.20 (versionCode 20) and adds PR #47.
 
 - **Landscape fixes from two testers' phones:** the side tab bar no longer
   loses its width to the camera cutout (labels were wrapping one letter per

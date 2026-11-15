@@ -165,28 +165,36 @@ function OrientationSetting({ value, onChange }) {
 
 const HOW_TO = [
   {
+    id: "goal",
+    title: "THE GOAL",
+    lines: [
+      "You run a company that grows through the real history of computing, one invention at a time, from an 1800s timber camp to quantum computers. ERA at the top shows how many of the 19 you've unlocked.",
+      "Make money, use it to grow, and unlock the next era. Reach the last one, then prestige to start over stronger and go further.",
+    ],
+  },
+  {
     id: "basics",
     title: "THE BASICS",
     lines: [
-      "Tap a machine's picture to start it. The bar fills up, then it pays you.",
-      "Spend the money on more machines. Every one you own adds to each payout, and the price goes up a little each time.",
-      "Own 10 of a machine to open the next one in history. Each new era pays much more than the last.",
+      "Each row on the GAME tab is one of your businesses. Tap a business's picture to start it. The bar fills up, then it pays you.",
+      "Spend the money on more businesses. Every one you own adds to each payout, and the price goes up a little each time.",
+      "Own 10 of a business to open the next one in history. Each new era pays much more than the last.",
     ],
   },
   {
     id: "materials",
     title: "MATERIALS",
     lines: [
-      "Some machines use what an earlier one makes: wood for paper, paper for the Jacquard loom and punch cards, sand for glass, glass, copper and filament for vacuum tubes, germanium for the first transistors, and silicon wafers for chips.",
-      "The strip at the top shows what you have. If a material runs out, the machine that needs it stops paying until more is made, so keep the earlier rows growing too.",
+      "Some businesses use what an earlier one makes: wood for paper, paper for the Jacquard loom and punch cards, sand for glass, glass, copper and filament for vacuum tubes, germanium for the first transistors, and silicon wafers for chips.",
+      "The strip at the top shows what you have. If a material runs out, the business that needs it stops paying until more is made, so keep the earlier rows growing too.",
     ],
   },
   {
     id: "managers",
     title: "MANAGERS AND THE FOREMAN",
     lines: [
-      "Once you own enough of a machine (the Hire button shows how many), hire its manager. A manager keeps that machine running by itself, even while the app is closed, for up to 24 hours.",
-      "The Foreman is a one-time hire that adds a RUN ALL button, which starts every machine that doesn't have a manager yet.",
+      "Once you own enough of a business (the Hire button shows how many), hire its manager. A manager keeps that business running by itself, even while the app is closed, for up to 24 hours.",
+      "The Foreman is a one-time hire that adds a RUN ALL button, which starts every business that doesn't have a manager yet.",
     ],
   },
   {
@@ -194,22 +202,22 @@ const HOW_TO = [
     title: "BUYING FASTER",
     lines: [
       "The buttons at the top pick how many you buy per tap: X1, X10, X100, NEXT (just enough to reach the next goal) or MAX (as many as you can afford).",
-      "Owning 25, 50 and 100 of one machine makes it run twice as fast each time. Bigger counts after that make it pay more.",
+      "Owning 25, 50 and 100 of one business makes it run twice as fast each time. Bigger counts after that make it pay more.",
     ],
   },
   {
     id: "upgrades",
     title: "UPGRADES",
     lines: [
-      "On the BOOST tab each machine has two upgrades: one makes it pay 3 times as much (and on a material row, make 3 times the material), one makes it twice as fast. They take 12 seconds to install.",
-      "Own enough of a machine and buy both of its upgrades to master that era: +5% to all income for the rest of the run.",
+      "On the BOOST tab each business has two upgrades: one makes it pay 3 times as much (and on a material row, make 3 times the material), one makes it twice as fast. They take 12 seconds to install.",
+      "Own enough of a business and buy both of its upgrades to master that era: +5% to all income for the rest of the run.",
     ],
   },
   {
     id: "prestige",
     title: "PRESTIGE (STARTING OVER)",
     lines: [
-      "Once you've earned $1T in one run, the PRESTIGE button lets you start over and trade in the whole run for investors. You lose your cash, machines, managers and upgrades.",
+      "Once you've earned $1T in one run, the PRESTIGE button lets you start over and trade in the whole run for investors. You lose your cash, businesses, managers and upgrades.",
       "Every investor makes all income higher, forever, so the next run goes much faster. The more you earn before you prestige, the more investors join. It's how you get really big numbers.",
     ],
   },
@@ -240,7 +248,7 @@ const HOW_TO = [
   {
     id: "away",
     title: "WHILE YOU'RE AWAY",
-    lines: ["Close the app and machines with a manager keep earning for up to 24 hours. You'll see what they made when you come back."],
+    lines: ["Close the app and businesses with a manager keep earning for up to 24 hours. You'll see what they made when you come back."],
   },
 ];
 
@@ -248,7 +256,7 @@ function HowTo({ tipsOff, onTips }) {
   return (
     <>
       {HOW_TO.map((section, i) => (
-        <details key={section.id} data-howto={section.id} open={i === 0} className="howto-section border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]">
+        <details key={section.id} data-howto={section.id} open={i < 2} className="howto-section border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]">
           <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">
             {section.title}
             <span aria-hidden="true" className="howto-caret shrink-0 text-[var(--game-muted)]">+</span>

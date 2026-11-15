@@ -136,7 +136,11 @@ export default function GameScreen() {
               Challenge running: {state.challenge.id} · {money(state.challenge.earnings)} / {money(activeChallengeGoal(state))} this run.
             </p>
           )}
-          <PrestigeBar state={state} onPrestige={prestige} />
+          {/* Prestige only matters much later; a brand-new player sees it once
+              the run has earned $1B (a thousandth of the first investor). */}
+          {((state.investors || 0) > 0 || state.prestiged || (state.lifetime || 0) >= 1e9) && (
+            <PrestigeBar state={state} onPrestige={prestige} />
+          )}
 
           {BUSINESSES.map((cfg, i) => {
             if (blockedByGlass(state, i)) return null;

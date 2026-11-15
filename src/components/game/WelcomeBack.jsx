@@ -20,7 +20,7 @@ export default function WelcomeBack({ report, onDismiss }) {
       <div className="game-modal flex w-full max-w-md flex-col border-4 border-[var(--game-accent)] bg-[var(--game-card)] p-4 shadow-[6px_6px_0_0_#000] sm:p-5">
         <h2 className="title-glow font-pixel text-sm text-[var(--game-accent)]">WELCOME BACK!</h2>
         <p className="mt-3 font-term text-lg leading-6 text-[var(--game-fg)]">
-          You were away for {awayLabel(report.awayMs)}. Your hired crew kept the machines running
+          You were away for {awayLabel(report.awayMs)}. Your hired crew kept the businesses running
           and generated
         </p>
         <p data-offline-total className="mt-1 font-pixel text-base leading-7 text-[var(--game-success)]">

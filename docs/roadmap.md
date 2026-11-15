@@ -57,6 +57,19 @@ closed test is still the 0.0.18 Play bundle.
   prestige and forks: the Dot-com Bubble and Y2K, both only during Home
   Computers to Graphics Cards. The bubble now arrives 5-15 minutes into that
   stretch instead of every 40-80 minutes, so it isn't missed.
+- **A tutorial for people who've never played an idle game.** A tester
+  said it assumed you'd played one: what is a machine, why tap it, what's
+  the goal, what order do things come in? It now opens with the goal
+  (grow through the real history of computing, 19 eras, then prestige),
+  points at the new ERA counter at the top (for example ERA 3/19), the
+  cash panel and a whole business row (picture, bar, owned count, BUY,
+  Hire) before asking for the first tap, and ends with what comes next.
+  The game says "business" everywhere instead of "machine", How to Play
+  starts with The Goal, and the Investors panel stays out of the way until
+  the run has earned $1B.
+- **The game follows the phone's auto-rotate switch.** With auto-rotate
+  off, it no longer turns on its own (it used the sensor and ignored the
+  switch). The Portrait and Landscape settings still hold it.
 - **Closed earns the same as open.** Three testers earned more with the
   app closed than open. Offline time is now paid in small rounds where
   makers come first and machines that use the same material split it by

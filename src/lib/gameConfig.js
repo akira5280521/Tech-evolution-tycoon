@@ -748,5 +748,5 @@ export function nextMove(state) {
     }
     break;
   }
-  return goal ? goal.text : "Keep the machines running. The next era is on its way.";
+  return goal ? goal.text : "Keep your businesses running. The next era is on its way.";
 }

@@ -5,15 +5,15 @@
 export const GLOSSARY = {
   materials: {
     term: "MATERIALS",
-    text: "Some machines use what an earlier one makes: the Paper Mill turns wood into card stock, glass works need sand, and so on. Each one makes 1 per cycle until you buy its x3 upgrade, which makes it 3. The strip at the top shows what you have. If a material runs out, the machine that needs it stops paying until more is made.",
+    text: "Some businesses use what an earlier one makes: the Paper Mill turns wood into card stock, glass works need sand, and so on. Each one makes 1 per cycle until you buy its x3 upgrade, which makes it 3. The strip at the top shows what you have. If a material runs out, the business that needs it stops paying until more is made.",
   },
   manager: {
     term: "MANAGER",
-    text: "Keeps one machine running by itself, even while the app is closed (for up to 24 hours). The Hire button unlocks once you own enough of that machine.",
+    text: "Keeps one business running by itself, even while the app is closed (for up to 24 hours). The Hire button unlocks once you own enough of that business.",
   },
   foreman: {
     term: "FOREMAN",
-    text: "A one-time hire. He adds a RUN ALL button that starts every machine that doesn't have a manager yet.",
+    text: "A one-time hire. He adds a RUN ALL button that starts every business that doesn't have a manager yet.",
   },
   buymodes: {
     term: "BUY BUTTONS",
@@ -21,19 +21,19 @@ export const GLOSSARY = {
   },
   speedups: {
     term: "SPEED-UPS",
-    text: "Owning 25, 50 and 100 of one machine makes it run twice as fast each time. Bigger counts after that make it pay more.",
+    text: "Owning 25, 50 and 100 of one business makes it run twice as fast each time. Bigger counts after that make it pay more.",
   },
   upgrades: {
     term: "UPGRADES",
-    text: "Each machine has two: one makes it pay 3 times as much (on a material row it also makes 3 times the material), one makes it twice as fast. They cost cash and take 12 seconds to install. A prestige removes them, so you buy them again each run.",
+    text: "Each business has two: one makes it pay 3 times as much (on a material row it also makes 3 times the material), one makes it twice as fast. They cost cash and take 12 seconds to install. A prestige removes them, so you buy them again each run.",
   },
   mastery: {
     term: "ERA MASTERY",
-    text: "Own enough of one machine and buy both of its upgrades: +5% to all income for the rest of that run. Mastered eras also make extra research data.",
+    text: "Own enough of one business and buy both of its upgrades: +5% to all income for the rest of that run. Mastered eras also make extra research data.",
   },
   prestige: {
     term: "PRESTIGE",
-    text: "Trade in your whole run for investors. You lose your cash, machines, managers and upgrades, but every investor makes all income higher, forever, so the next run is much faster. The first investor comes once you've earned $1T in one run; 4 come at $16T, 10 at $100T.",
+    text: "Trade in your whole run for investors. You lose your cash, businesses, managers and upgrades, but every investor makes all income higher, forever, so the next run is much faster. The first investor comes once you've earned $1T in one run; 4 come at $16T, 10 at $100T.",
   },
   investors: {
     term: "INVESTORS",
@@ -65,7 +65,7 @@ export const GLOSSARY = {
   },
   challenge: {
     term: "CHALLENGE RUN",
-    text: "An optional run with special rules, like no managers. Starting one resets your cash and machines like prestige does, but you keep investors. Reach the goal to win +10% income forever.",
+    text: "An optional run with special rules, like no managers. Starting one resets your cash and businesses like prestige does, but you keep investors. Reach the goal to win +10% income forever.",
   },
   projects: {
     term: "MEGA-PROJECTS",

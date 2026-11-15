@@ -11,12 +11,12 @@ import LockedRow from "./LockedRow";
 import PrestigeBar from "./PrestigeBar";
 import WelcomeBack from "./WelcomeBack";
 import BottomTabs from "./BottomTabs";
-import NewsTicker from "./NewsTicker";
 import DilemmaModal from "./DilemmaModal";
 import BubbleBanner from "./BubbleBanner";
 import CoachMark from "./CoachMark";
 import { HelpTip, TipCard } from "./HintSheet";
 import { tutorialActive } from "@/lib/tutorial";
+import { CashTicker } from "./chrome";
 
 // A material shows in the supply strip once the row that makes it is on
 // screen, so materials from undiscovered eras stay hidden.
@@ -36,6 +36,22 @@ export default function GameScreen() {
   const startYRef = useRef(null);
   const pullRef = useRef(0);
   const refreshingRef = useRef(false);
+  const hudRef = useRef(null);
+
+  useEffect(() => {
+    const el = hudRef.current;
+    if (!el) return undefined;
+    const root = document.documentElement;
+    const update = () => root.style.setProperty("--hud-h", `${Math.ceil(el.getBoundingClientRect().height)}px`);
+    update();
+    const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : null;
+    ro?.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
 
   useEffect(() => {
     const apply = () => {
@@ -102,11 +118,16 @@ export default function GameScreen() {
         </div>
       )}
 
+      <div ref={hudRef} data-sticky-hud className="hud-sticky safe-top safe-x px-3 pb-2">
+        <div className="mx-auto max-w-4xl">
+          <CashTicker state={state} cps={cps} />
+        </div>
+      </div>
+
       <div className="game-frame">
         <div className="game-side">
           <TopBar
             state={state}
-            cps={cps}
             buyMode={buyMode}
             setBuyMode={setBuyMode}
             canRunAll={canRunAll}
@@ -129,7 +150,6 @@ export default function GameScreen() {
         </div>
 
         <main className="safe-x mx-auto min-w-0 max-w-4xl space-y-2 overflow-x-hidden px-3 py-2">
-          <NewsTicker state={state} />
           <BubbleBanner state={state} onCashOut={cashOut} />
           {state.challenge && (
             <p className="break-words border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-3 font-term text-lg leading-6 text-[var(--game-accent)]">

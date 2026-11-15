@@ -1,6 +1,10 @@
 import { Link } from "@tanstack/react-router";
+import { incomePerSecond } from "@/lib/empire";
+import { money } from "@/lib/gameConfig";
 import BottomTabs from "./BottomTabs";
 import { TipCard } from "./HintSheet";
+import NewsTicker from "./NewsTicker";
+import { useGameState } from "./GameState";
 
 export function BackButton({ to = "/" }) {
   return (
@@ -13,17 +17,38 @@ export function BackButton({ to = "/" }) {
   );
 }
 
+// Cash and the news ticker, shared by the game screen and every other tab.
+// The parent sticks this block to the top so it stays visible while the page scrolls.
+export function CashTicker({ state, cps }) {
+  return (
+    <div data-cash-ticker className="space-y-1.5">
+      <div data-cash-panel className="border-2 border-[var(--game-border-strong)] bg-[var(--game-bg-deep)] px-2 py-1 text-center shadow-[3px_3px_0_0_#000]">
+        <div data-cash className="break-all font-term text-3xl leading-none text-[var(--game-success)]">{money(state.cash)}</div>
+        <div className="font-term text-base leading-5 text-[var(--game-success)]">
+          {money(cps)}/s · {money(state.lifetime)} this run
+        </div>
+      </div>
+      <NewsTicker state={state} />
+    </div>
+  );
+}
+
 export default function ScreenShell({ title, subtitle, children, backTo = "/" }) {
+  const { state } = useGameState();
+  const cps = incomePerSecond(state, Date.now());
   return (
     <div className="screen-shell game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
-      <header className="safe-top safe-x sticky top-0 z-20 border-b-2 border-[var(--game-border)] bg-[var(--game-bg-95)] px-3 pb-3">
-        <div className="mx-auto flex max-w-4xl items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="title-glow whitespace-pre-line font-pixel text-sm leading-6 text-[var(--game-accent)]">{title}</h1>
-            {subtitle && <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{subtitle}</p>}
+      <header className="safe-top safe-x sticky top-0 z-20 border-b-2 border-[var(--game-border)] bg-[var(--game-bg)] px-3 pb-3">
+        <div className="mx-auto max-w-4xl">
+          <CashTicker state={state} cps={cps} />
+          <div className="mt-2 flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="title-glow whitespace-pre-line font-pixel text-sm leading-6 text-[var(--game-accent)]">{title}</h1>
+              {subtitle && <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{subtitle}</p>}
+            </div>
+            <BackButton to={backTo} />
           </div>
-          <BackButton to={backTo} />
         </div>
       </header>
       <main className="safe-x mx-auto max-w-4xl space-y-3 px-3 py-4">{children}</main>

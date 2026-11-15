@@ -193,7 +193,7 @@ const HOW_TO = [
     id: "managers",
     title: "MANAGERS AND THE FOREMAN",
     lines: [
-      "Once you own enough of a business (the Hire button shows how many), hire its manager. A manager keeps that business running by itself, even while the app is closed, for up to 24 hours.",
+      "Once you own enough of a business (the Hire button shows how many), hire its manager. A manager keeps that business running by itself, even while the app is closed (at half speed, for up to 24 hours).",
       "The Foreman is a one-time hire that adds a RUN ALL button, which starts every business that doesn't have a manager yet.",
     ],
   },
@@ -248,7 +248,7 @@ const HOW_TO = [
   {
     id: "away",
     title: "WHILE YOU'RE AWAY",
-    lines: ["Close the app and businesses with a manager keep earning for up to 24 hours. You'll see what they made when you come back."],
+    lines: ["Close the app or switch away and businesses with a manager keep earning at half speed, for up to 24 hours. Keep the game open to earn twice as much. You'll see what they made when you come back."],
   },
 ];
 

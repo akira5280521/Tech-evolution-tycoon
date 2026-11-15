@@ -70,12 +70,16 @@ closed test is still the 0.0.18 Play bundle.
 - **The game follows the phone's auto-rotate switch.** With auto-rotate
   off, it no longer turns on its own (it used the sensor and ignored the
   switch). The Portrait and Landscape settings still hold it.
-- **Closed earns the same as open.** Three testers earned more with the
-  app closed than open. Offline time is now paid in small rounds where
-  makers come first and machines that use the same material split it by
-  need (before, the first machine in line took the whole bin), and coming
-  back to an app left in the background pays at most 24 hours, the same as
-  a closed app (before, it had no limit).
+- **Closed earns half of open.** Testers earned more with the app closed
+  than open. Now managers earn at half speed while the app is closed or in
+  the background (a look at another app under 30 seconds still counts as
+  playing), for up to 24 hours, so keeping the game open pays about twice
+  as well. Time away is paid fairly: makers first, and businesses that use
+  the same material split it (before, the first one in line took the whole
+  bin). In the background the game stops paying live and pays the time
+  away when you come back, with the welcome-back report. Checked on five
+  factories over 15 minutes to 24 hours (49-50% of open) and in the app
+  (51%).
 
 ## In 0.0.18
 

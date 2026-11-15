@@ -65,7 +65,7 @@ export const TUTORIAL_STEPS = [
   {
     id: "manager",
     title: "HIRE A MANAGER",
-    text: "Tapping every time gets old. Own 5 Timber Camps, then hire their manager. A manager keeps them working for you, even while the app is closed.",
+    text: "Tapping every time gets old. Own 5 Timber Camps, then hire their manager. A manager keeps them working for you, and even while the app is closed they earn at half speed.",
     target: '[data-hire="timber"]',
     done: (s) => managerOf(s, "timber"),
   },

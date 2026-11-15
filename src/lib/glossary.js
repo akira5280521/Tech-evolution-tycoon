@@ -9,7 +9,7 @@ export const GLOSSARY = {
   },
   manager: {
     term: "MANAGER",
-    text: "Keeps one business running by itself, even while the app is closed (for up to 24 hours). The Hire button unlocks once you own enough of that business.",
+    text: "Keeps one business running by itself, even while the app is closed (at half speed, for up to 24 hours). The Hire button unlocks once you own enough of that business.",
   },
   foreman: {
     term: "FOREMAN",

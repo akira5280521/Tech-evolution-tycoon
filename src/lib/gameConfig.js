@@ -549,6 +549,11 @@ export function buyCount(mode, cfg, owned, cash, limit = MAX_BUY) {
 // Closed tabs, hidden tabs, and suspended timers all share this one budget.
 export const OFFLINE_CAP_MS = 24 * 60 * 60 * 1000;
 export const AWAY_MODAL_MS = 60 * 1000;
+// Managers earn at this rate while the app is closed or in the background, so
+// playing with the app open pays about twice as well as leaving it.
+export const OFFLINE_RATE = 0.5;
+// A quick look at another app (under this long) still counts as playing.
+export const AWAY_GRACE_MS = 30 * 1000;
 // A live tick longer than this is a stalled or suspended timer, not a frame.
 export const NORMAL_TICK_MS = 2000;
 

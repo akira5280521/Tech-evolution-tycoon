@@ -17,28 +17,62 @@
 
 import { decodeSave, summarize } from "./saveCode.js";
 import { getSaveData } from "./gameSave.js";
+import { loadNativePlugin } from "./nativePlugin.js";
 
 const PREFS_KEY = "pc-tycoon-cloud-v1";
 export const UPLOAD_EVERY_MS = 5 * 60 * 1000;
+export const STATUS_TIMEOUT_MS = 8000;
 const MIN_GAP_MS = 60 * 1000;
 
-let pluginPromise = null;
+// { pg } so a Capacitor plugin proxy is never itself a promise value.
+let pluginBox = null;
+let pluginLoading = null;
+let statusTimeoutMs = STATUS_TIMEOUT_MS;
+
 function plugin() {
-  if (pluginPromise) return pluginPromise;
+  if (pluginBox) return Promise.resolve(pluginBox);
+  if (pluginLoading) return pluginLoading;
   const cap = typeof window !== "undefined" ? window.Capacitor : undefined;
   if (!cap || typeof cap.isNativePlatform !== "function" || !cap.isNativePlatform()) {
-    pluginPromise = Promise.resolve(null);
-  } else {
-    pluginPromise = import("@capacitor/core")
-      .then(({ registerPlugin }) => registerPlugin("PlayGames"))
-      .catch(() => null);
+    pluginBox = { pg: null };
+    return Promise.resolve(pluginBox);
   }
-  return pluginPromise;
+  pluginLoading = loadNativePlugin("PlayGames")
+    .then(({ plugin: pg }) => {
+      pluginBox = { pg };
+      return pluginBox;
+    })
+    .catch(() => {
+      pluginBox = { pg: null };
+      return pluginBox;
+    });
+  return pluginLoading;
 }
 
-// Tests swap in a fake plugin.
+// Tests swap in a fake plugin. The fake is stored on a plain object, never
+// passed to Promise.resolve, so a thenable proxy cannot hang the caller.
 export function setPluginForTests(fake) {
-  pluginPromise = Promise.resolve(fake);
+  pluginBox = { pg: fake ?? null };
+  pluginLoading = null;
+}
+
+export function setStatusTimeoutForTests(ms) {
+  statusTimeoutMs = ms;
+}
+
+export function resetCloudForTests() {
+  pluginBox = null;
+  pluginLoading = null;
+  statusTimeoutMs = STATUS_TIMEOUT_MS;
+  state = blankState();
+}
+
+function withTimeout(promise, ms) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error("timeout")), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
 function readPrefs() {
@@ -63,17 +97,21 @@ function writePrefs(partial) {
 // Shared state for the account panel and the background sync.
 // phase: "idle" (not checked yet) | "checking" | "ask" (waiting on the player)
 //        | "ready" (checked; uploads allowed) | "off" (not available)
-let state = {
-  configured: null,
-  signedIn: false,
-  name: null,
-  phase: "idle",
-  busy: false,
-  cloud: null, // { summary, code, modified } when the cloud copy is being offered
-  lastUpload: 0,
-  auto: true,
-  error: "",
-};
+function blankState() {
+  return {
+    configured: null,
+    signedIn: false,
+    name: null,
+    phase: "idle",
+    busy: false,
+    cloud: null, // { summary, code, modified } when the cloud copy is being offered
+    lastUpload: 0,
+    auto: true,
+    error: "",
+  };
+}
+
+let state = blankState();
 const listeners = new Set();
 
 function set(partial) {
@@ -95,36 +133,62 @@ function errorText(e, fallback) {
   return message && message.length < 120 ? message : fallback;
 }
 
+function prefsNow() {
+  return typeof window !== "undefined" ? readPrefs() : { auto: true, lastUpload: 0 };
+}
+
+function markUnavailable(prefs) {
+  set({
+    configured: false,
+    signedIn: false,
+    name: null,
+    phase: "unavailable",
+    busy: false,
+    auto: prefs.auto,
+    lastUpload: prefs.lastUpload,
+    error: "Play Games didn't answer.",
+  });
+}
+
 /** Ask the plugin whether we're signed in. Never shows Google UI. */
 export async function refreshStatus() {
-  const p = await plugin();
-  const prefs = typeof window !== "undefined" ? readPrefs() : { auto: true, lastUpload: 0 };
+  const prefs = prefsNow();
+  let box = null;
+  try {
+    box = await withTimeout(plugin(), statusTimeoutMs);
+  } catch {
+    markUnavailable(prefs);
+    return state;
+  }
+  const p = box?.pg ?? null;
   if (!p) {
-    set({ configured: false, signedIn: false, phase: "off", auto: prefs.auto, lastUpload: prefs.lastUpload });
+    set({ configured: false, signedIn: false, phase: "off", auto: prefs.auto, lastUpload: prefs.lastUpload, error: "" });
     return state;
   }
   try {
-    const out = await p.status();
+    const out = await withTimeout(p.status(), statusTimeoutMs);
     set({
       configured: !!out?.configured,
       signedIn: !!out?.signedIn,
       name: out?.name || null,
-      phase: out?.configured ? state.phase : "off",
+      phase: out?.configured ? (state.phase === "unavailable" ? "idle" : state.phase) : "off",
       auto: prefs.auto,
       lastUpload: prefs.lastUpload,
+      error: "",
     });
   } catch {
-    set({ configured: false, signedIn: false, phase: "off" });
+    markUnavailable(prefs);
   }
   return state;
 }
 
 export async function signIn() {
-  const p = await plugin();
+  const box = await plugin();
+  const p = box?.pg ?? null;
   if (!p) return state;
   set({ busy: true, error: "" });
   try {
-    const out = await p.signIn();
+    const out = await withTimeout(p.signIn(), statusTimeoutMs);
     set({ configured: !!out?.configured, signedIn: !!out?.signedIn, name: out?.name || null, busy: false });
   } catch (e) {
     set({ busy: false, error: errorText(e, "Sign-in didn't finish. Try again.") });
@@ -153,7 +217,8 @@ async function readCloud(p) {
  */
 export async function checkCloud(localSummary) {
   if (state.phase === "checking" || state.phase === "ask" || state.phase === "ready") return state.phase;
-  const p = await plugin();
+  const box = await plugin();
+  const p = box?.pg ?? null;
   if (!p || !state.configured || !state.signedIn) return state.phase;
   set({ phase: "checking", error: "" });
   try {
@@ -178,7 +243,8 @@ export function keepLocal() {
 
 /** Offer the cloud copy again from the account panel (manual load). */
 export async function fetchCloudForLoad() {
-  const p = await plugin();
+  const box = await plugin();
+  const p = box?.pg ?? null;
   if (!p) return null;
   set({ busy: true, error: "" });
   try {
@@ -209,7 +275,8 @@ export function cloudLoaded() {
  * which still needs the session check to have happened.
  */
 export async function upload(code, { force = false, label = "" } = {}) {
-  const p = await plugin();
+  const box = await plugin();
+  const p = box?.pg ?? null;
   if (!p || !state.configured || !state.signedIn || state.phase !== "ready") return false;
   if (!force && !state.auto) return false;
   const now = Date.now();

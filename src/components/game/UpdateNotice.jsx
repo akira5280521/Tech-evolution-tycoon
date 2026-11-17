@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { PLAY_INSTALLER, fetchLatestRelease, parseRelease, readUpdateCache, shouldAutoCheck, stillNewer, writeUpdateCache } from "@/lib/appUpdate";
+import { loadNativePlugin } from "@/lib/nativePlugin";
 
 const UpdateCheckContext = createContext(null);
 
@@ -9,8 +10,7 @@ function isNativeApp() {
 }
 
 async function readInstaller() {
-  const { registerPlugin } = await import("@capacitor/core");
-  const InstallSource = registerPlugin("InstallSource");
+  const { plugin: InstallSource } = await loadNativePlugin("InstallSource");
   const result = await InstallSource.getInstaller();
   return {
     installer: typeof result?.installer === "string" ? result.installer : null,
@@ -27,8 +27,7 @@ async function installedVersionCode() {
 }
 
 export async function installReleaseApk(url) {
-  const { registerPlugin } = await import("@capacitor/core");
-  const AppUpdate = registerPlugin("AppUpdate");
+  const { plugin: AppUpdate } = await loadNativePlugin("AppUpdate");
   return AppUpdate.installApk({ url });
 }
 

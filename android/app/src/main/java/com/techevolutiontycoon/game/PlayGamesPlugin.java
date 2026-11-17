@@ -1,6 +1,8 @@
 package com.techevolutiontycoon.game;
 
 import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -14,6 +16,7 @@ import com.google.android.gms.games.snapshot.SnapshotMetadataChange;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Google Play Games for the web game: sign-in state, the player's display
@@ -30,6 +33,38 @@ public class PlayGamesPlugin extends Plugin {
     private static final String SLOT = "main";
     /** Backup codes are capped at 2,000,000 characters, inside Play's per-save limit. */
     private static final int MAX_CHARS = 2_000_000;
+    /** Sign-in tasks that never finish must still answer the web layer. */
+    private static final long CALL_TIMEOUT_MS = 8000;
+
+    /** Resolves or rejects a plugin call once, including when Play never calls back. */
+    private static final class SettledCall {
+        private final PluginCall call;
+        private final AtomicBoolean done = new AtomicBoolean(false);
+        private final Handler handler = new Handler(Looper.getMainLooper());
+
+        SettledCall(PluginCall call) {
+            this.call = call;
+            handler.postDelayed(this::onTimeout, CALL_TIMEOUT_MS);
+        }
+
+        void resolve(JSObject out) {
+            if (done.compareAndSet(false, true)) {
+                handler.removeCallbacksAndMessages(null);
+                call.resolve(out);
+            }
+        }
+
+        void reject(String message, String code) {
+            if (done.compareAndSet(false, true)) {
+                handler.removeCallbacksAndMessages(null);
+                call.reject(message, code);
+            }
+        }
+
+        private void onTimeout() {
+            reject("Play Games didn't answer.", "timeout");
+        }
+    }
 
     private final ExecutorService io = Executors.newSingleThreadExecutor();
 
@@ -52,43 +87,45 @@ public class PlayGamesPlugin extends Plugin {
     /** Signed in or not, and the display name when signed in. Never shows UI. */
     @PluginMethod
     public void status(PluginCall call) {
+        SettledCall once = new SettledCall(call);
         Activity activity = getActivity();
         if (!configured() || activity == null) {
-            call.resolve(notConfigured());
+            once.resolve(notConfigured());
             return;
         }
         PlayGames.getGamesSignInClient(activity).isAuthenticated()
-            .addOnSuccessListener(result -> describe(call, activity, result.isAuthenticated()))
-            .addOnFailureListener(e -> describe(call, activity, false));
+            .addOnSuccessListener(result -> describe(once, activity, result.isAuthenticated()))
+            .addOnFailureListener(e -> describe(once, activity, false));
     }
 
     /** Shows Google's sign-in screen if needed. */
     @PluginMethod
     public void signIn(PluginCall call) {
+        SettledCall once = new SettledCall(call);
         Activity activity = getActivity();
         if (!configured() || activity == null) {
-            call.resolve(notConfigured());
+            once.resolve(notConfigured());
             return;
         }
         PlayGames.getGamesSignInClient(activity).signIn()
-            .addOnSuccessListener(result -> describe(call, activity, result.isAuthenticated()))
-            .addOnFailureListener(e -> fail(call, "Sign-in didn't finish.", e));
+            .addOnSuccessListener(result -> describe(once, activity, result.isAuthenticated()))
+            .addOnFailureListener(e -> once.reject("Sign-in didn't finish.", e != null ? e.getMessage() : ""));
     }
 
-    private void describe(PluginCall call, Activity activity, boolean signedIn) {
+    private void describe(SettledCall once, Activity activity, boolean signedIn) {
         JSObject out = new JSObject();
         out.put("configured", true);
         out.put("signedIn", signedIn);
         if (!signedIn) {
-            call.resolve(out);
+            once.resolve(out);
             return;
         }
         PlayGames.getPlayersClient(activity).getCurrentPlayer()
             .addOnSuccessListener(player -> {
                 out.put("name", player != null ? player.getDisplayName() : null);
-                call.resolve(out);
+                once.resolve(out);
             })
-            .addOnFailureListener(e -> call.resolve(out));
+            .addOnFailureListener(e -> once.resolve(out));
     }
 
     /** Writes { data, description, playedMs } to the cloud slot. */

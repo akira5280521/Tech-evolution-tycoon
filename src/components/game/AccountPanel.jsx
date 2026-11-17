@@ -54,6 +54,20 @@ export default function AccountPanel({ state, onExport, onImport }) {
     setOffer(null);
   };
 
+  if (cloud.phase === "unavailable") {
+    return (
+      <Panel>
+        <h2 className="font-pixel text-[0.6rem]">ACCOUNT</h2>
+        <p data-account-unavailable className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
+          Play Games didn't answer. Your save is still on this phone. Use Save Backup if you need a copy you can move.
+        </p>
+        <button type="button" data-account-retry onClick={() => refreshStatus()} className={`${button} mt-3 w-full border-[var(--game-border-strong)] text-[var(--game-fg)]`}>
+          TRY AGAIN
+        </button>
+      </Panel>
+    );
+  }
+
   if (cloud.configured === null) {
     return (
       <Panel>

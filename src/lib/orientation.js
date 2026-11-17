@@ -1,3 +1,5 @@
+import { loadNativePlugin } from "./nativePlugin.js";
+
 const MODES = new Set(["auto", "portrait", "landscape"]);
 
 export function normalizeOrientation(value) {
@@ -14,8 +16,7 @@ export async function applyOrientation(mode) {
   const cap = typeof window !== "undefined" ? window.Capacitor : undefined;
   if (cap && typeof cap.isNativePlatform === "function" && cap.isNativePlatform()) {
     try {
-      const { registerPlugin } = await import("@capacitor/core");
-      const ScreenOrientation = registerPlugin("ScreenOrientation");
+      const { plugin: ScreenOrientation } = await loadNativePlugin("ScreenOrientation");
       await ScreenOrientation.lock({ orientation });
     } catch {
       /* the web layout still follows the device */

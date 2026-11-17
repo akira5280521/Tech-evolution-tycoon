@@ -22,23 +22,39 @@ const PREFS_KEY = "pc-tycoon-cloud-v1";
 export const UPLOAD_EVERY_MS = 5 * 60 * 1000;
 const MIN_GAP_MS = 60 * 1000;
 
-let pluginPromise = null;
-function plugin() {
-  if (pluginPromise) return pluginPromise;
+// The native plugin, wrapped as { p }. Never resolve a promise with the
+// plugin itself: Capacitor's plugin proxy answers every property, including
+// "then", so a promise that resolves to it calls a native method named
+// "then" and never settles. That left More > Settings on "Checking..." for
+// good in 0.0.20.
+let holderPromise = null;
+function pluginHolder() {
+  if (holderPromise) return holderPromise;
   const cap = typeof window !== "undefined" ? window.Capacitor : undefined;
   if (!cap || typeof cap.isNativePlatform !== "function" || !cap.isNativePlatform()) {
-    pluginPromise = Promise.resolve(null);
+    holderPromise = Promise.resolve({ p: null });
   } else {
-    pluginPromise = import("@capacitor/core")
-      .then(({ registerPlugin }) => registerPlugin("PlayGames"))
-      .catch(() => null);
+    holderPromise = import("@capacitor/core")
+      .then(({ registerPlugin }) => ({ p: registerPlugin("PlayGames") }))
+      .catch(() => ({ p: null }));
   }
-  return pluginPromise;
+  return holderPromise;
 }
 
 // Tests swap in a fake plugin.
 export function setPluginForTests(fake) {
-  pluginPromise = Promise.resolve(fake);
+  holderPromise = Promise.resolve({ p: fake });
+}
+
+// A Play Games call that doesn't answer in time counts as failed, so the
+// account panel never waits forever. Sign-in gets longer: it shows Google's UI.
+const CALL_TIMEOUT_MS = 15 * 1000;
+function timed(promise, ms = CALL_TIMEOUT_MS) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error("Play Games didn't answer. Check your connection and try again.")), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
 function readPrefs() {
@@ -97,14 +113,14 @@ function errorText(e, fallback) {
 
 /** Ask the plugin whether we're signed in. Never shows Google UI. */
 export async function refreshStatus() {
-  const p = await plugin();
+  const { p } = await pluginHolder();
   const prefs = typeof window !== "undefined" ? readPrefs() : { auto: true, lastUpload: 0 };
   if (!p) {
     set({ configured: false, signedIn: false, phase: "off", auto: prefs.auto, lastUpload: prefs.lastUpload });
     return state;
   }
   try {
-    const out = await p.status();
+    const out = await timed(p.status());
     set({
       configured: !!out?.configured,
       signedIn: !!out?.signedIn,
@@ -113,18 +129,20 @@ export async function refreshStatus() {
       auto: prefs.auto,
       lastUpload: prefs.lastUpload,
     });
-  } catch {
-    set({ configured: false, signedIn: false, phase: "off" });
+  } catch (e) {
+    // The plugin is there (this is the Play build) but didn't answer: show the
+    // Sign in button with the reason instead of hiding Play Games.
+    set({ configured: true, signedIn: false, phase: "idle", auto: prefs.auto, lastUpload: prefs.lastUpload, error: errorText(e, "Couldn't reach Play Games. Try again.") });
   }
   return state;
 }
 
 export async function signIn() {
-  const p = await plugin();
+  const { p } = await pluginHolder();
   if (!p) return state;
   set({ busy: true, error: "" });
   try {
-    const out = await p.signIn();
+    const out = await timed(p.signIn(), 120 * 1000);
     set({ configured: !!out?.configured, signedIn: !!out?.signedIn, name: out?.name || null, busy: false });
   } catch (e) {
     set({ busy: false, error: errorText(e, "Sign-in didn't finish. Try again.") });
@@ -139,7 +157,7 @@ export function setAutoUpload(on) {
 
 /** Read the cloud copy and check it like a pasted backup code. */
 async function readCloud(p) {
-  const out = await p.loadCloud();
+  const out = await timed(p.loadCloud(), 30 * 1000);
   if (!out?.configured || !out.found || !out.data) return { found: false };
   const decoded = await decodeSave(out.data);
   if (!decoded.ok) return { found: true, bad: true };
@@ -153,7 +171,7 @@ async function readCloud(p) {
  */
 export async function checkCloud(localSummary) {
   if (state.phase === "checking" || state.phase === "ask" || state.phase === "ready") return state.phase;
-  const p = await plugin();
+  const { p } = await pluginHolder();
   if (!p || !state.configured || !state.signedIn) return state.phase;
   set({ phase: "checking", error: "" });
   try {
@@ -178,7 +196,7 @@ export function keepLocal() {
 
 /** Offer the cloud copy again from the account panel (manual load). */
 export async function fetchCloudForLoad() {
-  const p = await plugin();
+  const { p } = await pluginHolder();
   if (!p) return null;
   set({ busy: true, error: "" });
   try {
@@ -209,7 +227,7 @@ export function cloudLoaded() {
  * which still needs the session check to have happened.
  */
 export async function upload(code, { force = false, label = "" } = {}) {
-  const p = await plugin();
+  const { p } = await pluginHolder();
   if (!p || !state.configured || !state.signedIn || state.phase !== "ready") return false;
   if (!force && !state.auto) return false;
   const now = Date.now();
@@ -217,7 +235,7 @@ export async function upload(code, { force = false, label = "" } = {}) {
   if (!code) return false;
   if (force) set({ busy: true, error: "" });
   try {
-    await p.saveCloud({ data: code, description: label || "Tech Evolution Tycoon save" });
+    await timed(p.saveCloud({ data: code, description: label || "Tech Evolution Tycoon save" }), 30 * 1000);
     const prefs = writePrefs({ lastUpload: now });
     set({ lastUpload: prefs.lastUpload, busy: false });
     return true;

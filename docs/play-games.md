@@ -1,9 +1,25 @@
 # Google Play Games: sign-in and cloud save
 
 The game uses Play Games Services v2 for an optional sign-in and one cloud
-save slot. The code is in the repo; it stays switched off until the steps
-below give it a project id. Builds without the id (web, sideload tests) show
-"comes with the Google Play version" in More > Settings > Account.
+save slot. The project id in `strings.xml` switches it on: `TycoonApp`
+starts the SDK only when that string is a numeric id, and sign-in and cloud
+save go through `PlayGamesPlugin`, which reads the same check. A build with
+an empty id (web, or a sideload copy built that way) shows "comes with the
+Google Play version" in More > Settings > Account.
+
+## What's set up
+
+- **Project ID:** `936063644527`, in
+  `android/app/src/main/res/values/strings.xml` as `game_services_project_id`.
+  The manifest meta-data `com.google.android.gms.games.APP_ID` points at that
+  string, which is what the Play Games Services v2 SDK reads.
+- **Cloud project:** `tech-evolution-tycoon-games`.
+- **Saved games:** enabled.
+- **Android credentials** for package `tech.evolution.tycoon`:
+  - App signing SHA-1: `21:FA:1A:BC:D4:B1:8A:02:62:95:5D:E8:17:3E:BD:06:91:70:63:06`
+  - Upload SHA-1: `77:C3:57:5F:90:CC:72:12:76:D6:FF:A8:30:4E:E9:55:FC:5D:E0:41`
+- **Status:** the Play Games Services project is still a draft. Publish it at
+  launch (step 7 below). Until then, only tester accounts can sign in.
 
 ## How it works in the game
 

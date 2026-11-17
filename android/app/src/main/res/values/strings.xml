@@ -7,5 +7,5 @@
     <!-- Play Games Services project id from Play Console (Play Games Services >
          Configuration). Numbers only. Empty means Play Games is off in this build.
          See docs/play-games.md. -->
-    <string name="game_services_project_id" translatable="false"></string>
+    <string name="game_services_project_id" translatable="false">936063644527</string>
 </resources>

@@ -241,6 +241,17 @@
   padding-top: max(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)), 0.75rem);
 }
 
+/* Money and the news ticker stay put while the list scrolls. Opaque so the
+   first row is not readable through it, and in normal flow so it does not
+   cover that row until the player scrolls. */
+.hud-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  background: var(--game-bg);
+  border-bottom: 2px solid var(--game-border);
+}
+
 .safe-bottom {
   padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
 }
@@ -444,8 +455,8 @@ img[src*="/icons/"] {
 
   .game-side {
     position: sticky;
-    top: 0;
-    max-height: 100dvh;
+    top: var(--hud-h, 0px);
+    max-height: calc(100dvh - var(--hud-h, 0px));
     overflow: auto;
   }
 

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { incomePerSecond } from "@/lib/empire";
 import { money } from "@/lib/gameConfig";
@@ -33,16 +34,60 @@ export function CashTicker({ state, cps }) {
   );
 }
 
+// The most of the screen (above the tab bar) the sticky money bar may take.
+// Past this, with big text or a short landscape screen, it scrolls with the
+// page instead so it never hides what the player is reading.
+const HUD_MAX_SHARE = 0.35;
+
+// Money and the news ticker, stuck to the top of the screen while it fits.
+// Publishes its height as --hud-h (0 when it isn't sticky) for anything that
+// sticks below it.
+export function StickyHud({ state, cps }) {
+  const ref = useRef(null);
+  const [fits, setFits] = useState(true);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof window === "undefined") return undefined;
+    const root = document.documentElement;
+    const update = () => {
+      const h = Math.ceil(el.getBoundingClientRect().height);
+      const bar = parseFloat(getComputedStyle(root).getPropertyValue("--tabbar-h")) || 0;
+      const ok = h <= (window.innerHeight - bar) * HUD_MAX_SHARE;
+      setFits(ok);
+      root.style.setProperty("--hud-h", `${ok ? h : 0}px`);
+    };
+    update();
+    const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : null;
+    ro?.observe(el);
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+      root.style.setProperty("--hud-h", "0px");
+    };
+  }, []);
+  return (
+    <div ref={ref} data-sticky-hud data-hud-fits={fits ? "yes" : "no"} className="hud-sticky safe-top safe-x px-3 pb-2">
+      <div className="mx-auto max-w-4xl">
+        <CashTicker state={state} cps={cps} />
+      </div>
+    </div>
+  );
+}
+
 export default function ScreenShell({ title, subtitle, children, backTo = "/" }) {
   const { state } = useGameState();
   const cps = incomePerSecond(state, Date.now());
   return (
     <div className="screen-shell game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
-      <header className="safe-top safe-x sticky top-0 z-20 border-b-2 border-[var(--game-border)] bg-[var(--game-bg)] px-3 pb-3">
+      <StickyHud state={state} cps={cps} />
+      {/* The page title scrolls away; only money and the ticker stay. */}
+      <header className="safe-x border-b-2 border-[var(--game-border)] bg-[var(--game-bg)] px-3 pb-3 pt-2">
         <div className="mx-auto max-w-4xl">
-          <CashTicker state={state} cps={cps} />
-          <div className="mt-2 flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h1 className="title-glow whitespace-pre-line font-pixel text-sm leading-6 text-[var(--game-accent)]">{title}</h1>
               {subtitle && <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{subtitle}</p>}

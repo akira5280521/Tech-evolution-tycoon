@@ -526,3 +526,9 @@ img[src*="/icons/"] {
   top: calc(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) + 0.75rem);
   bottom: auto;
 }
+
+/* With big text or a short screen the money bar would cover too much, so it
+   scrolls with the page instead (see StickyHud). */
+.hud-sticky[data-hud-fits="no"] {
+  position: static;
+}

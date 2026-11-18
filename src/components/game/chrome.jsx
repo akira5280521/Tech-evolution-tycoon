@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { incomePerSecond } from "@/lib/empire";
+import { incomePerSecond, overclockOn } from "@/lib/empire";
 import { money } from "@/lib/gameConfig";
 import BottomTabs from "./BottomTabs";
 import { TipCard } from "./HintSheet";
@@ -28,6 +28,11 @@ export function CashTicker({ state, cps }) {
         <div className="font-term text-base leading-5 text-[var(--game-success)]">
           {money(cps)}/s · {money(state.lifetime)} this run
         </div>
+        {overclockOn(state, Date.now()) && (
+          <div data-overclock className="font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
+            OVERCLOCKED x1.5 · {Math.ceil((state.lab.overclockUntil - Date.now()) / 60000)} MIN LEFT
+          </div>
+        )}
       </div>
       <NewsTicker state={state} />
     </div>

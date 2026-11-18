@@ -142,7 +142,7 @@ export const TIPS = [
     id: "page-research",
     page: "research",
     title: "THE RESEARCH LAB",
-    text: "Spend research data on one company bonus. It's permanent, but you only get one slot at first, so pick the one you like. Forking the timeline opens another slot.",
+    text: "Spend research data on one company bonus. It's permanent, but you only get one slot at first, so pick the one you like. Forking the timeline opens another slot. Spare data goes to the lab projects further down.",
   },
   {
     id: "page-badges",

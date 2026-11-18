@@ -32,6 +32,19 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
+## Next build (after 0.0.22)
+
+- **Lab projects** on the Research tab, so spare data always has a use.
+  Fixed prices, no chance: **Overclock** (30 data: all income x1.5 for 10
+  minutes, then a 20-minute cool-down; the money bar shows the time left),
+  **Patent Filing** (25 data for 1 era token, 5 a day; these tokens don't
+  count as tokens earned from play) and **Install Crew** (60 data, once:
+  upgrades install instantly, kept forever). With perfect use, Overclock
+  averages about +16% income while playing.
+- The grey bars down the screen edges are gone; Android's own scroll
+  indicator stays. The Investors text uses the full width on phones.
+- Next up for review: the research tech tree (layer 2).
+
 ## Ships in 0.0.22
 
 - **Buy buttons buy what they say.** ×10 and ×100 always buy that many and

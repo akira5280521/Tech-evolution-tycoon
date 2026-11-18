@@ -13,7 +13,7 @@ the game. See [PC workbench](../../ideas.md#pc-workbench).
   tick on each installed part and the empty slot outlined in gold; a part
   details page (specs, what fits and what doesn't, BACK / INSTALL); and a
   POWER ON boot screen with the Bench Score split by part and the weakest
-  part named. Drawn by `parts.py` and `mock2.py`.
+  part named. Part art is 64x64 (`parts2.py`, `bigboard.py`); the power-on scene is `sB_boot.py`; the screens are `mock4.py`.
 - All part names are made up (Arcton, Vertexa, Pixelforge, Mainline, Kestrel).
 
 To redraw: `python3 sA.py` (and `sB.py`, `sC.py`) in this folder, needs

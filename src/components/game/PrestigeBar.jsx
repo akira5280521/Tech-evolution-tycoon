@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PRESTIGE_UNIT, investorsFor, money, prestigeMult } from "@/lib/gameConfig";
 import { HelpTip } from "./HintSheet";
+import { investorPeak, nextInvestorMilestone } from "@/lib/empire";
 
 // Investors and starting over (prestige), in plain words. The exact numbers
 // sit behind "Details" for players who want them.
@@ -37,6 +38,11 @@ export default function PrestigeBar({ state, onPrestige }) {
             </p>
           )}
           <p data-prestige-line className="font-term text-base leading-5 text-[var(--game-muted)]">{line}</p>
+          {nextInvestorMilestone(state) && (
+            <p data-next-unlock className="font-term text-base leading-5 text-[var(--game-violet)]">
+              Next unlock at {nextInvestorMilestone(state).at.toLocaleString()} investors (you've had {investorPeak(state).toLocaleString()}): see BOARD.
+            </p>
+          )}
           <button
             type="button"
             data-prestige-details

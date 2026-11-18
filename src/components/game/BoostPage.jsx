@@ -1,13 +1,26 @@
 import { BUSINESSES, UPGRADE_MS, eraOpen, money } from "@/lib/gameConfig";
-import { isMastered, masteryNeed, upgradeOffer, upgradesOf } from "@/lib/empire";
+import { hasPerk, isMastered, masteryNeed, upgradeOffer, upgradesOf } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { HelpTip } from "./HintSheet";
 
 export default function BoostPage() {
-  const { state, purchaseUpgrade } = useGameState();
+  const { state, purchaseUpgrade, setAutoUpgrades } = useGameState();
   return (
     <ScreenShell title="UPGRADES" subtitle="Make businesses pay more or run faster. Bought again after each prestige.">
+      {hasPerk(state, "auto-upgrades") && (
+        <Panel>
+          <h2 className="font-pixel text-[0.6rem] text-[var(--game-violet)]">PURCHASING DEPARTMENT</h2>
+          <p className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">
+            Buys the cheapest upgrade you can afford, one at a time.
+          </p>
+          <div className="mt-2">
+            <GoldButton dataAttr="auto-upgrades" onClick={() => setAutoUpgrades(!state.autoUpgrades)}>
+              <span className="font-pixel text-[0.6rem]">{state.autoUpgrades ? "AUTO-BUY: ON" : "AUTO-BUY: OFF"}</span>
+            </GoldButton>
+          </div>
+        </Panel>
+      )}
       {BUSINESSES.map((cfg, index) => {
         const owned = state.biz[index]?.owned || 0;
         if (!eraOpen(state, index)) return null;

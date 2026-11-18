@@ -2,6 +2,7 @@ import { empireFactors, forkCost, singularityMult } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import TokenShop from "./TokenShop";
+import InvestorMilestones from "./InvestorMilestones";
 import { HelpTip } from "./HintSheet";
 
 function pct(factor) {
@@ -56,6 +57,7 @@ export default function BoardPage() {
           </p>
         </div>
       </Panel>
+      <InvestorMilestones state={state} />
       <Panel className="border-[var(--game-accent)]">
         <h2 className="flex items-center gap-2 font-pixel text-[0.7rem] text-[var(--game-accent)]">
           ERA TOKENS <HelpTip term="tokens" />

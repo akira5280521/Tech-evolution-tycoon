@@ -304,7 +304,7 @@ export const BUSINESSES = [
     era: "c. 1971",
     tagline: "A computer on a chip. The brain is born, and it prints money.",
     icon: "/icons/cpu.png",
-    baseCost: 3732480,
+    baseCost: 5598720,
     revenue: 277830,
     cycleMs: 24000,
     coef: 1.12,
@@ -322,7 +322,7 @@ export const BUSINESSES = [
     era: "c. 1977",
     tagline: "Computing escapes the lab and lands on every desk in the suburbs.",
     icon: "/icons/homepc.png",
-    baseCost: 44789760,
+    baseCost: 134369280,
     revenue: 5834430,
     cycleMs: 48000,
     coef: 1.11,
@@ -340,7 +340,7 @@ export const BUSINESSES = [
     era: "c. 1999",
     tagline: "Polygons! Pixels! The GPU gold rush begins and never slows down.",
     icon: "/icons/gpu.png",
-    baseCost: 537477120,
+    baseCost: 3224862720,
     revenue: 122523030,
     cycleMs: 96000,
     coef: 1.1,
@@ -358,7 +358,7 @@ export const BUSINESSES = [
     era: "c. 2015",
     tagline: "More glow, more frames, more profit. The fans never sleep.",
     icon: "/icons/rgb.png",
-    baseCost: 6449725440,
+    baseCost: 77396705280,
     revenue: 2572983630,
     cycleMs: 192000,
     coef: 1.09,
@@ -376,7 +376,7 @@ export const BUSINESSES = [
     era: "c. 2019",
     tagline: "Superpositioned profits, observed daily inside a golden chandelier.",
     icon: "/icons/quantum.png",
-    baseCost: 77396705280,
+    baseCost: 2321901158400,
     revenue: 54032656230,
     cycleMs: 384000,
     coef: 1.08,
@@ -579,7 +579,11 @@ export function cappedTick(raw, hidden, budget) {
 
 // --- Prestige: reset your empire to recruit a capped profit bonus ---
 // First investor at $1T lifetime (was $1M, which a rush reached in ~3 minutes).
-export const PRESTIGE_UNIT = 1e12;
+// Earnings in one run for the first investor. $100B since 0.0.22: the late
+// eras got slower, and at $1T the first prestige moved to ~9 h nonstop with
+// far fewer investors per run; $100B keeps it near Quantum (~6 h) and the
+// first fork near 4 days.
+export const PRESTIGE_UNIT = 1e11;
 // Kept as the old reference point. The live income ceiling is the soft cap in
 // empire.js, which starts near x14 and rises with singularity points.
 export const GLOBAL_CAP = 10;

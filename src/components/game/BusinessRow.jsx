@@ -2,6 +2,7 @@ import { memo } from "react";
 import {
   BUSINESSES,
   COMMISSION_MS,
+  MILESTONES,
   buyCount,
   costOf,
   formatFlow,
@@ -28,6 +29,18 @@ function breakable(name) {
   return BREAKS.reduce((text, [word, soft]) => text.replace(word, soft), name);
 }
 
+// How far this business is from its next milestone, as a thin bar under the
+// cycle line (from the previous milestone to the next one).
+function MilestoneBar({ owned, next }) {
+  const prev = [0, ...MILESTONES.map((ms) => ms.owned)].filter((n) => n < next).pop() || 0;
+  const pct = Math.max(0, Math.min(100, ((owned - prev) / Math.max(1, next - prev)) * 100));
+  return (
+    <div data-milestone-bar aria-hidden="true" className="h-1.5 w-full border border-[var(--game-border)] bg-[var(--game-bg)]">
+      <div className="h-full bg-[var(--game-accent)]" style={{ width: `${pct}%` }} />
+    </div>
+  );
+}
+
 function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, compact }) {
   const cfg = BUSINESSES[index];
   const st = row;
@@ -51,7 +64,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
   const canHire = !commissioning && !st.manager && !hireLocked && cash >= cfg.managerCost;
 
   return (
-    <div data-row={cfg.id} className={`era-row grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
+    <div data-row={cfg.id} className={`era-row ${(st.milestoneAt || 0) > Date.now() - 1500 ? "milestone-flash" : ""} grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
       <IconTile cfg={cfg} st={st} onRun={() => onRun(index)} />
 
       <div className="min-w-0 space-y-2">
@@ -98,14 +111,15 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
           <span>
             {money(perCycle)} / {cycleSeconds}s cycle
           </span>
-          <span>
+          <span data-next-milestone>
             {next
-              ? next.speed
-                ? `next ${next.speed}× speed at ${next.owned} owned`
-                : `next ×${next.mult} at ${next.owned} owned`
+              ? `next ${next.speed ? `${next.speed}× speed` : `${next.mult}× pay`} at ${next.owned} · ${next.owned - st.owned} to go`
               : "all milestones earned"}
           </span>
         </div>
+        {next && (
+          <MilestoneBar owned={st.owned} next={next.owned} />
+        )}
       </div>
 
       <div className="era-actions col-span-2 flex gap-2 sm:col-span-1 sm:w-44 sm:flex-col sm:justify-center">
@@ -121,8 +135,14 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
               : "cursor-not-allowed border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-dim)]"
           }`}
         >
-          <span className="font-pixel text-sm uppercase leading-5">Buy ×{count}</span>
+          <span className="font-pixel text-sm uppercase leading-5">
+            Buy ×{count}
+            {buyMode === "NEXT" && <span data-next-target> → {st.owned + count}</span>}
+          </span>
           <span className="mt-1 block font-term text-lg leading-5">{money(cost)}</span>
+          {!canBuy && Number.isFinite(cost) && (
+            <span data-need className="block font-term text-sm leading-4">need {money(cost - cash)} more</span>
+          )}
         </button>
 
         {st.manager ? (

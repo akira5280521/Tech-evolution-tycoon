@@ -9,6 +9,7 @@ import {
   COMMISSION_MS,
   ERA_GATE,
   MILESTONES,
+  OFFLINE_CAP_MS,
   PROJECT_MS,
   RESEARCH_MS,
   SUPPLY_KEYS,
@@ -1145,6 +1146,79 @@ export function resolveDilemma(state, choice, now) {
   return { type: "defer" };
 }
 
+// ---- Investor milestones -------------------------------------------------
+// Fixed unlocks for the most investors you've ever had (a fork spending them
+// doesn't take an unlock away). Earned, never bought, so investors keep their
+// one job: income.
+export const INVESTOR_MILESTONES = [
+  { at: 10, id: "start-timber", title: "HEAD START", text: "Every run starts with 25 Timber Camps, so the Paper Mill is open from the first minute." },
+  { at: 50, id: "keep-crews", title: "LOYAL CREWS", text: "Managers of material businesses (Timber Camp, Paper Mill, Sand Quarry and the rest) stay hired when you prestige or fork." },
+  { at: 250, id: "away-36", title: "NIGHT SHIFT", text: "Time away pays for up to 36 hours instead of 24." },
+  { at: 1000, id: "auto-upgrades", title: "PURCHASING DEPARTMENT", text: "Upgrades can buy themselves when you can afford them. Turn it on in the BOOST tab." },
+  { at: 5000, id: "away-48", title: "WEEKEND SHIFT", text: "Time away pays for up to 48 hours." },
+  { at: 10000, id: "start-ics", title: "INDUSTRIAL BASE", text: "Every run starts with 10 of each business before Integrated Circuits." },
+];
+
+// The most investors this company has ever had. Saves from before 0.0.22
+// count the investors spent on forks too.
+export function investorPeak(state) {
+  return Math.max(Math.floor(state?.investorPeak || 0), Math.floor(state?.investors || 0));
+}
+
+export function peakFromSave(investors, singularities) {
+  let spent = 0;
+  for (let k = 0; k < Math.max(0, Math.floor(singularities || 0)); k++) spent += forkCost(k);
+  return Math.floor(investors || 0) + spent;
+}
+
+export function hasPerk(state, id) {
+  const ms = INVESTOR_MILESTONES.find((m) => m.id === id);
+  return !!ms && investorPeak(state) >= ms.at;
+}
+
+export function nextInvestorMilestone(state) {
+  return INVESTOR_MILESTONES.find((m) => investorPeak(state) < m.at) || null;
+}
+
+// How long time away can pay for.
+export function offlineCapMs(state) {
+  if (hasPerk(state, "away-48")) return 48 * 3600e3;
+  if (hasPerk(state, "away-36")) return 36 * 3600e3;
+  return OFFLINE_CAP_MS;
+}
+
+// The businesses a new run (prestige or fork, not a challenge) starts with.
+// `prev` is the run being left, for managers that stay hired.
+export function startingBiz(state, biz, prev = null) {
+  const icsAt = BUSINESSES.findIndex((cfg) => cfg.id === "ics");
+  return biz.map((row, i) => {
+    let owned = row.owned;
+    if (hasPerk(state, "start-ics") && i < icsAt) owned = Math.max(owned, ERA_GATE);
+    if (hasPerk(state, "start-timber") && BUSINESSES[i].id === "timber") owned = Math.max(owned, 25);
+    const keep = hasPerk(state, "keep-crews") && !!BUSINESSES[i].makes && !!prev?.[i]?.manager;
+    return owned === row.owned && !keep ? row : { ...row, owned, manager: row.manager || keep };
+  });
+}
+
+// With the purchasing department on: start the cheapest upgrade you can
+// afford, one at a time. Returns true if it started one.
+export function autoBuyUpgrade(state, now = Date.now()) {
+  if (!state.autoUpgrades || !hasPerk(state, "auto-upgrades") || timedJob(state.upgradeJob)) return false;
+  let best = null;
+  BUSINESSES.forEach((cfg, i) => {
+    const owned = state.biz?.[i]?.owned || 0;
+    if (owned <= 0) return;
+    const offer = upgradeOffer(i);
+    const up = upgradesOf(state, cfg.id);
+    for (const kind of ["rev", "spd"]) {
+      const piece = offer[kind];
+      if (up[kind] || owned < piece.need || !Number.isFinite(piece.cost) || piece.cost > state.cash) continue;
+      if (!best || piece.cost < best.cost) best = { i, kind, cost: piece.cost };
+    }
+  });
+  return best ? buyUpgrade(state, best.i, best.kind, now) : false;
+}
+
 export function snapshotMeta(state, options = {}) {
   collectBadges(state);
   // Cash upgrades belong to the run. Prestige, fork and a challenge clear them
@@ -1153,6 +1227,8 @@ export function snapshotMeta(state, options = {}) {
   const resetRunUpgrades = !!options.resetRunUpgrades;
   return {
     investors: state.investors || 0,
+    investorPeak: investorPeak(state),
+    autoUpgrades: !!state.autoUpgrades,
     careerEarnings: state.careerEarnings || 0,
     singularities: state.singularities || 0,
     tokens: state.tokens || 0,

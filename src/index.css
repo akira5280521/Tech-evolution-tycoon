@@ -532,3 +532,18 @@ img[src*="/icons/"] {
 .hud-sticky[data-hud-fits="no"] {
   position: static;
 }
+
+/* A short glow when a purchase reaches a milestone (25, 50, 75...). */
+@media (prefers-reduced-motion: no-preference) {
+  .milestone-flash {
+    animation: milestone-flash 1.2s ease-out 1;
+  }
+}
+@keyframes milestone-flash {
+  0% {
+    box-shadow: 0 0 0 3px var(--game-accent), 4px 4px 0 0 #000;
+  }
+  100% {
+    box-shadow: 4px 4px 0 0 #000;
+  }
+}

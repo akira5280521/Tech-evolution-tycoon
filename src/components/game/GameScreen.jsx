@@ -136,8 +136,8 @@ export default function GameScreen() {
             </p>
           )}
           {/* Prestige only matters much later; a brand-new player sees it once
-              the run has earned $1B (a thousandth of the first investor). */}
-          {((state.investors || 0) > 0 || state.prestiged || (state.lifetime || 0) >= 1e9) && (
+              the run has earned $100M (a thousandth of the first investor). */}
+          {((state.investors || 0) > 0 || state.prestiged || (state.lifetime || 0) >= 1e8) && (
             <PrestigeBar state={state} onPrestige={prestige} />
           )}
 

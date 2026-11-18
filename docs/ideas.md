@@ -254,6 +254,8 @@ Market.
 
 ## PC workbench
 
+Concept mock-ups (idea only): [docs/art/workbench](art/workbench/README.md).
+
 **Roadmap:** item 7.
 
 ### Idea

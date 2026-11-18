@@ -532,7 +532,8 @@ export function maxAffordable(cfg, owned, cash) {
 // the next milestone, speed gate, or mastery gate so one press cannot skip it.
 export function buyCount(mode, cfg, owned, cash, limit = MAX_BUY) {
   const cap = Number.isFinite(limit) && limit >= 1 ? Math.min(MAX_BUY, Math.floor(limit)) : MAX_BUY;
-  if (mode === "MAX") return Math.min(cap, Math.max(maxAffordable(cfg, owned, cash), 1));
+  // MAX: as many as you can afford, straight past milestones.
+  if (mode === "MAX") return Math.min(MAX_BUY, Math.max(maxAffordable(cfg, owned, cash), 1));
   // NEXT: exactly enough to reach the next milestone, speed gate, or mastery
   // gate. Callers pass that distance as `limit`. Past every gate, round up to
   // the next multiple of 25 so the button still has a target.
@@ -541,9 +542,13 @@ export function buyCount(mode, cfg, owned, cash, limit = MAX_BUY) {
     const have = Number.isFinite(owned) && owned > 0 ? Math.floor(owned) : 0;
     return 25 - (have % 25);
   }
+  // X1 / X10 / X100 buy exactly that many. They used to stop at the next
+  // milestone (X10 at 20 bought 5), which looked like the button ignored the
+  // setting. Buying past a milestone still gives its bonus (bonuses come from
+  // the owned count), and NEXT is there for landing on one exactly.
   const n = parseInt(String(mode).slice(1), 10);
   if (!Number.isFinite(n) || n < 1) return 1;
-  return Math.min(cap, n);
+  return Math.min(MAX_BUY, n);
 }
 
 // Closed tabs, hidden tabs, and suspended timers all share this one budget.

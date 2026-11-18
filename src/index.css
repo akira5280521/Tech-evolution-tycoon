@@ -563,3 +563,28 @@ img[src*="/icons/"] {
     box-shadow: 0 0 0 3px var(--game-violet), 3px 3px 0 0 #000;
   }
 }
+
+/* Investors card: on a phone the text gets the full width and the PRESTIGE
+   button drops below it, instead of squeezing the text into a narrow column. */
+.prestige-text {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+.prestige-btn {
+  flex: 1 1 auto;
+}
+@media (min-width: 640px) {
+  .prestige-btn { flex: 0 0 auto; }
+}
+
+/* The web page's own scroll bars showed as thin grey bars down both edges
+   on Android. Hide them on touch screens; Android's own scroll indicator
+   (the one at the very edge) still shows while scrolling. Mice keep theirs. */
+@media (pointer: coarse) {
+  * {
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+}

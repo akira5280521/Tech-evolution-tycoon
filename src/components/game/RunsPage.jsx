@@ -6,7 +6,8 @@ import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { HelpTip } from "./HintSheet";
 
 export default function RunsPage() {
-  const { state, startChallenge } = useGameState();
+  const { state, startChallenge, abandonChallenge } = useGameState();
+  const locked = !state.prestiged && !state.challenge;
   const [now, setNow] = useState(0);
   useEffect(() => {
     setNow(Date.now());
@@ -21,6 +22,13 @@ export default function RunsPage() {
       <p className="font-term text-lg leading-6 text-[var(--game-muted)]">
         One run with special rules. Starting one resets your businesses and cash like a prestige does, but you keep investors.
       </p>
+      {locked && (
+        <Panel>
+          <p data-challenges-locked className="font-term text-lg leading-6 text-[var(--game-muted)]">
+            Challenges open after your first prestige. They're tuned for a company that already has investors.
+          </p>
+        </Panel>
+      )}
       {CHALLENGES.map((challenge) => {
         const done = (state.challengesDone || []).includes(challenge.id);
         const active = state.challenge?.id === challenge.id;
@@ -40,10 +48,21 @@ export default function RunsPage() {
             )}
             {done ? (
               <p className="mt-2 font-pixel text-[0.55rem] text-[var(--game-success)]">WON</p>
+            ) : active ? (
+              <div className="mt-2">
+                <button
+                  type="button"
+                  data-abandon-challenge
+                  onClick={abandonChallenge}
+                  className="min-h-11 w-full border-2 border-[var(--game-danger)] bg-[var(--game-panel)] px-3 font-pixel text-[0.6rem] text-[var(--game-danger)] shadow-[3px_3px_0_0_#000]"
+                >
+                  ABANDON CHALLENGE
+                </button>
+              </div>
             ) : (
               <div className="mt-2">
-                <GoldButton disabled={!!state.challenge} onClick={() => startChallenge(challenge.id)} dataAttr={challenge.id}>
-                  <span className="font-pixel text-[0.7rem]">START RUN</span>
+                <GoldButton disabled={!!state.challenge || locked} onClick={() => startChallenge(challenge.id)} dataAttr={challenge.id}>
+                  <span className="font-pixel text-[0.7rem]">{locked ? "AFTER FIRST PRESTIGE" : "START RUN"}</span>
                 </GoldButton>
               </div>
             )}

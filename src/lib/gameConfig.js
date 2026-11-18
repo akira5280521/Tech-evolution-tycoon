@@ -680,6 +680,15 @@ export function nextMove(state) {
     if (Number.isFinite(cost) && cash >= cost) return `${user} is short of ${short.key}. Buy another ${maker.name} for ${money(cost)}.`;
   }
 
+  // Prestige guide: once a prestige would at least double your investors.
+  if (!state?.challenge) {
+    const claimNow = investorsFor(state?.lifetime);
+    const have = Math.floor(state?.investors || 0);
+    if (claimNow >= 1 && claimNow >= Math.max(1, have)) {
+      return `Good time to prestige: ${claimNow} new investors would ${have > 0 ? "at least double yours" : "join your board"}.`;
+    }
+  }
+
   if (!noBoss) {
     for (let i = BUSINESSES.length - 1; i >= 0; i--) {
       const st = biz[i];

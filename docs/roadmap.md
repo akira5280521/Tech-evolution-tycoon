@@ -59,6 +59,13 @@ test shipped in 0.0.13 (see Done).
   that often; progress bars draw at up to 30 fps and stop when off screen.
 - Pacing sim (nonstop): Quantum 5.8 h, first prestige 5.9 h, first fork
   3.7 d. Casual: Quantum 45 h, first prestige 2.3 d, first fork 12 d.
+- **Prestige guide:** income now and after on the Investors panel and in
+  the prompt; the button glows and Next Move suggests it once a prestige
+  would at least double your investors.
+- **First-prestige screen:** what you gained, kept and started over, any
+  investor milestone unlocked and the next one.
+- **Challenges** open after the first prestige (a Speedrun started before
+  it couldn't be won), and an active challenge can be abandoned.
 
 ## Ships in 0.0.19
 
@@ -265,8 +272,8 @@ in 0.0.18, or that is merged for 0.0.19, is not repeated here.
   (buy 5 Timber Camps, hire a first manager, unlock the next era) with a
   fixed reward. Also: the last few one-time tips (the first dilemma,
   offline earnings), a quicker first manager, a first-prestige screen that
-  shows exactly what you keep and gain, and an "abandon challenge" button.
-  (Investor milestones and the lower tick rate ship in 0.0.22.) Tutorial part 2 shipped in 0.0.18,
+  shows exactly what you keep and gain, and an "abandon challenge" button
+  ship in 0.0.22, with investor milestones and the lower tick rate. Tutorial part 2 shipped in 0.0.18,
   including the "row ran out of materials" tip; 0.0.19 adds a red warning
   on the row itself. Paired with the new tutorial.
   [Design](ideas.md#first-minutes-and-ui).

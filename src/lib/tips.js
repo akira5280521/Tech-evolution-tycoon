@@ -111,14 +111,6 @@ export const TIPS = [
     when: (s) => (s.data || 0) >= 1 && dataPerSecond(s) > 0,
   },
   {
-    id: "after-prestige",
-    page: "game",
-    title: "FASTER THIS TIME",
-    text: "Your investors boost all income now, so you'll get back to where you were much quicker. Prestige again whenever the button offers a good number of new investors.",
-    target: '[data-prestige="recruit"]',
-    when: (s) => !!s.prestiged && (s.investors || 0) > 0,
-  },
-  {
     id: "challenges",
     page: "game",
     title: "CHALLENGES",
@@ -167,7 +159,7 @@ export function tipsOn(state) {
 // The tip to show on this page now, or null.
 export function currentTip(state, page) {
   if (!state || !tipsOn(state) || tutorialActive(state)) return null;
-  if (state.offlineReport || state.dilemma) return null;
+  if (state.offlineReport || state.dilemma || state.prestigeReport) return null;
   const seen = state.tutorial?.tips || [];
   for (const tip of TIPS) {
     if (tip.page !== page || seen.includes(tip.id)) continue;

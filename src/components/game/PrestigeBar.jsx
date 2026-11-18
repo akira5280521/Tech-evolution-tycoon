@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { PRESTIGE_UNIT, investorsFor, money, prestigeMult } from "@/lib/gameConfig";
 import { HelpTip } from "./HintSheet";
-import { investorPeak, nextInvestorMilestone } from "@/lib/empire";
+import { empireFactors, investorPeak, nextInvestorMilestone } from "@/lib/empire";
 
 // Investors and starting over (prestige), in plain words. The exact numbers
 // sit behind "Details" for players who want them.
@@ -12,6 +12,14 @@ export default function PrestigeBar({ state, onPrestige }) {
   const nextAt = money(Math.pow(claimable + 1, 2) * PRESTIGE_UNIT);
   const firstAt = money(PRESTIGE_UNIT);
   const investors = state.investors || 0;
+
+  // Prestige guide: what a prestige now would do to income, and the common
+  // rule of thumb: prestige once it would at least double your investors.
+  const now = Date.now();
+  const incomeNow = empireFactors(state, now).total;
+  const incomeAfter = claimable > 0 ? empireFactors({ ...state, investors: investors + claimable }, now).total : incomeNow;
+  const doubles = claimable > 0 && claimable >= Math.max(1, investors);
+  const doubleAt = money(Math.pow(Math.max(1, investors), 2) * PRESTIGE_UNIT);
 
   let line;
   if (claimable > 0) {
@@ -38,6 +46,14 @@ export default function PrestigeBar({ state, onPrestige }) {
             </p>
           )}
           <p data-prestige-line className="font-term text-base leading-5 text-[var(--game-muted)]">{line}</p>
+          {claimable > 0 && (
+            <p data-prestige-guide={doubles ? "good" : "wait"} className={`font-term text-base leading-5 ${doubles ? "text-[var(--game-success)]" : "text-[var(--game-fg)]"}`}>
+              Income ×{incomeNow.toFixed(2)} now → ×{incomeAfter.toFixed(2)} after.{" "}
+              {doubles
+                ? "Good time to prestige: it at least doubles your investors."
+                : `Most players wait until it doubles their investors (at ${doubleAt} this run).`}
+            </p>
+          )}
           {nextInvestorMilestone(state) && (
             <p data-next-unlock className="font-term text-base leading-5 text-[var(--game-violet)]">
               Next unlock at {nextInvestorMilestone(state).at.toLocaleString()} investors (you've had {investorPeak(state).toLocaleString()}): see BOARD.
@@ -63,7 +79,8 @@ export default function PrestigeBar({ state, onPrestige }) {
           onClick={onPrestige}
           disabled={claimable < 1}
           data-prestige="recruit"
-          className={`min-h-[44px] select-none border-2 px-4 py-2 text-center shadow-[3px_3px_0_0_#000] ${
+          data-prestige-ready={doubles ? "yes" : "no"}
+          className={`min-h-[44px] select-none border-2 px-4 py-2 text-center shadow-[3px_3px_0_0_#000] ${doubles ? "prestige-ready" : ""} ${
             claimable >= 1
               ? "border-[var(--game-violet)] bg-[var(--game-violet-bg)] text-[var(--game-violet)] hover:bg-[var(--game-violet-bg-hover)]"
               : "cursor-not-allowed border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-dim)]"

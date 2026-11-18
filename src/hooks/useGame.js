@@ -30,8 +30,11 @@ import {
   canBuyIndex,
   canHireIndex,
   replayAway,
+  failChallenge,
+  empireFactors,
   investorPeak,
   INVESTOR_MILESTONES,
+  nextInvestorMilestone,
   peakFromSave,
   offlineCapMs,
   startingBiz,
@@ -659,12 +662,28 @@ export function useGame() {
     [bump]
   );
 
+  // Leave the current challenge: no reward, and you keep playing this run as
+  // a normal run.
+  const abandonChallenge = useCallback(() => {
+    const s = stateRef.current;
+    const spec = CHALLENGES.find((entry) => entry.id === s.challenge?.id);
+    if (!spec) return;
+    if (!window.confirm(`Abandon the ${spec.name} challenge?\n\nYou won't get its reward this time. You keep playing this run as a normal run, and you can try the challenge again later.`)) return;
+    failChallenge(s);
+    s.modStamp = (s.modStamp || 0) + 1;
+    saveNow();
+    bump();
+    toast("Challenge abandoned", { description: "This run carries on as a normal run." });
+  }, [bump, saveNow]);
+
   const startChallenge = useCallback((id) => {
     const s = stateRef.current;
     if (s.challenge) return;
+    // Challenges open after the first prestige.
+    if (!s.prestiged) return;
     if ((s.challengesDone || []).includes(id)) return;
     const label = id === "glass" ? "Glass Ceiling" : id === "noboss" ? "No Bosses" : "Speedrun";
-    if (!window.confirm(`Start the ${label} challenge?\n\nYou lose this run's cash, machines, managers and upgrades.\nYou keep investors, research, tokens and badges.`)) return;
+    if (!window.confirm(`Start the ${label} challenge?\n\nYou lose this run's cash, businesses, managers and upgrades.\nYou keep investors, research, tokens and badges.`)) return;
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
@@ -699,6 +718,13 @@ export function useGame() {
     saveNow();
     bump();
   }, [bump, saveNow]);
+
+  const dismissPrestigeReport = useCallback(() => {
+    const s = stateRef.current;
+    if (!s.prestigeReport) return;
+    s.prestigeReport = null;
+    bump();
+  }, [bump]);
 
   const dismissOffline = useCallback(() => {
     const s = stateRef.current;
@@ -769,10 +795,13 @@ export function useGame() {
     const nextInvestors = s.investors + gained;
     if (!Number.isFinite(nextInvestors) || nextInvestors < 0) return;
     const noun = gained === 1 ? "investor" : "investors";
-    if (!window.confirm(`Prestige and start over with ${gained} new ${noun}?\n\nYou lose your cash, machines, managers and upgrades.\nYou keep your investors (each one boosts all income forever), research, tokens and badges.`)) return;
+    const after = empireFactors({ ...s, investors: nextInvestors }, Date.now()).total;
+    if (!window.confirm(`Prestige and start over with ${gained} new ${noun}?\n\nIncome: ×${empireFactors(s, Date.now()).total.toFixed(2)} now → ×${after.toFixed(2)} after.\nYou lose your cash, businesses, managers and upgrades.\nYou keep your investors (each one boosts all income forever), research, tokens and badges.`)) return;
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
+    const firstTime = !s.prestiged;
+    const incomeBefore = empireFactors(s, Date.now()).total;
     next.investors = nextInvestors;
     next.investorPeak = Math.max(investorPeak(s), nextInvestors);
     next.biz = startingBiz(next, freshBiz(), s.biz);
@@ -781,6 +810,17 @@ export function useGame() {
     next.prestiged = true;
     next.dilemma = null;
     next.challenge = null;
+    // The first prestige gets a screen that shows what changed.
+    if (firstTime) {
+      next.prestigeReport = {
+        gained,
+        investors: nextInvestors,
+        incomeBefore,
+        incomeAfter: empireFactors(next, Date.now()).total,
+        unlocked: INVESTOR_MILESTONES.filter((ms) => investorPeak(s) < ms.at && next.investorPeak >= ms.at).map((ms) => ({ title: ms.title, text: ms.text })),
+        nextUnlock: nextInvestorMilestone(next),
+      };
+    }
     stateRef.current = next;
     saveNow();
     bump();
@@ -797,7 +837,7 @@ export function useGame() {
     const bill = forkCost(s.singularities || 0);
     if ((s.investors || 0) < bill) return;
     if (singularityMult((s.singularities || 0) + 1) <= singularityMult(s.singularities || 0)) return;
-    if (!window.confirm(`Fork the timeline?\n\nThis spends ${bill} investors and starts your run over (cash, machines, managers and upgrades).\nYou get: income x${singularityMult((s.singularities || 0) + 1).toFixed(1)} forever (now x${singularityMult(s.singularities || 0).toFixed(1)}) and another research slot.\nYou keep: your other investors, research, tokens and badges.`)) return;
+    if (!window.confirm(`Fork the timeline?\n\nThis spends ${bill} investors and starts your run over (cash, businesses, managers and upgrades).\nYou get: income x${singularityMult((s.singularities || 0) + 1).toFixed(1)} forever (now x${singularityMult(s.singularities || 0).toFixed(1)}) and another research slot.\nYou keep: your other investors, research, tokens and badges.`)) return;
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
@@ -874,6 +914,8 @@ export function useGame() {
     purchaseShop,
     chooseSpecialty,
     startChallenge,
+    abandonChallenge,
+    dismissPrestigeReport,
     chooseDilemma,
     cashOut,
     forkTimeline,

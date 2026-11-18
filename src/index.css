@@ -577,17 +577,14 @@ img[src*="/icons/"] {
   .prestige-btn { flex: 0 0 auto; }
 }
 
-/* No scroll indicators on touch screens: Android drew grey bars down both
-   edges while the page scrolled. Mice keep their scrollbar. */
+/* The web page's own scroll bars showed as thin grey bars down both edges
+   on Android. Hide them on touch screens; Android's own scroll indicator
+   (the one at the very edge) still shows while scrolling. Mice keep theirs. */
 @media (pointer: coarse) {
-  html, body, .game-side, .game-modal, .hint-sheet {
+  * {
     scrollbar-width: none;
   }
-  html::-webkit-scrollbar,
-  body::-webkit-scrollbar,
-  .game-side::-webkit-scrollbar,
-  .game-modal::-webkit-scrollbar,
-  .hint-sheet::-webkit-scrollbar {
+  *::-webkit-scrollbar {
     display: none;
   }
 }

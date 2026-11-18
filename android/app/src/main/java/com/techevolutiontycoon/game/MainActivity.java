@@ -19,6 +19,13 @@ public class MainActivity extends BridgeActivity {
         // pad the bottom nav instead of hiding it under the system UI.
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         applyFontScale(getResources().getConfiguration());
+        // No native scroll indicators: they showed as grey bars down both
+        // edges of the screen while the page scrolled.
+        WebView webView = getBridge() != null ? getBridge().getWebView() : null;
+        if (webView != null) {
+            webView.setVerticalScrollBarEnabled(false);
+            webView.setHorizontalScrollBarEnabled(false);
+        }
     }
 
     @Override

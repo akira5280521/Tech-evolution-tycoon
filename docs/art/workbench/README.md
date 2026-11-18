@@ -14,6 +14,11 @@ the game. See [PC workbench](../../ideas.md#pc-workbench).
   details page (specs, what fits and what doesn't, BACK / INSTALL); and a
   POWER ON boot screen with the Bench Score split by part and the weakest
   part named. Part art is 64x64 (`parts2.py`, `bigboard.py`); the power-on scene is `sB_boot.py`; the screens are `mock4.py`.
+- `mockup-insert-parts-2020s.png`: the layout Grok sketched, redrawn in game
+  style. Upgrades / Workbench toggle on BOOST, Bench Score with "held back
+  by", a grid of installed parts (tier, tick, bottleneck marked in amber),
+  empty optional slots as "+ Add", and a Required / Optional checklist.
+  Part art (72x60, 2020s parts) and the page are in `modern/`.
 - All part names are made up (Arcton, Vertexa, Pixelforge, Mainline, Kestrel).
 
 To redraw: `python3 sA.py` (and `sB.py`, `sC.py`) in this folder, needs

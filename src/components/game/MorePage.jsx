@@ -202,7 +202,7 @@ const HOW_TO = [
     title: "BUYING FASTER",
     lines: [
       "The buttons at the top pick how many you buy per tap: X1, X10, X100, NEXT (just enough to reach the next goal) or MAX (as many as you can afford).",
-      "Owning 25, 50 and 100 of one business makes it run twice as fast each time. Bigger counts after that make it pay more.",
+      "Milestones come at 25, 50, 75, 100, 150 and 200 of one business. At 25, 50 and 100 it runs twice as fast; at 75 and 150 it pays twice as much, and at 200 three times as much.",
     ],
   },
   {
@@ -217,7 +217,7 @@ const HOW_TO = [
     id: "prestige",
     title: "PRESTIGE (STARTING OVER)",
     lines: [
-      "Once you've earned $1T in one run, the PRESTIGE button lets you start over and trade in the whole run for investors. You lose your cash, businesses, managers and upgrades.",
+      "Once you've earned $100B in one run, the PRESTIGE button lets you start over and trade in the whole run for investors. You lose your cash, businesses, managers and upgrades.",
       "Every investor makes all income higher, forever, so the next run goes much faster. The more you earn before you prestige, the more investors join. It's how you get really big numbers.",
     ],
   },

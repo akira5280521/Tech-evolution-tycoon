@@ -55,7 +55,7 @@ export default function AnalyticsPanel({ data }) {
         ))}
       </div>
       <p className="mt-3 font-term text-base leading-5 text-[var(--game-dim)]">
-        Era time counts every second a business produced profit, including runs while the browser was closed.
+        Era time counts every second a business produced profit, including time away while managers kept it running.
       </p>
     </section>
   );

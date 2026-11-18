@@ -10,6 +10,7 @@ import BusinessRow from "./BusinessRow";
 import LockedRow from "./LockedRow";
 import PrestigeBar from "./PrestigeBar";
 import WelcomeBack from "./WelcomeBack";
+import PrestigeReport from "./PrestigeReport";
 import BottomTabs from "./BottomTabs";
 import DilemmaModal from "./DilemmaModal";
 import BubbleBanner from "./BubbleBanner";
@@ -28,7 +29,8 @@ function supplyShown(state, key) {
 
 export default function GameScreen() {
   const game = useGameState();
-  const { state, buyMode, setBuyMode, buy, hire, run, runAll, buyForeman, prestige, dismissOffline, chooseDilemma, cashOut, tutorialNext, tutorialSkip } = game;
+  const { state, buyMode, setBuyMode, buy, hire, run, runAll, buyForeman, prestige, dismissOffline,
+    dismissPrestigeReport, chooseDilemma, cashOut, tutorialNext, tutorialSkip } = game;
   const [, bumpTick] = useState(0);
   const [pullDist, setPullDist] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
@@ -92,6 +94,7 @@ export default function GameScreen() {
     <div className="game-root game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
       <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} />
+      <PrestigeReport report={state.offlineReport ? null : state.prestigeReport} onDismiss={dismissPrestigeReport} />
       {!state.offlineReport && <DilemmaModal dilemma={state.dilemma} onChoose={chooseDilemma} />}
 
       {(pullDist > 0 || refreshing) && (
@@ -136,8 +139,8 @@ export default function GameScreen() {
             </p>
           )}
           {/* Prestige only matters much later; a brand-new player sees it once
-              the run has earned $1B (a thousandth of the first investor). */}
-          {((state.investors || 0) > 0 || state.prestiged || (state.lifetime || 0) >= 1e9) && (
+              the run has earned $100M (a thousandth of the first investor). */}
+          {((state.investors || 0) > 0 || state.prestiged || (state.lifetime || 0) >= 1e8) && (
             <PrestigeBar state={state} onPrestige={prestige} />
           )}
 

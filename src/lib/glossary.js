@@ -21,7 +21,7 @@ export const GLOSSARY = {
   },
   speedups: {
     term: "SPEED-UPS",
-    text: "Owning 25, 50 and 100 of one business makes it run twice as fast each time. Bigger counts after that make it pay more.",
+    text: "Milestones come at 25, 50, 75, 100, 150 and 200 of one business. At 25, 50 and 100 it runs twice as fast; at 75 and 150 it pays twice as much, and at 200 three times as much.",
   },
   upgrades: {
     term: "UPGRADES",
@@ -33,11 +33,15 @@ export const GLOSSARY = {
   },
   prestige: {
     term: "PRESTIGE",
-    text: "Trade in your whole run for investors. You lose your cash, businesses, managers and upgrades, but every investor makes all income higher, forever, so the next run is much faster. The first investor comes once you've earned $1T in one run; 4 come at $16T, 10 at $100T.",
+    text: "Trade in your whole run for investors. You lose your cash, businesses, managers and upgrades, but every investor makes all income higher, forever, so the next run is much faster. The first investor comes once you've earned $100B in one run; 4 come at $1.6T, 10 at $10T.",
   },
   investors: {
     term: "INVESTORS",
     text: "You get them when you prestige, and they stay through every reset. The first 100 add +5% income each, the next 400 add +1% each, and after that each adds a little more.",
+  },
+  investorMilestones: {
+    term: "INVESTOR MILESTONES",
+    text: "Unlocks you keep forever, earned by the most investors you've ever had: a head start of Timber Camps, managers that stay through prestige, longer time away, upgrades that buy themselves, and more. Forking the timeline doesn't take them away.",
   },
   fork: {
     term: "FORK THE TIMELINE",
@@ -84,6 +88,7 @@ export const GLOSSARY_ORDER = [
   "mastery",
   "prestige",
   "investors",
+  "investorMilestones",
   "tokens",
   "research",
   "specialty",

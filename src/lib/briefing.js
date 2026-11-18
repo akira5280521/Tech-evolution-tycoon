@@ -3,8 +3,8 @@
 
 export const DAILY_TIPS = [
   "Hire a manager and that business keeps paying at half speed while the app is closed.",
-  "Earn $1T in one run and you can prestige for your first investor.",
-  "Milestones at 25, 50, 100, 150, 200, and 220 multiply a whole era.",
+  "Earn $100B in one run and you can prestige for your first investor.",
+  "Milestones at 25, 50, 75, 100, 150 and 200 multiply a whole era.",
   "Run All fires every business that still needs a click.",
   "A closed app earns half as much as an open one, and only for twenty-four hours.",
   "Later eras cost more up front and pay more once they are running.",

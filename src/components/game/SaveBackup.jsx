@@ -90,7 +90,7 @@ export default function SaveBackup({ state, onExport, onImport }) {
     <Panel>
       <h2 className="font-pixel text-[0.6rem]">SAVE BACKUP</h2>
       <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
-        Your progress lives only on this device. Make a save code and keep it somewhere safe, like a notes app or an email to yourself.
+        Your progress is saved on this device, and in the cloud if you sign in with Play Games above. You can also make a save code and keep it somewhere safe, like a notes app or an email to yourself.
         Paste it back in after reinstalling or on a new phone.
       </p>
 

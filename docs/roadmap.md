@@ -32,6 +32,41 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
+## Ships in 0.0.22
+
+- **Buy buttons buy what they say.** ×10 and ×100 always buy that many and
+  MAX buys everything affordable; they used to stop at the next milestone,
+  speed or mastery count (×10 at 70 Timber Camps bought 2). NEXT still
+  stops at the next goal and now shows where it lands (BUY ×5 → 75).
+- **Round milestones, AdCap style:** 25 (2× speed), 50 (2× speed), 75 (2×
+  pay), 100 (2× speed), 150 (2× pay), 200 (3× pay). Speed-upgrade and
+  mastery counts are in steps of 25 too; badge counts in steps of 5.
+- **Milestone feedback:** each row shows its next milestone and how many to
+  go with a small bar; reaching one flashes the row and says what it gave.
+  A grey buy button shows how much more cash is needed.
+- **Investor milestones** (Board tab, and "Next unlock at N investors" on
+  the Investors panel): 10 head start (25 Timber Camps), 50 material
+  managers stay hired, 250 time away up to 36 h, 1,000 upgrades buy
+  themselves (toggle on Boost), 5,000 time away up to 48 h, 10,000 start
+  with 10 of each business before Integrated Circuits. Counted by the most
+  investors ever held, so a fork doesn't take them away; older saves add
+  back the investors spent on forks.
+- **Slower late eras:** Microprocessors to Quantum cost more (×1.5 up to
+  ×30), so Quantum comes at about 6 hours of nonstop play (was 2.7). The
+  first investor now comes at $100B in a run (was $1T) so the first
+  prestige still lands near Quantum and investors keep flowing.
+- **Battery:** the game ticks 4 times a second (was 10) and redraws at most
+  that often; progress bars draw at up to 30 fps and stop when off screen.
+- Pacing sim (nonstop): Quantum 5.8 h, first prestige 5.9 h, first fork
+  3.7 d. Casual: Quantum 45 h, first prestige 2.3 d, first fork 12 d.
+- **Prestige guide:** income now and after on the Investors panel and in
+  the prompt; the button glows and Next Move suggests it once a prestige
+  would at least double your investors.
+- **First-prestige screen:** what you gained, kept and started over, any
+  investor milestone unlocked and the next one.
+- **Challenges** open after the first prestige (a Speedrun started before
+  it couldn't be won), and an active challenge can be abandoned.
+
 ## Ships in 0.0.19
 
 PRs #48-#50 shipped in the uploaded 0.0.19 Play bundle (versionCode 19).
@@ -225,14 +260,6 @@ in 0.0.18, or that is merged for 0.0.19, is not repeated here.
   would give right now ("+340 investors, income x1.8") and lights up once it
   would at least double your investors.
   [Design](ideas.md#first-minutes-and-ui). [Design](ideas.md#mid-game).
-- **Investor milestones.** Fixed investor counts that unlock things for
-  good, shown on the prestige screen as "Next unlock at 1,000 investors":
-  start runs with Sand Quarries, material-row managers kept through
-  prestige (worth more now that materials run out), auto-buy for upgrades,
-  a longer offline cap (24 h to 36 h to 48 h), start runs at a later era.
-  Replaces the separate investor upgrade shop. Done before launch so live
-  saves aren't disrupted. Re-run the pacing sim.
-  [Design](ideas.md#mid-game).
 - **Play Games sign-in and cloud save.** Add the Android credentials (app
   signing key and upload key SHA-1s), turn on Saved games, add testers, put
   the project id in `strings.xml`, then update the Data safety answers. See
@@ -245,8 +272,8 @@ in 0.0.18, or that is merged for 0.0.19, is not repeated here.
   (buy 5 Timber Camps, hire a first manager, unlock the next era) with a
   fixed reward. Also: the last few one-time tips (the first dilemma,
   offline earnings), a quicker first manager, a first-prestige screen that
-  shows exactly what you keep and gain, an "abandon challenge" button, and
-  a lower game tick rate to save battery. Tutorial part 2 shipped in 0.0.18,
+  shows exactly what you keep and gain, and an "abandon challenge" button
+  ship in 0.0.22, with investor milestones and the lower tick rate. Tutorial part 2 shipped in 0.0.18,
   including the "row ran out of materials" tip; 0.0.19 adds a red warning
   on the row itself. Paired with the new tutorial.
   [Design](ideas.md#first-minutes-and-ui).

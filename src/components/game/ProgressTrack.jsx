@@ -4,6 +4,10 @@ import { useEffect, useRef } from "react";
 const FAST_CYCLE_MS = 500;
 // After a manual payout the bar stays full long enough to see it finish.
 const HOLD_MS = 120;
+// Bars repaint at most this often (about 30 fps). Phones with 120-144 Hz
+// screens otherwise redraw every bar 144 times a second, which costs battery
+// for no visible gain on a pixel-art bar.
+const PAINT_MS = 33;
 
 // The fill follows the cycle clock, not the 100ms game tick. A throttled
 // phone can deliver ticks 150–250ms apart; a width transition aimed at the
@@ -23,6 +27,16 @@ export default function ProgressTrack({ cycleMs, progress, cycleStart, active, l
     let raf = 0;
     let lastPaint = 0;
     let lastPct = -1;
+    // Off-screen bars don't animate at all.
+    let visible = true;
+    const io =
+      typeof IntersectionObserver === "function" && rootRef.current
+        ? new IntersectionObserver((entries) => {
+            const was = visible;
+            visible = entries.some((e) => e.isIntersecting);
+            if (visible && !was && !raf) raf = requestAnimationFrame(frame);
+          })
+        : null;
     const paint = (pct) => {
       const clamped = Math.max(0, Math.min(1, pct));
       const rounded = Math.round(clamped * 100);
@@ -34,6 +48,14 @@ export default function ProgressTrack({ cycleMs, progress, cycleStart, active, l
       lastPct = rounded;
     };
     const frame = (t) => {
+      if (!visible) {
+        raf = 0;
+        return;
+      }
+      if (t - lastPaint < PAINT_MS) {
+        raf = requestAnimationFrame(frame);
+        return;
+      }
       const now = Date.now();
       let pct = 0;
       if (active && cycleStart) {
@@ -62,7 +84,11 @@ export default function ProgressTrack({ cycleMs, progress, cycleStart, active, l
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
+    if (io && rootRef.current) io.observe(rootRef.current);
+    return () => {
+      cancelAnimationFrame(raf);
+      io?.disconnect();
+    };
   }, [active, loop, safe, cycleStart, fast]);
 
   return (

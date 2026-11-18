@@ -90,7 +90,7 @@ export const TIPS = [
     id: "speedups",
     page: "game",
     title: "SPEED-UPS",
-    text: "Owning 25, 50 or 100 of one business makes it run twice as fast each time. Bigger counts after that make it pay more. The NEXT buy button aims for these.",
+    text: "Milestones come at 25, 50, 75, 100, 150 and 200. At 25, 50 and 100 a business runs twice as fast; at 75, 150 and 200 it pays more. The NEXT buy button aims for these.",
     target: "[data-buy-modes]",
     when: (s) => maxOwned(s) >= 25,
   },
@@ -109,14 +109,6 @@ export const TIPS = [
     text: "Every era you own makes research data, slowly. Data is never lost, even when you prestige. Spend it on the RESEARCH tab on a bonus you keep forever.",
     target: '[data-tab="research"]',
     when: (s) => (s.data || 0) >= 1 && dataPerSecond(s) > 0,
-  },
-  {
-    id: "after-prestige",
-    page: "game",
-    title: "FASTER THIS TIME",
-    text: "Your investors boost all income now, so you'll get back to where you were much quicker. Prestige again whenever the button offers a good number of new investors.",
-    target: '[data-prestige="recruit"]',
-    when: (s) => !!s.prestiged && (s.investors || 0) > 0,
   },
   {
     id: "challenges",
@@ -167,7 +159,7 @@ export function tipsOn(state) {
 // The tip to show on this page now, or null.
 export function currentTip(state, page) {
   if (!state || !tipsOn(state) || tutorialActive(state)) return null;
-  if (state.offlineReport || state.dilemma) return null;
+  if (state.offlineReport || state.dilemma || state.prestigeReport) return null;
   const seen = state.tutorial?.tips || [];
   for (const tip of TIPS) {
     if (tip.page !== page || seen.includes(tip.id)) continue;

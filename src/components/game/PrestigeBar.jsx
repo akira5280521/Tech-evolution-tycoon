@@ -36,7 +36,7 @@ export default function PrestigeBar({ state, onPrestige }) {
       className="border-2 border-[var(--game-violet-border)] bg-[var(--game-card)] p-3 shadow-[4px_4px_0_0_#000]"
     >
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <div className="min-w-0 flex-1">
+        <div className="prestige-text">
           <h2 className="flex items-center gap-2 font-pixel text-sm text-[var(--game-violet)]">
             INVESTORS <HelpTip term="prestige" />
           </h2>
@@ -80,7 +80,7 @@ export default function PrestigeBar({ state, onPrestige }) {
           disabled={claimable < 1}
           data-prestige="recruit"
           data-prestige-ready={doubles ? "yes" : "no"}
-          className={`min-h-[44px] select-none border-2 px-4 py-2 text-center shadow-[3px_3px_0_0_#000] ${doubles ? "prestige-ready" : ""} ${
+          className={`prestige-btn min-h-[44px] select-none border-2 px-4 py-2 text-center shadow-[3px_3px_0_0_#000] ${doubles ? "prestige-ready" : ""} ${
             claimable >= 1
               ? "border-[var(--game-violet)] bg-[var(--game-violet-bg)] text-[var(--game-violet)] hover:bg-[var(--game-violet-bg-hover)]"
               : "cursor-not-allowed border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-dim)]"

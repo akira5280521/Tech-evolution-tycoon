@@ -1,31 +1,28 @@
-import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { FlaskConical } from "lucide-react";
-import { BUSINESSES, RESEARCH_MS } from "@/lib/gameConfig";
+import { BUSINESSES, RESEARCH_MS, count, investorsFor, money } from "@/lib/gameConfig";
 import { SPECIALTIES, canCommit, dataPerSecond, establishedCount, masteredCount, specialtySlots } from "@/lib/empire";
 import { getSaveData } from "@/lib/gameSave";
-import { readPrefs, writePrefs } from "@/lib/gamePrefs";
-import { setSoundEnabled } from "@/lib/sfx";
+import { eraNameAt, eraReachedIndex, formatDuration } from "@/lib/records";
 import { useGameState } from "./GameState";
 import AnalyticsPanel from "./AnalyticsPanel";
 import BadgesPage from "./BadgesPage";
 import AppVersionFooter from "./AppVersion";
 import DailyBriefing from "./DailyBriefing";
 import NextMove from "./NextMove";
-import TokenShop from "./TokenShop";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
 import AccountPanel from "./AccountPanel";
 import { HelpTip } from "./HintSheet";
 import { GLOSSARY, GLOSSARY_ORDER } from "@/lib/glossary";
+import { AchievementsButton, AwayReminder, DisplaySettings, FeedbackButton, PlayToggles, ResetProgress, WhatsNewButton } from "./SettingsControls";
 
 const TABS = [
-  { id: "howto", label: "HOW TO PLAY" },
-  { id: "settings", label: "SETTINGS" },
-  { id: "stats", label: "STATS" },
-  { id: "badges", label: "BADGES" },
-  { id: "market", label: "MARKET" },
+  { id: "settings", label: "SETTINGS", title: "SETTINGS" },
+  { id: "howto", label: "HOW TO PLAY", title: "HOW TO PLAY" },
+  { id: "stats", label: "STATS", title: "STATS" },
+  { id: "badges", label: "BADGES", title: "BADGES" },
 ];
 
 export function MoreLinks({ active }) {
@@ -54,26 +51,28 @@ export default function MorePage() {
   const location = useLocation();
   const hash = (location.hash || "#settings").replace("#", "");
   const tab = TABS.some((entry) => entry.id === hash) ? hash : "settings";
-  const { state, reset, purchaseShop, chooseSpecialty, setOrientation, touchBriefing, exportSave, importSave, tutorialReplay, setTipsOff } = useGameState();
+  const { state, reset, setOrientation, touchBriefing, exportSave, importSave, tutorialReplay, setTipsOff } = useGameState();
   const navigate = useNavigate();
   const data = getSaveData();
 
   if (tab === "badges") return <BadgesPage top={<MoreLinks active="badges" />} />;
 
   return (
-    <ScreenShell title={"GAME\nSETTINGS"} subtitle="">
+    <ScreenShell title={TABS.find((entry) => entry.id === tab)?.title || "SETTINGS"} subtitle="">
       <MoreLinks active={tab} />
       {tab === "settings" && (
         <div className="flex min-h-[60vh] flex-col gap-3">
           <PlayToggles />
+          <DisplaySettings />
           <OrientationSetting value={state.orientation || "auto"} onChange={setOrientation} />
-          <AnalyticsPanel data={data} />
+          <AwayReminder />
           <CheckForUpdatesButton />
+          <WhatsNewButton />
           <AccountPanel state={state} onExport={exportSave} onImport={importSave} />
+          <AchievementsButton />
           <SaveBackup state={state} onExport={exportSave} onImport={importSave} />
-          <button type="button" onClick={reset} className="min-h-11 border-2 border-[var(--game-danger)] px-3 font-pixel text-[0.55rem] text-[var(--game-danger)]">
-            RESET SAVE
-          </button>
+          <FeedbackButton />
+          <ResetProgress onReset={reset} />
           <AppVersionFooter />
         </div>
       )}
@@ -99,39 +98,8 @@ export default function MorePage() {
           <HowTo tipsOff={!!state.tutorial?.tipsOff} onTips={setTipsOff} />
         </>
       )}
-      {tab === "stats" && <Stats state={state} />}
-      {tab === "market" && (
-        <Panel className="border-[var(--game-accent)]">
-          <h2 className="font-pixel text-[0.7rem] text-[var(--game-accent)]">MARKET</h2>
-          <div className="mt-3">
-            <TokenShop state={state} onBuy={purchaseShop} />
-          </div>
-        </Panel>
-      )}
+      {tab === "stats" && <Stats state={state} data={data} />}
     </ScreenShell>
-  );
-}
-
-function PlayToggles() {
-  const [prefs, setPrefs] = useState({ sound: true, compact: false });
-  useEffect(() => setPrefs(readPrefs()), []);
-  const set = (partial) => {
-    const next = writePrefs(partial);
-    if ("sound" in partial) setSoundEnabled(next.sound);
-    setPrefs(next);
-  };
-  return (
-    <Panel>
-      <h2 className="font-pixel text-[0.6rem]">PLAY</h2>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        <button type="button" data-compact onClick={() => set({ compact: !prefs.compact })} className="min-h-11 border-2 border-[var(--game-border-strong)] px-2 font-pixel text-[0.55rem]">
-          COMPACT ROWS: {prefs.compact ? "ON" : "OFF"}
-        </button>
-        <button type="button" data-sound onClick={() => set({ sound: !prefs.sound })} className="min-h-11 border-2 border-[var(--game-border-strong)] px-2 font-pixel text-[0.55rem]">
-          SOUND: {prefs.sound ? "ON" : "OFF"}
-        </button>
-      </div>
-    </Panel>
   );
 }
 
@@ -297,19 +265,71 @@ function HowTo({ tipsOff, onTips }) {
   );
 }
 
-function Stats({ state }) {
+function Stats({ state, data }) {
+  const era = Math.max(0, eraReachedIndex(state));
+  const runs = Array.isArray(state.runs) ? state.runs : [];
+  const bestEarn = runs.reduce((best, run) => (!best || run.earnings > best.earnings ? run : best), null);
+  const bestTime = runs.reduce((best, run) => (!best || run.lengthMs > best.lengthMs ? run : best), null);
+  const bestBackers = runs.reduce((best, run) => (!best || run.investorsGained > best.investorsGained ? run : best), null);
+  const pending = investorsFor(state.lifetime || 0);
+  const challengeName = state.challenge ? (state.challenge.id === "glass" ? "GLASS CEILING" : state.challenge.id === "noboss" ? "NO BOSSES" : "SPEEDRUN") : null;
   return (
-    <Panel>
-      {BUSINESSES.map((cfg, index) => {
-        const st = state.biz[index];
-        const minutes = Math.floor((st?.activeMs || 0) / 60000);
-        return (
-          <p key={cfg.id} className="font-term text-lg leading-6">
-            {cfg.name}: {st?.owned || 0} owned · {st?.manager ? "manager" : "manual"} · {minutes}m active
-          </p>
-        );
-      })}
-    </Panel>
+    <>
+      <AnalyticsPanel data={data} />
+      <Panel>
+        <h2 className="font-pixel text-[0.6rem]">LIFETIME</h2>
+        <ul className="mt-2 space-y-1 font-term text-lg leading-6">
+          <li>Total earned: {money(state.careerEarnings || 0)}</li>
+          <li>Businesses bought: {count(state.businessesBought || 0)}</li>
+          <li>Managers hired: {count(state.managersHired || 0)}</li>
+          <li>Prestiges: {count(state.prestigeCount || 0)}</li>
+          <li>Investors: {count(state.investors || 0)} (most ever {count(state.investorPeak || state.investors || 0)})</li>
+          <li>Play time: {formatDuration(state.playMs || 0)}</li>
+          <li>Best era reached: {eraNameAt(era)}</li>
+        </ul>
+      </Panel>
+      <Panel>
+        <h2 className="font-pixel text-[0.6rem]">BEST RUNS</h2>
+        {runs.length === 0 ? (
+          <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">Finished runs show up here after a prestige, a fork, or a challenge. The run you're on is below.</p>
+        ) : (
+          <ul className="mt-2 space-y-1 font-term text-lg leading-6">
+            {bestEarn ? <li>Richest: {money(bestEarn.earnings)} · {bestEarn.eraName}</li> : null}
+            {bestTime ? <li>Longest: {formatDuration(bestTime.lengthMs)} · {bestTime.eraName}</li> : null}
+            {bestBackers ? <li>Most investors: {count(bestBackers.investorsGained)} · {money(bestBackers.earnings)}</li> : null}
+          </ul>
+        )}
+      </Panel>
+      <Panel>
+        <h2 className="font-pixel text-[0.6rem]">RUNS</h2>
+        <p className="mt-2 font-term text-lg leading-6">
+          This run: {money(state.lifetime || 0)} earned · {formatDuration(Date.now() - (state.runStartedAt || Date.now()))} · {eraNameAt(era)}
+          {pending > 0 ? ` · ${count(pending)} investors waiting` : ""}
+          {challengeName ? ` · ${challengeName}` : ""}
+        </p>
+        <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">Runs from before this update aren't listed. Length of the current run starts when tracking began.</p>
+        <ul className="mt-2 space-y-2">
+          {[...runs].reverse().map((run) => (
+            <li key={`${run.at}-${run.eraId}`} className="font-term text-lg leading-6">
+              {money(run.earnings)} · {formatDuration(run.lengthMs)} · {run.eraName} · {count(run.investorsGained)} investors
+              {run.challenge ? ` · ${run.challenge}` : ""}
+            </li>
+          ))}
+        </ul>
+      </Panel>
+      <Panel>
+        <h2 className="font-pixel text-[0.6rem]">BY BUSINESS</h2>
+        {BUSINESSES.map((cfg, index) => {
+          const st = state.biz[index];
+          const minutes = Math.floor((st?.activeMs || 0) / 60000);
+          return (
+            <p key={cfg.id} className="font-term text-lg leading-6">
+              {cfg.name}: {count(st?.owned || 0)} owned · {st?.manager ? "manager" : "manual"} · {minutes}m active
+            </p>
+          );
+        })}
+      </Panel>
+    </>
   );
 }
 

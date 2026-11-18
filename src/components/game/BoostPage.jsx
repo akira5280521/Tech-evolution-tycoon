@@ -7,7 +7,7 @@ import { HelpTip } from "./HintSheet";
 export default function BoostPage() {
   const { state, purchaseUpgrade, setAutoUpgrades } = useGameState();
   return (
-    <ScreenShell title="UPGRADES" subtitle="Make businesses pay more or run faster. Bought again after each prestige.">
+    <ScreenShell title="BOOST" subtitle="Upgrades make businesses pay more or run faster. Bought again after each prestige.">
       {hasPerk(state, "auto-upgrades") && (
         <Panel>
           <h2 className="font-pixel text-[0.6rem] text-[var(--game-violet)]">PURCHASING DEPARTMENT</h2>

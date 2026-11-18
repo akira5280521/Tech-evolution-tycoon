@@ -1,6 +1,6 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { toast } from "sonner";
-import { money } from "@/lib/gameConfig";
+import { count, money } from "@/lib/gameConfig";
 import { isPageHidden } from "@/lib/pageVisibility";
 import {
   UPLOAD_EVERY_MS,
@@ -103,14 +103,14 @@ export default function CloudSync({ game }) {
           <p className="border-2 border-[var(--game-success-border)] p-2">
             <span className="font-pixel text-[0.55rem] text-[var(--game-success)]">CLOUD</span>
             <br />
-            {money(c.career)} career · {c.investors.toLocaleString()} investors · {c.eras} era{c.eras === 1 ? "" : "s"}
+            {money(c.career)} career · {count(c.investors)} investors · {c.eras} era{c.eras === 1 ? "" : "s"}
             <br />
             <span className="text-[var(--game-muted)]">saved {savedLabel(cloud.cloud.modified || c.savedAt)}</span>
           </p>
           <p className="border-2 border-[var(--game-border-strong)] p-2">
             <span className="font-pixel text-[0.55rem] text-[var(--game-muted)]">THIS PHONE</span>
             <br />
-            {money(local.career || 0)} career · {(local.investors || 0).toLocaleString()} investors · {local.eras || 0} era{local.eras === 1 ? "" : "s"}
+            {money(local.career || 0)} career · {count(local.investors || 0)} investors · {local.eras || 0} era{local.eras === 1 ? "" : "s"}
           </p>
         </div>
         <p className="mt-3 font-term text-base leading-5 text-[var(--game-muted)]">The one you don't pick is replaced. To keep both, export this phone's save from Save Backup first.</p>

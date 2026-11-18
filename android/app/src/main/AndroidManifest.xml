@@ -44,6 +44,8 @@
 
     <!-- Anonymous GitHub release check, then the APK download the user asked for. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Asked only after the player turns on the away-time reminder (Android 13+). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Sideload updates only. The play build removes this permission
          (src/play/AndroidManifest.xml). -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />

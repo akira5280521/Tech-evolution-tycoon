@@ -487,6 +487,14 @@ export function nextMilestone(owned) {
 }
 
 const UNITS = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
+const NAMES = ["", "thousand", "million", "billion", "trillion", "quadrillion", "quintillion", "sextillion", "septillion", "octillion", "nonillion", "decillion"];
+
+// short: 1.20B. scientific: 1.2e9. words: 1.2 billion.
+let numberFormat = "short";
+
+export function setNumberFormat(style) {
+  numberFormat = style === "scientific" || style === "words" ? style : "short";
+}
 
 export function fmt(n) {
   if (Number.isNaN(n)) return "—";
@@ -494,12 +502,24 @@ export function fmt(n) {
   if (n < 0) return "-" + fmt(-n);
   if (n < 1000) return Number.isInteger(n) ? String(n) : n.toFixed(2);
   const tier = Math.floor(Math.log10(n) / 3);
-  if (tier >= UNITS.length || !Number.isFinite(tier)) return n.toExponential(2);
-  return (n / Math.pow(1000, tier)).toFixed(2) + UNITS[tier];
+  if (numberFormat === "scientific") return n.toExponential(1).replace("e+", "e");
+  if (numberFormat === "words") {
+    if (!Number.isFinite(tier) || tier >= NAMES.length || !NAMES[tier]) return n.toExponential(1).replace("e+", "e");
+    const scaled = n / 1000 ** tier;
+    const digits = scaled >= 100 ? 0 : 1;
+    return `${scaled.toFixed(digits)} ${NAMES[tier]}`;
+  }
+  if (tier >= UNITS.length || !Number.isFinite(tier)) return n.toExponential(2).replace("e+", "e");
+  return (n / 1000 ** tier).toFixed(2) + UNITS[tier];
 }
 
 export function money(n) {
   return "$" + fmt(n);
+}
+
+// Counts (investors, businesses owned) share the same Short / Scientific / Full names choice.
+export function count(n) {
+  return fmt(n);
 }
 
 // One click never buys more than this. Past here Math.pow(coef, owned) walks

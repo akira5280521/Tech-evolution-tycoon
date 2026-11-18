@@ -178,6 +178,72 @@ public class PlayGamesPlugin extends Plugin {
             });
     }
 
+    /**
+     * Unlocks one standard achievement. The id comes from Play Console.
+     * Answers immediately after the SDK accepts it; the JS side also gives up
+     * after 15 seconds. A placeholder id is ignored.
+     */
+    @PluginMethod
+    public void unlockAchievement(PluginCall call) {
+        Activity activity = getActivity();
+        String id = call.getString("id");
+        if (!configured() || activity == null) {
+            call.resolve(notConfigured());
+            return;
+        }
+        if (id == null || id.isEmpty() || id.startsWith("REPLACE_IN_PLAY_CONSOLE")) {
+            JSObject out = new JSObject();
+            out.put("configured", true);
+            out.put("unlocked", false);
+            out.put("skipped", true);
+            call.resolve(out);
+            return;
+        }
+        try {
+            PlayGames.getAchievementsClient(activity).unlock(id);
+            JSObject out = new JSObject();
+            out.put("configured", true);
+            out.put("unlocked", true);
+            call.resolve(out);
+        } catch (Exception e) {
+            JSObject out = new JSObject();
+            out.put("configured", true);
+            out.put("unlocked", false);
+            call.resolve(out);
+        }
+    }
+
+    /** Opens the Play Games achievements list. Never waits on the player's browsing. */
+    @PluginMethod
+    public void showAchievements(PluginCall call) {
+        Activity activity = getActivity();
+        if (!configured() || activity == null) {
+            call.resolve(notConfigured());
+            return;
+        }
+        PlayGames.getAchievementsClient(activity).getAchievementsIntent()
+            .addOnSuccessListener(intent -> {
+                try {
+                    activity.startActivity(intent);
+                    JSObject out = new JSObject();
+                    out.put("configured", true);
+                    out.put("opened", true);
+                    call.resolve(out);
+                } catch (Exception e) {
+                    JSObject out = new JSObject();
+                    out.put("configured", true);
+                    out.put("opened", false);
+                    call.resolve(out);
+                }
+            })
+            .addOnFailureListener(e -> {
+                JSObject out = new JSObject();
+                out.put("configured", true);
+                out.put("opened", false);
+                call.resolve(out);
+            });
+    }
+
     // With the "most recently modified" policy Play settles conflicts itself;
     // if one still comes back, keep the newer copy and ask the game to retry.
     private void resolveThenRetry(PluginCall call, SnapshotsClient snapshots, SnapshotsClient.SnapshotConflict conflict) {

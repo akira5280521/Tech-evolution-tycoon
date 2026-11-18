@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { incomePerSecond } from "@/lib/empire";
 import { money } from "@/lib/gameConfig";
+import { PREFS_EVENT } from "@/lib/gamePrefs";
 import BottomTabs from "./BottomTabs";
 import { TipCard } from "./HintSheet";
 import NewsTicker from "./NewsTicker";
@@ -61,10 +62,12 @@ export function StickyHud({ state, cps }) {
     ro?.observe(el);
     window.addEventListener("resize", update);
     window.addEventListener("orientationchange", update);
+    window.addEventListener(PREFS_EVENT, update);
     return () => {
       ro?.disconnect();
       window.removeEventListener("resize", update);
       window.removeEventListener("orientationchange", update);
+      window.removeEventListener(PREFS_EVENT, update);
       root.style.setProperty("--hud-h", "0px");
     };
   }, []);

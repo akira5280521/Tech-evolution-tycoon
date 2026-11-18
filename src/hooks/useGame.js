@@ -62,6 +62,10 @@ import { SAVE_VERSION, clearSaveData, getSaveData, writeSaveData } from "@/lib/g
 import { encodeSave } from "@/lib/saveCode";
 import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
+import { buzzLight, buzzStrong } from "@/lib/haptics";
+import { cancelCapNotification, scheduleCapNotification } from "@/lib/capNotify";
+import { pushRun, readRuns, eraReachedIndex } from "@/lib/records";
+import { noteProgress } from "@/lib/achievements";
 
 const SAVE_INTERVAL_MS = 5000;
 // The live game tick. Payouts follow each business's own cycle clock (and a
@@ -155,6 +159,13 @@ function applySavedMeta(state, raw) {
     m.dilemma && Number(m.dilemma.expiresAt) > Date.now()
       ? { id: DILEMMAS.some((d) => d.id === m.dilemma.id) ? m.dilemma.id : "grant", expiresAt: Number(m.dilemma.expiresAt) }
       : null;
+  state.businessesBought = m.businessesBought == null ? null : Math.floor(num(m.businessesBought));
+  state.managersHired = m.managersHired == null ? null : Math.floor(num(m.managersHired));
+  state.prestigeCount = m.prestigeCount == null ? null : Math.floor(num(m.prestigeCount));
+  state.playMs = m.playMs == null ? null : num(m.playMs);
+  state.runStartedAt = m.runStartedAt == null ? 0 : num(m.runStartedAt);
+  state.bestEra = m.bestEra == null ? null : Math.floor(num(m.bestEra));
+  state.runs = readRuns(m.runs);
 }
 
 function readChallenge(raw) {
@@ -210,6 +221,13 @@ function pack(s) {
     projectJob: s.projectJob || null,
     challenge: s.challenge,
     dilemma: s.dilemma,
+    businessesBought: Math.floor(s.businessesBought || 0),
+    managersHired: Math.floor(s.managersHired || 0),
+    prestigeCount: Math.floor(s.prestigeCount || 0),
+    playMs: s.playMs || 0,
+    runStartedAt: s.runStartedAt || 0,
+    bestEra: Math.max(0, Math.floor(s.bestEra || 0)),
+    runs: Array.isArray(s.runs) ? s.runs.slice(-40) : [],
     biz: s.biz.map((b, i) => ({
       id: BUSINESSES[i].id,
       owned: b.owned,
@@ -255,6 +273,16 @@ function loadSave() {
     ensureSupply(state);
     state.foreman = !!data.foreman;
     state.sawPit = !!data.sawPit;
+    if (state.businessesBought == null) {
+      state.businessesBought = state.biz.reduce((n, row, i) => n + Math.max(0, (row.owned || 0) - (i === 0 ? 1 : 0)), 0);
+    }
+    if (state.managersHired == null) {
+      state.managersHired = state.biz.reduce((n, row) => n + (row.manager ? 1 : 0), 0);
+    }
+    if (state.prestigeCount == null) state.prestigeCount = state.prestiged ? 1 : 0;
+    if (state.playMs == null) state.playMs = state.biz.reduce((n, row) => n + (row.activeMs || 0), 0);
+    if (state.bestEra == null) state.bestEra = Math.max(0, eraReachedIndex(state));
+    if (!state.runStartedAt) state.runStartedAt = Date.now();
     state.orientation = data.orientation === "portrait" || data.orientation === "landscape" ? data.orientation : "auto";
     state.researchJob = data.researchJob || null;
     state.upgradeJob = data.upgradeJob || null;
@@ -317,8 +345,12 @@ export function useGame() {
   if (!stateRef.current) stateRef.current = freshState();
   const [, force] = useState(0);
   const [buyMode, setBuyMode] = useState("x1");
+  const [ready, setReady] = useState(false);
   const restoredRef = useRef(false);
-  const bump = useCallback(() => force((n) => n + 1), []);
+  const bump = useCallback(() => {
+    noteProgress(stateRef.current);
+    force((n) => n + 1);
+  }, []);
   const saveNow = useCallback(() => {
     if (!restoredRef.current) return;
     writeSaveData(pack(stateRef.current));
@@ -328,6 +360,8 @@ export function useGame() {
     const { state } = loadSave();
     stateRef.current = state;
     restoredRef.current = true;
+    setReady(true);
+    void cancelCapNotification();
     bump();
   }, [bump]);
 
@@ -434,8 +468,10 @@ export function useGame() {
       const s = stateRef.current;
       if (isPageHidden()) {
         if (!s.hiddenAt) s.hiddenAt = Date.now();
+        void scheduleCapNotification(s);
         return;
       }
+      void cancelCapNotification();
       if (!s.hiddenAt) return;
       const now = Date.now();
       const away = Math.min(Math.max(0, now - s.hiddenAt), offlineCapMs(s));
@@ -485,6 +521,8 @@ export function useGame() {
         armDue(i);
       });
       s.data = (s.data || 0) + dataPerSecond(s) * (dt / 1000);
+      if (!s.runStartedAt) s.runStartedAt = wall;
+      s.playMs = (s.playMs || 0) + dt;
       if (autoBuyUpgrade(s, wall)) dirty = true;
       const notes = tickDilemma(s, wall).concat(finishTimedWork(s, wall), tickBubble(s, wall));
       const cards = collectHistory(s);
@@ -549,9 +587,14 @@ export function useGame() {
         commissionUntil: before === 0 ? now + COMMISSION_MS : b.commissionUntil,
       } : b));
       notePurchase(s, i, before, before + count);
+      s.businessesBought = (s.businessesBought || 0) + count;
+      const reachedEra = eraReachedIndex(s);
+      if (reachedEra > (s.bestEra || 0)) s.bestEra = reachedEra;
       playBuy();
       // Celebrate each milestone this purchase reached.
       const reached = MILESTONES.filter((ms) => before < ms.owned && before + count >= ms.owned);
+      if (reached.length) buzzStrong();
+      else buzzLight();
       if (reached.length) {
         const what = reached.map((ms) => (ms.speed ? `${ms.speed}× speed` : `${ms.mult}× pay`)).join(", ");
         toast(`${cfg.name}: ${reached[reached.length - 1].owned} owned!`, { description: `${what} · +${2 * reached.length} era tokens` });
@@ -574,6 +617,8 @@ export function useGame() {
       const started = Date.now();
       const cycle = effectiveCycleMs(BUSINESSES[i], s);
       s.biz = s.biz.map((b, j) => (j === i ? { ...b, manager: true, running: true, progress: 0, cycleStart: started, cycleAt: cycle, paidLaps: 0, holdUntil: 0 } : b));
+      s.managersHired = (s.managersHired || 0) + 1;
+      buzzLight();
       saveNow();
       bump();
     },
@@ -684,6 +729,7 @@ export function useGame() {
     if ((s.challengesDone || []).includes(id)) return;
     const label = id === "glass" ? "Glass Ceiling" : id === "noboss" ? "No Bosses" : "Speedrun";
     if (!window.confirm(`Start the ${label} challenge?\n\nYou lose this run's cash, businesses, managers and upgrades.\nYou keep investors, research, tokens and badges.`)) return;
+    pushRun(s, { investorsGained: 0 });
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
@@ -795,8 +841,25 @@ export function useGame() {
     const nextInvestors = s.investors + gained;
     if (!Number.isFinite(nextInvestors) || nextInvestors < 0) return;
     const noun = gained === 1 ? "investor" : "investors";
-    const after = empireFactors({ ...s, investors: nextInvestors }, Date.now()).total;
-    if (!window.confirm(`Prestige and start over with ${gained} new ${noun}?\n\nIncome: ×${empireFactors(s, Date.now()).total.toFixed(2)} now → ×${after.toFixed(2)} after.\nYou lose your cash, businesses, managers and upgrades.\nYou keep your investors (each one boosts all income forever), research, tokens and badges.`)) return;
+    const now = Date.now();
+    const incomeNow = empireFactors(s, now).total;
+    const after = empireFactors({ ...s, investors: nextInvestors }, now).total;
+    const have = s.investors || 0;
+    const doubles = gained >= Math.max(1, have);
+    const lines = [
+      `Prestige and start over with ${gained} new ${noun}?`,
+      "",
+      `Investors: ${have} now → ${nextInvestors} after.`,
+      `Income: ×${incomeNow.toFixed(2)} now → ×${after.toFixed(2)} after.`,
+    ];
+    if (!doubles && have > 0) {
+      lines.push("", "This is less than double your investors. Most players wait until a prestige at least doubles them.");
+    }
+    lines.push("", "You lose your cash, businesses, managers and upgrades.", "You keep your investors (each one boosts all income forever), research, tokens and badges.");
+    if (!window.confirm(lines.join("\n"))) return;
+    buzzStrong();
+    pushRun(s, { investorsGained: gained });
+    s.prestigeCount = (s.prestigeCount || 0) + 1;
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
@@ -838,6 +901,7 @@ export function useGame() {
     if ((s.investors || 0) < bill) return;
     if (singularityMult((s.singularities || 0) + 1) <= singularityMult(s.singularities || 0)) return;
     if (!window.confirm(`Fork the timeline?\n\nThis spends ${bill} investors and starts your run over (cash, businesses, managers and upgrades).\nYou get: income x${singularityMult((s.singularities || 0) + 1).toFixed(1)} forever (now x${singularityMult(s.singularities || 0).toFixed(1)}) and another research slot.\nYou keep: your other investors, research, tokens and badges.`)) return;
+    pushRun(s, { investorsGained: 0 });
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
     Object.assign(next, meta);
@@ -855,7 +919,6 @@ export function useGame() {
   }, [bump]);
 
   const reset = useCallback(() => {
-    if (!window.confirm("Reset your empire? All progress saved in this browser will be erased.")) return;
     clearSaveData();
     const next = freshState();
     applyBriefing(next);
@@ -891,6 +954,7 @@ export function useGame() {
   }, [bump]);
 
   return {
+    ready,
     state: stateRef.current,
     buyMode,
     setBuyMode,

@@ -146,7 +146,7 @@
   body {
     @apply bg-background text-foreground font-body;
     background-color: var(--game-bg);
-    font-size: 18px;
+    font-size: 1.125rem;
     overscroll-behavior: none;
   }
 
@@ -528,7 +528,40 @@ img[src*="/icons/"] {
 }
 
 /* With big text or a short screen the money bar would cover too much, so it
-   scrolls with the page instead (see StickyHud). */
+   scrolls with the page instead (see StickyHud). Text size options scale rem,
+   which grows this bar; the same fit check still lets it scroll away. */
+html[data-text="large"] {
+  font-size: 112.5%;
+}
+html[data-text="xl"] {
+  font-size: 125%;
+}
+html[data-contrast="high"] {
+  --game-bg: #000000;
+  --game-bg-95: rgba(0, 0, 0, 0.96);
+  --game-bg-deep: #000000;
+  --game-fg: #ffffff;
+  --game-muted: #f4f4f4;
+  --game-dim: #e6e6e6;
+  --game-card: #000000;
+  --game-panel: #121212;
+  --game-border: #ffffff;
+  --game-border-strong: #ffffff;
+  --game-accent: #ffe14a;
+  --game-accent-hover: #fff1a8;
+  --game-accent-fg: #000000;
+  --game-accent-bg: #1a1600;
+  --game-success: #5dff7a;
+  --game-success-border: #b6ffc4;
+  --game-success-bg: #04210c;
+  --game-success-panel: #04210c;
+  --game-success-bg-hover: #063312;
+  --game-danger: #ff5c6c;
+  --game-violet: #d2b6ff;
+  --game-violet-bg: #160a28;
+  --game-violet-bg-hover: #241040;
+  --game-violet-border: #ffffff;
+}
 .hud-sticky[data-hud-fits="no"] {
   position: static;
 }

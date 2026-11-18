@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PRESTIGE_UNIT, investorsFor, money, prestigeMult } from "@/lib/gameConfig";
+import { PRESTIGE_UNIT, count, investorsFor, money, prestigeMult } from "@/lib/gameConfig";
 import { HelpTip } from "./HintSheet";
 import { empireFactors, investorPeak, nextInvestorMilestone } from "@/lib/empire";
 
@@ -56,7 +56,7 @@ export default function PrestigeBar({ state, onPrestige }) {
           )}
           {nextInvestorMilestone(state) && (
             <p data-next-unlock className="font-term text-base leading-5 text-[var(--game-violet)]">
-              Next unlock at {nextInvestorMilestone(state).at.toLocaleString()} investors (you've had {investorPeak(state).toLocaleString()}): see BOARD.
+              Next unlock at {count(nextInvestorMilestone(state).at)} investors (you've had {count(investorPeak(state))}): see BOARD.
             </p>
           )}
           <button

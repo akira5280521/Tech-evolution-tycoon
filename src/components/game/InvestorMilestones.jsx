@@ -1,4 +1,5 @@
 import { INVESTOR_MILESTONES, investorPeak } from "@/lib/empire";
+import { count } from "@/lib/gameConfig";
 import { Panel } from "./chrome";
 import { HelpTip } from "./HintSheet";
 
@@ -13,7 +14,7 @@ export default function InvestorMilestones({ state }) {
         INVESTOR MILESTONES <HelpTip term="investorMilestones" />
       </h2>
       <p className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">
-        Unlocks you keep forever, by the most investors you've had: {peak.toLocaleString()}.
+        Unlocks you keep forever, by the most investors you've had: {count(peak)}.
       </p>
       <ol className="mt-3 space-y-2">
         {INVESTOR_MILESTONES.map((m, i) => {
@@ -33,7 +34,7 @@ export default function InvestorMilestones({ state }) {
                 </span>
                 <span className="shrink-0 font-term text-base leading-5 text-[var(--game-muted)]">
                   {reached ? "✓ " : ""}
-                  {m.at.toLocaleString()} investors
+                  {count(m.at)} investors
                 </span>
               </div>
               {!hidden && <p className="font-term text-base leading-5 text-[var(--game-muted)]">{m.text}</p>}

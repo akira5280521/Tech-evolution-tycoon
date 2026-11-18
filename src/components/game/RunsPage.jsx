@@ -15,7 +15,7 @@ export default function RunsPage() {
     return () => clearInterval(id);
   }, []);
   return (
-    <ScreenShell title="CHALLENGES" subtitle="Optional harder runs and big goals. Their rewards are kept forever.">
+    <ScreenShell title="RUNS" subtitle="Optional harder runs and big goals. Their rewards are kept forever.">
       <h2 className="flex items-center gap-2 font-pixel text-[0.7rem] text-[var(--game-accent)]">
         CHALLENGE RUNS <HelpTip term="challenge" />
       </h2>

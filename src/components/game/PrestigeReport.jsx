@@ -1,4 +1,4 @@
-import { money } from "@/lib/gameConfig";
+import { count, money } from "@/lib/gameConfig";
 
 // Shown once, after the first prestige: what the player gained, what they
 // kept, and what to aim for next.
@@ -43,7 +43,7 @@ export default function PrestigeReport({ report, onDismiss }) {
         )}
         {report.nextUnlock && (
           <p className="mt-2 font-term text-base leading-5 text-[var(--game-violet)]">
-            Next investor milestone at {report.nextUnlock.at.toLocaleString()} investors (BOARD tab).
+            Next investor milestone at {count(report.nextUnlock.at)} investors (BOARD tab).
           </p>
         )}
         <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">

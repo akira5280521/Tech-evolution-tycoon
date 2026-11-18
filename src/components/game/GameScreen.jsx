@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { BUSINESSES, ERA_GATE, SUPPLY_KEYS, blockedByGlass, eraOpen, frontierEra, money, pluralName } from "@/lib/gameConfig";
 import { activeChallengeGoal, incomePerSecond } from "@/lib/empire";
 import { PREFS_EVENT, readPrefs } from "@/lib/gamePrefs";
-import { setSoundEnabled } from "@/lib/sfx";
+import { applyAudioPrefs } from "@/lib/sfx";
 import { useGameState } from "./GameState";
 import TopBar from "./TopBar";
 import BusinessRow from "./BusinessRow";
@@ -42,7 +42,7 @@ export default function GameScreen() {
     const apply = () => {
       const prefs = readPrefs();
       setCompact(prefs.compact);
-      setSoundEnabled(prefs.sound);
+      applyAudioPrefs(prefs);
     };
     apply();
     window.addEventListener(PREFS_EVENT, apply);

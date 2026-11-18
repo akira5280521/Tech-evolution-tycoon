@@ -3,6 +3,7 @@
 // singularity. Every Empire Bonuses source multiplies, then a soft ceiling
 // that rises with singularity points keeps the product finite.
 
+import { pushRun } from "./records.js";
 import { blankTutorial } from "./tutorial.js";
 import {
   BUSINESSES,
@@ -330,6 +331,13 @@ export function blankMeta() {
     sawPit: false,
     tutorial: blankTutorial(),
     orientation: "auto",
+    businessesBought: 0,
+    managersHired: 0,
+    prestigeCount: 0,
+    playMs: 0,
+    runStartedAt: 0,
+    bestEra: 0,
+    runs: [],
     researchJob: null,
     upgradeJob: null,
     projectJob: null,
@@ -684,6 +692,8 @@ function completeChallenge(state) {
     state.challengesDone = [...(state.challengesDone || []), id];
     grantTokens(state, `challenge:${id}`, 12);
   }
+  const spec = CHALLENGES.find((entry) => entry.id === id);
+  pushRun(state, { investorsGained: 0, challenge: spec?.name || id });
   state.challenge = null;
   state.modStamp = (state.modStamp || 0) + 1;
 }
@@ -1256,6 +1266,13 @@ export function snapshotMeta(state, options = {}) {
     sawPit: !!state.sawPit,
     tutorial: { ...(state.tutorial || blankTutorial()), seen: [...(state.tutorial?.seen || [])], tips: [...(state.tutorial?.tips || [])] },
     orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
+    businessesBought: Math.floor(state.businessesBought || 0),
+    managersHired: Math.floor(state.managersHired || 0),
+    prestigeCount: Math.floor(state.prestigeCount || 0),
+    playMs: state.playMs || 0,
+    runStartedAt: state.runStartedAt || 0,
+    bestEra: Math.max(0, Math.floor(state.bestEra || 0)),
+    runs: Array.isArray(state.runs) ? state.runs.slice(-40) : [],
     // Research and projects are permanent, so a job already paid for keeps its
     // clock. A cash-upgrade job does not: the fresh run would install it free.
     // A copy, not the live object, so the old state cannot clear the new job.

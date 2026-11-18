@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { money } from "@/lib/gameConfig";
+import { count, money } from "@/lib/gameConfig";
 import {
   checkCloud,
   cloudLoaded,
@@ -111,7 +111,7 @@ export default function AccountPanel({ state, onExport, onImport }) {
           {offer && (
             <div className="space-y-2 border-2 border-[var(--game-danger)] p-2" data-cloud-confirm>
               <p className="font-term text-lg leading-6">
-                The cloud save has {money(offer.summary.career)} career earnings, {offer.summary.investors.toLocaleString()} investors and {offer.summary.eras} eras, saved {when(offer.modified || offer.summary.savedAt)}.
+                The cloud save has {money(offer.summary.career)} career earnings, {count(offer.summary.investors)} investors and {offer.summary.eras} eras, saved {when(offer.modified || offer.summary.savedAt)}.
               </p>
               <p className="font-term text-lg leading-6 text-[var(--game-danger)]">
                 Loading it replaces this phone&apos;s empire ({money(state.careerEarnings || 0)} career earnings).

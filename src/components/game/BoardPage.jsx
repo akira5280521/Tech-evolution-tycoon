@@ -1,4 +1,5 @@
 import { empireFactors, forkCost, singularityMult } from "@/lib/empire";
+import { count } from "@/lib/gameConfig";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import TokenShop from "./TokenShop";
@@ -43,15 +44,15 @@ export default function BoardPage() {
           <span>Income limit: X{factors.ceiling.toFixed(0)}. Forking raises it.</span> <HelpTip term="ceiling" />
         </p>
         <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
-          You have {state.investors || 0} investors. Get more with PRESTIGE on the GAME tab.
+          You have {count(state.investors || 0)} investors. Get more with PRESTIGE on the GAME tab.
         </p>
         <div className="mt-3">
           <GoldButton disabled={!ready} onClick={forkTimeline} dataAttr="fork">
-            <span className="font-pixel text-[0.6rem]">{ready ? "FORK THE TIMELINE" : `FORK NEEDS ${bill} INVESTORS`}</span>
+            <span className="font-pixel text-[0.6rem]">{ready ? "FORK THE TIMELINE" : `FORK NEEDS ${count(bill)} INVESTORS`}</span>
           </GoldButton>
           <p className="mt-2 flex items-start gap-2 font-term text-base leading-5 text-[var(--game-muted)]">
             <span>
-              A bigger reset. Spend {bill} investors to start your run over and get income x{singularityMult((state.singularities || 0) + 1).toFixed(1)} forever (up to x4), a higher income limit and another research slot. Each fork needs more investors.
+              A bigger reset. Spend {count(bill)} investors to start your run over and get income x{singularityMult((state.singularities || 0) + 1).toFixed(1)} forever (up to x4), a higher income limit and another research slot. Each fork needs more investors.
             </span>
             <HelpTip term="fork" />
           </p>

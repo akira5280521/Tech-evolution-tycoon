@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect, useRef } from "react";
 import {
   BUSINESSES,
   COMMISSION_MS,
@@ -42,6 +42,41 @@ function MilestoneBar({ owned, next }) {
 }
 
 function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, compact }) {
+  const holdRef = useRef(null);
+  const heldRef = useRef(false);
+  useEffect(() => () => {
+    if (holdRef.current) clearTimeout(holdRef.current);
+  }, []);
+  const stopHold = () => {
+    if (holdRef.current) clearTimeout(holdRef.current);
+    holdRef.current = null;
+    window.removeEventListener("pointermove", moveHold);
+    window.removeEventListener("pointerup", stopHold);
+    window.removeEventListener("pointercancel", stopHold);
+  };
+  const moveHold = (event) => {
+    const start = holdRef.origin;
+    if (!start) return;
+    if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 14) stopHold();
+  };
+  const startHold = (event) => {
+    if (!canBuy || (event.button && event.button !== 0)) return;
+    heldRef.current = false;
+    holdRef.origin = { x: event.clientX, y: event.clientY };
+    let delay = 380;
+    const arm = () => {
+      holdRef.current = setTimeout(() => {
+        heldRef.current = true;
+        onBuy(index);
+        delay = Math.max(55, Math.floor(delay * 0.72));
+        arm();
+      }, delay);
+    };
+    window.addEventListener("pointermove", moveHold);
+    window.addEventListener("pointerup", stopHold);
+    window.addEventListener("pointercancel", stopHold);
+    arm();
+  };
   const cfg = BUSINESSES[index];
   const st = row;
   const count = buyCount(buyMode, cfg, st.owned, cash, maxBuyCount(st.owned, index));
@@ -125,7 +160,14 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
       <div className="era-actions col-span-2 flex gap-2 sm:col-span-1 sm:w-44 sm:flex-col sm:justify-center">
         <button
           type="button"
-          onClick={() => onBuy(index)}
+          onClick={() => {
+            if (heldRef.current) {
+              heldRef.current = false;
+              return;
+            }
+            onBuy(index);
+          }}
+          onPointerDown={startHold}
           disabled={!canBuy}
           aria-label={`Buy ${cfg.name}`}
           data-buy={cfg.id}

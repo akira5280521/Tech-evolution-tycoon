@@ -1,5 +1,6 @@
 import { Suspense, lazy } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import LoadingScreen from "@/components/game/LoadingScreen";
 
 // Route-level code splitting: the game screen ships in its own chunk.
 const GameScreen = lazy(() => import("@/components/game/GameScreen"));
@@ -20,11 +21,7 @@ export const Route = createFileRoute("/")({
 function GamePage() {
   return (
     <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[var(--game-bg)] font-pixel text-sm text-[var(--game-muted)]">
-          LOADING…
-        </div>
-      }
+      fallback={<LoadingScreen />}
     >
       <GameScreen />
     </Suspense>

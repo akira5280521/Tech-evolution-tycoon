@@ -46,6 +46,14 @@ export function setPluginForTests(fake) {
   holderPromise = Promise.resolve({ p: fake });
 }
 
+// One Play Games call, with the same timeout as sign-in checks. Achievements
+// use this so a stuck plugin can't hang the game.
+export async function playCall(method, args, ms = CALL_TIMEOUT_MS) {
+  const { p } = await pluginHolder();
+  if (!p || typeof p[method] !== "function") return { configured: false };
+  return timed(p[method](args || {}), ms);
+}
+
 // A Play Games call that doesn't answer in time counts as failed, so the
 // account panel never waits forever. Sign-in gets longer: it shows Google's UI.
 const CALL_TIMEOUT_MS = 15 * 1000;
@@ -134,6 +142,7 @@ export async function refreshStatus() {
     // Sign in button with the reason instead of hiding Play Games.
     set({ configured: true, signedIn: false, phase: "idle", auto: prefs.auto, lastUpload: prefs.lastUpload, error: errorText(e, "Couldn't reach Play Games. Try again.") });
   }
+  import("./achievements.js").then((mod) => mod.flushAchievements()).catch(() => {});
   return state;
 }
 
@@ -147,6 +156,7 @@ export async function signIn() {
   } catch (e) {
     set({ busy: false, error: errorText(e, "Sign-in didn't finish. Try again.") });
   }
+  import("./achievements.js").then((mod) => mod.flushAchievements()).catch(() => {});
   return state;
 }
 

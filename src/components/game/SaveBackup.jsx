@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { money } from "@/lib/gameConfig";
+import { count, money } from "@/lib/gameConfig";
 import { decodeSave } from "@/lib/saveCode";
 import { Panel } from "./chrome";
 
@@ -154,7 +154,7 @@ export default function SaveBackup({ state, onExport, onImport }) {
         {pending && (
           <div className="space-y-2 border-2 border-[var(--game-danger)] p-2" data-save-confirm>
             <p className="font-term text-lg leading-6">
-              This code holds an empire with {money(pending.summary.career)} career earnings, {pending.summary.investors.toLocaleString()} investors
+              This code holds an empire with {money(pending.summary.career)} career earnings, {count(pending.summary.investors)} investors
               {pending.summary.forks ? `, ${pending.summary.forks} timeline fork${pending.summary.forks === 1 ? "" : "s"}` : ""} and {pending.summary.eras} era{pending.summary.eras === 1 ? "" : "s"}, saved {savedLabel(pending.summary.savedAt)}.
             </p>
             <p className="font-term text-lg leading-6 text-[var(--game-danger)]">

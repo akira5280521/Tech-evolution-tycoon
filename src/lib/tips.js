@@ -90,7 +90,7 @@ export const TIPS = [
     id: "speedups",
     page: "game",
     title: "SPEED-UPS",
-    text: "Owning 25, 50 or 100 of one business makes it run twice as fast each time. Bigger counts after that make it pay more. The NEXT buy button aims for these.",
+    text: "Milestones come at 25, 50, 75, 100, 150 and 200. At 25, 50 and 100 a business runs twice as fast; at 75, 150 and 200 it pays more. The NEXT buy button aims for these.",
     target: "[data-buy-modes]",
     when: (s) => maxOwned(s) >= 25,
   },

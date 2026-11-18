@@ -21,7 +21,7 @@ export const GLOSSARY = {
   },
   speedups: {
     term: "SPEED-UPS",
-    text: "Owning 25, 50 and 100 of one business makes it run twice as fast each time. Bigger counts after that make it pay more.",
+    text: "Milestones come at 25, 50, 75, 100, 150 and 200 of one business. At 25, 50 and 100 it runs twice as fast; at 75 and 150 it pays twice as much, and at 200 three times as much.",
   },
   upgrades: {
     term: "UPGRADES",

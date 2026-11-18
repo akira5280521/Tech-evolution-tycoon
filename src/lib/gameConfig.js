@@ -32,8 +32,8 @@ export const BUSINESSES = [
     revCost: 550,
     spdCost: 52000,
     makes: { wood: 1 },
-    speedNeed: 30,
-    masteryNeed: 72,
+    speedNeed: 25,
+    masteryNeed: 75,
     badgeOwned: 20,
     upgrades: ["Crosscut Saws", "Two-man saws bite faster. Triple the wood, and each load pays triple.", "Log Flume", "The logs ride the water to the mill. Twice the speed."],
   },
@@ -53,9 +53,9 @@ export const BUSINESSES = [
     spdCost: 160000,
     uses: { wood: 1 },
     makes: { paper: 1 },
-    speedNeed: 38,
+    speedNeed: 50,
     masteryNeed: 75,
-    badgeOwned: 17,
+    badgeOwned: 15,
     upgrades: ["Rag Content", "Cotton-rich card stock stops tearing. Triple the card stock, and each bale pays triple.", "Continuous Roll", "The machine makes one endless roll. Twice the speed."],
   },
   {
@@ -73,7 +73,7 @@ export const BUSINESSES = [
     revCost: 20000,
     spdCost: 220000,
     uses: { paper: 1 },
-    speedNeed: 40,
+    speedNeed: 50,
     masteryNeed: 100,
     badgeOwned: 20,
     upgrades: ["Silk Brocade", "Patterns too fine for any hand weaver. Each bolt pays triple.", "Steam Drive", "An engine works the loom instead of feet. Twice the speed."],
@@ -94,7 +94,7 @@ export const BUSINESSES = [
     spdCost: 300000,
     uses: { paper: 1 },
     speedNeed: 50,
-    masteryNeed: 130,
+    masteryNeed: 125,
     badgeOwned: 25,
     upgrades: ["Steel Hoppers", "The card path stops jamming. Every stack pays triple.", "Gang Punch", "One stroke copies a whole card. Cycles run twice as fast."],
   },
@@ -113,8 +113,8 @@ export const BUSINESSES = [
     revCost: 75000,
     spdCost: 750000,
     makes: { sand: 1 },
-    speedNeed: 30,
-    masteryNeed: 72,
+    speedNeed: 25,
+    masteryNeed: 75,
     badgeOwned: 20,
     upgrades: ["Screened Grit", "Washed sand sells cleaner. Triple the sand, and each scoop pays triple.", "Second Shift", "The pit stays lit. Cycles run twice as fast."],
   },
@@ -133,9 +133,9 @@ export const BUSINESSES = [
     revCost: 125000,
     spdCost: 1250000,
     makes: { copper: 1 },
-    speedNeed: 36,
-    masteryNeed: 70,
-    badgeOwned: 18,
+    speedNeed: 25,
+    masteryNeed: 75,
+    badgeOwned: 20,
     upgrades: ["High-Grade Ore", "The seam runs rich. Triple the copper, and each pull pays triple.", "Twin Drills", "Two faces at once. The cycle is cut in half."],
   },
   {
@@ -154,9 +154,9 @@ export const BUSINESSES = [
     spdCost: 1500000,
     uses: { sand: 1 },
     makes: { glass: 1 },
-    speedNeed: 40,
-    masteryNeed: 80,
-    badgeOwned: 16,
+    speedNeed: 50,
+    masteryNeed: 75,
+    badgeOwned: 15,
     upgrades: ["Borosilicate Batch", "Tougher glass takes the heat. Triple the glass, and each melt pays triple.", "Ribbon Machine", "Bulbs blown from a moving ribbon of glass. Twice the speed."],
   },
   {
@@ -174,9 +174,9 @@ export const BUSINESSES = [
     revCost: 250000,
     spdCost: 2500000,
     makes: { filament: 1 },
-    speedNeed: 42,
-    masteryNeed: 85,
-    badgeOwned: 16,
+    speedNeed: 50,
+    masteryNeed: 75,
+    badgeOwned: 15,
     upgrades: ["Ductile Tungsten", "Tungsten that bends into wire. Triple the filament, and each spool pays triple.", "Diamond Dies", "Wire pulled through diamond dies runs twice as fast."],
   },
   {
@@ -194,7 +194,7 @@ export const BUSINESSES = [
     revCost: 1000000,
     spdCost: 10000000,
     uses: { glass: 1, copper: 1, filament: 1 },
-    speedNeed: 60,
+    speedNeed: 50,
     masteryNeed: 150,
     badgeOwned: 25,
     upgrades: ["Getter Flash", "A flash of metal soaks up the last of the air. Each batch fetches triple.", "Batch Soldering", "Pre-tinned chassis wire up in half the time."],
@@ -214,9 +214,9 @@ export const BUSINESSES = [
     revCost: 1000000,
     spdCost: 8000000,
     makes: { germanium: 1 },
-    speedNeed: 44,
-    masteryNeed: 90,
-    badgeOwned: 16,
+    speedNeed: 50,
+    masteryNeed: 100,
+    badgeOwned: 15,
     upgrades: ["Zone Refining", "A molten zone sweeps the impurities out. Triple the germanium, and triple the pay.", "Tandem Furnaces", "Two furnaces share the load. Cycles are halved."],
   },
   {
@@ -232,7 +232,7 @@ export const BUSINESSES = [
     managerName: "Junction Tech",
     managerCost: 3600000,
     uses: { germanium: 1 },
-    speedNeed: 70,
+    speedNeed: 75,
     masteryNeed: 150,
     badgeOwned: 20,
     upgrades: ["Alloy Junctions", "Cleaner junctions, triple the yield from each crystal.", "Wave Soldering", "The line never waits on a hand iron. Twice the speed."],
@@ -253,9 +253,9 @@ export const BUSINESSES = [
     spdCost: 40000000,
     uses: { sand: 1 },
     makes: { silicon: 1 },
-    speedNeed: 40,
-    masteryNeed: 80,
-    badgeOwned: 16,
+    speedNeed: 50,
+    masteryNeed: 75,
+    badgeOwned: 15,
     upgrades: ["Float Zone", "A molten zone carries the impurities away. Triple the silicon, and triple the pay.", "Hotter Crucible", "The melt finishes sooner. Twice the speed."],
   },
   {
@@ -274,9 +274,9 @@ export const BUSINESSES = [
     spdCost: 100000000,
     uses: { silicon: 1 },
     makes: { wafers: 2 },
-    speedNeed: 44,
-    masteryNeed: 90,
-    badgeOwned: 16,
+    speedNeed: 50,
+    masteryNeed: 100,
+    badgeOwned: 15,
     upgrades: ["Seed Crystals", "Each pull starts true. Triple the wafers, and triple the pay.", "Twin Pullers", "Two crystals grow at once. Cycles are halved."],
   },
   {
@@ -293,7 +293,7 @@ export const BUSINESSES = [
     managerCost: 18000000,
     managerNeed: 5,
     uses: { wafers: 1 },
-    speedNeed: 80,
+    speedNeed: 75,
     masteryNeed: 150,
     badgeOwned: 30,
     upgrades: ["Gold Bond Wire", "The leads stop failing. Revenue from each die triples.", "Mask Aligner", "Masks land true. The fab cycle is cut in half."],
@@ -311,8 +311,8 @@ export const BUSINESSES = [
     managerName: "Chip Architect",
     managerCost: 43200000,
     managerNeed: 5,
-    speedNeed: 90,
-    masteryNeed: 155,
+    speedNeed: 100,
+    masteryNeed: 150,
     badgeOwned: 40,
     upgrades: ["Microcode Cache", "The chip stops fetching from the slow path. Triple revenue.", "Pipelined Clock", "Instructions overlap. The cycle time is halved."],
   },
@@ -329,8 +329,8 @@ export const BUSINESSES = [
     managerName: "Assembly Line Boss",
     managerCost: 432000000,
     managerNeed: 5,
-    speedNeed: 110,
-    masteryNeed: 165,
+    speedNeed: 100,
+    masteryNeed: 175,
     badgeOwned: 50,
     upgrades: ["Bundled Software", "Every desk ships with a reason to buy. Triple revenue.", "Assembly Jig", "Cases close themselves. The line runs twice as fast."],
   },
@@ -347,8 +347,8 @@ export const BUSINESSES = [
     managerName: "Silicon Engineer",
     managerCost: 3996000000,
     managerNeed: 5,
-    speedNeed: 130,
-    masteryNeed: 220,
+    speedNeed: 125,
+    masteryNeed: 200,
     badgeOwned: 80,
     upgrades: ["Shader Cores", "More pixels per die. Graphics revenue triples.", "Binning Pass", "Good chips leave the tester sooner. Twice the speed."],
   },
@@ -365,8 +365,8 @@ export const BUSINESSES = [
     managerName: "Streamer Crafter",
     managerCost: 19999999980,
     managerNeed: 5,
-    speedNeed: 160,
-    masteryNeed: 220,
+    speedNeed: 150,
+    masteryNeed: 200,
     badgeOwned: 100,
     upgrades: ["Addressable LEDs", "The glow is the product. Revenue triples.", "Fan Curves", "Thermals stay quiet. Cycles complete twice as fast."],
   },
@@ -383,15 +383,15 @@ export const BUSINESSES = [
     managerName: "Cryogenics Engineer",
     managerCost: 360000000000,
     managerNeed: 5,
-    speedNeed: 190,
+    speedNeed: 200,
     masteryNeed: 250,
     badgeOwned: 150,
     upgrades: ["Cryo Loops", "The chandelier stays cold. Quantum revenue triples.", "Error Correction", "Fewer shots are wasted. The cycle is cut in half."],
   },
 ];
 
-// Ordered by owned count. The product tops out at ×144 (2^4 × 3^2) once a
-// business reaches 220 — there is no milestone past that, so this multiplier
+// Ordered by owned count. The product tops out at ×96 (2^5 × 3) once a
+// business reaches 200 — there is no milestone past that, so this multiplier
 // cannot grow forever.
 export const SUPPLY_KEYS = ["wood", "paper", "sand", "copper", "glass", "filament", "germanium", "silicon", "wafers"];
 export const FOREMAN_COST = 25000;
@@ -456,14 +456,16 @@ export function formatFlow(flow) {
     .join(", ");
 }
 
-// 25, 50 and 100 halve the cycle (AdCap-style speed). Later bars still multiply profit.
+// Round counts, AdCap style: 25, 50, 75, 100, then 150 and 200. Speed and
+// pay alternate; every per-business count (speed upgrade, mastery) is also a
+// multiple of 25.
 export const MILESTONES = [
   { owned: 25, speed: 2 },
   { owned: 50, speed: 2 },
+  { owned: 75, mult: 2 },
   { owned: 100, speed: 2 },
-  { owned: 150, mult: 3 },
-  { owned: 200, mult: 2 },
-  { owned: 220, mult: 3 },
+  { owned: 150, mult: 2 },
+  { owned: 200, mult: 3 },
 ];
 
 export function milestoneMult(owned) {
@@ -584,7 +586,7 @@ export const GLOBAL_CAP = 10;
 
 // Income multipliers stay bounded:
 //   milestoneSpeed — ×8 cycle speed by 100 owned, then flat
-//   milestoneMult — ×18 profit by 220 owned, then flat
+//   milestoneMult — ×12 profit by 200 owned, then flat
 //   prestigeMult  — +5% for 100, +1% for 400, then +0.07% with no hard stop
 // The product of every empire bonus then passes through the soft ceiling in
 // empire.js, so a huge investor count still cannot make income infinite.

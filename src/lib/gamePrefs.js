@@ -26,6 +26,7 @@ export function normalizePrefs(raw) {
     numberFormat,
     textSize,
     contrast: src.contrast === true,
+    goalsHidden: src.goalsHidden === true,
   };
 }
 

@@ -1,4 +1,5 @@
 import { HISTORY_CARDS, MUSEUM_SET_TOKENS, museumRows } from "@/lib/history";
+import { generationCards } from "@/lib/generations";
 
 // History cards, grouped by era. Locked cards say how to find them.
 export default function MuseumSection({ state }) {
@@ -8,9 +9,9 @@ export default function MuseumSection({ state }) {
     <section data-museum className="space-y-3">
       <div>
         <h2 className="font-pixel text-[0.65rem] text-[var(--game-violet)]">· MUSEUM</h2>
-        <p className="mt-1 font-pixel text-sm text-[var(--game-accent)]">{found} / {HISTORY_CARDS.length} HISTORY CARDS</p>
+        <p className="mt-1 font-pixel text-sm text-[var(--game-accent)]">{found} / {HISTORY_CARDS.length + generationCards().length} HISTORY CARDS</p>
         <p className="font-term text-lg leading-6 text-[var(--game-muted)]">
-          Stories from computing history. Own 25 and 100 of an era to find its cards. Both cards of an era pay +{MUSEUM_SET_TOKENS} tokens. Company names here are parody. The dates and specs are real.
+          Stories from computing history. Own 25 and 100 of an era to find its pair. Chip generations unlock as that row grows. Both era cards pay +{MUSEUM_SET_TOKENS} tokens. Company names here are parody. The dates and specs are real.
         </p>
       </div>
       {rows.map((row) => (

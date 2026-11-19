@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:name=".TycoonApp"
@@ -46,6 +47,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Asked only after the player turns on the away-time reminder (Android 13+). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- The reminder is inexact and may be a few minutes late. Exact alarms
+         need a Play-policy declaration we don't want. The plugin merges
+         SCHEDULE_EXACT_ALARM; strip it, and USE_EXACT_ALARM if a dependency
+         adds it. WAKE_LOCK is declared by the plugin but the inexact
+         AlarmManager path does not use it. RECEIVE_BOOT_COMPLETED stays:
+         the plugin restores a pending reminder after reboot. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" tools:node="remove" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" tools:node="remove" />
     <!-- Sideload updates only. The play build removes this permission
          (src/play/AndroidManifest.xml). -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />

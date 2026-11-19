@@ -69,7 +69,13 @@ export async function scheduleCapNotification(state) {
           id: NOTE_ID,
           title: "Away time is full",
           body: "Your managers have hit the away-time cap. Open Tech Evolution Tycoon to keep earning.",
-          schedule: { at: new Date(when), allowWhileIdle: true },
+          schedule: {
+            at: new Date(when),
+            allowWhileIdle: true,
+            // Inexact on purpose: it can be a few minutes late, and it does
+            // not need the exact-alarm permission.
+            isExactNotification: false,
+          },
         },
       ],
     });

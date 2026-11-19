@@ -28,7 +28,7 @@ export default function BoostPage() {
         const offer = upgradeOffer(index);
         const up = upgradesOf(state, cfg.id);
         const mastered = isMastered(state, index);
-        const face = generationAt(cfg.id, owned);
+        const face = generationAt(cfg.id, owned, state?.techDone);
         const title = face?.name || cfg.name;
         const soon = cfg.placeholder ? <span className="mt-1 inline-block border border-[var(--game-muted)] px-1 font-pixel text-[0.45rem] leading-4 text-[var(--game-muted)]">ICON SOON</span> : null;
         if (owned <= 0) {

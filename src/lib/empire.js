@@ -3,6 +3,8 @@
 // singularity. Every Empire Bonuses source multiplies, then a soft ceiling
 // that rises with singularity points keeps the product finite.
 
+import { blankFacilities, facilityReport, noteFacilityNews, recentNews } from "./facilities.js";
+import { advanceResearch } from "./research.js";
 import { generationPayMult } from "./generations.js";
 import { pushRun } from "./records.js";
 import { blankTutorial } from "./tutorial.js";
@@ -394,6 +396,11 @@ export function blankMeta() {
     supply: blankSupply(),
     foreman: false,
     sawPit: false,
+    facilities: blankFacilities(),
+    news: [],
+    researchData: 0,
+    techDone: [],
+    techJob: null,
     goalsDone: [],
     boughtX10: false,
     tutorial: blankTutorial(),
@@ -603,7 +610,7 @@ export function effectiveCycleMs(cfg, state) {
   return cfg.cycleMs / speed;
 }
 
-export function incomePerSecond(state, now = 0) {
+export function businessIncomePerSecond(state, now = 0) {
   const mult = empireFactors(state, now).total;
   let sum = 0;
   (state.biz || []).forEach((st, i) => {
@@ -611,10 +618,17 @@ export function incomePerSecond(state, now = 0) {
     if (!st.manager && !st.running) return;
     const cfg = BUSINESSES[i];
     const up = upgradesOf(state, cfg.id);
-    const rev = (up.rev ? 3 : 1) * generationPayMult(cfg.id, st.owned);
+    const rev = (up.rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone);
     sum += (cfg.revenue * rev * st.owned * milestoneMult(st.owned) * mult * supplyFactor(state, cfg) * 1000) / effectiveCycleMs(cfg, state);
   });
   return sum;
+}
+
+// Business rows plus the facility plants. The plants are a capped share of
+// the businesses, so this total stays mostly the businesses.
+export function incomePerSecond(state, now = 0) {
+  const business = businessIncomePerSecond(state, now);
+  return business + facilityReport(state, business).perSecond;
 }
 
 // rate: share of the normal pay (OFFLINE_RATE for time away).
@@ -623,7 +637,7 @@ export function creditCycles(state, index, cycles, now = 0, rate = 1) {
   const cfg = BUSINESSES[index];
   const st = state.biz?.[index];
   if (!st || st.owned <= 0) return 0;
-  const rev = (upgradesOf(state, cfg.id).rev ? 3 : 1) * generationPayMult(cfg.id, st.owned);
+  const rev = (upgradesOf(state, cfg.id).rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone);
   const factor = supplyFactor(state, cfg, cycles);
   moveSupply(state, cfg, cycles, st.owned);
   const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor * rate;
@@ -684,6 +698,7 @@ export function creditBatch(state, due, now, rate = 1) {
 const AWAY_SLICES = 720;
 export function replayAway(state, elapsed, end, rate = 1) {
   const gains = new Array(BUSINESSES.length).fill(0);
+  let facilityGain = 0;
   if (!(elapsed > 0)) return { gain: 0, rows: [] };
   const start = end - elapsed;
   const step = elapsed / AWAY_SLICES;
@@ -704,7 +719,15 @@ export function replayAway(state, elapsed, end, rate = 1) {
     creditBatch(state, due, mid, rate).forEach((amount, i) => {
       gains[i] += amount;
     });
+    // Plants keep their full rate while the business rows are on the away rate.
+    const plant = facilityReport(state, businessIncomePerSecond(state, mid)).perSecond * (step / 1000);
+    if (plant > 0) {
+      creditAmount(state, plant, mid);
+      facilityGain += plant;
+    }
   }
+  noteFacilityNews(state, businessIncomePerSecond(state, end));
+  advanceResearch(state, elapsed);
   const rows = [];
   let gain = 0;
   gains.forEach((amount, i) => {
@@ -713,6 +736,10 @@ export function replayAway(state, elapsed, end, rate = 1) {
       rows.push({ name: BUSINESSES[i].name, amount });
     }
   });
+  if (facilityGain > 0) {
+    gain += facilityGain;
+    rows.push({ name: "Facilities", amount: facilityGain });
+  }
   return { gain, rows };
 }
 
@@ -1428,6 +1455,6 @@ export function headlinesFor(state) {
     .slice(0, HEADLINE_COUNT)
     .map((h) => h.text);
   const extra = HEADLINES.filter((h) => h.era === "always" || (h.era === "prestige" && (state?.prestiged || (state?.investors || 0) > 0))).map((h) => h.text);
-  const lines = [...dated, ...extra];
+  const lines = [...recentNews(state), ...dated, ...extra];
   return lines.length ? lines : [HEADLINES[0].text];
 }

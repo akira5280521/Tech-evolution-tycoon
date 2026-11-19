@@ -188,7 +188,7 @@ const HOW_TO = [
     id: "prestige",
     title: "PRESTIGE (STARTING OVER)",
     lines: [
-      "Once you've earned $100B in one run, the PRESTIGE button lets you start over and trade in the whole run for investors. You lose your cash, businesses, managers and upgrades.",
+      "Once you've earned $100B in one run, the PRESTIGE button lets you start over and trade in the whole run for investors. You lose your cash, businesses, managers, upgrades and facility parts.",
       "Every investor makes all income higher, forever, so the next run goes much faster. The more you earn before you prestige, the more investors join. It's how you get really big numbers.",
     ],
   },

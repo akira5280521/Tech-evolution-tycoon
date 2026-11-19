@@ -45,26 +45,32 @@ export function generationList(id) {
   return GENERATIONS[id] || null;
 }
 
-export function generationIndex(id, owned) {
+// `done` is the researched ids. When it is an array, a later generation also
+// has to be researched. Omit it and the old owned-count rule is used, so a
+// tool that never heard of research still prices the rows the same way.
+export function generationIndex(id, owned, done) {
   const list = generationList(id);
   if (!list) return -1;
   let index = -1;
   const have = Number.isFinite(owned) ? owned : 0;
+  const gate = Array.isArray(done);
   list.forEach((gen, i) => {
-    if (have >= gen.need) index = i;
+    if (have < gen.need) return;
+    if (gate && i > 0 && !done.includes(gen.id)) return;
+    index = i;
   });
   return index;
 }
 
-export function generationAt(id, owned) {
+export function generationAt(id, owned, done) {
   const list = generationList(id);
-  const index = generationIndex(id, owned);
+  const index = generationIndex(id, owned, done);
   return index >= 0 ? list[index] : null;
 }
 
 // The first generation is the row's ordinary pay. Each later one adds 5%.
-export function generationPayMult(id, owned) {
-  const index = generationIndex(id, owned);
+export function generationPayMult(id, owned, done) {
+  const index = generationIndex(id, owned, done);
   if (index <= 0) return 1;
   return 1 + index * GENERATION_BONUS;
 }

@@ -17,7 +17,10 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 // closed-testing eras (relay, mainframes, minicomputers, consoles, dial-up,
 // cloud, smartphones, AI) and keeps each older row on its id. v9 adds the
 // starter-goal checklist. Goals already true are filled in without paying.
-export const SAVE_VERSION = 9;
+// v10 adds the facility plants. A save from before v10 has no parts, so the
+// plants start empty. v11 adds the research tree. A chip generation the
+// player had already reached by owning enough of that row stays researched.
+export const SAVE_VERSION = 11;
 const V1_INVESTOR_DIVISOR = 1000;
 // Row order of each older save version.
 const V4_ORDER = ["sand", "copper", "silicon", "wafers", "tubes", "punchcards", "transistors", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];

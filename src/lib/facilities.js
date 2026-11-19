@@ -1,0 +1,390 @@
+// Two late-game plants. Pay is a small share of current business income.
+// A larger share, paid in full while the player is away, lets a casual run
+// buy Quantum in the 39 hour session instead of at 45 hours, so the cap
+// stays at half a percent. The plants still cannot outgrow the businesses.
+// Bitbark is a game coin: nothing here is real currency, a wallet, or a link.
+//
+// speed = min(1, min(power watts, cooling watts) / GPU watts).
+// A full Raster 3060 (powered, cooled, with RAM) is STARTER_SHARE of business
+// income. More cards scale that share until SHARE_CAP.
+
+import { BUSINESSES } from "./gameConfig.js";
+
+export const SHARE_CAP = 0.005;
+export const STARTER_SHARE = 0.005;
+export const MAX_PART = 24;
+const REFERENCE_WORK = 13;
+const MINE_RAM_GB = 16;
+
+const TIERS = [
+  { id: "mural", name: "Mural", vram: 80, ram: 128, mult: 2.2 },
+  { id: "portrait", name: "Portrait", vram: 24, ram: 64, mult: 1.6 },
+  { id: "sketch", name: "Sketch", vram: 12, ram: 32, mult: 1 },
+];
+
+export const FACILITIES = [
+  {
+    id: "mine",
+    name: "BITBARK MINE",
+    blurb: "Graphics cards mint Bitbark, a game coin. It cannot be traded or taken out of the game.",
+  },
+  {
+    id: "cluster",
+    name: "TRAINING CLUSTER",
+    blurb: "The cluster trains a model and bills the studio. A bigger model needs more memory.",
+  },
+  {
+    id: "servers",
+    name: "RESEARCH SERVERS",
+    blurb: "These racks mint Research Data. It cannot be bought. It only pays for research projects.",
+  },
+];
+
+export const PARTS = [
+  { id: "raster3060", kind: "gpu", name: "Raster 3060", fits: ["mine", "cluster"], cost: 3_200_000_000, coef: 1.55, watts: 170, vram: 12, work: 13, spec: "12 GB GDDR6, 170 W, 12.7 TFLOPS FP32. A 3060-class card." },
+  { id: "raster3090", kind: "gpu", name: "Raster 3090", fits: ["mine", "cluster"], cost: 28_000_000_000, coef: 1.55, watts: 350, vram: 24, work: 36, spec: "24 GB GDDR6X, 350 W, 35.6 TFLOPS FP32. A 3090-class card." },
+  { id: "raster4090", kind: "gpu", name: "Raster 4090", fits: ["mine", "cluster"], cost: 90_000_000_000, coef: 1.55, watts: 450, vram: 24, work: 83, spec: "24 GB GDDR6X, 450 W, 82.6 TFLOPS FP32. A 4090-class card." },
+  { id: "tensorA100", kind: "gpu", name: "Tensor A100", fits: ["cluster"], cost: 220_000_000_000, coef: 1.55, watts: 400, vram: 80, work: 78, spec: "80 GB HBM2e, 400 W, 19.5 TFLOPS FP32 and 156 TFLOPS TF32. An A100 80 GB." },
+  { id: "tensorH100", kind: "gpu", name: "Tensor H100", fits: ["cluster"], cost: 700_000_000_000, coef: 1.55, watts: 700, vram: 80, work: 160, spec: "80 GB HBM3, 700 W, 67 TFLOPS FP32 and about 990 TFLOPS TF32. An H100 SXM." },
+  { id: "tensorB200", kind: "gpu", name: "Tensor B200", fits: ["cluster"], soon: true, cost: 0, coef: 1, watts: 1000, vram: 192, work: 0, spec: "192 GB HBM3e, about 1,000 W. A B200-class board." },
+  { id: "ddr4_32", kind: "ram", name: "32 GB DDR4-3200", fits: ["mine", "cluster"], cost: 600_000_000, coef: 1.4, gb: 32, spec: "32 GB DDR4-3200, PC4-25600." },
+  { id: "ddr5_64", kind: "ram", name: "64 GB DDR5-5600", fits: ["mine", "cluster"], cost: 4_000_000_000, coef: 1.4, gb: 64, spec: "64 GB DDR5-5600, PC5-44800." },
+  { id: "ddr5_128", kind: "ram", name: "128 GB DDR5-6400", fits: ["mine", "cluster"], soon: true, cost: 0, coef: 1, gb: 128, spec: "128 GB DDR5-6400, PC5-51200." },
+  { id: "fans", kind: "cool", name: "Case fans", fits: ["mine", "cluster"], cost: 200_000_000, coef: 1.35, cool: 250, spec: "Moves 250 W of heat." },
+  { id: "labfan", kind: "cool", name: "Lab fan", fits: ["servers"], cost: 5_000, coef: 1.3, cool: 300, spec: "A 120 mm fan. Moves about 300 W of heat." },
+  { id: "tower", kind: "cool", name: "Tower cooler", fits: ["mine", "cluster"], cost: 1_500_000_000, coef: 1.35, cool: 350, spec: "A dual-tower air cooler, 350 W." },
+  { id: "liquid", kind: "cool", name: "360 mm liquid", fits: ["mine", "cluster"], cost: 6_000_000_000, coef: 1.35, cool: 700, spec: "A 360 mm liquid loop, 700 W." },
+  { id: "immersion", kind: "cool", name: "Immersion tank", fits: ["mine", "cluster"], soon: true, cost: 0, coef: 1, cool: 2000, spec: "The whole rack sits in a bath. 2,000 W." },
+  { id: "psu750", kind: "power", name: "750 W supply", fits: ["mine", "cluster"], cost: 800_000_000, coef: 1.35, power: 750, spec: "750 W ATX supply, 80 Plus Gold." },
+  { id: "psu1200", kind: "power", name: "1200 W supply", fits: ["mine", "cluster"], cost: 3_500_000_000, coef: 1.35, power: 1200, spec: "1,200 W ATX supply, 80 Plus Platinum." },
+  { id: "psu1600", kind: "power", name: "1600 W supply", fits: ["mine", "cluster"], soon: true, cost: 0, coef: 1, power: 1600, spec: "1,600 W, for a rack of data-center cards." },
+  { id: "rack1", kind: "server", name: "Foundry Rack R1", fits: ["servers"], cost: 250_000, coef: 1.45, watts: 200, work: 8, spec: "1U, two 8-core chips, 200 W. A small research server." },
+  { id: "rack4", kind: "server", name: "Foundry Rack R4", fits: ["servers"], cost: 4_000_000, coef: 1.45, watts: 500, work: 24, spec: "4U, four sockets, 500 W." },
+  { id: "psu400", kind: "power", name: "400 W supply", fits: ["servers"], cost: 20_000, coef: 1.35, power: 450, spec: "400 W ATX supply for a single rack." },
+  { id: "hdd1t", kind: "disk", name: "1 TB disk", fits: ["servers"], cost: 15_000, coef: 1.3, gb: 1000, spec: "1 TB, 7200 rpm." },
+  { id: "ssd2t", kind: "disk", name: "2 TB SSD", fits: ["servers"], cost: 2_000_000, coef: 1.3, gb: 2000, spec: "2 TB NAND, SATA." },
+];
+
+const STARTER = {
+  mine: ["raster3060", "psu750", "fans", "ddr4_32"],
+  cluster: ["raster3060", "psu750", "fans", "ddr4_32"],
+  servers: ["rack1", "psu400", "labfan", "hdd1t"],
+};
+
+const PART_NEWS = {
+  raster3060: "RASTER 3060 BOLTED INTO A SIDE RACK",
+  raster3090: "RASTER 3090 RUMORED ON THE PLANT FLOOR",
+  raster4090: "RASTER 4090 DRAWS MORE POWER THAN THE BREAK ROOM",
+  tensorA100: "TENSOR A100 TAKES THE OVERNIGHT TRAINING SHIFT",
+  tensorH100: "TENSOR H100 ARRIVES UNDER ARMED ESCORT",
+  ddr4_32: "DDR4-3200 STICKS REACH THE RACK",
+  ddr5_64: "DDR5-5600 STICKS CLEAR THE LOADING DOCK",
+  fans: "CASE FANS AUDIBLE FROM THE CAR PARK",
+  labfan: "A LAB FAN STARTS UNDER THE RESEARCH RACK",
+  tower: "TOWER COOLER ENDS THE THERMAL THROTTLE RUMOR",
+  liquid: "360 MM LOOP PLUMBED BESIDE THE CARDS",
+  psu750: "750 W SUPPLY LANDED FOR THE SIDE PLANT",
+  psu1200: "1200 W SUPPLY QUIETS THE BREAKER TRIPS",
+  rack1: "FOUNDRY RACK R1 TAKES THE RESEARCH SHIFT",
+  rack4: "FOUNDRY RACK R4 DOUBLES THE LAB FLOOR",
+  psu400: "400 W SUPPLY LANDS UNDER THE RESEARCH RACK",
+  hdd1t: "A 1 TB DISK IS RACKED FOR THE LAB",
+  ssd2t: "A 2 TB SSD REPLACES THE LAB'S SPINNING DISK",
+};
+
+const byId = Object.fromEntries(PARTS.map((part) => [part.id, part]));
+
+export function blankFacilities() {
+  return { mine: {}, cluster: {}, servers: {} };
+}
+
+export function readFacilities(raw) {
+  const out = blankFacilities();
+  if (!raw || typeof raw !== "object") return out;
+  for (const facilityId of Object.keys(out)) {
+    const src = raw[facilityId];
+    if (!src || typeof src !== "object") continue;
+    for (const part of PARTS) {
+      if (!part.fits.includes(facilityId)) continue;
+      const n = Math.floor(Number(src[part.id]));
+      if (Number.isFinite(n) && n > 0) out[facilityId][part.id] = Math.min(MAX_PART, n);
+    }
+  }
+  return out;
+}
+
+export function readNews(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const row of raw) {
+    if (!row || typeof row.id !== "string" || typeof row.text !== "string") continue;
+    const id = row.id.slice(0, 80);
+    const text = row.text.slice(0, 140);
+    if (!id || !text || out.some((entry) => entry.id === id)) continue;
+    out.push({ id, text });
+  }
+  return out.slice(-40);
+}
+
+export function recentNews(state, count = 3) {
+  return readNews(state?.news).slice(-count).reverse().map((entry) => entry.text);
+}
+
+// One line per id. Repeats are dropped, and only the latest few stay on the ticker.
+export function pushHeadline(state, id, text) {
+  if (!state || typeof id !== "string" || typeof text !== "string") return false;
+  const news = readNews(state.news);
+  if (news.some((entry) => entry.id === id)) return false;
+  news.push({ id: id.slice(0, 80), text: text.slice(0, 140) });
+  state.news = news.slice(-40);
+  return true;
+}
+
+function ownedId(state, id) {
+  const index = BUSINESSES.findIndex((cfg) => cfg.id === id);
+  return index >= 0 ? (state?.biz?.[index]?.owned || 0) : 0;
+}
+
+export function facilityUnlocked(state, facilityId) {
+  if (facilityId === "servers") return ownedId(state, "cpu") >= 1;
+  return ownedId(state, "ai") >= 1;
+}
+
+export function facilitiesOpen(state) {
+  return facilityUnlocked(state, "mine");
+}
+
+export function partCost(part, owned) {
+  const n = Math.max(0, Math.floor(Number(owned) || 0));
+  const cost = part.cost * Math.pow(part.coef, n);
+  return Number.isFinite(cost) ? Math.round(cost) : Infinity;
+}
+
+function countsOf(state, facilityId) {
+  return state?.facilities?.[facilityId] || {};
+}
+
+function stock(counts, facilityId) {
+  let watts = 0;
+  let power = 0;
+  let cool = 0;
+  let vram = 0;
+  let ram = 0;
+  let work = 0;
+  let gpus = 0;
+  for (const part of PARTS) {
+    if (!part.fits.includes(facilityId)) continue;
+    const n = counts[part.id] || 0;
+    if (n <= 0) continue;
+    if (part.kind === "gpu" || part.kind === "server") {
+      watts += part.watts * n;
+      vram += (part.vram || 0) * n;
+      work += part.work * n;
+      gpus += n;
+    } else if (part.kind === "power") power += part.power * n;
+    else if (part.kind === "cool") cool += part.cool * n;
+    else if (part.kind === "ram") ram += part.gb * n;
+  }
+  const speed = watts <= 0 ? 0 : Math.min(1, Math.min(power, cool) / watts);
+  return { watts, power, cool, vram, ram, work, gpus, speed };
+}
+
+function memoryFactor(facilityId, stocked) {
+  if (facilityId === "servers") return { factor: 1, limit: null };
+  if (facilityId === "mine") {
+    if (stocked.ram >= MINE_RAM_GB) return { factor: 1, limit: null };
+    return { factor: 0.25, limit: "Needs more RAM" };
+  }
+  const fit = TIERS.find((tier) => stocked.vram >= tier.vram && stocked.ram >= tier.ram);
+  if (fit) return { factor: fit.mult, limit: null, tier: fit.name };
+  return { factor: 0.2, limit: stocked.ram < 32 ? "Needs more RAM" : "Needs more VRAM", tier: null };
+}
+
+function hardwareLimit(stocked, mem) {
+  const powerFactor = stocked.gpus <= 0 ? 0 : stocked.speed;
+  const memFactor = mem.factor >= 1 ? 1 : mem.factor;
+  if (stocked.gpus <= 0) return "Add a GPU";
+  if (powerFactor < 0.999 && powerFactor <= memFactor) {
+    return stocked.power <= stocked.cool ? "Power limited" : "Cooling limited";
+  }
+  if (mem.limit && memFactor < 0.999) return mem.limit;
+  return "Running full";
+}
+
+function rowOf(facilityId, counts) {
+  const stocked = stock(counts, facilityId);
+  const mem = memoryFactor(facilityId, stocked);
+  const running = stocked.gpus > 0 && stocked.work > 0 && stocked.speed > 0;
+  const share = running ? (STARTER_SHARE * stocked.work * stocked.speed * mem.factor) / REFERENCE_WORK : 0;
+  return {
+    share,
+    limit: hardwareLimit(stocked, mem),
+    tier: mem.tier || null,
+    speed: stocked.speed,
+    watts: stocked.watts,
+    power: stocked.power,
+    cool: stocked.cool,
+    vram: stocked.vram,
+    ram: stocked.ram,
+    gpus: stocked.gpus,
+  };
+}
+
+export function facilityReport(state, businessPerSecond) {
+  const biz = Number.isFinite(businessPerSecond) && businessPerSecond > 0 ? businessPerSecond : 0;
+  const mine = rowOf("mine", countsOf(state, "mine"));
+  const cluster = rowOf("cluster", countsOf(state, "cluster"));
+  const servers = rowOf("servers", countsOf(state, "servers"));
+  const uncapped = mine.share + cluster.share;
+  const share = Math.min(SHARE_CAP, uncapped);
+  const scale = uncapped > 0 ? share / uncapped : 0;
+  const capped = uncapped > share + 0.0001;
+  const dress = (row) => ({
+    ...row,
+    share: row.share * scale,
+    perSecond: row.share * scale * biz,
+    limit: capped && row.limit === "Running full" ? "At the income share cap" : row.limit,
+  });
+  return {
+    perSecond: share * biz,
+    share,
+    capped,
+    mine: dress(mine),
+    cluster: dress(cluster),
+    servers: { ...servers, share: 0, perSecond: 0 },
+  };
+}
+
+function cheapest(facilityId, kind, counts) {
+  let best = null;
+  for (const part of PARTS) {
+    if (part.soon || part.kind !== kind || !part.fits.includes(facilityId)) continue;
+    const owned = counts[part.id] || 0;
+    if (owned >= MAX_PART) continue;
+    const cost = partCost(part, owned);
+    if (!best || cost < best.cost) best = { part, cost };
+  }
+  return best;
+}
+
+function hintFor(facilityId, counts, limit) {
+  const kind = limit === "Power limited" ? "power"
+    : limit === "Cooling limited" ? "cool"
+      : limit === "Needs more RAM" ? "ram"
+        : limit === "Needs more VRAM" || limit === "Add a GPU" || limit === "Running full" ? "gpu"
+          : null;
+  if (!kind) return null;
+  return cheapest(facilityId, kind, counts);
+}
+
+function starterNext(facilityId, counts) {
+  for (const id of STARTER[facilityId]) {
+    if ((counts[id] || 0) > 0) continue;
+    const part = byId[id];
+    return { facilityId, partId: id, name: part.name, cost: partCost(part, 0), limit: "starter" };
+  }
+  return null;
+}
+
+function withPart(state, facilityId, partId) {
+  const facilities = readFacilities(state?.facilities);
+  const owned = facilities[facilityId][partId] || 0;
+  facilities[facilityId] = { ...facilities[facilityId], [partId]: owned + 1 };
+  return { ...state, facilities };
+}
+
+export function nextPurchase(state, businessPerSecond) {
+  if (!facilitiesOpen(state)) return null;
+  const mineStarter = starterNext("mine", countsOf(state, "mine"));
+  if (mineStarter) return mineStarter;
+  const clusterStarter = starterNext("cluster", countsOf(state, "cluster"));
+  if (clusterStarter) {
+    const added = marginal(state, clusterStarter, businessPerSecond);
+    if (added > 0 && clusterStarter.cost / added <= 15 * 60) return clusterStarter;
+  }
+  let best = null;
+  for (const facilityId of ["mine", "cluster"]) {
+    const counts = countsOf(state, facilityId);
+    for (const part of PARTS) {
+      if (part.soon || !part.fits.includes(facilityId)) continue;
+      const owned = counts[part.id] || 0;
+      if (owned >= MAX_PART) continue;
+      const offer = { facilityId, partId: part.id, name: part.name, cost: partCost(part, owned) };
+      const added = marginal(state, offer, businessPerSecond);
+      if (!(added > 0)) continue;
+      const payback = offer.cost / added;
+      if (payback > 15 * 60) continue;
+      if (!best || payback < best.payback) best = { ...offer, payback };
+    }
+  }
+  return best;
+}
+
+function marginal(state, offer, businessPerSecond) {
+  const before = facilityReport(state, businessPerSecond).perSecond;
+  const after = facilityReport(withPart(state, offer.facilityId, offer.partId), businessPerSecond).perSecond;
+  return Math.max(0, after - before);
+}
+
+export function facilityHint(state, facilityId, businessPerSecond) {
+  if (!facilityUnlocked(state, facilityId)) {
+    return facilityId === "servers" ? "Requires 1971" : "Own an AI Accelerator to open the plant.";
+  }
+  const counts = countsOf(state, facilityId);
+  const row = facilityReport(state, businessPerSecond)[facilityId];
+  const starter = starterNext(facilityId, counts);
+  if (starter) return `Next: ${starter.name}`;
+  const hinted = hintFor(facilityId, counts, row.limit);
+  if (!hinted || row.limit === "Running full" || row.limit === "At the income share cap") {
+    return row.limit === "At the income share cap"
+      ? "The businesses set the ceiling. A richer company lets this plant pay more."
+      : "Next: add another graphics card when you can power and cool it.";
+  }
+  return `Next: ${hinted.part.name}`;
+}
+
+const PLANT_NAME = { mine: "BITBARK MINE", cluster: "TRAINING CLUSTER", servers: "RESEARCH SERVERS" };
+
+// Headlines fire once each. Part copies after the first do not make news.
+export function noteFacilityNews(state, businessPerSecond) {
+  if (!state) return false;
+  let added = false;
+  const push = (id, text) => {
+    if (pushHeadline(state, id, text)) added = true;
+  };
+  if (facilitiesOpen(state)) push("plant-open", "SIDE PLANT CLEARED BESIDE THE AI ACCELERATORS");
+  if (facilityUnlocked(state, "servers")) push("servers-open", "RESEARCH SERVERS CLEARED BESIDE THE MICROPROCESSORS");
+  const report = facilityReport(state, businessPerSecond);
+  for (const facilityId of ["mine", "cluster", "servers"]) {
+    const counts = countsOf(state, facilityId);
+    if (facilityId === "servers" ? (counts.rack1 || 0) > 0 : report[facilityId].perSecond > 0) {
+      const live = facilityId === "mine"
+        ? "BITBARK MINE POURS ITS FIRST COIN"
+        : facilityId === "cluster"
+          ? "TRAINING CLUSTER BOOKS AN OVERNIGHT RUN"
+          : "RESEARCH SERVERS START MINTING DATA";
+      push(`${facilityId}-live`, live);
+    }
+    for (const [partId, count] of Object.entries(counts)) {
+      if (!(count > 0) || !PART_NEWS[partId]) continue;
+      push(`part-${facilityId}-${partId}`, `${PART_NEWS[partId]} · ${PLANT_NAME[facilityId]}`);
+    }
+  }
+  if (report.share >= SHARE_CAP - 0.0001) push("share-full", "SIDE PLANT HITS ITS FULL SHARE OF THE TAKE");
+  return added;
+}
+
+export function purchasePart(state, facilityId, partId) {
+  if (!state || !facilityUnlocked(state, facilityId)) return { ok: false };
+  const part = byId[partId];
+  if (!part || part.soon || !part.fits.includes(facilityId)) return { ok: false };
+  const facilities = readFacilities(state.facilities);
+  const owned = facilities[facilityId][partId] || 0;
+  if (owned >= MAX_PART) return { ok: false };
+  const cost = partCost(part, owned);
+  if (!Number.isFinite(state.cash) || !(state.cash >= cost)) return { ok: false };
+  state.cash -= cost;
+  facilities[facilityId] = { ...facilities[facilityId], [partId]: owned + 1 };
+  state.facilities = facilities;
+  return { ok: true, cost };
+}

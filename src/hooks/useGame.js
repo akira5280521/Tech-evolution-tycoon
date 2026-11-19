@@ -42,6 +42,8 @@ import {
   offlineCapMs,
   startingBiz,
   autoBuyUpgrade,
+  businessIncomePerSecond,
+  creditAmount,
   creditCycles,
   dataPerSecond,
   effectiveCycleMs,
@@ -60,6 +62,8 @@ import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { generationAt } from "@/lib/generations";
+import { facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews } from "@/lib/facilities";
+import { advanceResearch, fillResearchGaps, grantOwnedResearch, readResearchData, readTechDone, readTechJob, startResearch } from "@/lib/research";
 import { currentGoal, readGoalsDone, settleGoals } from "@/lib/goals";
 import { applyOrientation } from "@/lib/orientation";
 import { SAVE_VERSION, clearSaveData, getSaveData, remapBestEra, writeSaveData } from "@/lib/gameSave";
@@ -77,6 +81,9 @@ const SAVE_INTERVAL_MS = 5000;
 // updates the screen: 4 a second is plenty and was 10, which cost battery.
 const TICK_MS = 250;
 const RENDER_MS = 250;
+// Cash and Research Data move every tick, but the screen only needs a fresh
+// number about once a second. Payouts and finished projects still paint immediately.
+const DISPLAY_MS = 1000;
 // 24 hours / 720 = 2 minute slices at the cap; shorter absences slice finer.
 
 function freshBiz(mode) {
@@ -171,6 +178,11 @@ function applySavedMeta(state, raw) {
   state.runStartedAt = m.runStartedAt == null ? 0 : num(m.runStartedAt);
   state.bestEra = m.bestEra == null ? null : Math.floor(num(m.bestEra));
   state.runs = readRuns(m.runs);
+  state.facilities = readFacilities(m.facilities);
+  state.news = readNews(m.news);
+  state.researchData = readResearchData(m.researchData);
+  state.techDone = readTechDone(m.techDone);
+  state.techJob = readTechJob(m.techJob);
   state.goalsDone = readGoalsDone(m.goalsDone);
   state.boughtX10 = !!m.boughtX10;
 }
@@ -239,6 +251,11 @@ function pack(s) {
     runStartedAt: s.runStartedAt || 0,
     bestEra: Math.max(0, Math.floor(s.bestEra || 0)),
     runs: Array.isArray(s.runs) ? s.runs.slice(-40) : [],
+    facilities: readFacilities(s.facilities),
+    news: readNews(s.news),
+    researchData: readResearchData(s.researchData),
+    techDone: readTechDone(s.techDone),
+    techJob: readTechJob(s.techJob),
     biz: s.biz.map((b, i) => ({
       id: BUSINESSES[i].id,
       owned: b.owned,
@@ -306,6 +323,10 @@ function loadSave() {
       const held = new Set(state.badgesEarned || []);
       for (const id of legacyBadgeIds(state)) held.add(id);
       state.badgesEarned = [...held];
+    }
+    if (prior < 11) {
+      grantOwnedResearch(state);
+      fillResearchGaps(state);
     }
     collectBadges(state);
     if (state.goalsDone == null || prior < 9) {
@@ -435,6 +456,7 @@ export function useGame() {
       }
       const elapsed = Math.max(0, wall - next.cycleStart);
       next = { ...next, activeMs: next.activeMs + (dt || 0) };
+      let paint = !st.cycleStart;
       if (next.manager) {
         const laps = Math.floor(elapsed / cycle);
         const already = next.paidLaps || 0;
@@ -443,6 +465,7 @@ export function useGame() {
           const gain = creditCycles(s, i, laps - already, wall);
           next.paidLaps = laps;
           if (gain > 0) next.lastGain = { id: ++s.gainSeq, amount: gain };
+          paint = true;
         }
       } else if (elapsed >= cycle) {
         const gain = creditCycles(s, i, 1, wall);
@@ -456,11 +479,13 @@ export function useGame() {
           holdUntil: wall + 120,
         };
         if (gain > 0) next.lastGain = { id: ++s.gainSeq, amount: gain };
+        paint = true;
       } else {
         next.progress = elapsed;
+        paint = !st.cycleStart;
       }
-      s.biz[i] = next;
-      return next !== st;
+      if (next !== st) s.biz[i] = next;
+      return paint;
     };
 
     const armDue = (i) => {
@@ -522,22 +547,23 @@ export function useGame() {
       awayBudget = OFFLINE_CAP_MS;
       bump();
     };
-    document.addEventListener("visibilitychange", onVisibility);
-    if (isPageHidden()) onVisibility();
-
     let lastRender = 0;
-    const iv = setInterval(() => {
+    let iv = 0;
+    const stopTick = () => {
+      if (iv) clearInterval(iv);
+      iv = 0;
+      dueTimers.forEach((entry) => clearTimeout(entry.id));
+      dueTimers.clear();
+    };
+    const tick = () => {
       const wall = Date.now();
-      if (stateRef.current.hiddenAt) {
-        lastWall = wall;
-        return;
-      }
+      if (stateRef.current.hiddenAt) return;
       collectBadges(stateRef.current);
       const raw = Math.max(0, wall - lastWall);
       lastWall = wall;
-      const tick = cappedTick(raw, isPageHidden(), awayBudget);
-      awayBudget = tick.budget;
-      const dt = tick.dt;
+      const slice = cappedTick(raw, isPageHidden(), awayBudget);
+      awayBudget = slice.budget;
+      const dt = slice.dt;
       if (!(dt > 0)) return;
       const s = stateRef.current;
       let dirty = false;
@@ -551,6 +577,12 @@ export function useGame() {
         armDue(i);
       });
       s.data = (s.data || 0) + dataPerSecond(s) * (dt / 1000);
+      const business = businessIncomePerSecond(s, wall);
+      const plant = facilityReport(s, business).perSecond * (dt / 1000);
+      if (plant > 0) creditAmount(s, plant, wall);
+      if (noteFacilityNews(s, business)) dirty = true;
+      const researchMoved = advanceResearch(s, dt);
+      if (researchMoved === "done") dirty = true;
       if (!s.runStartedAt) s.runStartedAt = wall;
       s.playMs = (s.playMs || 0) + dt;
       if (autoBuyUpgrade(s, wall)) dirty = true;
@@ -563,18 +595,47 @@ export function useGame() {
       }
       const pending = s.researchJob || s.upgradeJob || s.projectJob || s.biz.some((row) => (row.commissionUntil || 0) > wall || (row.holdUntil || 0) > wall);
       if (pending) dirty = true;
-      // Redraw the screen at most RENDER_MS apart; money is paid by the clock
-      // either way, so this only saves battery.
+      const passive = plant > 0 || researchMoved === "gain";
+      // Payouts and finished work paint on the short cadence. A plant or
+      // research counter that is merely counting paints about once a second.
       if (dirty && wall - lastRender >= RENDER_MS) {
         lastRender = wall;
         bump();
+      } else if (!dirty && passive && wall - lastRender >= DISPLAY_MS) {
+        lastRender = wall;
+        bump();
       }
-    }, TICK_MS);
+    };
+    const startTick = () => {
+      if (iv) return;
+      lastWall = Date.now();
+      iv = setInterval(tick, TICK_MS);
+    };
+    const hideWork = () => {
+      document.documentElement.dataset.paused = "1";
+      stopTick();
+    };
+    const showWork = () => {
+      delete document.documentElement.dataset.paused;
+      startTick();
+      stateRef.current.biz.forEach((_, i) => armDue(i));
+    };
+    const onVisibilityWrapped = () => {
+      if (isPageHidden()) {
+        onVisibility();
+        hideWork();
+        return;
+      }
+      onVisibility();
+      showWork();
+    };
+    document.addEventListener("visibilitychange", onVisibilityWrapped);
+    if (isPageHidden()) onVisibilityWrapped();
+    else startTick();
     return () => {
-      document.removeEventListener("visibilitychange", onVisibility);
-      clearInterval(iv);
-      dueTimers.forEach((entry) => clearTimeout(entry.id));
-      dueTimers.clear();
+      document.removeEventListener("visibilitychange", onVisibilityWrapped);
+      delete document.documentElement.dataset.paused;
+      stopTick();
     };
   }, [bump]);
 
@@ -633,8 +694,8 @@ export function useGame() {
         toast(`${cfg.name}: ${reached[reached.length - 1].owned} owned!`, { description: `${what} · +${2 * reached.length} era tokens` });
         s.biz[i] = { ...s.biz[i], milestoneAt: now };
       }
-      const beforeGen = generationAt(cfg.id, before);
-      const afterGen = generationAt(cfg.id, before + count);
+      const beforeGen = generationAt(cfg.id, before, s.techDone);
+      const afterGen = generationAt(cfg.id, before + count, s.techDone);
       if (afterGen && afterGen.id !== beforeGen?.id && before > 0) {
         toast(afterGen.name, { description: `${afterGen.year}. ${afterGen.tagline}` });
       }
@@ -788,7 +849,7 @@ export function useGame() {
     if (!s.prestiged) return;
     if ((s.challengesDone || []).includes(id)) return;
     const label = id === "glass" ? "Glass Ceiling" : id === "noboss" ? "No Bosses" : "Speedrun";
-    if (!window.confirm(`Start the ${label} challenge?\n\nYou lose this run's cash, businesses, managers and upgrades.\nYou keep investors, research, tokens and badges.`)) return;
+    if (!window.confirm(`Start the ${label} challenge?\n\nYou lose this run's cash, businesses, managers, upgrades and facility parts.\nYou keep investors, research, tokens and badges.`)) return;
     pushRun(s, { investorsGained: 0 });
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
@@ -915,7 +976,7 @@ export function useGame() {
     if (!doubles && have > 0) {
       lines.push("", "This is less than double your investors. Most players wait until a prestige at least doubles them.");
     }
-    lines.push("", "You lose your cash, businesses, managers and upgrades.", "You keep your investors (each one boosts all income forever), research, tokens and badges.");
+    lines.push("", "You lose your cash, businesses, managers, upgrades and facility parts.", "You keep your investors (each one boosts all income forever), research, tokens and badges.");
     if (!window.confirm(lines.join("\n"))) return;
     buzzStrong();
     pushRun(s, { investorsGained: gained });
@@ -960,7 +1021,7 @@ export function useGame() {
     const bill = forkCost(s.singularities || 0);
     if ((s.investors || 0) < bill) return;
     if (singularityMult((s.singularities || 0) + 1) <= singularityMult(s.singularities || 0)) return;
-    if (!window.confirm(`Fork the timeline?\n\nThis spends ${bill} investors and starts your run over (cash, businesses, managers and upgrades).\nYou get: income x${singularityMult((s.singularities || 0) + 1).toFixed(1)} forever (now x${singularityMult(s.singularities || 0).toFixed(1)}) and another research slot.\nYou keep: your other investors, research, tokens and badges.`)) return;
+    if (!window.confirm(`Fork the timeline?\n\nThis spends ${bill} investors and starts your run over (cash, businesses, managers, upgrades and facility parts).\nYou get: income x${singularityMult((s.singularities || 0) + 1).toFixed(1)} forever (now x${singularityMult(s.singularities || 0).toFixed(1)}) and another research slot.\nYou keep: your other investors, research, tokens and badges.`)) return;
     pushRun(s, { investorsGained: 0 });
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
@@ -1023,6 +1084,21 @@ export function useGame() {
     run,
     runAll,
     buyForeman,
+    startTech: (id) => {
+      const started = startResearch(stateRef.current, id);
+      if (!started.ok) return;
+      saveNow();
+      bump();
+    },
+    buyFacilityPart: (facilityId, partId) => {
+      const bought = purchasePart(stateRef.current, facilityId, partId);
+      if (!bought.ok) return;
+      noteFacilityNews(stateRef.current, businessIncomePerSecond(stateRef.current, Date.now()));
+      buzzLight();
+      playBuy();
+      saveNow();
+      bump();
+    },
     setOrientation: (orientation) => {
       const s = stateRef.current;
       if (orientation !== "auto" && orientation !== "portrait" && orientation !== "landscape") return;

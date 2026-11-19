@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { WEB_VERSION_CODE, WEB_VERSION_NAME } from "@/lib/appVersion";
 import { PREFS_EVENT, readPrefs, writePrefs } from "@/lib/gamePrefs";
 import { applyAudioPrefs } from "@/lib/sfx";
-import { requestNotifyPermission, cancelCapNotification } from "@/lib/capNotify";
+import { cancelCapNotification, notificationPermission, openNotificationSettings, requestNotifyPermission } from "@/lib/capNotify";
 import { achievementsLive, openAchievements } from "@/lib/achievements";
 import { WhatsNewDialog } from "./WhatsNew";
 import { useCloud } from "./CloudSync";
@@ -138,20 +138,47 @@ export function DisplaySettings() {
 
 export function AwayReminder() {
   const [prefs, set] = usePrefs();
-  const toggle = async () => {
-    if (prefs.notifyCap) {
-      set({ notifyCap: false });
-      await cancelCapNotification();
+  const [help, setHelp] = useState("");
+  const waiting = useRef(false);
+  const turnOn = async () => {
+    const result = await requestNotifyPermission();
+    if (result === "granted") {
+      waiting.current = false;
+      setHelp("");
+      set({ notifyCap: true });
       return;
     }
-    const ok = await requestNotifyPermission();
-    if (!ok) {
-      set({ notifyCap: false });
-      toast("Notifications stay off", { description: "Allow notifications for this app if you want a reminder when away time fills up." });
+    waiting.current = true;
+    set({ notifyCap: false });
+    if (result === "denied") {
+      setHelp("Android isn't showing the allow prompt. Open notification settings, allow notifications for this app, then come back.");
       return;
     }
-    set({ notifyCap: true });
+    setHelp("This install can't post notifications yet.");
   };
+  const toggle = () => {
+    if (prefs.notifyCap) {
+      waiting.current = false;
+      setHelp("");
+      set({ notifyCap: false });
+      void cancelCapNotification();
+      return;
+    }
+    void turnOn();
+  };
+  useEffect(() => {
+    const onShow = () => {
+      if (document.hidden || !waiting.current) return;
+      void notificationPermission().then((status) => {
+        if (status !== "granted") return;
+        waiting.current = false;
+        setHelp("");
+        set({ notifyCap: true });
+      });
+    };
+    document.addEventListener("visibilitychange", onShow);
+    return () => document.removeEventListener("visibilitychange", onShow);
+  }, [set]);
   return (
     <Panel>
       <h2 className="font-pixel text-[0.6rem]">AWAY TIME</h2>
@@ -161,6 +188,19 @@ export function AwayReminder() {
       <button type="button" data-notify-cap onClick={toggle} className={`${choice} mt-3 w-full ${prefs.notifyCap ? on : off}`}>
         CAP REMINDER: {prefs.notifyCap ? "ON" : "OFF"}
       </button>
+      {help ? (
+        <div className="mt-2">
+          <p data-notify-help className="font-term text-base leading-5 text-[var(--game-fg)]">{help}</p>
+          <button
+            type="button"
+            data-notify-settings
+            onClick={() => { void openNotificationSettings(); }}
+            className={`${choice} mt-2 w-full ${on}`}
+          >
+            OPEN NOTIFICATION SETTINGS
+          </button>
+        </div>
+      ) : null}
     </Panel>
   );
 }

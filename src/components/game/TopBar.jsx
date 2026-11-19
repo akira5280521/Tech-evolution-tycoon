@@ -1,7 +1,27 @@
 import { Link } from "@tanstack/react-router";
 import { Play } from "lucide-react";
 import { BUSINESSES, FOREMAN_COST, buyModeLabel, money, nextBuyMode } from "@/lib/gameConfig";
+import { anyFacilityOpen } from "@/lib/facilities";
+import { techOpen } from "@/lib/research";
 import { HelpTip } from "./HintSheet";
+
+const SIDE = "flex min-h-12 w-[4.5rem] shrink-0 flex-col items-center justify-center border-2 px-1 text-center font-pixel text-[0.45rem] leading-4 shadow-[2px_2px_0_0_#000]";
+
+// A shortcut that stays greyed out ("???") until its feature is reached.
+function SideLink({ to, open, data, label }) {
+  if (!open) {
+    return (
+      <span aria-disabled="true" aria-label={`${label}, locked`} {...{ [`data-open-${data}`]: "", "data-locked": "" }} className={`${SIDE} border-[var(--game-border)] bg-[var(--game-panel)] text-[var(--game-dim)]`}>
+        ???
+      </span>
+    );
+  }
+  return (
+    <Link to={to} {...{ [`data-open-${data}`]: "" }} className={`${SIDE} border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-fg)]`}>
+      {label}
+    </Link>
+  );
+}
 
 const on = "border-[var(--game-accent)] bg-[var(--game-accent)] text-black";
 const off = "border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-muted)]";
@@ -73,20 +93,8 @@ export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll
             <span className="font-pixel text-sm leading-5">{buyModeLabel(buyMode)}</span>
             <span className="font-term text-lg leading-5">BUY AMOUNT</span>
           </button>
-          <Link
-            to="/tech"
-            data-open-research
-            className="flex min-h-12 w-[4.5rem] shrink-0 flex-col items-center justify-center border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-1 text-center font-pixel text-[0.45rem] leading-4 text-[var(--game-fg)] shadow-[2px_2px_0_0_#000]"
-          >
-            RESEARCH
-          </Link>
-          <Link
-            to="/facilities"
-            data-open-facilities
-            className="flex min-h-12 w-[4.5rem] shrink-0 flex-col items-center justify-center border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-1 text-center font-pixel text-[0.45rem] leading-4 text-[var(--game-fg)] shadow-[2px_2px_0_0_#000]"
-          >
-            FACILITIES
-          </Link>
+          <SideLink to="/tech" open={techOpen(state)} data="research" label="TECH" />
+          <SideLink to="/facilities" open={anyFacilityOpen(state)} data="facilities" label="FACILITIES" />
           <HelpTip term="buymodes" className="self-center" />
         </div>
       </div>

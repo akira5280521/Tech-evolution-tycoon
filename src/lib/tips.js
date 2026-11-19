@@ -125,8 +125,8 @@ export const TIPS = [
   {
     id: "research",
     page: "game",
-    title: "RESEARCH DATA",
-    text: "Tap RESEARCH. Your businesses make data slowly. Spend it there on a bonus you keep.",
+    title: "R&D POINTS",
+    text: "Tap RESEARCH. Your eras make R&D points slowly. Spend them there on a bonus you keep.",
     target: '[data-tab="research"]',
     when: (s) => (s.data || 0) >= 1 && dataPerSecond(s) > 0,
   },
@@ -170,7 +170,7 @@ export const TIPS = [
     id: "page-research",
     page: "research",
     title: "THE RESEARCH LAB",
-    text: "Spend data on one bonus you keep. You start with one slot. Spare data goes to the lab projects below.",
+    text: "Spend R&D points on one bonus you keep. You start with one slot. Spare points go to the lab projects below.",
   },
   {
     id: "page-badges",

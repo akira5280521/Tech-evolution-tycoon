@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Cpu, FlaskConical, Flag, Gamepad2, Package, Settings, Zap } from "lucide-react";
+import { anyFacilityOpen } from "@/lib/facilities";
+import { useGameState } from "./GameState";
 
 const TABS = [
   { id: "game", label: "GAME", to: "/", icon: Gamepad2, isActive: (p) => p === "/" },
@@ -8,7 +10,7 @@ const TABS = [
   { id: "board", label: "BOARD", to: "/board", icon: Package, isActive: (p) => p.startsWith("/board") },
   { id: "runs", label: "RUNS", to: "/runs", icon: Flag, isActive: (p) => p.startsWith("/runs") },
   { id: "research", label: "RESEARCH", to: "/research", icon: FlaskConical, isActive: (p) => p.startsWith("/research") },
-  { id: "facilities", label: "RIGS", to: "/facilities", icon: Cpu, isActive: (p) => p.startsWith("/facilities") },
+  { id: "facilities", label: "RIGS", to: "/facilities", icon: Cpu, isActive: (p) => p.startsWith("/facilities"), open: anyFacilityOpen },
   { id: "more", label: "MORE", to: "/more", icon: Settings, isActive: (p) => p.startsWith("/more") || p.startsWith("/settings") || p.startsWith("/badges") },
 ];
 
@@ -47,6 +49,7 @@ export default function BottomTabs() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const navRef = useRef(null);
+  const { state } = useGameState();
   useTabBarHeight(navRef);
 
   // When a tab's route becomes active, restore the position it left off at.
@@ -91,6 +94,22 @@ export default function BottomTabs() {
         {TABS.map((tab) => {
           const active = tab.isActive(pathname);
           const Icon = tab.icon;
+          // Locked until reached: greyed out, "???", and not tappable.
+          if (tab.open && !tab.open(state) && !active) {
+            return (
+              <span
+                key={tab.id}
+                aria-disabled="true"
+                aria-label="Locked"
+                data-tab={tab.id}
+                data-locked=""
+                className="flex min-h-11 min-w-0 flex-1 basis-0 select-none flex-col items-center justify-center gap-1 overflow-hidden px-0.5 py-1.5 text-[var(--game-dim)] opacity-60"
+              >
+                <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                <span data-tab-label className="w-full min-w-0 text-center font-pixel text-[0.5rem] leading-tight">???</span>
+              </span>
+            );
+          }
           return (
             <button
               key={tab.id}

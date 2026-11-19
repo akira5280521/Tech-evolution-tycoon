@@ -38,7 +38,7 @@ const BY_ERA = {
   ics: "Jack Kilby at Lone Star Instruments showed the first integrated circuit in 1958. Robert Noyce at Fairweather made a practical silicon one in 1959.",
   cpu: "The Chipwright 4004, released in 1971, put about 2,300 transistors on one chip for the calculator maker Calcicom.",
   homepc: "The Orchard II, the Mariner 2001 and the Radio Shed Model I all went on sale in 1977.",
-  gpu: "Novidia sold its 256 card in 1999 as a GPU, and moved 3D lighting off the main processor.",
+  gpu: "Raster sold its 256 card in 1999 as a GPU, and moved 3D lighting off the main processor.",
   rgb: "Before fast home internet, players carried their computers to one room and played over a local network.",
   quantum: "The qubits in a superconducting quantum computer are kept colder than outer space, a fraction of a degree above absolute zero.",
 };

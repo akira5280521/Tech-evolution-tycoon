@@ -196,8 +196,8 @@ const HOW_TO = [
     id: "keep",
     title: "WHAT YOU KEEP FOREVER",
     lines: [
-      "Investors, research data and your research picks, era tokens, badges, Museum cards, and the rewards from challenges and mega-projects all stay when you prestige.",
-      "Research: every era you own makes a little research data. Spend it on the RESEARCH tab on a bonus you keep.",
+      "Investors, R&D points and your research picks, era tokens, badges, Museum cards, and the rewards from challenges and mega-projects all stay when you prestige.",
+      "Research: every era you own makes a few R&D points, and research servers make more later. Spend them on the RESEARCH tab on bonuses you keep.",
       "Era tokens come from new eras, milestones, projects and the free Daily Crate. Spend them in the shop on the BOARD tab.",
     ],
   },
@@ -354,11 +354,11 @@ export function ResearchBody({ state, onCommit, onLab }) {
     <>
       <Panel>
         <p className="flex items-center gap-2 font-pixel text-[0.55rem] text-[var(--game-muted)]">
-          RESEARCH DATA <HelpTip term="research" />
+          R&amp;D POINTS <HelpTip term="research" />
         </p>
         <p className="font-term text-5xl leading-none text-[var(--game-success)]">{(state.data || 0).toFixed(1)}</p>
         <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
-          +{rate.toFixed(2)} a second from the {establishedCount(state)} {establishedCount(state) === 1 ? "era" : "eras"} you own and {masteredCount(state)} mastered. Data is never lost, even when you prestige.
+          +{rate.toFixed(2)} a second from the {establishedCount(state)} {establishedCount(state) === 1 ? "era" : "eras"} you own and {masteredCount(state)} mastered. R&D points are never lost, even when you prestige.
         </p>
       </Panel>
       <Panel>
@@ -379,7 +379,7 @@ export function ResearchBody({ state, onCommit, onLab }) {
             <div key={spec.id} className="mt-3 border-2 border-[var(--game-border)] p-3">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="font-pixel text-[0.65rem]">{spec.name}</h3>
-                <span className="font-term text-lg text-[var(--game-muted)]">{spec.cost} DATA</span>
+                <span className="font-term text-lg text-[var(--game-muted)]">{spec.cost} R&amp;D</span>
               </div>
               <p className="mt-2 font-term text-lg leading-6">{spec.blurb}</p>
               {owned ? (

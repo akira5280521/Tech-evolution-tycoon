@@ -34,6 +34,26 @@ test shipped in 0.0.13 (see Done).
 
 ## Next build (after 0.0.22)
 
+- **One research currency: R&D points.** The research servers and the eras
+  now fill the same pool (the save field stays `data`), and specialties,
+  lab projects and the tech timeline all spend it. Older saves add any
+  server Research Data into it once. Server output is 0.01 R&D a second per
+  unit of work (a starter rack is about 0.08 a second, about ten eras'
+  worth); timeline projects cost 5x their table value (6,130 R&D for all 47).
+- **Prestige, forks and challenges keep the tech timeline**, the project in
+  progress and the ticker's own news (they were being wiped).
+- **Half rate while away**: plants and all R&D (eras and servers) earn at
+  OFFLINE_RATE when the game is minimized or closed, like the businesses.
+  Project timers still run on the real clock.
+- Locked timeline projects say "Research <name> first" instead of an
+  already-passed year.
+- The TECH and FACILITIES shortcuts and the RIGS tab stay greyed out ("???")
+  until reached (first timeline year, 1956; Microprocessors for the plants).
+- Parody names: Chipwright 586 (was a real brand name), Raster graphics
+  cards (was Novidia), and no company name on the 1956 disk.
+- package-lock.json back to the last good version (it had drifted to
+  alpha/beta Cloudflare dev builds with no package change).
+
 - **Lab projects** on the Research tab, so spare data always has a use.
   Fixed prices, no chance: **Overclock** (30 data: all income x1.5 for 10
   minutes, then a 20-minute cool-down; the money bar shows the time left),

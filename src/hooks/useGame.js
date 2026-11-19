@@ -81,7 +81,7 @@ const SAVE_INTERVAL_MS = 5000;
 // updates the screen: 4 a second is plenty and was 10, which cost battery.
 const TICK_MS = 250;
 const RENDER_MS = 250;
-// Cash and Research Data move every tick, but the screen only needs a fresh
+// Cash and R&D points move every tick, but the screen only needs a fresh
 // number about once a second. Payouts and finished projects still paint immediately.
 const DISPLAY_MS = 1000;
 // 24 hours / 720 = 2 minute slices at the cap; shorter absences slice finer.
@@ -180,7 +180,8 @@ function applySavedMeta(state, raw) {
   state.runs = readRuns(m.runs);
   state.facilities = readFacilities(m.facilities);
   state.news = readNews(m.news);
-  state.researchData = readResearchData(m.researchData);
+  // Older saves kept server output separately; it joins the one R&D pool.
+  state.data = (Number.isFinite(state.data) ? state.data : 0) + readResearchData(m.researchData);
   state.techDone = readTechDone(m.techDone);
   state.techJob = readTechJob(m.techJob);
   state.goalsDone = readGoalsDone(m.goalsDone);
@@ -253,7 +254,6 @@ function pack(s) {
     runs: Array.isArray(s.runs) ? s.runs.slice(-40) : [],
     facilities: readFacilities(s.facilities),
     news: readNews(s.news),
-    researchData: readResearchData(s.researchData),
     techDone: readTechDone(s.techDone),
     techJob: readTechJob(s.techJob),
     biz: s.biz.map((b, i) => ({
@@ -337,9 +337,9 @@ function loadSave() {
     let offlineGain = 0;
     let rows = [];
     if (elapsed > 0) {
-      state.data = (state.data || 0) + dataPerSecond(state) * (elapsed / 1000);
-      // Managers earn at OFFLINE_RATE while the app is closed.
+      // Managers, plants and R&D earn at OFFLINE_RATE while the app is closed.
       const rate = elapsed < AWAY_GRACE_MS ? 1 : OFFLINE_RATE;
+      state.data = (state.data || 0) + dataPerSecond(state) * (elapsed / 1000) * rate;
       ({ gain: offlineGain, rows } = replayAway(state, elapsed, Date.now(), rate));
     }
     if (offlineGain > 0 && elapsed >= AWAY_MODAL_MS) {
@@ -539,8 +539,9 @@ export function useGame() {
         return { ...st, progress: into, cycleStart: 0, paidLaps: 0 };
       });
       if (away > 0) {
-        s.data = (s.data || 0) + dataPerSecond(s) * (away / 1000);
-        const { gain, rows } = replayAway(s, away, now, away < AWAY_GRACE_MS ? 1 : OFFLINE_RATE);
+        const rate = away < AWAY_GRACE_MS ? 1 : OFFLINE_RATE;
+        s.data = (s.data || 0) + dataPerSecond(s) * (away / 1000) * rate;
+        const { gain, rows } = replayAway(s, away, now, rate);
         if (gain > 0 && away >= AWAY_MODAL_MS) s.offlineReport = { amount: gain, awayMs: away, rows };
       }
       lastWall = now;

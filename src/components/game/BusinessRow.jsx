@@ -12,6 +12,7 @@ import {
   nextMilestone,
 } from "@/lib/gameConfig";
 import { effectiveCycleMs, empireFactors, makesOf, managerPrice, supplyFactor, upgradesOf } from "@/lib/empire";
+import { generationAt, generationPayMult } from "@/lib/generations";
 import IconTile from "./IconTile";
 import ProgressTrack from "./ProgressTrack";
 
@@ -23,6 +24,11 @@ const BREAKS = [
   ["Transistors", `Tran${SOFT}sistors`],
   ["Integrated", `Inte${SOFT}grated`],
   ["Computers", `Com${SOFT}puters`],
+  ["Datacenters", `Data${SOFT}centers`],
+  ["Accelerators", `Accel${SOFT}erators`],
+  ["Minicomputers", `Mini${SOFT}computers`],
+  ["Smartphones", `Smart${SOFT}phones`],
+  ["Mainframes", `Main${SOFT}frames`],
 ];
 
 function breakable(name) {
@@ -88,7 +94,11 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
   const cycleSeconds = (cycle / 1000).toFixed(cycle % 1000 ? 1 : 0);
   const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
   const fed = supplyFactor(state, cfg);
-  const perCycle = cfg.revenue * rev * st.owned * mult * empireFactors(state, Date.now()).total * fed;
+  const face = generationAt(cfg.id, st.owned);
+  const shownName = face?.name || cfg.name;
+  const shownTag = face?.tagline || cfg.tagline;
+  const shownEra = face?.year ? `c. ${face.year}` : cfg.era;
+  const perCycle = cfg.revenue * generationPayMult(cfg.id, st.owned) * rev * st.owned * mult * empireFactors(state, Date.now()).total * fed;
   // The materials this row is short of right now, for the warning line.
   const shortOf = st.owned > 0 && fed < 1 && cfg.uses
     ? Object.entries(cfg.uses).filter(([key, need]) => (state.supply?.[key] || 0) < need * st.owned).map(([key]) => key)
@@ -109,17 +119,20 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
 
       <div className="min-w-0 space-y-2">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <h3 className="era-name min-w-0 font-pixel text-sm text-[var(--game-fg)]">{breakable(cfg.name)}</h3>
+          <h3 className="era-name min-w-0 break-words font-pixel text-sm leading-5 text-[var(--game-fg)] [overflow-wrap:anywhere]">{breakable(shownName)}</h3>
           <span className="border border-[var(--game-border-strong)] px-1 font-term text-sm leading-5 text-[var(--game-muted)]">
-            {cfg.era}
+            {shownEra}
           </span>
+          {cfg.placeholder && (
+            <span className="border border-[var(--game-muted)] px-1 font-pixel text-[0.45rem] leading-4 text-[var(--game-muted)]">ICON SOON</span>
+          )}
           {mult > 1 && (
             <span className="border border-[var(--game-accent)] px-1 font-term text-sm leading-5 text-[var(--game-accent)]">
               ×{mult}
             </span>
           )}
         </div>
-        {!compact && <p className="font-term text-base leading-5 text-[var(--game-muted)]">{cfg.tagline}</p>}
+        {!compact && <p className="font-term text-base leading-5 text-[var(--game-muted)]">{shownTag}</p>}
         {commissioning ? (
           <>
             <p className="font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">BRINGING THE LINE ONLINE</p>

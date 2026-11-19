@@ -3,6 +3,7 @@ import { hasPerk, isMastered, masteryNeed, upgradeOffer, upgradesOf } from "@/li
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { HelpTip } from "./HintSheet";
+import { generationAt } from "@/lib/generations";
 
 export default function BoostPage() {
   const { state, purchaseUpgrade, setAutoUpgrades } = useGameState();
@@ -27,6 +28,9 @@ export default function BoostPage() {
         const offer = upgradeOffer(index);
         const up = upgradesOf(state, cfg.id);
         const mastered = isMastered(state, index);
+        const face = generationAt(cfg.id, owned);
+        const title = face?.name || cfg.name;
+        const soon = cfg.placeholder ? <span className="mt-1 inline-block border border-[var(--game-muted)] px-1 font-pixel text-[0.45rem] leading-4 text-[var(--game-muted)]">ICON SOON</span> : null;
         if (owned <= 0) {
           // The next era: show that it exists, keep its upgrades a surprise.
           return (
@@ -34,7 +38,8 @@ export default function BoostPage() {
               <div data-boost-locked={cfg.id} className="flex items-center gap-3 opacity-60">
                 <img src={cfg.icon} alt="" className="pixel-art h-[64px] w-[64px] shrink-0 border-2 border-[var(--game-border-strong)] object-contain grayscale" />
                 <div className="min-w-0">
-                  <h2 className="break-words font-term text-2xl leading-6">{cfg.name}</h2>
+                  <h2 className="break-words font-term text-2xl leading-6">{title}</h2>
+                  {soon}
                   <p className="font-term text-base leading-5 text-[var(--game-muted)]">Buy your first {cfg.name} to see its upgrades.</p>
                 </div>
               </div>
@@ -46,7 +51,8 @@ export default function BoostPage() {
             <div className="flex items-center gap-3">
               <img src={cfg.icon} alt="" className="pixel-art h-[64px] w-[64px] shrink-0 border-2 border-[var(--game-border-strong)] object-contain" />
               <div className="min-w-0">
-                <h2 className="break-words font-term text-2xl leading-6">{cfg.name}</h2>
+                <h2 className="break-words font-term text-2xl leading-6">{title}</h2>
+                {soon}
                 <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{owned} owned</p>
               </div>
             </div>

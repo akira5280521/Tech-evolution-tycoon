@@ -137,7 +137,7 @@ const HOW_TO = [
     id: "goal",
     title: "THE GOAL",
     lines: [
-      "You run a company of businesses, from a timber camp onward. ERA at the top shows how many of the 19 you've opened.",
+      "You run a company of businesses, from a timber camp onward. ERA at the top shows how many you've opened.",
       "Make cash, spend it to grow, and open the next business. Much later you can prestige and start over stronger.",
     ],
   },

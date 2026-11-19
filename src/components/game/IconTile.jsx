@@ -37,6 +37,9 @@ export default function IconTile({ cfg, st, onRun }) {
           RUN
         </span>
       )}
+      {cfg.placeholder && (
+        <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/80 text-center font-pixel text-[0.4rem] leading-3 text-[var(--game-muted)]">SOON</span>
+      )}
       {st.owned > 0 && (
         <span
           data-owned={cfg.id}

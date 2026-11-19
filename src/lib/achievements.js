@@ -85,6 +85,12 @@ function isPlaceholder(playId) {
   return !playId || playId.startsWith("REPLACE_IN_PLAY_CONSOLE");
 }
 
+// Real Play Console ids replace the placeholders. Until then nothing is sent
+// and the settings button stays a dead "coming soon" control.
+export function achievementsLive() {
+  return ACHIEVEMENTS.some((entry) => !isPlaceholder(entry.playId));
+}
+
 function owned(state, id) {
   const i = BUSINESSES.findIndex((cfg) => cfg.id === id);
   return i >= 0 && (state?.biz?.[i]?.owned || 0) > 0;
@@ -141,7 +147,7 @@ function timed(promise, ms = CALL_TIMEOUT_MS) {
 let flushing = false;
 
 export function noteProgress(state) {
-  if (typeof window === "undefined" || !state) return;
+  if (!achievementsLive() || typeof window === "undefined" || !state) return;
   const book = readBook();
   const known = new Set([...book.sent, ...book.queued]);
   const fresh = achievementIdsFor(state).filter((id) => !known.has(id));
@@ -153,7 +159,7 @@ export function noteProgress(state) {
 }
 
 export async function flushAchievements() {
-  if (flushing || typeof window === "undefined") return;
+  if (!achievementsLive() || flushing || typeof window === "undefined") return;
   flushing = true;
   try {
     const { getCloudState, playCall } = await import("./cloudSave.js");
@@ -191,6 +197,7 @@ export async function flushAchievements() {
 }
 
 export async function openAchievements() {
+  if (!achievementsLive()) return { ok: false };
   const { getCloudState, signIn, playCall } = await import("./cloudSave.js");
   let cloud = getCloudState();
   if (!cloud.configured) return { ok: false, reason: "Achievements come with the Google Play version." };

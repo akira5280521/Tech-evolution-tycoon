@@ -550,25 +550,35 @@ export function maxAffordable(cfg, owned, cash) {
   return Math.max(0, Math.min(MAX_BUY, n));
 }
 
-// `limit` is how many units this click may add. Callers pass the distance to
-// the next milestone, speed gate, or mastery gate so one press cannot skip it.
-export function buyCount(mode, cfg, owned, cash, limit = MAX_BUY) {
-  const cap = Number.isFinite(limit) && limit >= 1 ? Math.min(MAX_BUY, Math.floor(limit)) : MAX_BUY;
-  // MAX: as many as you can afford, straight past milestones.
-  if (mode === "MAX") return Math.min(MAX_BUY, Math.max(maxAffordable(cfg, owned, cash), 1));
-  // NEXT: exactly enough to reach the next milestone, speed gate, or mastery
-  // gate. Callers pass that distance as `limit`. Past every gate, round up to
-  // the next multiple of 25 so the button still has a target.
-  if (mode === "NEXT") {
-    if (cap < MAX_BUY) return cap;
-    const have = Number.isFinite(owned) && owned > 0 ? Math.floor(owned) : 0;
-    return 25 - (have % 25);
-  }
-  // X1 / X10 / X100 buy exactly that many. They used to stop at the next
-  // milestone (X10 at 20 bought 5), which looked like the button ignored the
-  // setting. Buying past a milestone still gives its bonus (bonuses come from
-  // the owned count), and NEXT is there for landing on one exactly.
-  const n = parseInt(String(mode).slice(1), 10);
+// One button cycles these in order, then wraps back to X1.
+export const BUY_MODE_CYCLE = ["x1", "x10", "x25", "x50", "x75", "x100", "MAX"];
+
+// NEXT was the old "buy up to the next goal" switch. Anything that is not a
+// current amount, including NEXT, comes back as X1. x1, x10, x100 and max stay.
+export function normalizeBuyMode(mode) {
+  const raw = String(mode || "");
+  if (raw.toLowerCase() === "max") return "MAX";
+  const id = raw.toLowerCase();
+  return BUY_MODE_CYCLE.includes(id) ? id : "x1";
+}
+
+export function nextBuyMode(mode) {
+  const current = normalizeBuyMode(mode);
+  const i = BUY_MODE_CYCLE.indexOf(current);
+  return BUY_MODE_CYCLE[(i + 1) % BUY_MODE_CYCLE.length];
+}
+
+export function buyModeLabel(mode) {
+  const id = normalizeBuyMode(mode);
+  return id === "MAX" ? "MAX" : id.toUpperCase();
+}
+
+// Each amount buys exactly that many. MAX buys as many as you can afford.
+// Buying past a milestone still gives its bonus (bonuses come from the owned count).
+export function buyCount(mode, cfg, owned, cash) {
+  const id = normalizeBuyMode(mode);
+  if (id === "MAX") return Math.min(MAX_BUY, Math.max(maxAffordable(cfg, owned, cash), 1));
+  const n = parseInt(id.slice(1), 10);
   if (!Number.isFinite(n) || n < 1) return 1;
   return Math.min(MAX_BUY, n);
 }

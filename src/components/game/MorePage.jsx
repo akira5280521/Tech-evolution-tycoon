@@ -147,7 +147,7 @@ const HOW_TO = [
     lines: [
       "Tap a business's picture to run it. The bar fills, then it pays you cash.",
       "Tap BUY to get another one. BUY spends cash, the big CASH number. What you earned this run is not cash.",
-      "The buttons above the list set how many one BUY tap gets: X1, X10, X100, NEXT, or MAX.",
+      "The buy-amount button sets how many one BUY tap gets. Tap it to cycle X1, X10, X25, X50, X75, X100, then MAX.",
       "Own 10 of a business to open the next one.",
     ],
   },
@@ -172,7 +172,7 @@ const HOW_TO = [
     id: "buying",
     title: "BUYING FASTER",
     lines: [
-      "X1 buys one business per tap. X10 and X100 buy that many. NEXT buys enough to reach the next goal. MAX buys as many as your cash allows.",
+      "X1 buys one business per tap. X10, X25, X50, X75 and X100 buy that many. MAX buys as many as your cash allows.",
       "Milestones come at 25, 50, 75, 100, 150 and 200 of one business. At 25, 50 and 100 it runs twice as fast; at 75 and 150 it pays twice as much, and at 200 three times as much.",
     ],
   },

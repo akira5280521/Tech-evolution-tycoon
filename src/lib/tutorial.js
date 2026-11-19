@@ -54,7 +54,7 @@ export const TUTORIAL_STEPS = [
   {
     id: "modes",
     title: "HOW MANY",
-    text: "Tap X1 to buy one business per tap. X10 and X100 buy that many, NEXT aims at the next goal, and MAX spends all your cash.",
+    text: "Tap the buy button to change how many you buy per tap: X1, X10, X25, X50, X75, X100, then MAX, which spends all your cash.",
     target: "[data-buy-modes]",
   },
   {

@@ -121,7 +121,7 @@ export default function GameScreen() {
             buyMode={buyMode}
             setBuyMode={(mode) => {
               setBuyMode(mode);
-              // Tapping the already-selected X1 still counts: that is the action.
+              // Tapping the amount button is the action, whichever amount it shows.
               if (currentTutorialStep(state)?.id === "modes") tutorialNext("modes");
             }}
             canRunAll={canRunAll}

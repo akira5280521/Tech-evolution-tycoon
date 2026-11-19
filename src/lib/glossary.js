@@ -16,8 +16,8 @@ export const GLOSSARY = {
     text: "A one-time hire. He adds a RUN ALL button that starts every business that doesn't have a manager yet.",
   },
   buymodes: {
-    term: "BUY BUTTONS",
-    text: "These set how many businesses one BUY tap gets. X1 buys one. X10 and X100 buy that many. NEXT buys enough to reach the next goal. MAX buys as many as your cash allows.",
+    term: "BUY AMOUNT",
+    text: "Tap the buy-amount button to change how many businesses one BUY tap gets. It cycles X1, X10, X25, X50, X75, X100, then MAX, which buys as many as your cash allows.",
   },
   speedups: {
     term: "SPEED-UPS",

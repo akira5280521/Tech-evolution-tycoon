@@ -11,7 +11,7 @@ import {
   money,
   nextMilestone,
 } from "@/lib/gameConfig";
-import { effectiveCycleMs, empireFactors, makesOf, managerPrice, maxBuyCount, supplyFactor, upgradesOf } from "@/lib/empire";
+import { effectiveCycleMs, empireFactors, makesOf, managerPrice, supplyFactor, upgradesOf } from "@/lib/empire";
 import IconTile from "./IconTile";
 import ProgressTrack from "./ProgressTrack";
 
@@ -79,7 +79,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
   };
   const cfg = BUSINESSES[index];
   const st = row;
-  const count = buyCount(buyMode, cfg, st.owned, cash, maxBuyCount(st.owned, index));
+  const count = buyCount(buyMode, cfg, st.owned, cash);
   const cost = costOf(cfg, st.owned, count);
   const canBuy = cash >= cost;
   const mult = milestoneMult(st.owned);
@@ -182,10 +182,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
               : "cursor-not-allowed border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-dim)]"
           }`}
         >
-          <span className="font-pixel text-sm uppercase leading-5">
-            Buy ×{count}
-            {buyMode === "NEXT" && <span data-next-target> → {st.owned + count}</span>}
-          </span>
+          <span className="font-pixel text-sm uppercase leading-5">Buy ×{count}</span>
           <span className="mt-1 block font-term text-lg leading-5">{money(cost)}</span>
           {!canBuy && Number.isFinite(cost) && (
             <span data-need className="block font-term text-sm leading-4">need {money(cost - cash)} more</span>

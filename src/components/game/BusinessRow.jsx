@@ -11,7 +11,7 @@ import {
   money,
   nextMilestone,
 } from "@/lib/gameConfig";
-import { effectiveCycleMs, empireFactors, makesOf, maxBuyCount, supplyFactor, upgradesOf } from "@/lib/empire";
+import { effectiveCycleMs, empireFactors, makesOf, managerPrice, maxBuyCount, supplyFactor, upgradesOf } from "@/lib/empire";
 import IconTile from "./IconTile";
 import ProgressTrack from "./ProgressTrack";
 
@@ -96,7 +96,12 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
   const commissioning = (st.commissionUntil || 0) > Date.now();
   const hireNeed = managerNeed(index);
   const hireLocked = st.owned < hireNeed;
-  const canHire = !commissioning && !st.manager && !hireLocked && cash >= cfg.managerCost;
+  // Same price hire() charges, so a Master Key (free manager) lights the button.
+  const hirePrice = managerPrice(state, index);
+  const affordable = Number.isFinite(hirePrice) && cash >= hirePrice;
+  const noBoss = state.challenge?.id === "noboss";
+  const canHire = !commissioning && !st.manager && !hireLocked && !noBoss && affordable;
+  const hireCostLine = hirePrice > 0 ? `${money(hirePrice)} cash · runs it automatically` : "Free · runs it automatically";
 
   return (
     <div data-row={cfg.id} className={`era-row ${(st.milestoneAt || 0) > Date.now() - 1500 ? "milestone-flash" : ""} grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
@@ -199,16 +204,20 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
             disabled={!canHire}
             aria-label={`Hire ${cfg.managerName}`}
             data-hire={cfg.id}
+            data-hire-blocked={!hireLocked && !affordable ? cfg.id : undefined}
             className={`min-h-[44px] flex-1 select-none border-2 px-2 py-2 text-center font-term text-base leading-5 shadow-[3px_3px_0_0_#000] sm:w-full ${
               canHire
                 ? "border-[var(--game-success-border)] bg-[var(--game-success-panel)] text-[var(--game-success)] hover:bg-[var(--game-success-bg-hover)]"
                 : "cursor-not-allowed border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-dim)]"
             }`}
           >
-            Hire {cfg.managerName}
-            <span className="block text-sm leading-4">
-              {hireLocked ? `at ${hireNeed} owned · you have ${st.owned}` : money(cfg.managerCost)}
+            <span className="block break-words">Hire {cfg.managerName}</span>
+            <span className="block break-words text-sm leading-4">
+              {hireLocked ? `Own ${hireNeed} to unlock · you have ${st.owned}` : hireCostLine}
             </span>
+            {!hireLocked && !affordable && (
+              <span data-hire-need className="block break-words font-term text-sm leading-4">need {money(hirePrice - cash)} more cash</span>
+            )}
           </button>
         )}
       </div>
@@ -230,6 +239,8 @@ function arePropsEqual(prev, next) {
     && prev.modStamp === next.modStamp
     && prev.boostUntil === next.boostUntil
     && prev.supplyKey === next.supplyKey
+    && !!prev.state?.shop?.freeManager === !!next.state?.shop?.freeManager
+    && prev.state?.challenge?.id === next.state?.challenge?.id
     && prev.onBuy === next.onBuy
     && prev.onHire === next.onHire
     && prev.onRun === next.onRun;

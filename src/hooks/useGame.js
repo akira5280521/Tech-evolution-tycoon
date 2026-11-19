@@ -56,7 +56,7 @@ import {
   snapshotMeta,
   tickDilemma,
 } from "@/lib/empire";
-import { blankTutorial, readTutorial, TUTORIAL_STEPS } from "@/lib/tutorial";
+import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/lib/tutorial";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { HISTORY_CARDS, collectHistory } from "@/lib/history";
 import { applyOrientation } from "@/lib/orientation";
@@ -352,12 +352,17 @@ export function useGame() {
   const [ready, setReady] = useState(false);
   const restoredRef = useRef(false);
   const bump = useCallback(() => {
-    noteProgress(stateRef.current);
+    const s = stateRef.current;
+    // Doing the last step finishes the tutorial. There is no extra Done button.
+    if (s && tutorialCleared(s)) s.tutorial = { ...s.tutorial, done: true, replay: false };
+    noteProgress(s);
     force((n) => n + 1);
   }, []);
   const saveNow = useCallback(() => {
     if (!restoredRef.current) return;
-    writeSaveData(pack(stateRef.current));
+    const s = stateRef.current;
+    if (s && tutorialCleared(s)) s.tutorial = { ...s.tutorial, done: true, replay: false };
+    writeSaveData(pack(s));
   }, []);
 
   useEffect(() => {

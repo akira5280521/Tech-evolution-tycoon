@@ -4,7 +4,8 @@ import { money } from "@/lib/gameConfig";
 
 export default function IconTile({ cfg, st, onRun }) {
   const ref = useRef(null);
-  const idle = st.owned > 0 && !st.manager && !st.running;
+  const commissioning = (st.commissionUntil || 0) > Date.now();
+  const ready = st.owned > 0 && !st.manager && !st.running && !commissioning;
   useEffect(() => {
     const el = ref.current;
     if (!el || !st.shake) return undefined;
@@ -18,14 +19,24 @@ export default function IconTile({ cfg, st, onRun }) {
       ref={ref}
       type="button"
       onClick={onRun}
-      aria-label={cfg.name}
+      aria-label={ready ? `Tap to run ${cfg.name}` : cfg.name}
       data-tile={cfg.id}
-      title={idle ? `Run ${cfg.name} by hand` : cfg.name}
+      title={ready ? `Tap to run ${cfg.name}` : cfg.name}
       className={`relative h-[64px] w-[64px] shrink-0 select-none border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] p-0.5 ${
-        idle ? "tile-run cursor-pointer" : "cursor-default"
+        ready ? "tile-run cursor-pointer" : "cursor-default"
       }`}
     >
       <Image src={cfg.icon} alt="" fittingType="fit" className="pointer-events-none h-full w-full pixel-art" />
+      {ready && (
+        <span
+          data-tap-run
+          className="pointer-events-none absolute inset-x-0 top-0 z-[1] bg-black/80 py-px text-center font-pixel text-[8px] leading-[10px] text-[var(--game-accent)]"
+        >
+          TAP TO
+          <br />
+          RUN
+        </span>
+      )}
       {st.owned > 0 && (
         <span
           data-owned={cfg.id}

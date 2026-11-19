@@ -137,40 +137,42 @@ const HOW_TO = [
     id: "goal",
     title: "THE GOAL",
     lines: [
-      "You run a company that grows through the real history of computing, one invention at a time, from an 1800s timber camp to quantum computers. ERA at the top shows how many of the 19 you've unlocked.",
-      "Make money, use it to grow, and unlock the next era. Reach the last one, then prestige to start over stronger and go further.",
+      "You run a company of businesses, from a timber camp onward. ERA at the top shows how many of the 19 you've opened.",
+      "Make cash, spend it to grow, and open the next business. Much later you can prestige and start over stronger.",
     ],
   },
   {
     id: "basics",
     title: "THE BASICS",
     lines: [
-      "Each row on the GAME tab is one of your businesses. Tap a business's picture to start it. The bar fills up, then it pays you.",
-      "Spend the money on more businesses. Every one you own adds to each payout, and the price goes up a little each time.",
-      "Own 10 of a business to open the next one in history. Each new era pays much more than the last.",
+      "Tap a business's picture to run it. The bar fills, then it pays you cash.",
+      "Tap BUY to get another one. BUY spends cash, the big CASH number. What you earned this run is not cash.",
+      "The buttons above the list set how many one BUY tap gets: X1, X10, X100, NEXT, or MAX.",
+      "Own 10 of a business to open the next one.",
     ],
   },
   {
     id: "materials",
     title: "MATERIALS",
     lines: [
-      "Some businesses use what an earlier one makes: wood for paper, paper for the Jacquard loom and punch cards, sand for glass, glass, copper and filament for vacuum tubes, germanium for the first transistors, and silicon wafers for chips.",
-      "The strip at the top shows what you have. If a material runs out, the business that needs it stops paying until more is made, so keep the earlier rows growing too.",
+      "Some businesses use what an earlier one makes. Timber Camp makes wood, and the Paper Mill uses that wood.",
+      "The strip at the top shows what you have. If a material runs out, the business that needs it stops paying.",
     ],
   },
   {
     id: "managers",
     title: "MANAGERS AND THE FOREMAN",
     lines: [
-      "Once you own enough of a business (the Hire button shows how many), hire its manager. A manager keeps that business running by itself, even while the app is closed (at half speed, for up to 24 hours).",
-      "The Foreman is a one-time hire that adds a RUN ALL button, which starts every business that doesn't have a manager yet.",
+      "Tap Hire when you own enough of that business and have the cash. The button shows the count and the price. Some businesses need 5, others need 10.",
+      "A manager runs that business for you, even while you're away, at half speed for up to 24 hours.",
+      "The Foreman is a one-time hire. He adds RUN ALL, which starts every business that has no manager yet.",
     ],
   },
   {
     id: "buying",
     title: "BUYING FASTER",
     lines: [
-      "The buttons at the top pick how many you buy per tap: X1, X10, X100, NEXT (just enough to reach the next goal) or MAX (as many as you can afford).",
+      "X1 buys one business per tap. X10 and X100 buy that many. NEXT buys enough to reach the next goal. MAX buys as many as your cash allows.",
       "Milestones come at 25, 50, 75, 100, 150 and 200 of one business. At 25, 50 and 100 it runs twice as fast; at 75 and 150 it pays twice as much, and at 200 three times as much.",
     ],
   },

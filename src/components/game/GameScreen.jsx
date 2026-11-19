@@ -16,8 +16,16 @@ import DilemmaModal from "./DilemmaModal";
 import BubbleBanner from "./BubbleBanner";
 import CoachMark from "./CoachMark";
 import { HelpTip, TipCard } from "./HintSheet";
-import { tutorialActive } from "@/lib/tutorial";
+import { currentTutorialStep, tutorialActive } from "@/lib/tutorial";
 import { StickyHud } from "./chrome";
+
+// The first-run Timber note stays up until the player has both run a business
+// by hand and bought one. Either action on its own is not the whole loop.
+function playedAndBought(state) {
+  if (!state?.sawPit) return false;
+  if ((state.businessesBought || 0) > 0) return true;
+  return (state.biz || []).some((row, i) => (row?.owned || 0) > (i === 0 ? 1 : 0));
+}
 
 // A material shows in the supply strip once the row that makes it is on
 // screen, so materials from undiscovered eras stay hidden.
@@ -111,21 +119,32 @@ export default function GameScreen() {
           <TopBar
             state={state}
             buyMode={buyMode}
-            setBuyMode={setBuyMode}
+            setBuyMode={(mode) => {
+              setBuyMode(mode);
+              // Tapping the already-selected X1 still counts: that is the action.
+              if (currentTutorialStep(state)?.id === "modes") tutorialNext("modes");
+            }}
             canRunAll={canRunAll}
             onRunAll={runAll}
             onBuyForeman={buyForeman}
           />
           <div className="safe-x mx-auto max-w-4xl px-3 pt-2">
-            <p data-supply className="flex flex-wrap gap-x-3 gap-y-1 border-2 border-[var(--game-border)] bg-[var(--game-card)] px-2 py-1 font-term text-base leading-5 text-[var(--game-muted)]">
+            <p
+              data-supply
+              onClick={(event) => {
+                if (event.target.closest("[data-help]")) return;
+                if (currentTutorialStep(state)?.id === "materials") tutorialNext("materials");
+              }}
+              className="flex flex-wrap gap-x-3 gap-y-1 border-2 border-[var(--game-border)] bg-[var(--game-card)] px-2 py-1 font-term text-base leading-5 text-[var(--game-muted)]"
+            >
               {SUPPLY_KEYS.filter((key) => supplyShown(state, key)).map((key) => (
                 <span key={key}>{key} {Math.floor(supply[key] || 0)}</span>
               ))}
               <HelpTip term="materials" className="ml-auto" />
             </p>
-            {!state.sawPit && !tutorialActive(state) && (
+            {!playedAndBought(state) && !tutorialActive(state) && (
               <p data-onboard className="mt-2 border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-2 font-term text-lg leading-6 text-[var(--game-fg)]">
-                Tap the Timber Camp picture. The bar fills, then the load of logs pays. Extra taps wait until it finishes.
+                Tap the Timber Camp picture to run the business. Then tap BUY. BUY spends cash.
               </p>
             )}
           </div>

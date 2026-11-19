@@ -24,10 +24,11 @@ export function BackButton({ to = "/" }) {
 export function CashTicker({ state, cps }) {
   return (
     <div data-cash-ticker className="space-y-1.5">
-      <div data-cash-panel className="border-2 border-[var(--game-border-strong)] bg-[var(--game-bg-deep)] px-2 py-1 text-center shadow-[3px_3px_0_0_#000]">
+      <div data-cash-panel className="border-2 border-[var(--game-border-strong)] bg-[var(--game-bg-deep)] px-2 py-0.5 text-center shadow-[3px_3px_0_0_#000]">
+        <div data-cash-label className="font-pixel text-[8px] leading-[10px] text-[var(--game-muted)]">CASH</div>
         <div data-cash className="break-all font-term text-3xl leading-none text-[var(--game-success)]">{money(state.cash)}</div>
-        <div className="font-term text-base leading-5 text-[var(--game-success)]">
-          {money(cps)}/s · {money(state.lifetime)} this run
+        <div data-cash-rate className="break-words font-term text-[clamp(12px,4.2vw,16px)] leading-[1.15] text-[var(--game-success)]">
+          {money(cps)}/s income · {money(state.lifetime)} earned this run
         </div>
         {overclockOn(state, Date.now()) && (
           <div data-overclock className="font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
@@ -77,7 +78,7 @@ export function StickyHud({ state, cps }) {
     };
   }, []);
   return (
-    <div ref={ref} data-sticky-hud data-hud-fits={fits ? "yes" : "no"} className="hud-sticky safe-top safe-x px-3 pb-2">
+    <div ref={ref} data-sticky-hud data-hud-fits={fits ? "yes" : "no"} className="hud-sticky safe-top safe-x px-3 pb-1">
       <div className="mx-auto max-w-4xl">
         <CashTicker state={state} cps={cps} />
       </div>

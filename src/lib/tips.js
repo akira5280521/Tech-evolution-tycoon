@@ -6,8 +6,8 @@
 //
 // Like the tutorial, tips add no money or speed. They only explain.
 
-import { BUSINESSES, FOREMAN_COST, investorsFor, shortMaterial } from "./gameConfig.js";
-import { dataPerSecond, forkCost, singularityMult, upgradeOffer, upgradesOf } from "./empire.js";
+import { BUSINESSES, FOREMAN_COST, investorsFor, managerNeed, shortMaterial } from "./gameConfig.js";
+import { dataPerSecond, forkCost, managerPrice, singularityMult, upgradeOffer, upgradesOf } from "./empire.js";
 import { tutorialActive } from "./tutorial.js";
 
 const maxOwned = (s) => Math.max(0, ...(s?.biz || []).map((b) => b?.owned || 0));
@@ -17,6 +17,18 @@ function upgradeAffordable(s) {
     if ((s.biz?.[i]?.owned || 0) <= 0) return false;
     const up = upgradesOf(s, cfg.id);
     return !up.rev && s.cash >= upgradeOffer(i).rev.cost;
+  });
+}
+
+// Owned enough to hire, but the cash on hand (not a free-manager token) is short.
+function hireBlockedByCash(s) {
+  if (!s || s.challenge?.id === "noboss") return false;
+  return BUSINESSES.some((_, i) => {
+    const st = s.biz?.[i];
+    if (!st || st.manager) return false;
+    if ((st.owned || 0) < managerNeed(i)) return false;
+    const price = managerPrice(s, i);
+    return price > 0 && (Number(s.cash) || 0) < price;
   });
 }
 
@@ -63,6 +75,14 @@ export const TIPS = [
     when: (s) => !!shortMaterial(s) && (s.lifetime || 0) > 0,
   },
   {
+    id: "hire-cash",
+    page: "game",
+    title: "HIRE WITH CASH",
+    text: "The Hire button lights when you own enough of that business and have the cash on hand: the big CASH number at the top, not what you've earned this run. A manager keeps that business running by itself, even while you're away.",
+    target: "[data-cash-panel]",
+    when: (s) => hireBlockedByCash(s),
+  },
+  {
     id: "foreman",
     page: "game",
     title: "HIRE THE FOREMAN",
@@ -74,15 +94,15 @@ export const TIPS = [
     id: "buy-modes",
     page: "game",
     title: "BUY MORE AT ONCE",
-    text: "These buttons set how many you buy per tap. X10 and X100 buy that many. NEXT buys just enough to reach the next goal, like a speed-up. MAX buys as many as you can afford.",
+    text: "Tap one of these to change how many businesses one BUY gets. X10 and X100 buy that many, NEXT aims at the next goal, and MAX spends all your cash.",
     target: "[data-buy-modes]",
-    when: (s) => maxOwned(s) >= 10,
+    when: (s) => maxOwned(s) >= 10 && !(s.tutorial?.seen || []).includes("modes"),
   },
   {
     id: "upgrades",
     page: "game",
     title: "UPGRADES",
-    text: "You can afford an upgrade. Open the BOOST tab: upgrades make a business pay more or run faster.",
+    text: "Tap BOOST. An upgrade makes one business pay more or run faster, and it costs cash.",
     target: '[data-tab="boost"]',
     when: (s) => upgradeAffordable(s),
   },
@@ -106,7 +126,7 @@ export const TIPS = [
     id: "research",
     page: "game",
     title: "RESEARCH DATA",
-    text: "Every era you own makes research data, slowly. Data is never lost, even when you prestige. Spend it on the RESEARCH tab on a bonus you keep forever.",
+    text: "Tap RESEARCH. Your businesses make data slowly. Spend it there on a bonus you keep.",
     target: '[data-tab="research"]',
     when: (s) => (s.data || 0) >= 1 && dataPerSecond(s) > 0,
   },
@@ -114,9 +134,17 @@ export const TIPS = [
     id: "challenges",
     page: "game",
     title: "CHALLENGES",
-    text: "The RUNS tab has optional challenges: one run with special rules, like no managers. Win one for +10% income forever.",
+    text: "Tap RUNS for an optional challenge, one run with special rules. Win it for +10% income forever.",
     target: '[data-tab="runs"]',
     when: (s) => !!s.prestiged,
+  },
+  {
+    id: "more-tab",
+    page: "game",
+    title: "A BADGE",
+    text: "You earned a badge. Tap MORE, then Badges, to see it.",
+    target: '[data-tab="more"]',
+    when: (s) => (s.badgesEarned || []).length > 0,
   },
 
   // ---- First visit to each tab ----
@@ -124,31 +152,37 @@ export const TIPS = [
     id: "page-boost",
     page: "boost",
     title: "UPGRADES",
-    text: "Each business has two upgrades: one makes it pay 3 times as much, one makes it twice as fast. They cost cash and take a few seconds to install. A prestige removes them, so you buy them again each run.",
+    text: "Each business has two upgrades. One pays 3 times as much, one runs twice as fast. They cost cash.",
   },
   {
     id: "page-board",
     page: "board",
     title: "YOUR BONUSES",
-    text: "This tab adds up everything that boosts your income: investors, forks and more. Tap a ? to see what each one is. The token shop is further down.",
+    text: "This adds up what boosts your income. Tap a ? for any word. The token shop is further down.",
   },
   {
     id: "page-runs",
     page: "runs",
     title: "CHALLENGES & PROJECTS",
-    text: "Challenges are optional runs with special rules. Starting one resets your businesses like prestige does, but you keep investors. Mega-projects finish on their own when you reach their goal. Both give bonuses you keep forever.",
+    text: "A challenge is one optional run with special rules. Mega-projects finish on their own when you reach their goal. Both pay a bonus you keep.",
   },
   {
     id: "page-research",
     page: "research",
     title: "THE RESEARCH LAB",
-    text: "Spend research data on one company bonus. It's permanent, but you only get one slot at first, so pick the one you like. Forking the timeline opens another slot. Spare data goes to the lab projects further down.",
+    text: "Spend data on one bonus you keep. You start with one slot. Spare data goes to the lab projects below.",
   },
   {
     id: "page-badges",
     page: "more#badges",
     title: "BADGES & MUSEUM",
-    text: "Badges are goals to aim for. The Museum fills with real history cards as you reach each era.",
+    text: "Badges are goals to aim for. The Museum fills with history cards as you open each business.",
+  },
+  {
+    id: "page-more",
+    page: "more#settings",
+    title: "MORE",
+    text: "Change sound and text size here. How to Play explains any word, and Badges are the next button.",
   },
 ];
 

@@ -232,8 +232,8 @@ This release is 0.0.20 (versionCode 20) and adds PR #47.
    milestones, Play Games, starter goals, Research lab projects and the rest
    of the tab tidy-up, the early history events, chip generations and the
    era arrival screen, and the missing eras (relay computers, mainframes,
-   minicomputers, game consoles, the web, smartphones, cloud and
-   datacenters, AI accelerators). Chip generations and those new eras are
+   minicomputers, game consoles, the web, cloud and datacenters,
+   smartphones, AI accelerators). Chip generations and those new eras are
    paced in closed testing, on the 0.0.22 numbers, so live saves aren't
    re-paced after launch. Investor milestones go out before launch for the
    same reason.
@@ -349,9 +349,12 @@ in 0.0.18, or that is merged for 0.0.19, is not repeated here.
   Transistors (c. 1954) > Integrated Circuits (c. 1965) > Minicomputers
   (c. 1965-70) > Microprocessors (c. 1971) > Home Computers (c. 1977) >
   Game Consoles (c. 1977-94+) > Dial-up / WWW (mid-1990s) > Graphics Cards
-  (c. 1999) > Smartphones (2007 era) > Cloud and Datacenters (c. 2006) >
-  RGB Battlestations (c. 2015) > AI Accelerators (just before Quantum,
-  c. 2019) > Quantum Servers (c. 2019).
+  (c. 1999) > Cloud and Datacenters (c. 2006) > Smartphones (2007 era) >
+  RGB Battlestations (c. 2015) > AI Accelerators (2016) > Quantum Servers
+  (c. 2019).
+
+  Order is by each row's anchor year. Where two rows share a year, the one
+  with the earlier first shipment stays first.
 
   Still to add, in that order:
   - Relay Computers (c. 1941-44), after Punch Cards and before the tube
@@ -364,28 +367,34 @@ in 0.0.18, or that is merged for 0.0.19, is not repeated here.
     the supercomputers, are item 1.
   - Minicomputers (c. 1965-70), after Integrated Circuits (c. 1965) and
     before Microprocessors (c. 1971). PDP-8 (1965) and PDP-11 (1970), as a
-    parody of DEC. The PDP-8 shares a year with the IC row and follows it.
+    parody of DEC. Both rows are anchored in 1965. Commercial integrated
+    circuits were already on sale in March 1961; the PDP-8 was introduced
+    on 22 March 1965 and the first machines were delivered that summer, so
+    the IC row stays first.
   - Game Consoles (c. 1977-94+), after Home Computers (c. 1977) and before
     dial-up. Atari 2600 (1977), NES (1985; the Japanese original in 1983),
-    PlayStation (1994) and later, under parody maker names. The row opens
-    in the same year as Home Computers and follows it. Later consoles stay
+    PlayStation (1994) and later, under parody maker names. Both rows open
+    in 1977. The Apple II shipped on 10 June 1977 and the Atari 2600 on
+    11 September 1977, so Home Computers stays first. Later consoles stay
     on this row; its place on the ladder is its start.
   - Mid-1990s: dial-up internet and the World Wide Web, after Game Consoles
-    and before Graphics Cards (c. 1999).
-  - Smartphones, the 2007 era, after Graphics Cards and before Cloud and
-    Datacenters. A parody of the 2007 original phone, with the real specs
-    (412 MHz ARM11, 128 MB RAM, 3.5-inch 320×480), its own manager, two
-    Museum cards, and upgrades such as multi-touch and an app store.
-    Generations on this row are item 1, in year order, starting with the
-    1983 brick phone and the 1990s feature phones, then this 2007 phone.
-  - Cloud and Datacenters (c. 2006), after the Smartphones row and before
-    RGB Battlestations (c. 2015). Rented virtual servers date to 2006, a
-    year before the 2007 phone. The row still follows Smartphones: that
-    row is the 2007 era (earlier phones are generations on it), and this
-    is the approved slot, still before AI accelerators. Parody of the big
-    cloud hosts.
-  - AI accelerators, mid-2010s to 2020s, after RGB Battlestations (c. 2015)
-    and just before Quantum Servers (c. 2019).
+    and before Graphics Cards (c. 1999). The first public website is 6
+    August 1991, still inside this slot.
+  - Cloud and Datacenters (c. 2006), after Graphics Cards (c. 1999) and
+    before Smartphones (2007). Rented virtual storage went on sale in March
+    2006; the 2007 phone shipped in June 2007. Parody of the big cloud
+    hosts.
+  - Smartphones, the 2007 era, after Cloud and Datacenters and before RGB
+    Battlestations (c. 2015). A parody of the 2007 original phone, with the
+    real specs (412 MHz ARM11, 128 MB RAM, 3.5-inch 320×480), its own
+    manager, two Museum cards, and upgrades such as multi-touch and an app
+    store. Generations on this row are item 1, in year order, starting with
+    the 1983 brick phone and the 1990s feature phones, then this 2007 phone.
+  - AI accelerators (2016), after RGB Battlestations (c. 2015) and before
+    Quantum Servers (c. 2019). The TPU was announced in May 2016 after
+    running inside Google through 2015. RGB lighting was already on sale in
+    July 2012, and this game's RGB row is anchored at c. 2015, so AI stays
+    after that row.
   The Jacquard loom (1804) shipped in 0.0.18.
   The office PC (1981), graphical desktops (1984) and laptops are covered
   by Home Computers generations (item 1) instead. Saves store rows by era
@@ -401,18 +410,19 @@ post-launch content. [Design](ideas.md#more-row-generations).
 1. **Generations on more rows**, using the same system. Parody company
    names, real model numbers and specs. In year order inside each row:
    - **Mainframes** (the row opens in closed testing, c. 1951): UNIVAC I
-     (1951), the mid-1950s machines, System/360 (1964). Supercomputers are
-     the top generations of this same row: CDC 6600 (1964) and Cray-1
-     (1976). The 6600 shares a year with System/360 and sits at the top of
-     the row with the Cray-1 after it.
+     (1951), the mid-1950s machines, CDC 6600 (delivered September 1964),
+     System/360 (announced 7 April 1964, first delivered April 1965),
+     Cray-1 (delivered 4 March 1976). The 6600 and System/360 share 1964;
+     the 6600 was delivered first, so it comes first. The Cray-1 is the
+     later supercomputer generation on this same row.
    - **Home Computers:** the Altair 8800 kit (1975) first, then the 8-bit
      micro (1977), office PC (1981), graphical desktop (1984) and laptop
      (late 1980s). Once generations are on, one owned shows the 1975 kit.
    - **Smartphones:** Motorola DynaTAC brick phone (1983), then 1990s
      feature and flip phones, then the 2007 smartphone, then the 4G
      phablet (early 2010s), wearables (fitness trackers and smartwatches,
-     c. 2015) and the foldable (2019). Wearables are a late generation of
-     this row. The closed-testing row is the 2007 phone; with generations
+     c. 2015) and the foldable (2019). The 2015 wearables come before the
+     2019 foldable. The closed-testing row is the 2007 phone; with generations
      on, the row starts as the 1983 brick and reaches that phone later.
      The 1990s feature phones come before the 2007 phone.
    - **RGB Battlestations** (era c. 2015): glass-panel RGB tower
@@ -514,14 +524,15 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     [Design](ideas.md#parts-catalog).
 
 7. **Monitors.** From green and amber text screens (late 1970s-80s) to
-    color CRTs (640x480 in 1987), bigger CRTs, flat LCDs (mid-2000s), high
-    refresh and OLED, with real resolution steps capping what a strong
-    graphics card adds. First after the core build because the screen is the
-    oldest part of the picture. VR/AR headsets are a branch of this display
-    slot: a developer kit in the style of the Oculus DK1 (2012; first units
-    shipped in 2013), then consumer headsets from 2016. Parody maker names,
-    with the real model numbers and specs. A headset installs in the display
-    slot once its year is reached, the same way a monitor does.
+    color CRTs (640x480 in 1987), bigger CRTs, flat LCDs (mid-2000s),
+    high-refresh screens (2010s) and OLED, with real resolution steps capping
+    what a strong graphics card adds. First after the core build because the
+    screen is the oldest part of the picture. VR/AR headsets are a branch of
+    this display slot, in year order with those screens: a developer kit in
+    the style of the Oculus DK1 (2012; first units shipped in 2013), then
+    consumer headsets from 2016, before OLED. Parody maker names, with the
+    real model numbers and specs. A headset installs in the display slot once
+    its year is reached, the same way a monitor does.
     [Design](ideas.md#monitors-and-cooling).
 
 8. **Parts catalog, step 2: expansion slots** (the PC's add-in slots date

@@ -18,7 +18,7 @@ Material rows stay where they are. These are only the new computing rows.
 | --- | --- | --- | --- | --- |
 | Relay Computers | 1941 | Crossbar Works, model 3 | Zuse Z3, shown working in Berlin on 12 May 1941 | About 2,600 relays, binary floating point, 22-bit words, 64 words of memory, clock about 5 Hz, a multiply in about 3 seconds, program on punched film |
 | Relay Computers | 1944 | Inland Automatic Sequencer | IBM ASCC, the Harvard Mark I, presented 7 August 1944 | 51 feet long, about 3,500 relays, 72 numbers of 23 decimal digits, about 3 additions a second, a multiply in about 6 seconds, program on punched tape |
-| Mainframes | 1951 | Ledger Rand, Ledger I | UNIVAC I, accepted by the US Census Bureau on 31 March 1951 and dedicated on 14 June 1951 | About 6,100 vacuum tubes, 1,000 words of 12 characters in mercury delay lines, 2.25 MHz clock, an addition in 525 microseconds, data on magnetic tape |
+| Mainframes | 1951 | Irwell Electrics, Irwell Mark 1 | Ferranti Mark 1, delivered to Manchester in February 1951 | About 4,050 vacuum tubes, Williams-tube memory, 40-bit words, two 20-bit instructions in a word, a magnetic drum for the rest of the store |
 | Minicomputers | 1965 | Maynard Equipment 8 | DEC PDP-8, introduced 22 March 1965 | 12-bit, diode-transistor logic, about the size of a refrigerator, introductory price about $18,500 |
 | Minicomputers | 1970 | Maynard Equipment 11 | DEC PDP-11/20, introduced 1970 | 16-bit, one Unibus linking processor, memory and devices, a complete system listed at $10,800 |
 | Game Consoles | 1977 | Paddle Arts 2600 | Atari Video Computer System, later called the 2600, on sale 11 September 1977 | MOS 6507 at 1.19 MHz, 128 bytes of RAM, games on cartridges, introductory price $189.95 |
@@ -37,11 +37,10 @@ Datacenter Tech, Handset Lead, Accelerator Keeper.
 
 ## Calls made on purpose
 
-- Ledger I is the Census machine, which is the mainframe the later generation
-  list starts from. The Ferranti Mark 1 was delivered in Manchester in
-  February 1951, earlier than the UNIVAC dedication. It can be the second
-  Museum card if the row should open on the first commercial delivery
-  instead.
+- The mainframe row opens on Irwell Mark 1 (Ferranti Mark 1, February 1951),
+  the first commercial delivery. Ledger I (UNIVAC I, dedicated 14 June 1951:
+  about 6,100 tubes, 1,000 words of 12 characters in mercury delay lines) is
+  the next mainframe generation, for phase 1, not this row's opening machine.
 - The console row opens on the 1977 Paddle Arts 2600, after Home Computers,
   because the Orchard II shipped on 10 June 1977 and the 2600 on 11 September
   1977. The 1983 and 1994 consoles stay on that same row.
@@ -85,5 +84,7 @@ uses.
 
 ## Not in this list
 
-Home Computer generations, mainframe generations after Ledger I, and later
-phone generations are phase 1, after launch. This file does not name those.
+Home Computer generations, later phone generations, and the mainframe
+generations after Irwell Mark 1 are phase 1, after launch. The first of
+those mainframe generations is Ledger Rand's Ledger I (UNIVAC I). This file
+does not schedule them into the current build.

@@ -6,6 +6,7 @@ import { PREFS_EVENT } from "@/lib/gamePrefs";
 import BottomTabs from "./BottomTabs";
 import { TipCard } from "./HintSheet";
 import NewsTicker from "./NewsTicker";
+import StarterGoal from "./StarterGoal";
 import { useGameState } from "./GameState";
 
 export function BackButton({ to = "/" }) {
@@ -36,6 +37,7 @@ export function CashTicker({ state, cps }) {
           </div>
         )}
       </div>
+      <StarterGoal state={state} />
       <NewsTicker state={state} />
     </div>
   );

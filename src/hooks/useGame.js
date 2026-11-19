@@ -64,6 +64,7 @@ import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { generationAt } from "@/lib/generations";
 import { facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews } from "@/lib/facilities";
 import { advanceResearch, fillResearchGaps, grantOwnedResearch, readResearchData, readTechDone, readTechJob, startResearch } from "@/lib/research";
+import { currentGoal, readGoalsDone, settleGoals } from "@/lib/goals";
 import { applyOrientation } from "@/lib/orientation";
 import { SAVE_VERSION, clearSaveData, getSaveData, remapBestEra, writeSaveData } from "@/lib/gameSave";
 import { encodeSave } from "@/lib/saveCode";
@@ -179,6 +180,8 @@ function applySavedMeta(state, raw) {
   state.researchData = readResearchData(m.researchData);
   state.techDone = readTechDone(m.techDone);
   state.techJob = readTechJob(m.techJob);
+  state.goalsDone = readGoalsDone(m.goalsDone);
+  state.boughtX10 = !!m.boughtX10;
 }
 
 function readChallenge(raw) {
@@ -225,6 +228,8 @@ function pack(s) {
     supply: s.supply,
     foreman: !!s.foreman,
     sawPit: !!s.sawPit,
+    goalsDone: Array.isArray(s.goalsDone) ? s.goalsDone : [],
+    boughtX10: !!s.boughtX10,
     tutorial: s.tutorial || null,
     orientation: s.orientation || "auto",
     buyMode: normalizeBuyMode(s.buyMode),
@@ -316,11 +321,15 @@ function loadSave() {
       for (const id of legacyBadgeIds(state)) held.add(id);
       state.badgesEarned = [...held];
     }
-    if (prior < 10) {
+    if (prior < 11) {
       grantOwnedResearch(state);
       fillResearchGaps(state);
     }
     collectBadges(state);
+    if (state.goalsDone == null || prior < 9) {
+      state.goalsDone = state.goalsDone || [];
+      settleGoals(state, { pay: false, migrate: true });
+    }
     const elapsed = Math.min(Math.max(Date.now() - (data.lastSeen || Date.now()), 0), offlineCapMs(state));
     let offlineGain = 0;
     let rows = [];
@@ -383,6 +392,7 @@ export function useGame() {
     const s = stateRef.current;
     // Doing the last step finishes the tutorial. There is no extra Done button.
     if (s && tutorialCleared(s)) s.tutorial = { ...s.tutorial, done: true, replay: false };
+    if (s) settleGoals(s, { pay: false });
     noteProgress(s);
     force((n) => n + 1);
   }, []);
@@ -624,6 +634,9 @@ export function useGame() {
       if (!Number.isFinite(count) || count < 1 || count > MAX_BUY) return;
       const cost = costOf(cfg, st.owned, count);
       if (!Number.isFinite(s.cash) || !Number.isFinite(cost) || !(s.cash >= cost)) return;
+      // Only a buy made while BUY X10 is the goal on screen. Cycling the button
+      // during the tutorial, or buying X10 earlier, does not skip that goal.
+      if (normalizeBuyMode(buyMode) === "x10" && currentGoal(s)?.id === "x10") s.boughtX10 = true;
       const before = st.owned;
       s.cash -= cost;
       const now = Date.now();
@@ -651,6 +664,8 @@ export function useGame() {
       if (afterGen && afterGen.id !== beforeGen?.id && before > 0) {
         toast(afterGen.name, { description: `${afterGen.year}. ${afterGen.tagline}` });
       }
+      const goalPay = settleGoals(s, { pay: true });
+      if (goalPay.reward > 0) toast("Goal complete", { description: `+${money(goalPay.reward)} cash` });
       saveNow();
       bump();
     },
@@ -669,6 +684,8 @@ export function useGame() {
       const cycle = effectiveCycleMs(BUSINESSES[i], s);
       s.biz = s.biz.map((b, j) => (j === i ? { ...b, manager: true, running: true, progress: 0, cycleStart: started, cycleAt: cycle, paidLaps: 0, holdUntil: 0 } : b));
       s.managersHired = (s.managersHired || 0) + 1;
+      const goalPay = settleGoals(s, { pay: true });
+      if (goalPay.reward > 0) toast("Goal complete", { description: `+${money(goalPay.reward)} cash` });
       buzzLight();
       saveNow();
       bump();
@@ -688,13 +705,16 @@ export function useGame() {
       }
       if (st.owned > 0 && !st.manager && !st.running) {
         s.sawPit = true;
+        const goalPay = settleGoals(s, { pay: true });
+        if (goalPay.reward > 0) toast("Goal complete", { description: `+${money(goalPay.reward)} cash` });
         const started = Date.now();
         const cycle = effectiveCycleMs(BUSINESSES[i], s);
         s.biz = s.biz.map((b, j) => (j === i ? { ...b, running: true, progress: 0, cycleStart: started, cycleAt: cycle, paidLaps: 0, holdUntil: 0 } : b));
+        saveNow();
         bump();
       }
     },
-    [bump]
+    [bump, saveNow]
   );
 
   const runAll = useCallback(() => {
@@ -711,9 +731,12 @@ export function useGame() {
     });
     if (any) {
       s.sawPit = true;
+      const goalPay = settleGoals(s, { pay: true });
+      if (goalPay.reward > 0) toast("Goal complete", { description: `+${money(goalPay.reward)} cash` });
+      saveNow();
       bump();
     }
-  }, [bump]);
+  }, [bump, saveNow]);
 
   const buyForeman = useCallback(() => {
     const s = stateRef.current;

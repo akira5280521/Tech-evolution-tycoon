@@ -16,10 +16,11 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 // Jacquard Loom (1804) between the Paper Mill and Punch Cards. v8 inserts the
 // closed-testing eras (relay, mainframes, minicomputers, consoles, dial-up,
 // cloud, smartphones, AI) and keeps each older row on its id. v9 adds the
-// facility plants. A save from before v9 has no parts, so the plants start empty.
-// v10 adds the research tree. A chip generation the player had already reached
-// by owning enough of that row stays researched, so an old save does not lose it.
-export const SAVE_VERSION = 10;
+// starter-goal checklist. Goals already true are filled in without paying.
+// v10 adds the facility plants. A save from before v10 has no parts, so the
+// plants start empty. v11 adds the research tree. A chip generation the
+// player had already reached by owning enough of that row stays researched.
+export const SAVE_VERSION = 11;
 const V1_INVESTOR_DIVISOR = 1000;
 // Row order of each older save version.
 const V4_ORDER = ["sand", "copper", "silicon", "wafers", "tubes", "punchcards", "transistors", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];

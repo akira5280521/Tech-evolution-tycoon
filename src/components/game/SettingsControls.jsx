@@ -16,8 +16,12 @@ const off = "border-[var(--game-border-strong)] text-[var(--game-muted)]";
 function usePrefs() {
   const [prefs, setPrefs] = useState(() => readPrefs());
   useEffect(() => {
-    applyAudioPrefs(readPrefs());
-    const on = () => setPrefs(readPrefs());
+    const on = () => {
+      const next = readPrefs();
+      applyAudioPrefs(next);
+      setPrefs(next);
+    };
+    on();
     window.addEventListener(PREFS_EVENT, on);
     return () => window.removeEventListener(PREFS_EVENT, on);
   }, []);
@@ -44,6 +48,9 @@ export function PlayToggles() {
         </button>
         <button type="button" data-haptics onClick={() => set({ haptics: !prefs.haptics })} className={`${choice} ${prefs.haptics ? on : off}`}>
           VIBRATION: {prefs.haptics ? "ON" : "OFF"}
+        </button>
+        <button type="button" data-starter-goals onClick={() => set({ goalsHidden: !prefs.goalsHidden })} className={`${choice} ${prefs.goalsHidden ? off : on}`}>
+          STARTER GOALS: {prefs.goalsHidden ? "HIDDEN" : "ON"}
         </button>
       </div>
       <Volume

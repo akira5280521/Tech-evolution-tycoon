@@ -231,7 +231,8 @@ This release is 0.0.20 (versionCode 20) and adds PR #47.
    real icons, parody names, tester fixes, sound and settings, investor
    milestones, Play Games, starter goals, Research lab projects and the rest
    of the tab tidy-up, the early history events, chip generations and the
-   era arrival screen, and the missing eras (mainframes, the web,
+   era arrival screen, and the missing eras (relay computers, mainframes,
+   minicomputers, game consoles, the web, cloud and datacenters,
    smartphones, AI accelerators). Chip generations and those new eras are
    paced in closed testing, on the 0.0.22 numbers, so live saves aren't
    re-paced after launch. Investor milestones go out before launch for the
@@ -333,17 +334,67 @@ in 0.0.18, or that is merged for 0.0.19, is not repeated here.
   pacing sim with generation bonuses stacked on 0.0.22 numbers.
   [Design](ideas.md#chip-generations).
 - **Fill the gaps in the timeline.** New eras, each with its own icon,
-  manager, two history cards and upgrade names, in historical order:
-  - After the tubes: mainframes (c. 1951, the first commercial computers),
-    before the Germanium Refinery. Punch Cards moved to 1890, so the
-    1950s mainframe years are now a gap.
-  - Mid-1990s: dial-up internet and the World Wide Web.
-  - 2007: smartphones. A parody of the 2007 original iPhone, with the real
-    specs (412 MHz ARM11, 128 MB RAM, 3.5-inch 320×480), its own manager,
-    two Museum cards, and upgrades such as multi-touch and an app store.
-    Later generations (feature phone, first smartphone, 4G phablet,
-    foldable) go with generations on more rows (item 1).
-  - Mid-2010s to 2020s: AI accelerators, just before Quantum (c. 2019).
+  manager, two history cards and upgrade names. They go in before launch,
+  with the gaps already planned here, so the ladder is paced once and live
+  saves aren't re-paced after launch. Parody company names, with the real
+  model numbers and specs. Material rows stay where they are (each one still
+  sits just before the first era that uses it). The order below is the
+  computing eras.
+
+  Full planned computing-era order. Years already in the game are from
+  `src/lib/gameConfig.js`:
+
+  Jacquard Loom (c. 1804) > Punch Cards (c. 1890) > Relay Computers
+  (c. 1941-44) > Vacuum Tubes (c. 1946) > Mainframes (c. 1951) >
+  Transistors (c. 1954) > Integrated Circuits (c. 1965) > Minicomputers
+  (c. 1965-70) > Microprocessors (c. 1971) > Home Computers (c. 1977) >
+  Game Consoles (c. 1977-94+) > Dial-up / WWW (mid-1990s) > Graphics Cards
+  (c. 1999) > Cloud and Datacenters (c. 2006) > Smartphones (2007 era) >
+  RGB Battlestations (c. 2015) > AI Accelerators (2016) > Quantum Servers
+  (c. 2019).
+
+  Order is by each row's anchor year. Where two rows share a year, the one
+  with the earlier first shipment stays first.
+
+  Still to add, in that order:
+  - Relay Computers (c. 1941-44), after Punch Cards and before the tube
+    materials (Sand Quarry, Copper Seam, Glassworks, Filament Forge) and
+    Vacuum Tubes. Zuse Z3 (1941) and Harvard Mark I (1944), under parody
+    maker names.
+  - Mainframes (c. 1951, the first commercial computers), after Vacuum
+    Tubes and before the Germanium Refinery. Punch Cards moved to 1890, so
+    the 1950s mainframe years are a gap. Generations on this row, including
+    the supercomputers, are item 1.
+  - Minicomputers (c. 1965-70), after Integrated Circuits (c. 1965) and
+    before Microprocessors (c. 1971). PDP-8 (1965) and PDP-11 (1970), as a
+    parody of DEC. Both rows are anchored in 1965. Commercial integrated
+    circuits were already on sale in March 1961; the PDP-8 was introduced
+    on 22 March 1965 and the first machines were delivered that summer, so
+    the IC row stays first.
+  - Game Consoles (c. 1977-94+), after Home Computers (c. 1977) and before
+    dial-up. Atari 2600 (1977), NES (1985; the Japanese original in 1983),
+    PlayStation (1994) and later, under parody maker names. Both rows open
+    in 1977. The Apple II shipped on 10 June 1977 and the Atari 2600 on
+    11 September 1977, so Home Computers stays first. Later consoles stay
+    on this row; its place on the ladder is its start.
+  - Mid-1990s: dial-up internet and the World Wide Web, after Game Consoles
+    and before Graphics Cards (c. 1999). The first public website is 6
+    August 1991, still inside this slot.
+  - Cloud and Datacenters (c. 2006), after Graphics Cards (c. 1999) and
+    before Smartphones (2007). Rented virtual storage went on sale in March
+    2006; the 2007 phone shipped in June 2007. Parody of the big cloud
+    hosts.
+  - Smartphones, the 2007 era, after Cloud and Datacenters and before RGB
+    Battlestations (c. 2015). A parody of the 2007 original phone, with the
+    real specs (412 MHz ARM11, 128 MB RAM, 3.5-inch 320×480), its own
+    manager, two Museum cards, and upgrades such as multi-touch and an app
+    store. Generations on this row are item 1, in year order, starting with
+    the 1983 brick phone and the 1990s feature phones, then this 2007 phone.
+  - AI accelerators (2016), after RGB Battlestations (c. 2015) and before
+    Quantum Servers (c. 2019). The TPU was announced in May 2016 after
+    running inside Google through 2015. RGB lighting was already on sale in
+    July 2012, and this game's RGB row is anchored at c. 2015, so AI stays
+    after that row.
   The Jacquard loom (1804) shipped in 0.0.18.
   The office PC (1981), graphical desktops (1984) and laptops are covered
   by Home Computers generations (item 1) instead. Saves store rows by era
@@ -356,27 +407,46 @@ in 0.0.18, or that is merged for 0.0.19, is not repeated here.
 Starts when the game is live on Google Play after all testing. First
 post-launch content. [Design](ideas.md#more-row-generations).
 
-1. **Generations on more rows**, using the same system: Home Computers
-   (8-bit micro 1977, office PC 1981, graphical desktop 1984, laptop late
-   1980s) and RGB Battlestations (glass-panel RGB tower mid-2010s, custom
-   liquid loop, compact small-form-factor build 2020s). The LAN-party tower
-   predates this era's 2015 date, so it belongs to the history events
-   instead.
+1. **Generations on more rows**, using the same system. Parody company
+   names, real model numbers and specs. In year order inside each row:
+   - **Mainframes** (the row opens in closed testing, c. 1951): UNIVAC I
+     (1951), the mid-1950s machines, CDC 6600 (delivered September 1964),
+     System/360 (announced 7 April 1964, first delivered April 1965),
+     Cray-1 (delivered 4 March 1976). The 6600 and System/360 share 1964;
+     the 6600 was delivered first, so it comes first. The Cray-1 is the
+     later supercomputer generation on this same row.
+   - **Home Computers:** the Altair 8800 kit (1975) first, then the 8-bit
+     micro (1977), office PC (1981), graphical desktop (1984) and laptop
+     (late 1980s). Once generations are on, one owned shows the 1975 kit.
+   - **Smartphones:** Motorola DynaTAC brick phone (1983), then 1990s
+     feature and flip phones, then the 2007 smartphone, then the 4G
+     phablet (early 2010s), wearables (fitness trackers and smartwatches,
+     c. 2015) and the foldable (2019). The 2015 wearables come before the
+     2019 foldable. The closed-testing row is the 2007 phone; with generations
+     on, the row starts as the 1983 brick and reaches that phone later.
+     The 1990s feature phones come before the 2007 phone.
+   - **RGB Battlestations** (era c. 2015): glass-panel RGB tower
+     (mid-2010s), custom liquid loop, compact small-form-factor build
+     (2020s). The LAN-party tower predates this era's 2015 date, so it
+     belongs to the history events instead.
    [Design](ideas.md#more-row-generations).
 
 2. **History events, step 2, with headlines, pioneers and trivia.** The
    rest of the history events, each tied to its eras and in the order they
-   happened: the 1983 video game crash, floppies to CDs (early-mid 1990s),
-   LAN parties (late 1990s-2000s), the bad-capacitor years (about
-   2000-2007), the hard-drive shortage (2011 floods), the memory price spike
-   (2017-2018), GPU mining rushes (2017-2018 and 2021) and the 2021 chip
-   shortage; plus contracts for the later eras ("Moon program: 150
-   Integrated Circuits", 1960s). One event at a time, fixed effects shown up
-   front. Text-only extras in the same release: more headlines per era (the
-   ticker already follows the era being built, since 0.0.17), pioneer notes
-   on history cards (Ada Lovelace, Grace Hopper and others), kept factual,
-   with managers staying fictional job titles, and "Which came first?"
-   trivia as an occasional dilemma paying a bonus for a right answer.
+   happened: Ethernet (the 1973 experimental network, then the 1980
+   standard), TCP/IP flag day (1 January 1983), the 1983 video game crash,
+   floppies to CDs (early-mid 1990s), Wi-Fi (802.11 in 1997, 802.11b in
+   1999) and home broadband, LAN parties (late 1990s-2000s), the
+   bad-capacitor years (about 2000-2007), the hard-drive shortage (2011
+   floods), the memory price spike (2017-2018), GPU mining rushes
+   (2017-2018 and 2021) and the 2021 chip shortage; plus contracts for the
+   later eras ("Moon program: 150 Integrated Circuits", 1960s). One event
+   at a time, fixed effects shown up front. Text-only extras in the same
+   release: more headlines per era (the ticker already follows the era
+   being built, since 0.0.17), pioneer notes on history cards (Ada
+   Lovelace, Grace Hopper and others), kept factual, with managers staying
+   fictional job titles, and "Which came first?" trivia as an occasional
+   dilemma paying a bonus for a right answer.
    [Design](ideas.md#hardware-history-events).
 
 ## Next: phase 2, history on what's already there
@@ -454,10 +524,16 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     [Design](ideas.md#parts-catalog).
 
 7. **Monitors.** From green and amber text screens (late 1970s-80s) to
-    color CRTs (640x480 in 1987), bigger CRTs, flat LCDs (mid-2000s), high
-    refresh and OLED, with real resolution steps capping what a strong
-    graphics card adds. First after the core build because the screen is the
-    oldest part of the picture. [Design](ideas.md#monitors-and-cooling).
+    color CRTs (640x480 in 1987), bigger CRTs, flat LCDs (mid-2000s),
+    high-refresh screens (2010s) and OLED, with real resolution steps capping
+    what a strong graphics card adds. First after the core build because the
+    screen is the oldest part of the picture. VR/AR headsets are a branch of
+    this display slot, in year order with those screens: a developer kit in
+    the style of the Oculus DK1 (2012; first units shipped in 2013), then
+    consumer headsets from 2016, before OLED. Parody maker names, with the
+    real model numbers and specs. A headset installs in the display slot once
+    its year is reached, the same way a monitor does.
+    [Design](ideas.md#monitors-and-cooling).
 
 8. **Parts catalog, step 2: expansion slots** (the PC's add-in slots date
     from 1981). In the order they appeared: modem cards (1980s to the

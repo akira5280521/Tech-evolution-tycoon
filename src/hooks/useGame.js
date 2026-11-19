@@ -80,6 +80,9 @@ const SAVE_INTERVAL_MS = 5000;
 // updates the screen: 4 a second is plenty and was 10, which cost battery.
 const TICK_MS = 250;
 const RENDER_MS = 250;
+// Cash and Research Data move every tick, but the screen only needs a fresh
+// number about once a second. Payouts and finished projects still paint immediately.
+const DISPLAY_MS = 1000;
 // 24 hours / 720 = 2 minute slices at the cap; shorter absences slice finer.
 
 function freshBiz(mode) {
@@ -443,6 +446,7 @@ export function useGame() {
       }
       const elapsed = Math.max(0, wall - next.cycleStart);
       next = { ...next, activeMs: next.activeMs + (dt || 0) };
+      let paint = !st.cycleStart;
       if (next.manager) {
         const laps = Math.floor(elapsed / cycle);
         const already = next.paidLaps || 0;
@@ -451,6 +455,7 @@ export function useGame() {
           const gain = creditCycles(s, i, laps - already, wall);
           next.paidLaps = laps;
           if (gain > 0) next.lastGain = { id: ++s.gainSeq, amount: gain };
+          paint = true;
         }
       } else if (elapsed >= cycle) {
         const gain = creditCycles(s, i, 1, wall);
@@ -464,11 +469,13 @@ export function useGame() {
           holdUntil: wall + 120,
         };
         if (gain > 0) next.lastGain = { id: ++s.gainSeq, amount: gain };
+        paint = true;
       } else {
         next.progress = elapsed;
+        paint = !st.cycleStart;
       }
-      s.biz[i] = next;
-      return next !== st;
+      if (next !== st) s.biz[i] = next;
+      return paint;
     };
 
     const armDue = (i) => {
@@ -530,22 +537,23 @@ export function useGame() {
       awayBudget = OFFLINE_CAP_MS;
       bump();
     };
-    document.addEventListener("visibilitychange", onVisibility);
-    if (isPageHidden()) onVisibility();
-
     let lastRender = 0;
-    const iv = setInterval(() => {
+    let iv = 0;
+    const stopTick = () => {
+      if (iv) clearInterval(iv);
+      iv = 0;
+      dueTimers.forEach((entry) => clearTimeout(entry.id));
+      dueTimers.clear();
+    };
+    const tick = () => {
       const wall = Date.now();
-      if (stateRef.current.hiddenAt) {
-        lastWall = wall;
-        return;
-      }
+      if (stateRef.current.hiddenAt) return;
       collectBadges(stateRef.current);
       const raw = Math.max(0, wall - lastWall);
       lastWall = wall;
-      const tick = cappedTick(raw, isPageHidden(), awayBudget);
-      awayBudget = tick.budget;
-      const dt = tick.dt;
+      const slice = cappedTick(raw, isPageHidden(), awayBudget);
+      awayBudget = slice.budget;
+      const dt = slice.dt;
       if (!(dt > 0)) return;
       const s = stateRef.current;
       let dirty = false;
@@ -561,12 +569,10 @@ export function useGame() {
       s.data = (s.data || 0) + dataPerSecond(s) * (dt / 1000);
       const business = businessIncomePerSecond(s, wall);
       const plant = facilityReport(s, business).perSecond * (dt / 1000);
-      if (plant > 0) {
-        creditAmount(s, plant, wall);
-        dirty = true;
-      }
+      if (plant > 0) creditAmount(s, plant, wall);
       if (noteFacilityNews(s, business)) dirty = true;
-      if (advanceResearch(s, dt)) dirty = true;
+      const researchMoved = advanceResearch(s, dt);
+      if (researchMoved === "done") dirty = true;
       if (!s.runStartedAt) s.runStartedAt = wall;
       s.playMs = (s.playMs || 0) + dt;
       if (autoBuyUpgrade(s, wall)) dirty = true;
@@ -579,18 +585,47 @@ export function useGame() {
       }
       const pending = s.researchJob || s.upgradeJob || s.projectJob || s.biz.some((row) => (row.commissionUntil || 0) > wall || (row.holdUntil || 0) > wall);
       if (pending) dirty = true;
-      // Redraw the screen at most RENDER_MS apart; money is paid by the clock
-      // either way, so this only saves battery.
+      const passive = plant > 0 || researchMoved === "gain";
+      // Payouts and finished work paint on the short cadence. A plant or
+      // research counter that is merely counting paints about once a second.
       if (dirty && wall - lastRender >= RENDER_MS) {
         lastRender = wall;
         bump();
+      } else if (!dirty && passive && wall - lastRender >= DISPLAY_MS) {
+        lastRender = wall;
+        bump();
       }
-    }, TICK_MS);
+    };
+    const startTick = () => {
+      if (iv) return;
+      lastWall = Date.now();
+      iv = setInterval(tick, TICK_MS);
+    };
+    const hideWork = () => {
+      document.documentElement.dataset.paused = "1";
+      stopTick();
+    };
+    const showWork = () => {
+      delete document.documentElement.dataset.paused;
+      startTick();
+      stateRef.current.biz.forEach((_, i) => armDue(i));
+    };
+    const onVisibilityWrapped = () => {
+      if (isPageHidden()) {
+        onVisibility();
+        hideWork();
+        return;
+      }
+      onVisibility();
+      showWork();
+    };
+    document.addEventListener("visibilitychange", onVisibilityWrapped);
+    if (isPageHidden()) onVisibilityWrapped();
+    else startTick();
     return () => {
-      document.removeEventListener("visibilitychange", onVisibility);
-      clearInterval(iv);
-      dueTimers.forEach((entry) => clearTimeout(entry.id));
-      dueTimers.clear();
+      document.removeEventListener("visibilitychange", onVisibilityWrapped);
+      delete document.documentElement.dataset.paused;
+      stopTick();
     };
   }, [bump]);
 

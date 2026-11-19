@@ -239,15 +239,15 @@ export function advanceResearch(state, ms) {
   const job = readTechJob(state.techJob);
   if (!job) {
     state.techJob = null;
-    return gain > 0;
+    return gain > 0 ? "gain" : false;
   }
   state.techJob = job;
   job.progressMs = Math.min(job.durationMs, job.progressMs + ms * researchSpeed(state));
   if (job.progressMs >= job.durationMs - 0.001) {
     finishResearch(state, job.id);
-    return true;
+    return "done";
   }
-  return gain > 0;
+  return gain > 0 ? "gain" : false;
 }
 
 export function grantOwnedResearch(state) {

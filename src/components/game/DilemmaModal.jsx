@@ -12,7 +12,7 @@ export default function DilemmaModal({ dilemma, onChoose }) {
       setPct(Math.max(0, Math.min(100, (remain / 45000) * 100)));
     };
     tick();
-    const id = setInterval(tick, 200);
+    const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [dilemma]);
   if (!dilemma) return null;

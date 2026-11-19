@@ -83,11 +83,21 @@ export default function ProgressTrack({ cycleMs, progress, cycleStart, active, l
       }
       raf = requestAnimationFrame(frame);
     };
+    const onVis = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        return;
+      }
+      if (!raf) raf = requestAnimationFrame(frame);
+    };
     raf = requestAnimationFrame(frame);
     if (io && rootRef.current) io.observe(rootRef.current);
+    document.addEventListener("visibilitychange", onVis);
     return () => {
       cancelAnimationFrame(raf);
       io?.disconnect();
+      document.removeEventListener("visibilitychange", onVis);
     };
   }, [active, loop, safe, cycleStart, fast]);
 

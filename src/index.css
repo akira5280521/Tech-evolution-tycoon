@@ -329,6 +329,15 @@
   .tile-shake { animation: none; }
 }
 
+/* The page sets this while the app is backgrounded or the screen is off. */
+html[data-paused] .news-ticker-track,
+html[data-paused] .cycle-shimmer,
+html[data-paused] .cycle-fill,
+html[data-paused] .tile-run,
+html[data-paused] .tile-shake {
+  animation-play-state: paused;
+}
+
 /* Pixel icons stay on the pixel grid at 1x, 2x, 3x, and 4x. */
 .pixel-art,
 img[src*="/icons/"] {

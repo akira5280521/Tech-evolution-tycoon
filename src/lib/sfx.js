@@ -18,6 +18,7 @@ let musicMuted = false;
 let effectsMuted = false;
 let musicTimer = null;
 let step = 0;
+let unlocked = false;
 
 const TUNE = [220, 261.63, 329.63, 261.63, 196, 246.94, 293.66, 246.94];
 
@@ -35,13 +36,19 @@ function audio() {
     effectsGain.connect(master);
     applyBuses();
   }
-  if (audible && ctx.state === "suspended") ctx.resume();
   return ctx;
+}
+
+function resumeContext() {
+  if (!ctx || ctx.state !== "suspended") return Promise.resolve();
+  return ctx.resume().catch(() => {});
 }
 
 function musicLevel() {
   if (!audible || !userSound || musicMuted) return 0;
-  return musicVolume * 0.045;
+  // 0.16 of the effects bus. At the default 70% that is about 0.11, loud
+  // enough for a phone speaker and still under the 0.12 square-wave effects.
+  return musicVolume * 0.16;
 }
 
 function effectsLevel() {
@@ -64,10 +71,10 @@ function stopMusic() {
 }
 
 function playStep() {
-  if (musicLevel() <= 0) return;
+  if (!unlocked || musicLevel() <= 0) return;
   try {
     const ac = audio();
-    if (!ac || !musicGain) return;
+    if (!ac || !musicGain || ac.state !== "running") return;
     const t = ac.currentTime;
     const osc = ac.createOscillator();
     const vol = ac.createGain();
@@ -85,10 +92,20 @@ function playStep() {
 }
 
 function ensureMusic() {
-  if (musicTimer || musicLevel() <= 0) return;
+  if (!unlocked || musicTimer || musicLevel() <= 0) return;
   if (!audio()) return;
   playStep();
   musicTimer = setInterval(playStep, 480);
+}
+
+function unlockFromGesture() {
+  if (typeof window === "undefined") return;
+  unlocked = true;
+  audible = userSound && !isPageHidden();
+  audio();
+  resumeContext().then(() => {
+    if (audible && userSound && !musicMuted) ensureMusic();
+  });
 }
 
 function syncFromPage() {
@@ -163,6 +180,9 @@ export function isAudioAudible() {
 }
 
 if (typeof window !== "undefined") {
+  const onFirstGesture = () => unlockFromGesture();
+  window.addEventListener("pointerdown", onFirstGesture, { passive: true });
+  window.addEventListener("touchstart", onFirstGesture, { passive: true });
   document.addEventListener("visibilitychange", syncFromPage);
   window.addEventListener("pagehide", () => {
     audible = false;
@@ -170,11 +190,4 @@ if (typeof window !== "undefined") {
     if (ctx && ctx.state === "running") ctx.suspend();
   });
   window.addEventListener("pageshow", syncFromPage);
-  window.addEventListener("blur", () => {
-    audible = false;
-    if (master && ctx) master.gain.value = 0;
-    stopMusic();
-    if (ctx && ctx.state === "running") ctx.suspend();
-  });
-  window.addEventListener("focus", syncFromPage);
 }

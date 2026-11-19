@@ -47,6 +47,7 @@ export default function CloudSync({ game }) {
       await checkCloud(localSummary());
     };
     const push = async () => {
+      if (isPageHidden()) return;
       const s = getCloudState();
       if (!s.configured || !s.signedIn || !s.auto || s.phase !== "ready") return;
       try {

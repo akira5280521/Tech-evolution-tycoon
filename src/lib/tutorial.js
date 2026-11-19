@@ -1,105 +1,121 @@
 // First-session tutorial: a short guided start for players new to idle games.
 //
-// Each step points at one thing on the Game screen and finishes either when
-// the player does it (checked from the game state, so it also works after
-// offline catch-up or loading a save) or, for "manual" steps, when they tap
-// the button in the bubble. It never blocks play: an experienced player who
-// just plays sees the steps complete on their own.
+// Each step points at one thing on the Game screen and finishes when the
+// player does that thing (checked from the game state, so it also works after
+// offline catch-up or loading a save). It never blocks play: taps pass
+// through, and an experienced player who just plays sees finished steps skip.
+// A replay waits for a tap on each step so nothing flies past.
 //
 // The tutorial adds no money or speed; it only explains.
 
-import { BUSINESSES } from "./gameConfig.js";
+import { BUSINESSES, costOf, eraOpen, managerNeed } from "./gameConfig.js";
 
-const ownedOf = (state, id) => state?.biz?.[BUSINESSES.findIndex((cfg) => cfg.id === id)]?.owned || 0;
-const managerOf = (state, id) => !!state?.biz?.[BUSINESSES.findIndex((cfg) => cfg.id === id)]?.manager;
+const indexOf = (id) => BUSINESSES.findIndex((cfg) => cfg.id === id);
+const ownedOf = (state, id) => state?.biz?.[indexOf(id)]?.owned || 0;
+const managerOf = (state, id) => !!state?.biz?.[indexOf(id)]?.manager;
 
-// target: a CSS selector on the Game screen (the rows already carry
-// data-tile / data-buy / data-hire labels). button: shown for manual steps.
+// Same price hire() charges, without importing empire.js (that file imports
+// this one). A free-manager token makes the next hire cost nothing.
+function managerCash(state, index) {
+  if (state?.shop?.freeManager) return 0;
+  const cost = BUSINESSES[index]?.managerCost;
+  return Number.isFinite(cost) ? cost : Infinity;
+}
+
+function canAfford(state, id) {
+  const index = indexOf(id);
+  const cfg = BUSINESSES[index];
+  if (!cfg) return false;
+  const cost = costOf(cfg, ownedOf(state, id), 1);
+  return Number.isFinite(cost) && (state?.cash || 0) >= cost;
+}
+
+const paperOpen = (state) => eraOpen(state, indexOf("paper"));
+
+// target: a CSS selector, or a function of state when the thing to tap changes
+// (the picture until a button lights, then the button). text works the same way.
 export const TUTORIAL_STEPS = [
   {
-    id: "welcome",
-    title: "WELCOME, FOUNDER",
-    text: "You run a company that grows through the real history of computing, from an 1800s timber camp to quantum computers. Your goal: make money, grow, and unlock each new invention in the order it really came.",
-    target: null,
-    manual: true,
-    button: "NEXT",
-  },
-  {
-    id: "goal",
-    title: "YOUR GOAL",
-    text: "This counts the eras you've unlocked, out of 19. Reach the last one. After that you can prestige: start over with investors who make everything earn more.",
-    target: "[data-era-progress]",
-    manual: true,
-    button: "NEXT",
-  },
-  {
-    id: "cash",
-    title: "YOUR MONEY",
-    text: "This is your cash. Under it: what you earn each second, and in total this run. You spend cash to grow your company.",
-    target: "[data-cash-panel]",
-    manual: true,
-    button: "NEXT",
-  },
-  {
-    id: "row",
-    title: "YOUR FIRST BUSINESS",
-    text: "Each row is one of your businesses. This is a Timber Camp. The picture on the left puts it to work, the bar shows the job in progress, and the number on the picture is how many you own.",
-    target: '[data-row="timber"]',
-    manual: true,
-    button: "NEXT",
-  },
-  {
-    id: "tap",
-    title: "PUT IT TO WORK",
-    text: "Tap the Timber Camp's picture. The crew cuts a load of wood, the bar fills, and you get paid.",
+    id: "run",
+    title: "RUN IT",
+    text: "Tap the Timber Camp picture to run the business. The bar fills, then it pays you cash.",
     target: '[data-tile="timber"]',
     done: (s) => (s.lifetime || 0) > 0 || (s.careerEarnings || 0) > 0,
   },
   {
     id: "buy",
-    title: "GROW",
-    text: "Tap BUY to get another Timber Camp. Every camp you own adds to each payment, so more camps means more money. The price goes up a little each time.",
-    target: '[data-buy="timber"]',
+    title: "BUY",
+    text: (s) => (canAfford(s, "timber")
+      ? "Tap BUY to get another one of this business. It spends cash, the big CASH number, not what you earned this run."
+      : "Tap the picture again until BUY lights up. BUY spends cash, the big CASH number, not what you earned this run."),
+    target: (s) => (canAfford(s, "timber") ? '[data-buy="timber"]' : '[data-tile="timber"]'),
     done: (s) => ownedOf(s, "timber") >= 2,
   },
   {
-    id: "manager",
-    title: "HIRE A MANAGER",
-    text: "Tapping every time gets old. Own 5 Timber Camps, then hire their manager. A manager keeps them working for you, and even while the app is closed they earn at half speed.",
-    target: '[data-hire="timber"]',
+    id: "modes",
+    title: "HOW MANY",
+    text: "Tap the buy button to change how many you buy per tap: X1, X10, X25, X50, X75, X100, then MAX, which spends all your cash.",
+    target: "[data-buy-modes]",
+  },
+  {
+    id: "hire",
+    title: "HIRE",
+    text: (s) => {
+      const index = indexOf("timber");
+      const owned = ownedOf(s, "timber");
+      if (owned < managerNeed(index)) {
+        return canAfford(s, "timber")
+          ? "Tap BUY until you own 5. Then Hire spends cash, and a manager runs this business for you."
+          : "Tap the picture until BUY lights up. You need 5 of this business, then a manager runs it for you.";
+      }
+      if ((s?.cash || 0) < managerCash(s, index)) return "Tap the picture to earn cash, then tap Hire. Hire spends the CASH number, not what you earned this run.";
+      return "Tap Hire. It spends cash, and a manager runs this business for you.";
+    },
+    target: (s) => {
+      const index = indexOf("timber");
+      if (ownedOf(s, "timber") < managerNeed(index)) return canAfford(s, "timber") ? '[data-buy="timber"]' : '[data-tile="timber"]';
+      if ((s?.cash || 0) < managerCash(s, index)) return '[data-tile="timber"]';
+      return '[data-hire="timber"]';
+    },
     done: (s) => managerOf(s, "timber"),
   },
   {
-    id: "next-row",
-    title: "THE NEXT INVENTION",
-    text: "Own 10 Timber Camps to unlock the next business in history, the Paper Mill. Then buy one.",
-    target: '[data-buy="paper"], [data-locked-era]',
+    id: "next",
+    title: "NEXT BUSINESS",
+    text: (s) => {
+      if (!paperOpen(s)) {
+        return canAfford(s, "timber")
+          ? "Tap BUY. At 10 of this business, the next one opens."
+          : "Tap the picture until BUY lights up. At 10 of this business, the next one opens.";
+      }
+      if (!canAfford(s, "paper")) return "Tap the Timber Camp picture to earn cash, then tap BUY on the new business. Its manager needs 10, and a different cash price than Timber's 5.";
+      return "Tap BUY on the new business. Its manager needs 10 owned, and a different cash price than Timber's 5.";
+    },
+    target: (s) => {
+      if (!paperOpen(s)) return canAfford(s, "timber") ? '[data-buy="timber"]' : '[data-tile="timber"]';
+      if (!canAfford(s, "paper")) return '[data-tile="timber"]';
+      return '[data-buy="paper"]';
+    },
     done: (s) => ownedOf(s, "paper") >= 1,
   },
   {
     id: "materials",
     title: "MATERIALS",
-    text: "The Paper Mill turns wood from your Timber Camps into card stock. This strip shows what you have. If a business runs out of what it needs, it stops making money, so keep the earlier rows growing too.",
+    text: "Tap the wood count up top. This business uses wood that Timber Camp makes, and stops paying if the wood runs out.",
     target: "[data-supply]",
-    manual: true,
-    button: "GOT IT",
-  },
-  {
-    id: "history",
-    title: "REAL HISTORY",
-    text: "Own 10 Paper Mills to unlock the Jacquard Loom (1804), the first machine run by instructions on punched cards. Each era you reach adds history cards to the Museum (MORE > BADGES).",
-    target: '[data-buy="loom"], [data-locked-era]',
-    done: (s) => ownedOf(s, "loom") >= 1,
-  },
-  {
-    id: "finish",
-    title: "THE ROAD AHEAD",
-    text: "That's the whole loop: tap, buy, hire, unlock. Next come punch cards, vacuum tubes, transistors, chips, PCs and more. Tips explain new things when they appear, and any ? explains a word. Replay this from More > How to Play.",
-    target: null,
-    manual: true,
-    button: "START PLAYING",
   },
 ];
+
+export function stepTarget(step, state) {
+  if (!step) return null;
+  const target = typeof step.target === "function" ? step.target(state) : step.target;
+  return target || null;
+}
+
+export function stepText(step, state) {
+  if (!step) return "";
+  return typeof step.text === "function" ? step.text(state) : step.text;
+}
 
 // tips / tipsOff belong to the one-time feature tips (src/lib/tips.js).
 export function blankTutorial() {
@@ -140,6 +156,13 @@ export function currentTutorialStep(state) {
     return step;
   }
   return null;
+}
+
+// True once every step is satisfied and the replay isn't holding them open.
+// The last step has no separate Done button: doing it finishes the tutorial.
+export function tutorialCleared(state) {
+  if (!tutorialActive(state) || state.tutorial.replay) return false;
+  return currentTutorialStep(state) == null;
 }
 
 export function stepNumber(step) {

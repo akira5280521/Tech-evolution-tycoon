@@ -9,15 +9,15 @@ export const GLOSSARY = {
   },
   manager: {
     term: "MANAGER",
-    text: "Keeps one business running by itself, even while the app is closed (at half speed, for up to 24 hours). The Hire button unlocks once you own enough of that business.",
+    text: "Keeps one business running by itself, even while you're away (at half speed, for up to 24 hours). Hiring costs cash on hand: the big CASH number, not what you earned this run. The button shows how many you need first: 5 for some businesses, 10 for others.",
   },
   foreman: {
     term: "FOREMAN",
     text: "A one-time hire. He adds a RUN ALL button that starts every business that doesn't have a manager yet.",
   },
   buymodes: {
-    term: "BUY BUTTONS",
-    text: "Choose how many you buy per tap. X1, X10 and X100 buy that many. NEXT buys just enough to reach the next goal, like a speed-up, an upgrade unlock or the 10 that open the next era. MAX buys as many as you can afford.",
+    term: "BUY AMOUNT",
+    text: "Tap the buy-amount button to change how many businesses one BUY tap gets. It cycles X1, X10, X25, X50, X75, X100, then MAX, which buys as many as your cash allows.",
   },
   speedups: {
     term: "SPEED-UPS",

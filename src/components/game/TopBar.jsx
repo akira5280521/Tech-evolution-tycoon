@@ -1,14 +1,6 @@
 import { Play } from "lucide-react";
-import { BUSINESSES, FOREMAN_COST, money } from "@/lib/gameConfig";
+import { BUSINESSES, FOREMAN_COST, buyModeLabel, money, nextBuyMode } from "@/lib/gameConfig";
 import { HelpTip } from "./HintSheet";
-
-const MODES = [
-  { id: "x1", label: "X1", sub: "ONE UNIT" },
-  { id: "x10", label: "X10", sub: "TEN UNITS" },
-  { id: "x100", label: "X100", sub: "HUNDRED" },
-  { id: "NEXT", label: "NEXT", sub: "NEXT GOAL" },
-  { id: "MAX", label: "MAX", sub: "ALL YOU CAN" },
-];
 
 const on = "border-[var(--game-accent)] bg-[var(--game-accent)] text-black";
 const off = "border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-muted)]";
@@ -68,25 +60,19 @@ export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll
           </button>
         )}
 
-        <div>
-          <p className="flex items-center gap-2 font-pixel text-[0.55rem] leading-none text-[var(--game-fg)]">
-            BUY <HelpTip term="buymodes" />
-          </p>
-          <div data-buy-modes className="mt-1 grid grid-cols-5 gap-1">
-            {MODES.map((mode) => (
-              <button
-                key={mode.id}
-                type="button"
-                data-mode={mode.id}
-                aria-pressed={buyMode === mode.id}
-                onClick={() => setBuyMode(mode.id)}
-                className={`min-h-11 min-w-0 border-2 px-0.5 py-1 text-center shadow-[2px_2px_0_0_#000] ${buyMode === mode.id ? on : off}`}
-              >
-                <span className="block break-words font-pixel text-[0.5rem] leading-4 [overflow-wrap:anywhere]">{mode.label}</span>
-                <span className="buy-mode-sub mt-0.5 block break-words font-term text-xs leading-4">{mode.sub}</span>
-              </button>
-            ))}
-          </div>
+        <div className="flex items-stretch gap-2">
+          <button
+            type="button"
+            data-buy-modes
+            data-mode={buyMode}
+            aria-label={`Buy amount ${buyModeLabel(buyMode)}. Tap to change.`}
+            onClick={() => setBuyMode(nextBuyMode(buyMode))}
+            className="flex min-h-14 flex-1 flex-col items-center justify-center border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 py-1 text-black shadow-[3px_3px_0_0_#000]"
+          >
+            <span className="font-pixel text-sm leading-5">{buyModeLabel(buyMode)}</span>
+            <span className="font-term text-lg leading-5">BUY AMOUNT</span>
+          </button>
+          <HelpTip term="buymodes" className="self-center" />
         </div>
       </div>
     </header>

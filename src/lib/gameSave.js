@@ -1,7 +1,7 @@
 // Shared access to the game's localStorage save slot, used by the game screen
 // (read/write) and the settings screen (read-only analytics).
 
-import { BUSINESSES, blankSupply, managerNeed } from "./gameConfig.js";
+import { BUSINESSES, blankSupply, managerNeed, normalizeBuyMode } from "./gameConfig.js";
 
 export const SAVE_KEY = "pc-tycoon-save-v1";
 
@@ -154,6 +154,7 @@ export function migrateSave(data) {
     upgradeJob: version < 4 ? null : upgradeJob(job(data.upgradeJob), version),
     projectJob: version < 4 ? null : job(data.projectJob),
     orientation: data.orientation === "portrait" || data.orientation === "landscape" ? data.orientation : "auto",
+    buyMode: normalizeBuyMode(data.buyMode),
     meta: data,
     biz,
   };

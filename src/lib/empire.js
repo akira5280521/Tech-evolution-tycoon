@@ -23,10 +23,10 @@ import {
   indexOfBusiness,
   investorsFor,
   managerNeed,
-  MAX_BUY,
   milestoneMult,
   milestoneSpeed,
   money,
+  normalizeBuyMode,
   prestigeMult,
 } from "./gameConfig.js";
 
@@ -41,22 +41,6 @@ export function speedNeed(index) {
 
 export function masteryNeed(index) {
   return BUSINESSES[index]?.masteryNeed ?? 200;
-}
-
-// One click stops at the next milestone, speed gate, or mastery gate.
-// Past every gate, the purchase is still bounded by MAX_BUY.
-export function maxBuyCount(owned, index) {
-  const have = Number.isFinite(owned) && owned > 0 ? Math.floor(owned) : 0;
-  const gates = [];
-  for (const ms of MILESTONES) if (ms.owned > have) gates.push(ms.owned);
-  const speed = speedNeed(index);
-  const mastery = masteryNeed(index);
-  if (speed > have) gates.push(speed);
-  // NEXT stops at the count that opens the next era.
-  if (index < BUSINESSES.length - 1 && ERA_GATE > have) gates.push(ERA_GATE);
-  if (mastery > have) gates.push(mastery);
-  if (!gates.length) return MAX_BUY;
-  return Math.max(1, Math.min(MAX_BUY, Math.min(...gates) - have));
 }
 
 // Fork 1, 2, 3… costs this many investors. The curve is meant to put the first
@@ -1348,6 +1332,7 @@ export function snapshotMeta(state, options = {}) {
     sawPit: !!state.sawPit,
     tutorial: { ...(state.tutorial || blankTutorial()), seen: [...(state.tutorial?.seen || [])], tips: [...(state.tutorial?.tips || [])] },
     orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
+    buyMode: normalizeBuyMode(state.buyMode),
     businessesBought: Math.floor(state.businessesBought || 0),
     managersHired: Math.floor(state.managersHired || 0),
     prestigeCount: Math.floor(state.prestigeCount || 0),

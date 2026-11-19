@@ -14,6 +14,7 @@ import {
   buyCount,
   cappedTick,
   costOf,
+  normalizeBuyMode,
   investorsFor,
   money,
 } from "@/lib/gameConfig";
@@ -51,12 +52,11 @@ import {
   resolveDilemma,
   DILEMMAS,
   forkCost,
-  maxBuyCount,
   singularityMult,
   snapshotMeta,
   tickDilemma,
 } from "@/lib/empire";
-import { blankTutorial, readTutorial, TUTORIAL_STEPS } from "@/lib/tutorial";
+import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/lib/tutorial";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { generationAt } from "@/lib/generations";
@@ -218,6 +218,7 @@ function pack(s) {
     sawPit: !!s.sawPit,
     tutorial: s.tutorial || null,
     orientation: s.orientation || "auto",
+    buyMode: normalizeBuyMode(s.buyMode),
     // While the app is in the background nothing is paid live, so a reload
     // must replay from the moment it was hidden.
     lastSeen: s.hiddenAt || Date.now(),
@@ -278,6 +279,7 @@ function loadSave() {
     ensureSupply(state);
     state.foreman = !!data.foreman;
     state.sawPit = !!data.sawPit;
+    state.buyMode = normalizeBuyMode(data.buyMode);
     if (state.businessesBought == null) {
       state.businessesBought = state.biz.reduce((n, row, i) => n + Math.max(0, (row.owned || 0) - (i === 0 ? 1 : 0)), 0);
     }
@@ -351,21 +353,32 @@ export function useGame() {
   const stateRef = useRef(null);
   if (!stateRef.current) stateRef.current = freshState();
   const [, force] = useState(0);
-  const [buyMode, setBuyMode] = useState("x1");
+  const [buyMode, setBuyModeState] = useState("x1");
+  const setBuyMode = useCallback((mode) => {
+    const next = normalizeBuyMode(mode);
+    if (stateRef.current) stateRef.current.buyMode = next;
+    setBuyModeState(next);
+  }, []);
   const [ready, setReady] = useState(false);
   const restoredRef = useRef(false);
   const bump = useCallback(() => {
-    noteProgress(stateRef.current);
+    const s = stateRef.current;
+    // Doing the last step finishes the tutorial. There is no extra Done button.
+    if (s && tutorialCleared(s)) s.tutorial = { ...s.tutorial, done: true, replay: false };
+    noteProgress(s);
     force((n) => n + 1);
   }, []);
   const saveNow = useCallback(() => {
     if (!restoredRef.current) return;
-    writeSaveData(pack(stateRef.current));
+    const s = stateRef.current;
+    if (s && tutorialCleared(s)) s.tutorial = { ...s.tutorial, done: true, replay: false };
+    writeSaveData(pack(s));
   }, []);
 
   useEffect(() => {
     const { state } = loadSave();
     stateRef.current = state;
+    setBuyModeState(normalizeBuyMode(state.buyMode));
     restoredRef.current = true;
     setReady(true);
     void cancelCapNotification();
@@ -581,7 +594,7 @@ export function useGame() {
       if (!canBuyIndex(s, i)) return;
       const cfg = BUSINESSES[i];
       const st = s.biz[i];
-      const count = Math.floor(buyCount(buyMode, cfg, st.owned, s.cash, maxBuyCount(st.owned, i)));
+      const count = Math.floor(buyCount(buyMode, cfg, st.owned, s.cash));
       if (!Number.isFinite(count) || count < 1 || count > MAX_BUY) return;
       const cost = costOf(cfg, st.owned, count);
       if (!Number.isFinite(s.cash) || !Number.isFinite(cost) || !(s.cash >= cost)) return;

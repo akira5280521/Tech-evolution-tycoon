@@ -301,6 +301,85 @@ export const SHOP = [
   { id: "key", name: "Master Key", cost: 55, blurb: "The next manager you hire is free. Once. Needs 110 tokens earned from play." },
 ];
 
+// Lab projects: ways to spend spare research data at any time, each at a
+// fixed price shown up front. No chance rolls.
+export const LAB_OVERCLOCK = { cost: 30, ms: 10 * 60 * 1000, coolMs: 20 * 60 * 1000, mult: 1.5 };
+export const LAB_PATENT = { cost: 25, tokens: 1, perDay: 5 };
+export const LAB_CREW = { cost: 60 };
+export const LAB_PROJECTS = [
+  { id: "overclock", name: "OVERCLOCK", cost: LAB_OVERCLOCK.cost, blurb: "All income x1.5 for 10 minutes. Then the lab needs 20 minutes to cool down." },
+  { id: "patent", name: "PATENT FILING", cost: LAB_PATENT.cost, blurb: "Trade data for 1 era token. Up to 5 filings a day." },
+  { id: "crew", name: "INSTALL CREW", cost: LAB_CREW.cost, blurb: "Upgrades install instantly instead of taking 12 seconds. Buy once, keep forever." },
+];
+
+export function blankLab() {
+  return { overclockUntil: 0, coolUntil: 0, patentDay: null, patents: 0, crew: false };
+}
+
+export function cleanLab(raw, now = Date.now()) {
+  const l = raw && typeof raw === "object" ? raw : {};
+  const n = (v) => (typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : 0);
+  // A timer can't run longer than a real one (bad clock or edited code).
+  const overclockUntil = Math.min(n(l.overclockUntil), now + LAB_OVERCLOCK.ms);
+  const coolUntil = Math.min(n(l.coolUntil), now + LAB_OVERCLOCK.ms + LAB_OVERCLOCK.coolMs);
+  const patentDay = typeof l.patentDay === "string" && /^\d{4}-\d{2}-\d{2}$/.test(l.patentDay) ? l.patentDay : null;
+  return { overclockUntil, coolUntil, patentDay, patents: Math.min(LAB_PATENT.perDay, Math.floor(n(l.patents))), crew: !!l.crew };
+}
+
+export function overclockOn(state, now) {
+  return now > 0 && now < (state?.lab?.overclockUntil || 0);
+}
+
+function patentsToday(state, now) {
+  const lab = state.lab || blankLab();
+  return lab.patentDay === dayHelpers(now).localDayKey ? lab.patents || 0 : 0;
+}
+
+export function labQuote(state, id, now = Date.now()) {
+  const item = LAB_PROJECTS.find((entry) => entry.id === id);
+  if (!item) return { ok: false, reason: "Unknown project." };
+  const lab = state.lab || blankLab();
+  const data = state.data || 0;
+  if (id === "overclock") {
+    if (now < (lab.overclockUntil || 0)) return { ok: false, reason: "Overclock is running.", cost: item.cost };
+    if (now < (lab.coolUntil || 0)) return { ok: false, reason: "The lab is cooling down.", cost: item.cost };
+  }
+  if (id === "patent" && patentsToday(state, now) >= LAB_PATENT.perDay) {
+    return { ok: false, reason: "No filings left today. More tomorrow.", cost: item.cost };
+  }
+  if (id === "crew" && lab.crew) return { ok: false, reason: "Your install crew is hired.", cost: item.cost };
+  if (data < item.cost) return { ok: false, reason: `Needs ${item.cost} data.`, cost: item.cost };
+  return { ok: true, cost: item.cost };
+}
+
+export function buyLabProject(state, id, now = Date.now()) {
+  const quote = labQuote(state, id, now);
+  if (!quote.ok) return quote;
+  state.data -= quote.cost;
+  const lab = { ...(state.lab || blankLab()) };
+  let detail = "";
+  if (id === "overclock") {
+    lab.overclockUntil = now + LAB_OVERCLOCK.ms;
+    lab.coolUntil = now + LAB_OVERCLOCK.ms + LAB_OVERCLOCK.coolMs;
+    detail = "Overclocked: all income x1.5 for 10 minutes.";
+  } else if (id === "patent") {
+    const day = dayHelpers(now).localDayKey;
+    lab.patents = (lab.patentDay === day ? lab.patents || 0 : 0) + 1;
+    lab.patentDay = day;
+    // Not a grant: filings don't count as tokens earned from play.
+    state.tokens = (state.tokens || 0) + LAB_PATENT.tokens;
+    detail = `Patent filed: +${LAB_PATENT.tokens} era token.`;
+  } else {
+    lab.crew = true;
+    const job = timedJob(state.upgradeJob);
+    if (job && job.readyAt > now) state.upgradeJob = { ...job, readyAt: now };
+    detail = "Install crew hired: upgrades now install instantly.";
+  }
+  state.lab = lab;
+  state.modStamp = (state.modStamp || 0) + 1;
+  return { ok: true, cost: quote.cost, detail };
+}
+
 export function blankMeta() {
   return {
     careerEarnings: 0,
@@ -316,6 +395,7 @@ export function blankMeta() {
     badgesEarned: [],
     shop: { freeManager: false, cashBuys: 0, samples: 0, crateDay: null },
     boostUntil: 0,
+    lab: blankLab(),
     dilemma: null,
     lastDilemma: null,
     museum: [],
@@ -521,7 +601,7 @@ export function empireFactors(state, now = 0) {
   if (specs.includes("signal")) specialty *= 1.1;
   const raw = investors * singularity * mastery * challenges * projects * specialty;
   const safeRaw = Number.isFinite(raw) && raw > 0 ? raw : 1;
-  const temp = now > 0 && now < (state?.boostUntil || 0) ? 1.15 : 1;
+  const temp = (now > 0 && now < (state?.boostUntil || 0) ? 1.15 : 1) * (overclockOn(state, now) ? LAB_OVERCLOCK.mult : 1);
   const total = softenMultiplier(safeRaw * temp, state?.singularities || 0);
   return { investors, singularity, mastery, challenges, projects, specialty, raw: safeRaw, temp, total, ceiling: incomeCeiling(state?.singularities || 0) };
 }
@@ -766,7 +846,7 @@ export function buyUpgrade(state, index, kind, now = Date.now()) {
   if (!(state.cash >= piece.cost) || !Number.isFinite(piece.cost)) return false;
   state.cash -= piece.cost;
   // id as well as index, so a save still finds the row if the rows are reordered.
-  state.upgradeJob = { index, id: BUSINESSES[index].id, kind, startedAt: now, readyAt: now + UPGRADE_MS };
+  state.upgradeJob = { index, id: BUSINESSES[index].id, kind, startedAt: now, readyAt: now + (state.lab?.crew ? 0 : UPGRADE_MS) };
   state.modStamp = (state.modStamp || 0) + 1;
   return true;
 }
@@ -1250,6 +1330,7 @@ export function snapshotMeta(state, options = {}) {
     projectsDone: [...(state.projectsDone || [])],
     shop: { ...(state.shop || blankMeta().shop) },
     boostUntil: state.boostUntil || 0,
+    lab: { ...(state.lab || blankLab()) },
     dilemmaDeferUntil: state.dilemmaDeferUntil || 0,
     lastDilemma: state.lastDilemma || null,
     nextDilemmaAt: state.nextDilemmaAt || 0,

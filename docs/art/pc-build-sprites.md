@@ -1,7 +1,7 @@
 # PC build area: pixel art list
 
-Every sprite the Workbench and parts catalog need (roadmap items 7-15,
-plus the desk scene, item 20). Designs are in [`docs/ideas.md`](../ideas.md).
+Every sprite the Workbench and parts catalog need (roadmap items 5-13,
+plus the desk scene, item 18). Designs are in [`docs/ideas.md`](../ideas.md).
 
 ## Rules for all art
 
@@ -59,10 +59,10 @@ the icon background, so most parts need one drawing, not two. Parts marked
 
 ## The list
 
-P1 = needed for the first Workbench release (item 7). P2 = needed for the
+P1 = needed for the first Workbench release (item 5). P2 = needed for the
 item noted. P3 = later or optional.
 
-### Workbench screen (item 7)
+### Workbench screen (item 5)
 
 | # | Sprite | Notes | Priority |
 |---|---|---|---|
@@ -72,7 +72,7 @@ item noted. P3 = later or optional.
 | 4 | Empty slot: storage | | P1 |
 | 5 | Empty slot: display | | P1 |
 | 6 | Empty slot: cooling | | P1 |
-| 7 | Empty slot: power supply | Slot added with item 8 | P2 |
+| 7 | Empty slot: power supply | Slot added with item 6 | P2 |
 | 8 | Empty slot: motherboard | Item 8 | P2 |
 | 9 | Empty slot: case | | P1 |
 | 10 | Empty slot: expansion card | Item 10 | P2 |
@@ -80,7 +80,7 @@ item noted. P3 = later or optional.
 | 12 | Locked part "???" | Grey box with question marks | P1 |
 | 13 | Bench Score badge | Small gauge or ribbon | P2 |
 
-### Case frames (item 7; window cases item 14)
+### Case frames (item 5; window cases item 12)
 
 | # | Sprite | Years | Notes | Priority |
 |---|---|---|---|---|
@@ -92,7 +92,7 @@ item noted. P3 = later or optional.
 | 19 | Small-form-factor case | 2000s on | For mini-ITX boards; one card slot | P2 |
 | 20 | Hand-cut window overlay | late 1990s | Rough cut with rubber edging, laid over #16 | P2 |
 
-### Motherboards (items 7-8)
+### Motherboards (items 5-6)
 
 Board color is a recolor (green in the '80s-'90s, red, blue or black later).
 
@@ -104,7 +104,7 @@ Board color is a recolor (green in the '80s-'90s, red, blue or black later).
 | 24 | micro-ATX board | 1997 | Shorter, fewer slots | P2 |
 | 25 | mini-ITX board | 2001 | Small square, one slot | P2 |
 
-### Processors (items 7-8)
+### Processors (items 5-6)
 
 One sprite per physical form; different parody models of the same form are
 the same sprite with a different maker mark.
@@ -118,7 +118,7 @@ the same sprite with a different maker mark.
 | 30 | Pin chip with metal lid | 2000s | Rival's socket and the leader's return to a socket | P1 |
 | 31 | Pinless chip on a pin socket | 2004 on | Pins moved to the board; socket with lever | P1 |
 
-### Coolers (items 7-8)
+### Coolers (items 5-6)
 
 | # | Sprite | Years | Notes | Priority |
 |---|---|---|---|---|
@@ -129,7 +129,7 @@ the same sprite with a different maker mark.
 | 36 | Ready-made liquid cooler | 2010s | Pump block, two tubes, radiator with fans | P2 |
 | 37-38 | Fan spin frames | | 2 frames reused by every fan | P1 |
 
-### Graphics cards (items 7-8, 10)
+### Graphics cards (items 5-6, 8)
 
 | # | Sprite | Years | Notes | Priority |
 |---|---|---|---|---|
@@ -141,7 +141,7 @@ the same sprite with a different maker mark.
 | 44 | Two-slot card with blower | mid-2000s | Power plug on top | P1 |
 | 45 | Big triple-fan card | 2010s-2020s | Takes 3 slots; 16-pin plug on the newest | P1 |
 
-### Linking two graphics cards (item 10)
+### Linking two graphics cards (item 8)
 
 | # | Sprite | Years | Notes | Priority |
 |---|---|---|---|---|
@@ -151,7 +151,7 @@ the same sprite with a different maker mark.
 | 49 | Flexible ribbon bridge | 2006-07 | Red maker | P2 |
 | 50 | Faster bridge | 2018 | Green maker, chunkier with a light strip | P3 |
 
-### Expansion cards (item 10)
+### Expansion cards (item 8)
 
 One base card sprite with different chips and back-plate ports.
 
@@ -164,7 +164,7 @@ One base card sprite with different chips and back-plate ports.
 | 55 | Sound card (ISA) | late 1980s-1990s | Long card, joystick port | P2 |
 | 56 | Sound card (PCI) | late 1990s-2000s | | P3 |
 
-### Memory (item 8)
+### Memory (item 6)
 
 | # | Sprite | Years | Notes | Priority |
 |---|---|---|---|---|
@@ -174,7 +174,7 @@ One base card sprite with different chips and back-plate ports.
 | 60 | DIMM with heat spreader | 2000s-2010s | Spreader color is a recolor | P2 |
 | 61 | Newest DIMM with light bar | 2020s | RGB bar on top | P2 |
 
-### Storage drives (item 8; optical item 12)
+### Storage drives (item 6; optical item 10)
 
 | # | Sprite | Years | Notes | Priority |
 |---|---|---|---|---|
@@ -188,7 +188,7 @@ One base card sprite with different chips and back-plate ports.
 | 69 | CD-ROM drive with caddy | late 1980s-early 1990s | Disc went in a plastic caddy | P2 |
 | 70 | CD/DVD tray drive | mid 1990s-2000s | Burner, DVD and Blu-ray are label recolors | P2 |
 
-### Cables and power plugs (items 8, 10)
+### Cables and power plugs (items 6, 8)
 
 | # | Sprite | Years | Notes | Priority |
 |---|---|---|---|---|
@@ -207,7 +207,7 @@ One base card sprite with different chips and back-plate ports.
 | 83 | 6/8-pin graphics power plug | mid 2000s on | | P2 |
 | 84 | 16-pin graphics power plug | 2022 | | P3 |
 
-### Power supplies (item 8)
+### Power supplies (item 6)
 
 | # | Sprite | Years | Notes | Priority |
 |---|---|---|---|---|
@@ -217,7 +217,7 @@ One base card sprite with different chips and back-plate ports.
 | 88 | Modular supply, sleeved cables | 2010s on | | P2 |
 | 89 | Small SFX supply | 2000s on | For small-form-factor cases | P3 |
 
-### Monitors (item 9)
+### Monitors (item 7)
 
 | # | Sprite | Years | Notes | Priority |
 |---|---|---|---|---|
@@ -230,7 +230,7 @@ One base card sprite with different chips and back-plate ports.
 | 96 | OLED screen | 2020s | Very thin | P3 |
 | 97-99 | Screen contents | | Text prompt, early windowed desktop, modern desktop (all made up) | P2 |
 
-### Lighting (item 14)
+### Lighting (item 12)
 
 | # | Sprite | Years | Notes | Priority |
 |---|---|---|---|---|
@@ -240,7 +240,7 @@ One base card sprite with different chips and back-plate ports.
 | 103-105 | Addressable RGB fan ring | late 2010s on | 3 frames for the rainbow wave | P3 |
 | 106 | Glow overlay | | Soft light mask tinted by the chosen color | P2 |
 
-### Maker marks (item 8)
+### Maker marks (item 6)
 
 Tiny made-up marks for chips and cards. No resemblance to real logos.
 
@@ -253,7 +253,7 @@ Tiny made-up marks for chips and cards. No resemblance to real logos.
 | 111 | Red graphics maker mark | | P2 |
 | 112 | Green graphics maker mark | | P2 |
 
-### Boot screens (item 13)
+### Boot screens (item 11)
 
 | # | Sprite | Notes | Priority |
 |---|---|---|---|
@@ -262,7 +262,7 @@ Tiny made-up marks for chips and cards. No resemblance to real logos.
 | 115 | Made-up OS logo, 2000s | | P2 |
 | 116 | Made-up OS logo, modern | | P3 |
 
-### Museum relics (items 8, 14)
+### Museum relics (items 6, 12)
 
 Too big or too old to fit a PC; shown as Museum and period-build pieces.
 
@@ -275,13 +275,13 @@ Too big or too old to fit a PC; shown as Museum and period-build pieces.
 | 121 | Tape reel | 1951 | P3 |
 | 122 | Oil-filled "fish tank" PC | 2000s hobby | P3 |
 
-### Period build badges (item 15)
+### Period build badges (item 13)
 
 | # | Sprite | Priority |
 |---|---|---|
 | 123-128 | Six badges, one per period build (for example 1984, 1991, 1996, 2004, 2012, 2022) | P2 |
 
-### Desk scene (item 20, later)
+### Desk scene (item 18, later)
 
 | # | Sprite | Years | Priority |
 |---|---|---|---|
@@ -301,7 +301,7 @@ Too big or too old to fit a PC; shown as Museum and period-build pieces.
 
 ## Related art elsewhere (not the PC build area)
 
-- **Generation row icons** (items 1-2): 7 processor, 7 graphics, 4 Home
+- **Generation row icons** (chip generations in closed testing, and item 1): 7 processor, 7 graphics, 4 Home
   Computers and 3 RGB Battlestations generations, in the big era-icon style.
   The processor and graphics part icons above can borrow their look.
 - **Real art for the nine placeholder material businesses** (Timber Camp,

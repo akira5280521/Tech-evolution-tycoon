@@ -26,6 +26,8 @@ import {
   collectBadges,
   legacyBadgeIds,
   buyShopItem,
+  buyLabProject,
+  cleanLab,
   buyUpgrade,
   canBuyIndex,
   canHireIndex,
@@ -135,6 +137,7 @@ function applySavedMeta(state, raw) {
     crateDay: typeof shop.crateDay === "string" ? shop.crateDay : null,
   };
   state.boostUntil = num(m.boostUntil);
+  state.lab = cleanLab(m.lab);
   state.dilemmaDeferUntil = num(m.dilemmaDeferUntil);
   state.nextDilemmaAt = num(m.nextDilemmaAt);
   state.lastDilemma = typeof m.lastDilemma === "string" ? m.lastDilemma : null;
@@ -198,6 +201,7 @@ function pack(s) {
     projectsDone: s.projectsDone || [],
     shop: s.shop,
     boostUntil: s.boostUntil || 0,
+    lab: s.lab || null,
     dilemmaDeferUntil: s.dilemmaDeferUntil || 0,
     nextDilemmaAt: s.nextDilemmaAt || 0,
     lastDilemma: s.lastDilemma || null,
@@ -697,6 +701,18 @@ export function useGame() {
     [bump]
   );
 
+  const runLabProject = useCallback(
+    (id) => {
+      const result = buyLabProject(stateRef.current, id, Date.now());
+      if (!result.ok) return result;
+      if (result.detail) toast(result.detail);
+      saveNow();
+      bump();
+      return result;
+    },
+    [bump]
+  );
+
   const chooseSpecialty = useCallback(
     (id) => {
       if (!beginResearch(stateRef.current, id, Date.now())) return;
@@ -977,6 +993,7 @@ export function useGame() {
     purchaseUpgrade,
     purchaseShop,
     chooseSpecialty,
+    runLabProject,
     startChallenge,
     abandonChallenge,
     dismissPrestigeReport,

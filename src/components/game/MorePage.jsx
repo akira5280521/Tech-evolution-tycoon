@@ -13,6 +13,7 @@ import NextMove from "./NextMove";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
+import LabProjects from "./LabProjects";
 import AccountPanel from "./AccountPanel";
 import { HelpTip } from "./HintSheet";
 import { GLOSSARY, GLOSSARY_ORDER } from "@/lib/glossary";
@@ -335,15 +336,15 @@ function Stats({ state, data }) {
 
 // The Research Lab, on its own tab in the main navigation.
 export function ResearchPage() {
-  const { state, chooseSpecialty } = useGameState();
+  const { state, chooseSpecialty, runLabProject } = useGameState();
   return (
     <ScreenShell title={"RESEARCH\nLAB"} subtitle="">
-      <ResearchBody state={state} onCommit={chooseSpecialty} />
+      <ResearchBody state={state} onCommit={chooseSpecialty} onLab={runLabProject} />
     </ScreenShell>
   );
 }
 
-export function ResearchBody({ state, onCommit }) {
+export function ResearchBody({ state, onCommit, onLab }) {
   const rate = dataPerSecond(state);
   const slots = specialtySlots(state);
   const picked = state.specialties || [];
@@ -399,6 +400,7 @@ export function ResearchBody({ state, onCommit }) {
           );
         })}
       </Panel>
+      {onLab && <LabProjects state={state} onRun={onLab} />}
     </>
   );
 }

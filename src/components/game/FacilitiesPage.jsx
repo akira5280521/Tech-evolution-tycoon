@@ -7,8 +7,10 @@ import {
   facilitiesOpen,
   facilityHint,
   facilityReport,
+  facilityUnlocked,
   partCost,
 } from "@/lib/facilities";
+import { serverOutput } from "@/lib/research";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 
@@ -44,8 +46,9 @@ function PartRow({ part, owned, open, cash, onBuy }) {
 }
 
 function Plant({ facility, state, report, business, cash, onBuy }) {
-  const open = facilitiesOpen(state);
+  const open = facilityUnlocked(state, facility.id);
   const row = report[facility.id];
+  const research = facility.id === "servers";
   const counts = state.facilities?.[facility.id] || {};
   const parts = PARTS.filter((part) => part.fits.includes(facility.id));
   return (
@@ -60,11 +63,11 @@ function Plant({ facility, state, report, business, cash, onBuy }) {
         </div>
         <p className="mt-2 break-words font-term text-base leading-5 text-[var(--game-fg)]">{facility.blurb}</p>
         <p data-facility-yield className="mt-2 break-words font-term text-base leading-5 text-[var(--game-success)]">
-          {money(row.perSecond)}/s
-          {open && business > 0 ? ` · ${percent(row.share)} of the businesses` : ""}
+          {research ? `${Math.floor(serverOutput(state).perSecond)} RD/s` : money(row.perSecond) + "/s"}
+          {!research && open && business > 0 ? ` · ${percent(row.share)} of the businesses` : ""}
         </p>
         <p data-facility-limit className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
-          {open ? row.limit : "Locked"}
+          {open ? row.limit : facility.id === "servers" ? "Requires 1971" : "Locked"}
           {row.tier ? ` · ${row.tier} model` : ""}
         </p>
         <p data-facility-hint className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{facilityHint(state, facility.id, business)}</p>

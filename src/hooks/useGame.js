@@ -63,6 +63,7 @@ import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { generationAt } from "@/lib/generations";
 import { facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews } from "@/lib/facilities";
+import { advanceResearch, fillResearchGaps, grantOwnedResearch, readResearchData, readTechDone, readTechJob, startResearch } from "@/lib/research";
 import { applyOrientation } from "@/lib/orientation";
 import { SAVE_VERSION, clearSaveData, getSaveData, remapBestEra, writeSaveData } from "@/lib/gameSave";
 import { encodeSave } from "@/lib/saveCode";
@@ -175,6 +176,9 @@ function applySavedMeta(state, raw) {
   state.runs = readRuns(m.runs);
   state.facilities = readFacilities(m.facilities);
   state.news = readNews(m.news);
+  state.researchData = readResearchData(m.researchData);
+  state.techDone = readTechDone(m.techDone);
+  state.techJob = readTechJob(m.techJob);
 }
 
 function readChallenge(raw) {
@@ -241,6 +245,9 @@ function pack(s) {
     runs: Array.isArray(s.runs) ? s.runs.slice(-40) : [],
     facilities: readFacilities(s.facilities),
     news: readNews(s.news),
+    researchData: readResearchData(s.researchData),
+    techDone: readTechDone(s.techDone),
+    techJob: readTechJob(s.techJob),
     biz: s.biz.map((b, i) => ({
       id: BUSINESSES[i].id,
       owned: b.owned,
@@ -308,6 +315,10 @@ function loadSave() {
       const held = new Set(state.badgesEarned || []);
       for (const id of legacyBadgeIds(state)) held.add(id);
       state.badgesEarned = [...held];
+    }
+    if (prior < 10) {
+      grantOwnedResearch(state);
+      fillResearchGaps(state);
     }
     collectBadges(state);
     const elapsed = Math.min(Math.max(Date.now() - (data.lastSeen || Date.now()), 0), offlineCapMs(state));
@@ -555,6 +566,7 @@ export function useGame() {
         dirty = true;
       }
       if (noteFacilityNews(s, business)) dirty = true;
+      if (advanceResearch(s, dt)) dirty = true;
       if (!s.runStartedAt) s.runStartedAt = wall;
       s.playMs = (s.playMs || 0) + dt;
       if (autoBuyUpgrade(s, wall)) dirty = true;
@@ -634,8 +646,8 @@ export function useGame() {
         toast(`${cfg.name}: ${reached[reached.length - 1].owned} owned!`, { description: `${what} · +${2 * reached.length} era tokens` });
         s.biz[i] = { ...s.biz[i], milestoneAt: now };
       }
-      const beforeGen = generationAt(cfg.id, before);
-      const afterGen = generationAt(cfg.id, before + count);
+      const beforeGen = generationAt(cfg.id, before, s.techDone);
+      const afterGen = generationAt(cfg.id, before + count, s.techDone);
       if (afterGen && afterGen.id !== beforeGen?.id && before > 0) {
         toast(afterGen.name, { description: `${afterGen.year}. ${afterGen.tagline}` });
       }
@@ -1014,6 +1026,12 @@ export function useGame() {
     run,
     runAll,
     buyForeman,
+    startTech: (id) => {
+      const started = startResearch(stateRef.current, id);
+      if (!started.ok) return;
+      saveNow();
+      bump();
+    },
     buyFacilityPart: (facilityId, partId) => {
       const bought = purchasePart(stateRef.current, facilityId, partId);
       if (!bought.ok) return;

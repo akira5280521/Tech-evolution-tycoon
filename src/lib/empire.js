@@ -4,6 +4,7 @@
 // that rises with singularity points keeps the product finite.
 
 import { blankFacilities, facilityReport, noteFacilityNews, recentNews } from "./facilities.js";
+import { advanceResearch } from "./research.js";
 import { generationPayMult } from "./generations.js";
 import { pushRun } from "./records.js";
 import { blankTutorial } from "./tutorial.js";
@@ -397,6 +398,9 @@ export function blankMeta() {
     sawPit: false,
     facilities: blankFacilities(),
     news: [],
+    researchData: 0,
+    techDone: [],
+    techJob: null,
     tutorial: blankTutorial(),
     orientation: "auto",
     businessesBought: 0,
@@ -612,7 +616,7 @@ export function businessIncomePerSecond(state, now = 0) {
     if (!st.manager && !st.running) return;
     const cfg = BUSINESSES[i];
     const up = upgradesOf(state, cfg.id);
-    const rev = (up.rev ? 3 : 1) * generationPayMult(cfg.id, st.owned);
+    const rev = (up.rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone);
     sum += (cfg.revenue * rev * st.owned * milestoneMult(st.owned) * mult * supplyFactor(state, cfg) * 1000) / effectiveCycleMs(cfg, state);
   });
   return sum;
@@ -631,7 +635,7 @@ export function creditCycles(state, index, cycles, now = 0, rate = 1) {
   const cfg = BUSINESSES[index];
   const st = state.biz?.[index];
   if (!st || st.owned <= 0) return 0;
-  const rev = (upgradesOf(state, cfg.id).rev ? 3 : 1) * generationPayMult(cfg.id, st.owned);
+  const rev = (upgradesOf(state, cfg.id).rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone);
   const factor = supplyFactor(state, cfg, cycles);
   moveSupply(state, cfg, cycles, st.owned);
   const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor * rate;
@@ -721,6 +725,7 @@ export function replayAway(state, elapsed, end, rate = 1) {
     }
   }
   noteFacilityNews(state, businessIncomePerSecond(state, end));
+  advanceResearch(state, elapsed);
   const rows = [];
   let gain = 0;
   gains.forEach((amount, i) => {

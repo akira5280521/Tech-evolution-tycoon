@@ -94,11 +94,11 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
   const cycleSeconds = (cycle / 1000).toFixed(cycle % 1000 ? 1 : 0);
   const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
   const fed = supplyFactor(state, cfg);
-  const face = generationAt(cfg.id, st.owned);
+  const face = generationAt(cfg.id, st.owned, state?.techDone);
   const shownName = face?.name || cfg.name;
   const shownTag = face?.tagline || cfg.tagline;
   const shownEra = face?.year ? `c. ${face.year}` : cfg.era;
-  const perCycle = cfg.revenue * generationPayMult(cfg.id, st.owned) * rev * st.owned * mult * empireFactors(state, Date.now()).total * fed;
+  const perCycle = cfg.revenue * generationPayMult(cfg.id, st.owned, state?.techDone) * rev * st.owned * mult * empireFactors(state, Date.now()).total * fed;
   // The materials this row is short of right now, for the warning line.
   const shortOf = st.owned > 0 && fed < 1 && cfg.uses
     ? Object.entries(cfg.uses).filter(([key, need]) => (state.supply?.[key] || 0) < need * st.owned).map(([key]) => key)

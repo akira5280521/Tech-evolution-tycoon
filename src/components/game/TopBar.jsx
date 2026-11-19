@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Play } from "lucide-react";
 import { BUSINESSES, FOREMAN_COST, buyModeLabel, money, nextBuyMode } from "@/lib/gameConfig";
 import { HelpTip } from "./HintSheet";
@@ -67,11 +68,25 @@ export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll
             data-mode={buyMode}
             aria-label={`Buy amount ${buyModeLabel(buyMode)}. Tap to change.`}
             onClick={() => setBuyMode(nextBuyMode(buyMode))}
-            className="flex min-h-14 flex-1 flex-col items-center justify-center border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 py-1 text-black shadow-[3px_3px_0_0_#000]"
+            className="flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-2 py-1 text-black shadow-[3px_3px_0_0_#000]"
           >
             <span className="font-pixel text-sm leading-5">{buyModeLabel(buyMode)}</span>
             <span className="font-term text-lg leading-5">BUY AMOUNT</span>
           </button>
+          <Link
+            to="/tech"
+            data-open-research
+            className="flex min-h-12 w-[4.5rem] shrink-0 flex-col items-center justify-center border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-1 text-center font-pixel text-[0.45rem] leading-4 text-[var(--game-fg)] shadow-[2px_2px_0_0_#000]"
+          >
+            RESEARCH
+          </Link>
+          <Link
+            to="/facilities"
+            data-open-facilities
+            className="flex min-h-12 w-[4.5rem] shrink-0 flex-col items-center justify-center border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-1 text-center font-pixel text-[0.45rem] leading-4 text-[var(--game-fg)] shadow-[2px_2px_0_0_#000]"
+          >
+            FACILITIES
+          </Link>
           <HelpTip term="buymodes" className="self-center" />
         </div>
       </div>

@@ -43,6 +43,31 @@ test shipped in 0.0.13 (see Done).
   averages about +16% income while playing.
 - The grey bars down the screen edges are gone; Android's own scroll
   indicator stays. The Investors text uses the full width on phones.
+- **Company name and starter goals.** After the tutorial the Game screen
+  asks for a company name (shown in the news ticker; rename in More >
+  Settings). Five starter goals pay fixed era tokens once each (10 in all):
+  5 Timber Camps, a first manager, the Paper Mill, a first upgrade, the
+  Jacquard Loom era. Saves already past them get them marked done quietly.
+- **Historical contracts** (history events, step 1). Seven real kinds of
+  customers, in a set order as eras are reached: Lyon silk weavers (1805,
+  Jacquard Loom), the transcontinental telegraph (1861, Copper Seam), city
+  electric lighting (1882, Filament Forge), the census office (1890, Punch
+  Cards), code-breakers (1944) and the ENIAC ballistics lab (1946, Vacuum
+  Tubes), and a hearing-aid maker (early 1950s, Transistors). Each asks for a
+  fixed number of units from one business before a deadline (8-12 minutes);
+  a batch makes one unit per business owned, so buying more helps. Offered
+  once 10 of that business are owned; ACCEPT or LATER. Fixed rewards (3-5
+  era tokens plus data); a miss costs nothing and the client asks again in
+  10 minutes. A prestige ends an open contract.
+- **The first bug (1947)**: a one-time dilemma between Vacuum Tubes and
+  Integrated Circuits.
+- **Moore's Law (1965)**: a one-time lab project (150 data) shown once
+  Integrated Circuits are reached ("???" before): Microprocessors and every
+  later era cost 10% less, forever.
+- **Mega-projects in historical order**, each with a goal from its own era:
+  Transcontinental Cable (100 Copper Seams), National Mainframe (150 Vacuum
+  Tubes), Apollo, ARPANET, Homebrew, Y2K Patch (150 Home Computers), LAN
+  Party, Orbital Array, Parallel Timeline. Finished projects stay finished.
 - Next up for review: the research tech tree (layer 2).
 
 ## Ships in 0.0.22
@@ -280,7 +305,8 @@ in 0.0.18, or that is merged for 0.0.19, is not repeated here.
 - **Play Games achievements** for the existing badges (needs achievement ids
   from Play Console).
 - **Notifications** (factories full, research done).
-- **Starter goals and company name**: name your company at the start
+- **Starter goals and company name** (merged for the next build, see
+  above): name your company at the start
   (shown in headlines and later on the HQ picture), plus a short goal list
   (buy 5 Timber Camps, hire a first manager, unlock the next era) with a
   fixed reward. Also: the last few one-time tips (the first dilemma,
@@ -304,7 +330,9 @@ in 0.0.18, or that is merged for 0.0.19, is not repeated here.
   "something to do" dots. Six tabs, no seventh. Claude's current version of
   the tab tidy-up is the one to follow.
   [Design](ideas.md#tab-layout).
-- **History events, step 1: the early eras.** The event system it needs
+- **History events, step 1: the early eras** (contracts, the first bug,
+  Moore's Law and the project order are merged for the next build, see
+  above). The event system it needs
   ships in 0.0.19: each event names the eras it fits, and real one-time
   events happen once a game (Y2K and the Dot-com Bubble already work this
   way). Before Vacuum Tubes there are only two events (the patent troll and

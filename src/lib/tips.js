@@ -9,6 +9,7 @@
 import { BUSINESSES, FOREMAN_COST, investorsFor, shortMaterial } from "./gameConfig.js";
 import { dataPerSecond, forkCost, singularityMult, upgradeOffer, upgradesOf } from "./empire.js";
 import { tutorialActive } from "./tutorial.js";
+import { contractOffer } from "./goals.js";
 
 const maxOwned = (s) => Math.max(0, ...(s?.biz || []).map((b) => b?.owned || 0));
 
@@ -61,6 +62,14 @@ export const TIPS = [
     text: "A business has run out of a material, so it has stopped paying. Buy more of the row that makes it, hire that row's manager, or buy its x3 upgrade on the BOOST tab to make 3 times as much.",
     target: "[data-supply]",
     when: (s) => !!shortMaterial(s) && (s.lifetime || 0) > 0,
+  },
+  {
+    id: "contract",
+    page: "game",
+    title: "A CONTRACT",
+    text: "A customer from history wants an order filled. Accept it, then make that many from the named business before the clock runs out. Owning more of it fills the order faster. Missing it costs nothing.",
+    target: "[data-contract]",
+    when: (s) => !!contractOffer(s, Date.now()),
   },
   {
     id: "foreman",

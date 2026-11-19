@@ -5,6 +5,15 @@
 
 import { blankTutorial } from "./tutorial.js";
 import {
+  CONTRACTS,
+  MOORE,
+  STARTER_GOALS,
+  cleanCompanyName,
+  contractSpec,
+  recordContractUnits,
+  starterGoalsDone,
+} from "./goals.js";
+import {
   BUSINESSES,
   COMMISSION_MS,
   ERA_GATE,
@@ -169,6 +178,20 @@ export const DILEMMAS = [
     ],
   },
   {
+    id: "moth",
+    // September 1947: operators of the Harvard Mark II found a moth in a
+    // relay and taped it into the logbook. Once a game.
+    from: "tubes",
+    to: "ics",
+    once: true,
+    title: "THE FIRST BUG",
+    text: "Your operators find a moth stuck in a relay and tape it into the logbook: the first actual case of bug being found.",
+    choices: [
+      { key: "a", label: "WRITE UP THE DEBUGGING", effects: { data: 25 } },
+      { key: "b", label: "SELL THE STORY", effects: { tokens: 3 } },
+    ],
+  },
+  {
     id: "y2k",
     // The Millennium Bug: the late home-computer years, and only once a game.
     from: "homepc",
@@ -246,21 +269,25 @@ export const CHALLENGES = [
   },
 ];
 
+// In the order they happened, each with a goal from its own era.
 export const PROJECTS = [
-  { id: "cable", name: "TRANSCONTINENTAL CABLE", blurb: "Career earnings reach $10.00B.", reward: 0.1, tokens: 20 },
-  { id: "mainframe", name: "NATIONAL MAINFRAME", blurb: "Career earnings reach $1.00T.", reward: 0.1, tokens: 20 },
-  { id: "orbital", name: "ORBITAL ARRAY", blurb: "Own 25 Quantum Servers at once.", reward: 0.1, tokens: 20, eras: ["quantum"] },
+  { id: "cable", name: "TRANSCONTINENTAL CABLE", blurb: "Own 100 Copper Seams at once. (1861)", reward: 0.1, tokens: 20, eras: ["copper"],
+    check: (s) => owns(s, "copper", 100) },
+  { id: "mainframe", name: "NATIONAL MAINFRAME", blurb: "Own 150 Vacuum Tubes at once. (1950s)", reward: 0.1, tokens: 20, eras: ["tubes"],
+    check: (s) => owns(s, "tubes", 150) },
   // Later projects pay a smaller bonus each so the set stays inside the soft ceiling.
-  { id: "arpanet", name: "ARPANET NODE", blurb: "Own 100 Punch Cards and 100 Transistors at once.", reward: 0.05, tokens: 15, eras: ["punchcards", "transistors"],
-    check: (s) => owns(s, "punchcards", 100) && owns(s, "transistors", 100) },
-  { id: "apollo", name: "APOLLO GUIDANCE COMPUTER", blurb: "Own 150 Integrated Circuits at once.", reward: 0.05, tokens: 15, eras: ["ics"],
+  { id: "apollo", name: "APOLLO GUIDANCE COMPUTER", blurb: "Own 150 Integrated Circuits at once. (1960s)", reward: 0.05, tokens: 15, eras: ["ics"],
     check: (s) => owns(s, "ics", 150) },
-  { id: "homebrew", name: "HOMEBREW COMPUTER CLUB", blurb: "Own 100 each of Punch Cards, Transistors, Integrated Circuits, Microprocessors and Home Computers at once.", reward: 0.05, tokens: 15, eras: ["punchcards", "transistors", "ics", "cpu", "homepc"],
+  { id: "arpanet", name: "ARPANET NODE", blurb: "Own 100 Punch Cards and 100 Transistors at once. (1969)", reward: 0.05, tokens: 15, eras: ["punchcards", "transistors"],
+    check: (s) => owns(s, "punchcards", 100) && owns(s, "transistors", 100) },
+  { id: "homebrew", name: "HOMEBREW COMPUTER CLUB", blurb: "Own 100 each of Punch Cards, Transistors, Integrated Circuits, Microprocessors and Home Computers at once. (1975)", reward: 0.05, tokens: 15, eras: ["punchcards", "transistors", "ics", "cpu", "homepc"],
     check: (s) => ["punchcards", "transistors", "ics", "cpu", "homepc"].every((id) => owns(s, id, 100)) },
-  { id: "y2k", name: "Y2K PATCH", blurb: "Career earnings reach $1.00Qa.", reward: 0.05, tokens: 15,
-    check: (s) => (s.careerEarnings || 0) >= 1e15 },
-  { id: "lan", name: "WORLD'S BIGGEST LAN PARTY", blurb: "Own 150 Graphics Cards and 150 RGB Battlestations at once.", reward: 0.05, tokens: 15, eras: ["gpu", "rgb"],
+  { id: "y2k", name: "Y2K PATCH", blurb: "Own 150 Home Computers at once. (1999)", reward: 0.05, tokens: 15, eras: ["homepc"],
+    check: (s) => owns(s, "homepc", 150) },
+  { id: "lan", name: "WORLD'S BIGGEST LAN PARTY", blurb: "Own 150 Graphics Cards and 150 RGB Battlestations at once. (2000s)", reward: 0.05, tokens: 15, eras: ["gpu", "rgb"],
     check: (s) => owns(s, "gpu", 150) && owns(s, "rgb", 150) },
+  { id: "orbital", name: "ORBITAL ARRAY", blurb: "Own 25 Quantum Servers at once.", reward: 0.1, tokens: 20, eras: ["quantum"],
+    check: (s) => owns(s, "quantum", 25) },
   { id: "timeline", name: "PARALLEL TIMELINE", blurb: "Fork the timeline once.", reward: 0.05, tokens: 15,
     check: (s) => (s.singularities || 0) >= 1 },
 ];
@@ -309,10 +336,16 @@ export const LAB_PROJECTS = [
   { id: "overclock", name: "OVERCLOCK", cost: LAB_OVERCLOCK.cost, blurb: "All income x1.5 for 10 minutes. Then the lab needs 20 minutes to cool down." },
   { id: "patent", name: "PATENT FILING", cost: LAB_PATENT.cost, blurb: "Trade data for 1 era token. Up to 5 filings a day." },
   { id: "crew", name: "INSTALL CREW", cost: LAB_CREW.cost, blurb: "Upgrades install instantly instead of taking 12 seconds. Buy once, keep forever." },
+  { id: "moore", name: "MOORE'S LAW (1965)", cost: MOORE.cost, needs: MOORE.needs, blurb: "Chips keep doubling: Microprocessors and every later era cost 10% less. Buy once, keep forever." },
 ];
 
+// A lab project tied to an era stays hidden ("???") until that era is reached.
+export function labProjectRevealed(state, item) {
+  return !item?.needs || eraRevealed(state, indexOfBusiness(item.needs));
+}
+
 export function blankLab() {
-  return { overclockUntil: 0, coolUntil: 0, patentDay: null, patents: 0, crew: false };
+  return { overclockUntil: 0, coolUntil: 0, patentDay: null, patents: 0, crew: false, moore: false };
 }
 
 export function cleanLab(raw, now = Date.now()) {
@@ -322,7 +355,7 @@ export function cleanLab(raw, now = Date.now()) {
   const overclockUntil = Math.min(n(l.overclockUntil), now + LAB_OVERCLOCK.ms);
   const coolUntil = Math.min(n(l.coolUntil), now + LAB_OVERCLOCK.ms + LAB_OVERCLOCK.coolMs);
   const patentDay = typeof l.patentDay === "string" && /^\d{4}-\d{2}-\d{2}$/.test(l.patentDay) ? l.patentDay : null;
-  return { overclockUntil, coolUntil, patentDay, patents: Math.min(LAB_PATENT.perDay, Math.floor(n(l.patents))), crew: !!l.crew };
+  return { overclockUntil, coolUntil, patentDay, patents: Math.min(LAB_PATENT.perDay, Math.floor(n(l.patents))), crew: !!l.crew, moore: !!l.moore };
 }
 
 export function overclockOn(state, now) {
@@ -347,6 +380,10 @@ export function labQuote(state, id, now = Date.now()) {
     return { ok: false, reason: "No filings left today. More tomorrow.", cost: item.cost };
   }
   if (id === "crew" && lab.crew) return { ok: false, reason: "Your install crew is hired.", cost: item.cost };
+  if (id === "moore") {
+    if (lab.moore) return { ok: false, reason: "In effect.", cost: item.cost };
+    if (!labProjectRevealed(state, item)) return { ok: false, reason: "Unlocks with a later era.", cost: item.cost };
+  }
   if (data < item.cost) return { ok: false, reason: `Needs ${item.cost} data.`, cost: item.cost };
   return { ok: true, cost: item.cost };
 }
@@ -368,6 +405,9 @@ export function buyLabProject(state, id, now = Date.now()) {
     // Not a grant: filings don't count as tokens earned from play.
     state.tokens = (state.tokens || 0) + LAB_PATENT.tokens;
     detail = `Patent filed: +${LAB_PATENT.tokens} era token.`;
+  } else if (id === "moore") {
+    lab.moore = true;
+    detail = "Moore's Law: Microprocessors and every later era now cost 10% less.";
   } else {
     lab.crew = true;
     const job = timedJob(state.upgradeJob);
@@ -395,6 +435,11 @@ export function blankMeta() {
     shop: { freeManager: false, cashBuys: 0, samples: 0, crateDay: null },
     boostUntil: 0,
     lab: blankLab(),
+    companyName: "",
+    goalsDone: [],
+    contractsDone: [],
+    contract: null,
+    contractOfferAt: 0,
     dilemma: null,
     lastDilemma: null,
     museum: [],
@@ -631,6 +676,7 @@ export function creditCycles(state, index, cycles, now = 0, rate = 1) {
   const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
   const factor = supplyFactor(state, cfg, cycles);
   moveSupply(state, cfg, cycles, st.owned);
+  noteContractUnits(state, cfg.id, cycles * st.owned * factor * rate, now);
   const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor * rate;
   return creditAmount(state, amount, now);
 }
@@ -776,9 +822,6 @@ export function failChallenge(state) {
 
 function projectReady(state, id) {
   if ((state.projectsDone || []).includes(id)) return false;
-  if (id === "cable") return (state.careerEarnings || 0) >= 1e10;
-  if (id === "mainframe") return (state.careerEarnings || 0) >= 1e12;
-  if (id === "orbital") return (state.biz?.[indexOfBusiness("quantum")]?.owned || 0) >= 25;
   const spec = PROJECTS.find((p) => p.id === id);
   return !!spec?.check?.(state);
 }
@@ -878,6 +921,67 @@ export function finishTimedWork(state, now) {
   }
   return notes;
 }
+
+// ---- Starter goals and contracts --------------------------------------------
+
+// Contract progress, from creditCycles. A delivery counts only if it lands
+// before the deadline (offline replay passes each slice's own time).
+function noteContractUnits(state, rowId, units, now) {
+  const c = state?.contract;
+  if (!c || c.row !== rowId) return;
+  if (now && now > c.endsAt) return;
+  recordContractUnits(state, rowId, units);
+  const spec = contractSpec(c.id);
+  if (spec && (c.made || 0) >= spec.units) c.met = true;
+}
+
+// Finished starter goals pay their tokens; a met contract pays its reward; a
+// missed one ends quietly and the client asks again later. Returns notes.
+export function tickGoals(state, now = Date.now()) {
+  const notes = [];
+  const done = new Set(starterGoalsDone(state));
+  for (const goal of STARTER_GOALS) {
+    if (done.has(goal.id) || !goal.done(state)) continue;
+    done.add(goal.id);
+    grantTokens(state, `goal:${goal.id}`, goal.tokens);
+    notes.push({ type: "goal", id: goal.id, label: goal.label, tokens: goal.tokens, all: STARTER_GOALS.every((g) => done.has(g.id)) });
+  }
+  if (done.size !== starterGoalsDone(state).length) state.goalsDone = STARTER_GOALS.map((g) => g.id).filter((id) => done.has(id));
+  const c = state.contract;
+  if (c) {
+    const spec = contractSpec(c.id);
+    if (!spec) {
+      state.contract = null;
+    } else if (c.met) {
+      state.contract = null;
+      state.contractsDone = [...new Set([...(state.contractsDone || []), spec.id])];
+      grantTokens(state, `contract:${spec.id}`, spec.tokens);
+      state.data = (state.data || 0) + spec.data;
+      state.modStamp = (state.modStamp || 0) + 1;
+      notes.push({ type: "contract", id: spec.id });
+    } else if (now > c.endsAt) {
+      state.contract = null;
+      state.contractOfferAt = now + 10 * 60 * 1000;
+      notes.push({ type: "contractmissed", id: spec.id });
+    }
+  }
+  return notes;
+}
+
+// Saves from before starter goals: a player who is past them already gets
+// them marked done (and paid) without a burst of pop-ups.
+export function settleOldGoals(state) {
+  const done = new Set(starterGoalsDone(state));
+  for (const goal of STARTER_GOALS) {
+    if (done.has(goal.id)) continue;
+    if (!goal.done(state) && !state.prestiged) continue;
+    done.add(goal.id);
+    grantTokens(state, `goal:${goal.id}`, goal.tokens);
+  }
+  state.goalsDone = STARTER_GOALS.map((g) => g.id).filter((id) => done.has(id));
+}
+
+export { CONTRACTS };
 
 export function completeProjects(state, now = Date.now()) {
   finishTimedWork(state, now);
@@ -1321,6 +1425,12 @@ export function snapshotMeta(state, options = {}) {
     shop: { ...(state.shop || blankMeta().shop) },
     boostUntil: state.boostUntil || 0,
     lab: { ...(state.lab || blankLab()) },
+    companyName: cleanCompanyName(state.companyName),
+    goalsDone: [...starterGoalsDone(state)],
+    contractsDone: [...(state.contractsDone || [])],
+    // A contract is for this run's businesses; a reset ends it (the client asks again).
+    contract: null,
+    contractOfferAt: state.contract ? 0 : state.contractOfferAt || 0,
     dilemmaDeferUntil: state.dilemmaDeferUntil || 0,
     lastDilemma: state.lastDilemma || null,
     nextDilemmaAt: state.nextDilemmaAt || 0,
@@ -1391,6 +1501,20 @@ export const HEADLINES = [
   { era: "prestige", text: "INVESTORS ASK IF THE TIMELINE CAN BE FORKED" },
 ];
 
+// Headlines about the player's own company, once it has a name. The newest
+// two that fit the era run at the front of the ticker.
+export const COMPANY_HEADLINES = [
+  { era: "always", text: "{co} OPENS FOR BUSINESS" },
+  { era: "paper", text: "{co} SHIPS ITS FIRST BALE OF CARD STOCK" },
+  { era: "punchcards", text: "{co} BIDS FOR THE CENSUS CONTRACT" },
+  { era: "tubes", text: "{co} LAB RUNS WARM ALL NIGHT" },
+  { era: "transistors", text: "{co} BETS THE FARM ON THE TRANSISTOR" },
+  { era: "ics", text: "{co} PUTS A WHOLE CIRCUIT ON ONE CHIP" },
+  { era: "homepc", text: "{co} MACHINE SPOTTED ON EVERY DESK IN TOWN" },
+  { era: "rgb", text: "{co} TOWERS GLOW IN EVERY COLOR" },
+  { era: "quantum", text: "{co} QUBITS HOLD STEADY, ANALYSTS SPLIT" },
+];
+
 // How many headlines run at once: the newest eras first, so the ticker talks
 // about what's happening now rather than the 1890 census forever.
 const HEADLINE_COUNT = 8;
@@ -1413,6 +1537,10 @@ export function headlinesFor(state) {
     .slice(0, HEADLINE_COUNT)
     .map((h) => h.text);
   const extra = HEADLINES.filter((h) => h.era === "always" || (h.era === "prestige" && (state?.prestiged || (state?.investors || 0) > 0))).map((h) => h.text);
-  const lines = [...dated, ...extra];
+  const name = cleanCompanyName(state?.companyName).toUpperCase();
+  const own = name
+    ? COMPANY_HEADLINES.filter((h) => h.era === "always" || (indexOf(h.era) >= 0 && indexOf(h.era) <= reached)).slice(-2).map((h) => h.text.replace("{co}", name))
+    : [];
+  const lines = [...own, ...dated, ...extra];
   return lines.length ? lines : [HEADLINES[0].text];
 }

@@ -55,7 +55,10 @@ import {
   singularityMult,
   snapshotMeta,
   tickDilemma,
+  tickGoals,
+  settleOldGoals,
 } from "@/lib/empire";
+import { acceptContract, cleanCompanyName, cleanContract, contractSpec, CONTRACTS, pricedRow, snoozeContract, STARTER_GOALS } from "@/lib/goals";
 import { blankTutorial, readTutorial, TUTORIAL_STEPS } from "@/lib/tutorial";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { HISTORY_CARDS, collectHistory } from "@/lib/history";
@@ -134,6 +137,12 @@ function applySavedMeta(state, raw) {
   };
   state.boostUntil = num(m.boostUntil);
   state.lab = cleanLab(m.lab);
+  state.oldGoalSave = !Array.isArray(m.goalsDone);
+  state.companyName = cleanCompanyName(m.companyName);
+  state.contractsDone = known(m.contractsDone, CONTRACTS.map((c) => c.id));
+  state.contract = cleanContract(m.contract);
+  state.contractOfferAt = num(m.contractOfferAt);
+  state.goalsDone = known(m.goalsDone, STARTER_GOALS.map((g) => g.id));
   state.dilemmaDeferUntil = num(m.dilemmaDeferUntil);
   state.nextDilemmaAt = num(m.nextDilemmaAt);
   state.lastDilemma = typeof m.lastDilemma === "string" ? m.lastDilemma : null;
@@ -191,6 +200,11 @@ function pack(s) {
     shop: s.shop,
     boostUntil: s.boostUntil || 0,
     lab: s.lab || null,
+    companyName: cleanCompanyName(s.companyName),
+    goalsDone: s.goalsDone || [],
+    contractsDone: s.contractsDone || [],
+    contract: s.contract || null,
+    contractOfferAt: s.contractOfferAt || 0,
     dilemmaDeferUntil: s.dilemmaDeferUntil || 0,
     nextDilemmaAt: s.nextDilemmaAt || 0,
     lastDilemma: s.lastDilemma || null,
@@ -284,6 +298,8 @@ function loadSave() {
     }
     applyBriefing(state);
     finishTimedWork(state, Date.now());
+    if (state.oldGoalSave) settleOldGoals(state);
+    delete state.oldGoalSave;
     applyOrientation(state.orientation);
     return { state };
   } catch {
@@ -305,6 +321,17 @@ function announce(notes) {
     }
     if (note.type === "research") toast("Specialty committed", { description: "The other branches wait until the timeline is forked." });
     if (note.type === "upgrade") toast("Upgrade installed", { description: "The line is back up." });
+    if (note.type === "goal") {
+      toast(note.all ? "Starter goals complete!" : `Goal done: ${note.label}`, { description: `+${note.tokens} era token${note.tokens === 1 ? "" : "s"}` });
+    }
+    if (note.type === "contract") {
+      const spec = contractSpec(note.id);
+      if (spec) toast(`Contract delivered: ${spec.client}`, { description: `+${spec.tokens} era tokens, +${spec.data} data. ${spec.fact}` });
+    }
+    if (note.type === "contractmissed") {
+      const spec = contractSpec(note.id);
+      if (spec) toast("Contract missed", { description: `${spec.client} will ask again in 10 minutes. Nothing was lost.` });
+    }
     if (note.type === "projectstart") toast("Project started", { description: "Crews are on site. Give them a moment." });
     if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
     if (note.type === "history") {
@@ -490,7 +517,7 @@ export function useGame() {
       });
       s.data = (s.data || 0) + dataPerSecond(s) * (dt / 1000);
       if (autoBuyUpgrade(s, wall)) dirty = true;
-      const notes = tickDilemma(s, wall).concat(finishTimedWork(s, wall), tickBubble(s, wall));
+      const notes = tickDilemma(s, wall).concat(finishTimedWork(s, wall), tickBubble(s, wall), tickGoals(s, wall));
       const cards = collectHistory(s);
       if (cards.length) notes.push({ type: "history", cards });
       if (notes.length) {
@@ -538,7 +565,7 @@ export function useGame() {
     (i) => {
       const s = stateRef.current;
       if (!canBuyIndex(s, i)) return;
-      const cfg = BUSINESSES[i];
+      const cfg = pricedRow(s, i);
       const st = s.biz[i];
       const count = Math.floor(buyCount(buyMode, cfg, st.owned, s.cash, maxBuyCount(st.owned, i)));
       if (!Number.isFinite(count) || count < 1 || count > MAX_BUY) return;
@@ -664,6 +691,35 @@ export function useGame() {
       saveNow();
       bump();
       return result;
+    },
+    [bump]
+  );
+
+  const setCompanyName = useCallback(
+    (name) => {
+      const clean = cleanCompanyName(name);
+      if (!clean) return false;
+      stateRef.current.companyName = clean;
+      stateRef.current.modStamp = (stateRef.current.modStamp || 0) + 1;
+      saveNow();
+      bump();
+      return true;
+    },
+    [bump]
+  );
+
+  const takeContract = useCallback(
+    (accept) => {
+      const s = stateRef.current;
+      const now = Date.now();
+      if (accept) {
+        const spec = acceptContract(s, now);
+        if (spec) toast(`Contract accepted: ${spec.client}`, { description: `${spec.units.toLocaleString("en-US")} ${spec.unit} in ${spec.minutes} minutes.` });
+      } else {
+        snoozeContract(s, now);
+      }
+      saveNow();
+      bump();
     },
     [bump]
   );
@@ -930,6 +986,8 @@ export function useGame() {
     purchaseShop,
     chooseSpecialty,
     runLabProject,
+    setCompanyName,
+    takeContract,
     startChallenge,
     abandonChallenge,
     dismissPrestigeReport,

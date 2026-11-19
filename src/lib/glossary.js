@@ -75,6 +75,10 @@ export const GLOSSARY = {
     term: "CHALLENGE RUN",
     text: "An optional run with special rules, like no managers. Starting one resets your cash and businesses like prestige does, but you keep investors. Reach the goal to win +10% income forever.",
   },
+  contracts: {
+    term: "CONTRACTS",
+    text: "Real kinds of customers from history place an order: make a set number from one business before the clock runs out. Each batch makes one per business you own, so buying more of it (and its speed-ups) helps. Rewards are fixed and shown up front. Missing one costs nothing; the client asks again later.",
+  },
   projects: {
     term: "MEGA-PROJECTS",
     text: "Big goals that complete on their own once you reach them. Each gives a bonus you keep forever, plus tokens.",
@@ -98,6 +102,7 @@ export const GLOSSARY_ORDER = [
   "specialty",
   "lab",
   "challenge",
+  "contracts",
   "projects",
   "fork",
   "singularity",

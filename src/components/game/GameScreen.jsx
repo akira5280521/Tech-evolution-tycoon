@@ -14,6 +14,7 @@ import PrestigeReport from "./PrestigeReport";
 import BottomTabs from "./BottomTabs";
 import DilemmaModal from "./DilemmaModal";
 import BubbleBanner from "./BubbleBanner";
+import GoalsPanel from "./GoalsPanel";
 import CoachMark from "./CoachMark";
 import { HelpTip, TipCard } from "./HintSheet";
 import { tutorialActive } from "@/lib/tutorial";
@@ -30,7 +31,7 @@ function supplyShown(state, key) {
 export default function GameScreen() {
   const game = useGameState();
   const { state, buyMode, setBuyMode, buy, hire, run, runAll, buyForeman, prestige, dismissOffline,
-    dismissPrestigeReport, chooseDilemma, cashOut, tutorialNext, tutorialSkip } = game;
+    dismissPrestigeReport, chooseDilemma, cashOut, tutorialNext, tutorialSkip, setCompanyName, takeContract } = game;
   const [, bumpTick] = useState(0);
   const [pullDist, setPullDist] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
@@ -133,6 +134,7 @@ export default function GameScreen() {
 
         <main className="safe-x mx-auto min-w-0 max-w-4xl space-y-2 overflow-x-hidden px-3 py-2">
           <BubbleBanner state={state} onCashOut={cashOut} />
+          <GoalsPanel state={state} onName={setCompanyName} onTakeContract={takeContract} />
           {state.challenge && (
             <p className="break-words border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-3 font-term text-lg leading-6 text-[var(--game-accent)]">
               Challenge running: {state.challenge.id} · {money(state.challenge.earnings)} / {money(activeChallengeGoal(state))} this run.

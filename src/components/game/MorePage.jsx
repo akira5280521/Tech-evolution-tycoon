@@ -17,6 +17,7 @@ import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
 import LabProjects from "./LabProjects";
+import CompanySetting from "./CompanySetting";
 import AccountPanel from "./AccountPanel";
 import { HelpTip } from "./HintSheet";
 import { GLOSSARY, GLOSSARY_ORDER } from "@/lib/glossary";
@@ -75,6 +76,7 @@ export default function MorePage() {
           <button type="button" onClick={reset} className="min-h-11 border-2 border-[var(--game-danger)] px-3 font-pixel text-[0.55rem] text-[var(--game-danger)]">
             RESET SAVE
           </button>
+          <CompanySetting />
           <AppVersionFooter />
         </div>
       )}

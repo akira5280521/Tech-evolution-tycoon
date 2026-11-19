@@ -12,6 +12,7 @@ import {
   nextMilestone,
 } from "@/lib/gameConfig";
 import { effectiveCycleMs, empireFactors, makesOf, maxBuyCount, supplyFactor, upgradesOf } from "@/lib/empire";
+import { pricedRow } from "@/lib/goals";
 import IconTile from "./IconTile";
 import ProgressTrack from "./ProgressTrack";
 
@@ -44,8 +45,9 @@ function MilestoneBar({ owned, next }) {
 function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, compact }) {
   const cfg = BUSINESSES[index];
   const st = row;
-  const count = buyCount(buyMode, cfg, st.owned, cash, maxBuyCount(st.owned, index));
-  const cost = costOf(cfg, st.owned, count);
+  const priced = pricedRow(state, index);
+  const count = buyCount(buyMode, priced, st.owned, cash, maxBuyCount(st.owned, index));
+  const cost = costOf(priced, st.owned, count);
   const canBuy = cash >= cost;
   const mult = milestoneMult(st.owned);
   const next = nextMilestone(st.owned);

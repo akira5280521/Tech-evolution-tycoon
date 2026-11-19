@@ -1,5 +1,5 @@
 import { Zap } from "lucide-react";
-import { LAB_PATENT, LAB_PROJECTS, labQuote } from "@/lib/empire";
+import { LAB_PATENT, LAB_PROJECTS, labProjectRevealed, labQuote } from "@/lib/empire";
 import { HelpTip } from "./HintSheet";
 import { GoldButton, Panel } from "./chrome";
 
@@ -26,6 +26,7 @@ function status(state, id, now) {
     return { text: `${LAB_PATENT.perDay - used} of ${LAB_PATENT.perDay} filings left today`, tone: "info" };
   }
   if (id === "crew" && lab.crew) return { text: "HIRED", tone: "good" };
+  if (id === "moore" && lab.moore) return { text: "IN EFFECT", tone: "good" };
   return null;
 }
 
@@ -44,7 +45,15 @@ export default function LabProjects({ state, onRun }) {
       {LAB_PROJECTS.map((item) => {
         const quote = labQuote(state, item.id, now);
         const st = status(state, item.id, now);
-        const done = item.id === "crew" && state.lab?.crew;
+        const done = (item.id === "crew" && state.lab?.crew) || (item.id === "moore" && state.lab?.moore);
+        if (!labProjectRevealed(state, item)) {
+          return (
+            <div key={item.id} data-lab={item.id} data-locked className="mt-3 border-2 border-[var(--game-border)] p-3 text-[var(--game-dim)]">
+              <h3 className="font-pixel text-[0.65rem]">???</h3>
+              <p className="mt-2 font-term text-lg leading-6">Unlocks with a later era.</p>
+            </div>
+          );
+        }
         return (
           <div key={item.id} data-lab={item.id} className="mt-3 border-2 border-[var(--game-border)] p-3">
             <div className="flex flex-wrap items-baseline justify-between gap-2">

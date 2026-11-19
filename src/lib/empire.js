@@ -376,6 +376,7 @@ export function buyLabProject(state, id, now = Date.now()) {
     detail = "Install crew hired: upgrades now install instantly.";
   }
   state.lab = lab;
+  state.labFinished = (state.labFinished || 0) + 1;
   state.modStamp = (state.modStamp || 0) + 1;
   return { ok: true, cost: quote.cost, detail };
 }
@@ -396,6 +397,8 @@ export function blankMeta() {
     shop: { freeManager: false, cashBuys: 0, samples: 0, crateDay: null },
     boostUntil: 0,
     lab: blankLab(),
+    labFinished: 0,
+    maxOwned: 0,
     dilemma: null,
     lastDilemma: null,
     museum: [],
@@ -1331,6 +1334,8 @@ export function snapshotMeta(state, options = {}) {
     shop: { ...(state.shop || blankMeta().shop) },
     boostUntil: state.boostUntil || 0,
     lab: { ...(state.lab || blankLab()) },
+    labFinished: Math.floor(state.labFinished || 0),
+    maxOwned: Math.floor(state.maxOwned || 0),
     dilemmaDeferUntil: state.dilemmaDeferUntil || 0,
     lastDilemma: state.lastDilemma || null,
     nextDilemmaAt: state.nextDilemmaAt || 0,

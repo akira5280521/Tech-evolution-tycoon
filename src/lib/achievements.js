@@ -1,93 +1,109 @@
 import { BUSINESSES } from "@/lib/gameConfig";
-import { investorPeak } from "@/lib/empire";
+import { SPECIALTIES, investorPeak } from "@/lib/empire";
+import { HISTORY_CARDS } from "@/lib/history";
 
-// Play Console achievement ids. Replace each placeholder in Play Console,
-// then paste the real id here. A placeholder is never sent to Play Games.
-// See docs/play-games-achievements.md.
+// Play Console achievement ids. Points are set in the console; the game only
+// unlocks. See docs/play-games-achievements.md.
 
 export const ACHIEVEMENTS = [
   {
     id: "first-business",
-    playId: "REPLACE_IN_PLAY_CONSOLE_first_business",
+    playId: "CgkI7-b2jZ8bEAIQAg",
+    points: 25,
     name: "Open for business",
     description: "Buy your first business.",
-    icon: "A timber camp with a coin on the sign.",
   },
   {
     id: "first-manager",
-    playId: "REPLACE_IN_PLAY_CONSOLE_first_manager",
+    playId: "CgkI7-b2jZ8bEAIQAw",
+    points: 25,
     name: "Hired help",
     description: "Hire your first manager.",
-    icon: "A clipboard and a hard hat.",
   },
   {
     id: "era-punchcards",
-    playId: "REPLACE_IN_PLAY_CONSOLE_era_punchcards",
+    playId: "CgkI7-b2jZ8bEAIQBA",
+    points: 25,
     name: "Holes in the card",
     description: "Reach the Punch Cards era.",
-    icon: "A stiff card with a grid of holes.",
   },
   {
     id: "era-tubes",
-    playId: "REPLACE_IN_PLAY_CONSOLE_era_tubes",
+    playId: "CgkI7-b2jZ8bEAIQBQ",
+    points: 25,
     name: "Warm glass",
     description: "Reach the Vacuum Tubes era.",
-    icon: "A glowing vacuum tube.",
   },
   {
     id: "era-transistors",
-    playId: "REPLACE_IN_PLAY_CONSOLE_era_transistors",
+    playId: "CgkI7-b2jZ8bEAIQBg",
+    points: 25,
     name: "Solid state",
     description: "Reach the Transistors era.",
-    icon: "A metal-can transistor with three leads.",
   },
   {
     id: "era-cpu",
-    playId: "REPLACE_IN_PLAY_CONSOLE_era_cpu",
+    playId: "CgkI7-b2jZ8bEAIQBw",
+    points: 25,
     name: "On one chip",
     description: "Reach the Microprocessors era.",
-    icon: "A black chip with gold pins.",
   },
   {
     id: "era-quantum",
-    playId: "REPLACE_IN_PLAY_CONSOLE_era_quantum",
+    playId: "CgkI7-b2jZ8bEAIQCA",
+    points: 25,
     name: "Both at once",
     description: "Reach the Quantum era.",
-    icon: "A golden chandelier of wires.",
   },
   {
     id: "first-prestige",
-    playId: "REPLACE_IN_PLAY_CONSOLE_first_prestige",
+    playId: "CgkI7-b2jZ8bEAIQCQ",
+    points: 25,
     name: "Backers",
     description: "Prestige for the first time.",
-    icon: "A small crowd with briefcases.",
   },
   {
     id: "first-investor",
-    playId: "REPLACE_IN_PLAY_CONSOLE_first_investor",
+    playId: "CgkI7-b2jZ8bEAIQCg",
+    points: 25,
     name: "Head start",
     description: "Reach your first investor milestone.",
-    icon: "A ribbon on a stack of contracts.",
   },
   {
     id: "first-challenge",
-    playId: "REPLACE_IN_PLAY_CONSOLE_first_challenge",
+    playId: "CgkI7-b2jZ8bEAIQCw",
+    points: 25,
     name: "House rules",
     description: "Win your first challenge.",
-    icon: "A checkered flag over a factory.",
   },
+  { id: "era-loom", playId: "CgkI7-b2jZ8bEAIQDA", points: 10, name: "Woven code", description: "Reach the Jacquard Loom era." },
+  { id: "era-ics", playId: "CgkI7-b2jZ8bEAIQDQ", points: 10, name: "Many on one", description: "Reach the Integrated Circuits era." },
+  { id: "era-homepc", playId: "CgkI7-b2jZ8bEAIQDg", points: 10, name: "A computer on every desk", description: "Reach the Home Computers era." },
+  { id: "era-gpu", playId: "CgkI7-b2jZ8bEAIQDw", points: 10, name: "Pixel pusher", description: "Reach the Graphics Cards era." },
+  { id: "every-era", playId: "CgkI7-b2jZ8bEAIQEA", points: 100, name: "Full history", description: "Unlock every era." },
+  { id: "own-100", playId: "CgkI7-b2jZ8bEAIQEQ", points: 10, name: "Mass production", description: "Own 100 of one business." },
+  { id: "own-200", playId: "CgkI7-b2jZ8bEAIQEg", points: 45, name: "Industrial scale", description: "Own 200 of one business." },
+  { id: "every-manager", playId: "CgkI7-b2jZ8bEAIQEw", points: 45, name: "Full staff", description: "Hire every manager." },
+  { id: "earn-billion", playId: "CgkI7-b2jZ8bEAIQFA", points: 10, name: "Billion-dollar startup", description: "Earn your first $1 billion." },
+  { id: "earn-trillion", playId: "CgkI7-b2jZ8bEAIQFQ", points: 45, name: "Trillionaire", description: "Earn your first $1 trillion." },
+  { id: "prestige-10", playId: "CgkI7-b2jZ8bEAIQFg", points: 45, name: "Serial founder", description: "Prestige 10 times." },
+  { id: "investors-1000", playId: "CgkI7-b2jZ8bEAIQFw", points: 45, name: "Board of directors", description: "Hold 1,000 investors." },
+  { id: "fork-1", playId: "CgkI7-b2jZ8bEAIQGA", points: 45, name: "Spin-off", description: "Fork for the first time." },
+  { id: "fork-5", playId: "CgkI7-b2jZ8bEAIQGQ", points: 100, name: "Conglomerate", description: "Fork 5 times." },
+  { id: "bubble", playId: "CgkI7-b2jZ8bEAIQGg", points: 10, name: "Bubble survivor", description: "Live through the Dot-com Bubble." },
+  { id: "y2k", playId: "CgkI7-b2jZ8bEAIQGw", points: 10, name: "Midnight, 2000", description: "Survive Y2K." },
+  { id: "museum", playId: "CgkI7-b2jZ8bEAIQHA", points: 100, name: "Curator", description: "Fill the Museum." },
+  { id: "specialties", playId: "CgkI7-b2jZ8bEAIQHQ", points: 45, name: "Lab coat", description: "Fill every research specialty." },
+  { id: "lab-10", playId: "CgkI7-b2jZ8bEAIQHg", points: 10, name: "Side projects", description: "Finish 10 lab projects." },
+  { id: "challenges-5", playId: "CgkI7-b2jZ8bEAIQHw", points: 45, name: "House champion", description: "Win 5 challenges." },
 ];
 
 const KEY = "pc-tycoon-achievements-v1";
 const CALL_TIMEOUT_MS = 15 * 1000;
 
-function isPlaceholder(playId) {
-  return !playId || playId.startsWith("REPLACE_IN_PLAY_CONSOLE");
-}
-
 function owned(state, id) {
   const i = BUSINESSES.findIndex((cfg) => cfg.id === id);
-  return i >= 0 && (state?.biz?.[i]?.owned || 0) > 0;
+  return i >= 0 && ((state?.biz?.[i]?.owned || 0) > 0 || (state?.bestEra || 0) >= i);
 }
 
 function boughtABusiness(state) {
@@ -95,18 +111,50 @@ function boughtABusiness(state) {
   return (state?.biz || []).some((row, i) => (row?.owned || 0) > (i === 0 ? 1 : 0));
 }
 
+function maxOwned(state) {
+  const now = (state?.biz || []).reduce((n, row) => Math.max(n, row?.owned || 0), 0);
+  return Math.max(state?.maxOwned || 0, now);
+}
+
 export function achievementIdsFor(state) {
   const ids = [];
+  const events = new Set(state?.eventsDone || []);
   if (boughtABusiness(state)) ids.push("first-business");
   if ((state?.biz || []).some((row) => row?.manager)) ids.push("first-manager");
+  if (owned(state, "loom")) ids.push("era-loom");
   if (owned(state, "punchcards")) ids.push("era-punchcards");
   if (owned(state, "tubes")) ids.push("era-tubes");
   if (owned(state, "transistors")) ids.push("era-transistors");
+  if (owned(state, "ics")) ids.push("era-ics");
   if (owned(state, "cpu")) ids.push("era-cpu");
+  if (owned(state, "homepc")) ids.push("era-homepc");
+  if (owned(state, "gpu")) ids.push("era-gpu");
   if (owned(state, "quantum")) ids.push("era-quantum");
+  if (BUSINESSES.every((cfg) => owned(state, cfg.id))) ids.push("every-era");
+  if (maxOwned(state) >= 100) ids.push("own-100");
+  if (maxOwned(state) >= 200) ids.push("own-200");
+  if ((state?.biz || []).length === BUSINESSES.length && state.biz.every((row) => row?.manager)) ids.push("every-manager");
+  if ((state?.careerEarnings || 0) >= 1e9) ids.push("earn-billion");
+  if ((state?.careerEarnings || 0) >= 1e12) ids.push("earn-trillion");
   if (state?.prestiged || (state?.prestigeCount || 0) > 0 || (state?.investors || 0) > 0) ids.push("first-prestige");
+  if ((state?.prestigeCount || 0) >= 10) ids.push("prestige-10");
   if (investorPeak(state) >= 10) ids.push("first-investor");
+  if (investorPeak(state) >= 1000) ids.push("investors-1000");
+  if ((state?.singularities || 0) >= 1) ids.push("fork-1");
+  if ((state?.singularities || 0) >= 5) ids.push("fork-5");
+  // The bubble is recorded when it starts. Living through it means it has
+  // since popped or been cashed out.
+  if (events.has("dotcom") && !state?.bubble) ids.push("bubble");
+  // The Millennium Bug dilemma, recorded when it appears. Not the Y2K Patch project.
+  if (events.has("y2k")) ids.push("y2k");
+  const museum = new Set(state?.museum || []);
+  if (HISTORY_CARDS.length > 0 && HISTORY_CARDS.every((card) => museum.has(card.id))) ids.push("museum");
+  const specs = new Set(state?.specialties || []);
+  if (SPECIALTIES.length > 0 && SPECIALTIES.every((spec) => specs.has(spec.id))) ids.push("specialties");
+  if ((state?.labFinished || 0) >= 10) ids.push("lab-10");
   if ((state?.challengesDone || []).length > 0) ids.push("first-challenge");
+  // Three challenges exist today, each once, so five waits on future challenges.
+  if ((state?.challengesDone || []).length >= 5) ids.push("challenges-5");
   return ids;
 }
 
@@ -168,7 +216,7 @@ export async function flushAchievements() {
         continue;
       }
       const spec = ACHIEVEMENTS.find((entry) => entry.id === id);
-      if (!spec || isPlaceholder(spec.playId)) {
+      if (!spec || !spec.playId) {
         left.push(id);
         continue;
       }

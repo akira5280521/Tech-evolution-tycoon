@@ -1,4 +1,4 @@
-import notesMd from "../../docs/releases/v0.0.22.md?raw";
+import notesMd from "../../docs/releases/v0.0.23.md?raw";
 import { WEB_VERSION_CODE, WEB_VERSION_NAME } from "@/lib/appVersion";
 
 // The release file is the list players see. This only reads it.

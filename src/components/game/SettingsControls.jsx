@@ -4,7 +4,7 @@ import { WEB_VERSION_CODE, WEB_VERSION_NAME } from "@/lib/appVersion";
 import { PREFS_EVENT, readPrefs, writePrefs } from "@/lib/gamePrefs";
 import { applyAudioPrefs } from "@/lib/sfx";
 import { requestNotifyPermission, cancelCapNotification } from "@/lib/capNotify";
-import { openAchievements } from "@/lib/achievements";
+import { achievementsLive, openAchievements } from "@/lib/achievements";
 import { WhatsNewDialog } from "./WhatsNew";
 import { useCloud } from "./CloudSync";
 import { Panel } from "./chrome";
@@ -202,6 +202,20 @@ export function FeedbackButton() {
 export function AchievementsButton() {
   const cloud = useCloud();
   const [busy, setBusy] = useState(false);
+  if (!achievementsLive()) {
+    return (
+      <button
+        type="button"
+        data-achievements="soon"
+        disabled
+        aria-disabled="true"
+        className={`${choice} mt-3 h-auto w-full cursor-not-allowed whitespace-normal border-[var(--game-muted)] py-2 leading-5 text-[var(--game-muted)]`}
+      >
+        <span className="block">ACHIEVEMENTS</span>
+        <span className="block">COMING SOON</span>
+      </button>
+    );
+  }
   if (!cloud.configured) return null;
   const open = async () => {
     setBusy(true);

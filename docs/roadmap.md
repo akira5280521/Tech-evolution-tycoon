@@ -230,18 +230,22 @@ This release is 0.0.20 (versionCode 20) and adds PR #47.
 1. **Closed testing first**, while the Play launch is under way (see Now):
    real icons, parody names, tester fixes, sound and settings, investor
    milestones, Play Games, starter goals, Research lab projects and the rest
-   of the tab tidy-up, and the early history events. Investor milestones go
-   out before launch so live saves aren't disrupted.
-2. **After launch, Phase 1.** Chip generations and the era arrival screen
-   (item 1), generations on more rows (item 2), then history events step 2
-   with headlines, pioneers and trivia (item 3).
+   of the tab tidy-up, the early history events, chip generations and the
+   era arrival screen, and the missing eras (mainframes, the web,
+   smartphones, AI accelerators). Chip generations and those new eras are
+   paced in closed testing, on the 0.0.22 numbers, so live saves aren't
+   re-paced after launch. Investor milestones go out before launch for the
+   same reason.
+2. **After launch, Phase 1.** Generations on more rows (item 1), then history
+   events step 2 with headlines, pioneers and trivia (item 2). Chip
+   generations and the era arrival screen moved to closed testing.
 3. **Then history on what's already there:** a look and sound for each era
-   (item 4), the missing eras in one release (item 5) so pacing changes once,
-   and Focus era (item 6). Saves store rows by era id since 0.0.15, so new
-   eras are safe after launch.
-4. **Then the Workbench and parts** (items 7-15), in the order the parts
+   (item 3) and Focus era (item 4). The missing eras moved to closed testing
+   so that pacing change happens once, before launch. Saves store rows by era
+   id since 0.0.15, so new eras are safe to add there.
+4. **Then the Workbench and parts** (items 5-13), in the order the parts
    appeared in history, as far as their links allow.
-5. **Long-term systems last** (items 16-26), once there is enough content to
+5. **Long-term systems last** (items 14-24), once there is enough content to
    collect and replay.
 
 Each numbered item is roughly one release. Items marked "small" can be
@@ -262,7 +266,7 @@ in 0.0.18, or that is merged for 0.0.19, is not repeated here.
 - **Bug and balance fixes from testers.** The landscape fixes from testers'
   phones ship in 0.0.19 (see above).
 - **Sound pauses in the background**, plus separate music and effects volume.
-  Era themes and era music wait for item 4.
+  Era themes and era music wait for item 3.
 - **Feedback and settings.** Floating "+$" on payouts, light vibration on
   buy (can be turned off), hold Buy to preview "+$X per second", number
   style (letters, names, scientific), reduced motion, high contrast and
@@ -320,21 +324,39 @@ in 0.0.18, or that is merged for 0.0.19, is not repeated here.
   that match their era (the 1860s Transcontinental Cable currently needs
   $10B, later than several 1970s-90s projects).
   [Design](ideas.md#mid-game). [Design](ideas.md#hardware-history-events).
+- **Chip generations and the era arrival screen.** Microprocessors and
+  Graphics Cards evolve as they pass owned-count milestones (8-bit to
+  multi-core; 2D card to ray tracing): new name, picture and tagline, a
+  small bonus, and a Museum history card. No new rows, so no save
+  migration. New eras and new generations both get a short arrival card
+  with the year, name, one history line and a sound sting. Re-run the
+  pacing sim with generation bonuses stacked on 0.0.22 numbers.
+  [Design](ideas.md#chip-generations).
+- **Fill the gaps in the timeline.** New eras, each with its own icon,
+  manager, two history cards and upgrade names, in historical order:
+  - After the tubes: mainframes (c. 1951, the first commercial computers),
+    before the Germanium Refinery. Punch Cards moved to 1890, so the
+    1950s mainframe years are now a gap.
+  - Mid-1990s: dial-up internet and the World Wide Web.
+  - 2007: smartphones. A parody of the 2007 original iPhone, with the real
+    specs (412 MHz ARM11, 128 MB RAM, 3.5-inch 320×480), its own manager,
+    two Museum cards, and upgrades such as multi-touch and an app store.
+    Later generations (feature phone, first smartphone, 4G phablet,
+    foldable) go with generations on more rows (item 1).
+  - Mid-2010s to 2020s: AI accelerators, just before Quantum (c. 2019).
+  The Jacquard loom (1804) shipped in 0.0.18.
+  The office PC (1981), graphical desktops (1984) and laptops are covered
+  by Home Computers generations (item 1) instead. Saves store rows by era
+  id, so new rows can go anywhere. Re-run the pacing sim after, and
+  re-check investor milestones and first-prestige timing, so live saves
+  aren't re-paced after launch.
 
 ## Next: phase 1, after launch
 
 Starts when the game is live on Google Play after all testing. First
-post-launch content. [Design](ideas.md#chip-generations).
+post-launch content. [Design](ideas.md#more-row-generations).
 
-1. **Chip generations and the era arrival screen.** Microprocessors and
-   Graphics Cards evolve as they pass owned-count milestones (8-bit to
-   multi-core; 2D card to ray tracing): new name, picture and tagline, a
-   small bonus, and a Museum history card. No new rows, so no save
-   migration. New eras and new generations both get a short arrival card
-   with the year, name, one history line and a sound sting.
-   [Design](ideas.md#chip-generations).
-
-2. **Generations on more rows**, using the same system: Home Computers
+1. **Generations on more rows**, using the same system: Home Computers
    (8-bit micro 1977, office PC 1981, graphical desktop 1984, laptop late
    1980s) and RGB Battlestations (glass-panel RGB tower mid-2010s, custom
    liquid loop, compact small-form-factor build 2020s). The LAN-party tower
@@ -342,7 +364,7 @@ post-launch content. [Design](ideas.md#chip-generations).
    instead.
    [Design](ideas.md#more-row-generations).
 
-3. **History events, step 2, with headlines, pioneers and trivia.** The
+2. **History events, step 2, with headlines, pioneers and trivia.** The
    rest of the history events, each tied to its eras and in the order they
    happened: the 1983 video game crash, floppies to CDs (early-mid 1990s),
    LAN parties (late 1990s-2000s), the bad-capacitor years (about
@@ -359,28 +381,15 @@ post-launch content. [Design](ideas.md#chip-generations).
 
 ## Next: phase 2, history on what's already there
 
-4. **A look and sound for each era.** Unlockable screen themes (green
+3. **A look and sound for each era.** Unlockable screen themes (green
    phosphor terminal, beige desktop, CRT, neon RGB) and era sounds. Music
    follows the furthest era for now (PC speaker beeps, early FM synth,
    wavetable/MIDI, CD audio, modern mix); the Workbench sound card takes
-   over later (item 13). Sound pause and separate volume sliders are in
+   over later (item 11). Sound pause and separate volume sliders are in
    closed testing, not here. Original sounds only; no real logos or startup sounds.
    [Design](ideas.md#sound-and-music).
 
-5. **Fill the gaps in the timeline.** New eras, each with its own icon,
-   manager, two history cards and upgrade names, in historical order:
-   - After the tubes: mainframes (c. 1951, the first commercial computers),
-     before the Germanium Refinery. Punch Cards moved to 1890, so the
-     1950s mainframe years are now a gap.
-   - Mid-1990s: dial-up internet and the World Wide Web.
-   - 2007: smartphones.
-   - Mid-2010s to 2020s: AI accelerators, just before Quantum (c. 2019).
-   The Jacquard loom (1804) shipped in 0.0.18.
-   The office PC (1981), graphical desktops (1984) and laptops are covered
-   by Home Computers generations (item 2) instead. Saves store rows by era
-   id, so new rows can go anywhere. Re-run the pacing sim after.
-
-6. **Focus era.** At the start of a run, pick one era to get x3 for that
+4. **Focus era.** At the start of a run, pick one era to get x3 for that
     run (rush the early chain or boost a late era; no chance). Best times
     per era, with a small token reward for beating one, live on the stats
     page in closed testing. [Design](ideas.md#mid-game).
@@ -392,7 +401,7 @@ defunct companies and product lines; real dates and specs; parts fit only
 where they fit in real life; no chance-based outcomes; locked parts stay
 "???". Check every date against a source before shipping.
 
-7. **PC workbench.** A Workbench view on the Boost tab with part slots
+5. **PC workbench.** A Workbench view on the Boost tab with part slots
     (processor, graphics, memory, storage, display, cooling, power supply,
     case). A finished build gives an empire-wide bonus that grows with the
     build. The build is drawn as a layered pixel-art PC: each installed part
@@ -403,7 +412,7 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     shapes until the art exists; the sprite list is in
     `docs/art/pc-build-sprites.md`. [Design](ideas.md#pc-workbench).
 
-8. **Parts catalog, step 1: the core build.** Workbench parts from parody
+6. **Parts catalog, step 1: the core build.** Workbench parts from parody
     makers, real dates and specs, real compatibility (rules above). Slots:
     motherboard, processor, graphics, memory, storage, power supply, cooling
     and case, plus a parts bin and the Bench Score.
@@ -444,13 +453,13 @@ where they fit in real life; no chance-based outcomes; locked parts stay
       parts that don't fit the current board are greyed out with the reason.
     [Design](ideas.md#parts-catalog).
 
-9. **Monitors.** From green and amber text screens (late 1970s-80s) to
+7. **Monitors.** From green and amber text screens (late 1970s-80s) to
     color CRTs (640x480 in 1987), bigger CRTs, flat LCDs (mid-2000s), high
     refresh and OLED, with real resolution steps capping what a strong
     graphics card adds. First after the core build because the screen is the
     oldest part of the picture. [Design](ideas.md#monitors-and-cooling).
 
-10. **Parts catalog, step 2: expansion slots** (the PC's add-in slots date
+8. **Parts catalog, step 2: expansion slots** (the PC's add-in slots date
     from 1981). In the order they appeared: modem cards (1980s to the
     dial-up years of the 1990s), network cards (1980s offices, then the
     LAN-party years), add-in sound cards (essential from the
@@ -462,18 +471,18 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     then through the board itself from 2013, under generic names). Number of
     slots comes from the motherboard. [Design](ideas.md#expansion-slots).
 
-11. **Jumper puzzle** (small, with item 10): from the first PCs (1981) until
+9. **Jumper puzzle** (small, with item 8): from the first PCs (1981) until
     plug-and-play (about 1995), set jumpers and DIP switches and sort out
     two cards wanting the same setting. Fixed answers; goes away once plug-and-play arrives.
     [Design](ideas.md#jumper-puzzle).
 
-12. **Optical drives.** CD-ROM drives reached home PCs in the late 1980s
+10. **Optical drives.** CD-ROM drives reached home PCs in the late 1980s
     and early 1990s, then the 1x-to-52x speed race, burners (late 1990s),
     DVD, Blu-ray (late 2000s), then fading out in the 2010s. They share IDE
     cables with hard drives, jumpered as master or slave, so they follow the
     jumper puzzle. [Design](ideas.md#optical-drives).
 
-13. **Boot screens and hardware sound.** A short start-up screen per era
+11. **Boot screens and hardware sound.** A short start-up screen per era
     (memory count-up, beep, parody OS logo) when the Workbench PC powers on.
     The installed sound card now picks the music style, and parts make
     their sounds: floppy grind on save, drive seek clicks, modem handshake,
@@ -481,7 +490,7 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     clacks. After sound cards and optical drives, since the music styles
     need them (CD audio needs a CD drive). [Design](ideas.md#boot-screens).
 
-14. **Parts catalog, step 3: colors and collecting.** Period color schemes
+12. **Parts catalog, step 3: colors and collecting.** Period color schemes
     as cosmetic variants (green boards in the '90s, red or blue gaming
     boards in the 2000s, black in the 2010s, colored memory heat spreaders,
     RGB). They add to the Bench Score's collection points and the Museum,
@@ -490,7 +499,7 @@ where they fit in real life; no chance-based outcomes; locked parts stay
     the early-mid 2000s (one color per tube), single-color LED fans, then
     RGB and finally per-LED RGB. [Design](ideas.md#colors-and-collecting).
 
-15. **Period build challenges**: "Build a 1996 gaming PC" with only parts
+13. **Period build challenges**: "Build a 1996 gaming PC" with only parts
     from that year, for a badge and a Museum card, plus a weekly one that is
     the same for everyone (full reward even when late). Last in this phase
     because it needs the whole catalog. [Design](ideas.md#period-build-challenges).
@@ -499,44 +508,44 @@ where they fit in real life; no chance-based outcomes; locked parts stay
 
 In this order. [Design](ideas.md#long-term).
 
-16. **Garage-to-campus HQ**: a picture of the company that grows with
+14. **Garage-to-campus HQ**: a picture of the company that grows with
     lifetime earnings: garage, office park, campus, space-age HQ.
 
-17. **Parody rival companies** racing through history at a fixed, visible
+15. **Parody rival companies** racing through history at a fixed, visible
     pace; beating one to an era pays a bonus and a Museum card.
 
-18. **History anniversaries** on the real calendar: a short event with a
+16. **History anniversaries** on the real calendar: a short event with a
     fixed cosmetic or Museum card on the day.
 
-19. **Museum completion**: a timeline wall; finishing an era's set pays.
+17. **Museum completion**: a timeline wall; finishing an era's set pays.
     Vintage parts (retired parts become "vintage" after a fixed number of
     game years) go on its shelves. [Design](ideas.md#vintage-parts).
 
-20. **Desk scene**: keyboards (clicky, then rubber-dome, then the mechanical
+18. **Desk scene**: keyboards (clicky, then rubber-dome, then the mechanical
     comeback), mice (ball, then optical around 1999), modems (300 baud to
     56k in 1998, then broadband) and speakers around the PC.
     [Design](ideas.md#desk-scene).
 
-21. **More research uses for data**: era research (a small permanent
+19. **More research uses for data**: era research (a small permanent
     per-era upgrade ladder that keeps soaking up data), archive research
     (reveal one "???" Museum card or generation early, name and year only)
     and forecasting (see the next event or dilemma a few minutes ahead).
     Fixed prices, no chance. [Design](ideas.md#tab-layout).
 
-22. **Third prestige layer** ("Legacy" or similar) kept through everything:
+20. **Third prestige layer** ("Legacy" or similar) kept through everything:
     starting eras, Workbench slots, challenge modes.
 
-23. **Parts as materials**: later eras use up chips, memory and drives made
+21. **Parts as materials**: later eras use up chips, memory and drives made
     by earlier rows, so the supply chain matters again. Biggest balance
     change of the hardware ideas; needs full pacing tests.
     [Design](ideas.md#parts-as-materials).
 
-24. **Software track**: rows for programming languages, operating systems
+22. **Software track**: rows for programming languages, operating systems
     and game eras alongside the hardware, each boosting the other.
 
-25. **Space Age world**, using the draft in `src/lib/worldSpace.js`.
+23. **Space Age world**, using the draft in `src/lib/worldSpace.js`.
 
-26. **Free-build mode** after the last era, with everything collected.
+24. **Free-build mode** after the last era, with everything collected.
 
 Also, whenever the text settles: translations.
 

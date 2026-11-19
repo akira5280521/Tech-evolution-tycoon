@@ -58,9 +58,10 @@ import {
 } from "@/lib/empire";
 import { blankTutorial, readTutorial, TUTORIAL_STEPS } from "@/lib/tutorial";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
-import { HISTORY_CARDS, collectHistory } from "@/lib/history";
+import { collectHistory, isHistoryCardId } from "@/lib/history";
+import { generationAt } from "@/lib/generations";
 import { applyOrientation } from "@/lib/orientation";
-import { SAVE_VERSION, clearSaveData, getSaveData, writeSaveData } from "@/lib/gameSave";
+import { SAVE_VERSION, clearSaveData, getSaveData, remapBestEra, writeSaveData } from "@/lib/gameSave";
 import { encodeSave } from "@/lib/saveCode";
 import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
@@ -150,7 +151,7 @@ function applySavedMeta(state, raw) {
   // Saves from before the tutorial: anyone with real progress has played already.
   state.tutorial = readTutorial(m.tutorial, num(m.careerEarnings) > 0 || num(raw?.investors) > 0 || (raw?.biz || []).some((b, i) => (b?.owned || 0) > (i === 0 ? 1 : 0)));
   state.badgesEarned = Array.isArray(m.badgesEarned) ? m.badgesEarned.filter((id) => typeof id === "string") : [];
-  state.museum = Array.isArray(m.museum) ? m.museum.filter((id) => HISTORY_CARDS.some((c) => c.id === id)) : [];
+  state.museum = Array.isArray(m.museum) ? m.museum.filter((id) => isHistoryCardId(id)) : [];
   state.bubble = cleanBubble(m.bubble);
   state.eventsDone = Array.isArray(m.eventsDone) ? [...new Set(m.eventsDone.filter((id) => typeof id === "string"))] : [];
   state.nextBubbleAt = num(m.nextBubbleAt);
@@ -285,13 +286,15 @@ function loadSave() {
     }
     if (state.prestigeCount == null) state.prestigeCount = state.prestiged ? 1 : 0;
     if (state.playMs == null) state.playMs = state.biz.reduce((n, row) => n + (row.activeMs || 0), 0);
-    if (state.bestEra == null) state.bestEra = Math.max(0, eraReachedIndex(state));
+    const storedEra = state.bestEra;
+    if (storedEra == null) state.bestEra = Math.max(0, eraReachedIndex(state));
     if (!state.runStartedAt) state.runStartedAt = Date.now();
     state.orientation = data.orientation === "portrait" || data.orientation === "landscape" ? data.orientation : "auto";
     state.researchJob = data.researchJob || null;
     state.upgradeJob = data.upgradeJob || null;
     state.projectJob = data.projectJob || null;
     const prior = Number.isFinite(data.meta?.version) ? data.meta.version : 1;
+    if (storedEra != null) state.bestEra = remapBestEra(storedEra, prior);
     if (prior < 3) {
       const held = new Set(state.badgesEarned || []);
       for (const id of legacyBadgeIds(state)) held.add(id);
@@ -603,6 +606,11 @@ export function useGame() {
         const what = reached.map((ms) => (ms.speed ? `${ms.speed}× speed` : `${ms.mult}× pay`)).join(", ");
         toast(`${cfg.name}: ${reached[reached.length - 1].owned} owned!`, { description: `${what} · +${2 * reached.length} era tokens` });
         s.biz[i] = { ...s.biz[i], milestoneAt: now };
+      }
+      const beforeGen = generationAt(cfg.id, before);
+      const afterGen = generationAt(cfg.id, before + count);
+      if (afterGen && afterGen.id !== beforeGen?.id && before > 0) {
+        toast(afterGen.name, { description: `${afterGen.year}. ${afterGen.tagline}` });
       }
       saveNow();
       bump();

@@ -4,6 +4,7 @@
 // Company names are parody. Model numbers and specs stay real.
 import { BUSINESSES } from "./gameConfig.js";
 import { furthestRevealedEra, grantTokens } from "./empire.js";
+import { generationCardIds, generationCards } from "./generations.js";
 
 export const MUSEUM_SET_TOKENS = 3;
 
@@ -84,7 +85,43 @@ export const HISTORY_CARDS = [
     text: "A normal bit is 0 or 1. A qubit can be in a mix of both at once, called a superposition." },
   { id: "quantum-2", era: "quantum", need: 100, title: "COLDER THAN SPACE",
     text: "Many quantum computers run at a few thousandths of a degree above absolute zero - far colder than deep space." },
+  { id: "relay-1", era: "relay", need: 25, title: "CROSSBAR WORKS MODEL 3",
+    text: "On 12 May 1941 Crossbar Works showed model 3 in Berlin. About 2,600 relays, binary floating point, 22-bit words, 64 words of memory, and a clock near 5 Hz. A multiply took about 3 seconds. The program was on punched film." },
+  { id: "relay-2", era: "relay", need: 100, title: "INLAND AUTOMATIC SEQUENCER",
+    text: "Inland Business Machines' Automatic Sequencer was presented at Harvard on 7 August 1944. It was 51 feet long, with about 3,500 relays, and it held 72 numbers of 23 decimal digits. About 3 additions a second. A multiply took about 6 seconds. Instructions came on punched tape." },
+  { id: "mainframes-1", era: "mainframes", need: 25, title: "IRWELL MARK 1",
+    text: "Irwell Electrics delivered the Mark 1 to Manchester in February 1951, the first commercial electronic computer to be installed. About 4,050 vacuum tubes. The working memory was Williams tubes, storing 40-bit words, two 20-bit instructions to a word. A magnetic drum held the rest." },
+  { id: "mainframes-2", era: "mainframes", need: 100, title: "WILLIAMS TUBES",
+    text: "A Williams tube stores bits as dots of charge on the face of a cathode-ray tube, and reads them back before they fade. The Irwell Mark 1 kept its working store that way, 40 bits to a word." },
+  { id: "minis-1", era: "minis", need: 25, title: "MAYNARD EQUIPMENT 8",
+    text: "Maynard Equipment introduced the 8 on 22 March 1965. A 12-bit machine, diode-transistor logic, about the size of a refrigerator, at an introductory price of about $18,500." },
+  { id: "minis-2", era: "minis", need: 100, title: "MAYNARD EQUIPMENT 11",
+    text: "The Maynard Equipment 11 arrived in 1970. 16-bit, with one Unibus linking the processor, the memory and the devices. A complete system was listed at $10,800." },
+  { id: "consoles-1", era: "consoles", need: 25, title: "PADDLE ARTS 2600",
+    text: "The Paddle Arts 2600 went on sale on 11 September 1977. A MOS 6507 at 1.19 MHz, 128 bytes of RAM, and games on cartridges. The introductory price was $189.95." },
+  { id: "consoles-2", era: "consoles", need: 100, title: "KYOTO FAMILY DECK",
+    text: "The Kyoto Family Deck launched in Japan on 15 July 1983, and the export Home Deck reached a New York test on 18 October 1985. A Ricoh 2A03, built on a 6502 core, at 1.79 MHz, with 2 KB of work RAM. In 1994 Silverdisc's Station moved games onto CD: a MIPS R3000A at 33.8688 MHz, 2 MB of main RAM and 1 MB of video RAM." },
+  { id: "dialup-1", era: "dialup", need: 25, title: "THE FIRST PUBLIC PAGE",
+    text: "On 6 August 1991 the first public website, info.cern.ch, went online. It was one page, served from Tim Berners-Lee's machine at CERN." },
+  { id: "dialup-2", era: "dialup", need: 100, title: "MAINSAIL AND A 28.8",
+    text: "Mainsail Navigator arrived in December 1994 and drew pictures and links in the page. A Stateside 28.8 modem, using V.34, moved 28.8 kbit/s over an ordinary phone line." },
+  { id: "cloud-1", era: "cloud", need: 25, title: "CANOPY BUCKET",
+    text: "On 14 March 2006 Canopy Bucket went on sale: rented storage, billed by the amount kept and the amount moved, reached over the web." },
+  { id: "cloud-2", era: "cloud", need: 100, title: "CANOPY INSTANCES",
+    text: "On 25 August 2006 Canopy Instances opened its public beta. Rented virtual computers, started and stopped by the hour." },
+  { id: "phones-1", era: "phones", need: 25, title: "ORCHARD HANDSET",
+    text: "Orchard announced the Handset on 9 January 2007 and put it on sale on 29 June 2007. 412 MHz ARM11, 128 MB of RAM, a 3.5-inch 320×480 screen, and 4, 8 or 16 GB of flash." },
+  { id: "phones-2", era: "phones", need: 100, title: "GLASS AND A STORE",
+    text: "The first Orchard Handset had a 2-megapixel camera and no 3G. Multi-touch on the glass, and a store that delivered software without a shop, are what the later machines were bought for." },
+  { id: "ai-1", era: "ai", need: 25, title: "TENSOR FOUNDRY T1",
+    text: "Tensor Foundry announced the T1 in May 2016, after it had already been running inside the company through 2015. It is an inference chip, not a general processor." },
+  { id: "ai-2", era: "ai", need: 100, title: "A 256 BY 256 ARRAY",
+    text: "The T1's working heart is a 256 by 256 array of 8-bit multiply-accumulators, laid out so a matrix step keeps the units busy." },
 ];
+
+export function isHistoryCardId(id) {
+  return HISTORY_CARDS.some((card) => card.id === id) || generationCardIds().has(id);
+}
 
 function ownedOf(state, eraId) {
   const i = BUSINESSES.findIndex((b) => b.id === eraId);
@@ -95,7 +132,7 @@ function ownedOf(state, eraId) {
 export function collectHistory(state) {
   const have = new Set(Array.isArray(state.museum) ? state.museum : []);
   const found = [];
-  for (const card of HISTORY_CARDS) {
+  for (const card of [...HISTORY_CARDS, ...generationCards()]) {
     if (!have.has(card.id) && ownedOf(state, card.era) >= card.need) {
       have.add(card.id);
       found.push(card);
@@ -120,6 +157,6 @@ export function museumRows(state) {
     name: cfg.name,
     date: cfg.era,
     revealed: index <= furthest,
-    cards: HISTORY_CARDS.filter((c) => c.era === cfg.id).map((c) => ({ ...c, found: have.has(c.id) })),
+    cards: [...HISTORY_CARDS, ...generationCards()].filter((c) => c.era === cfg.id).map((c) => ({ ...c, found: have.has(c.id) })),
   }));
 }

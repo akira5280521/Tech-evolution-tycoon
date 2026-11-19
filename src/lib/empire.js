@@ -3,6 +3,7 @@
 // singularity. Every Empire Bonuses source multiplies, then a soft ceiling
 // that rises with singularity points keeps the product finite.
 
+import { generationPayMult } from "./generations.js";
 import { pushRun } from "./records.js";
 import { blankTutorial } from "./tutorial.js";
 import {
@@ -624,7 +625,7 @@ export function incomePerSecond(state, now = 0) {
     if (!st.manager && !st.running) return;
     const cfg = BUSINESSES[i];
     const up = upgradesOf(state, cfg.id);
-    const rev = up.rev ? 3 : 1;
+    const rev = (up.rev ? 3 : 1) * generationPayMult(cfg.id, st.owned);
     sum += (cfg.revenue * rev * st.owned * milestoneMult(st.owned) * mult * supplyFactor(state, cfg) * 1000) / effectiveCycleMs(cfg, state);
   });
   return sum;
@@ -636,7 +637,7 @@ export function creditCycles(state, index, cycles, now = 0, rate = 1) {
   const cfg = BUSINESSES[index];
   const st = state.biz?.[index];
   if (!st || st.owned <= 0) return 0;
-  const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
+  const rev = (upgradesOf(state, cfg.id).rev ? 3 : 1) * generationPayMult(cfg.id, st.owned);
   const factor = supplyFactor(state, cfg, cycles);
   moveSupply(state, cfg, cycles, st.owned);
   const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor * rate;
@@ -1403,6 +1404,14 @@ export const HEADLINES = [
   { era: "gpu", text: "LAN PARTY ENTERS DAY THREE, PIZZA SUPPLY HOLDS" },
   { era: "rgb", text: "RGB FANS AUDIBLE FROM ORBIT" },
   { era: "rgb", text: "GPU SHORTAGE: GAMERS QUEUE AROUND THE BLOCK" },
+  { era: "relay", text: "RELAY HALL CLICKS THROUGH ANOTHER PAYROLL" },
+  { era: "mainframes", text: "IRWELL MARK 1 ACCEPTED IN MANCHESTER" },
+  { era: "minis", text: "MAYNARD 8 FITS BESIDE THE DESK" },
+  { era: "consoles", text: "PADDLE ARTS 2600 PLUGS INTO THE TELEVISION" },
+  { era: "dialup", text: "MODEM HANDSHAKE HEARD ACROSS THE OFFICE" },
+  { era: "cloud", text: "CANOPY BUCKET OPENS THE STORAGE COUNTER" },
+  { era: "phones", text: "ORCHARD HANDSET SELLING FROM A GLASS SLAB" },
+  { era: "ai", text: "TENSOR FOUNDRY T1 TAKES THE INFERENCE SHIFT" },
   { era: "quantum", text: "QUANTUM CHANDELIER OBSERVED PAYING DIVIDENDS" },
   { era: "quantum", text: "QUANTUM SERVER BOTH ON AND OFF, ANALYSTS SAY" },
   { era: "prestige", text: "INVESTORS ASK IF THE TIMELINE CAN BE FORKED" },

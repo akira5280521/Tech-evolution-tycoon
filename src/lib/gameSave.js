@@ -13,8 +13,10 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 // rows in historical order, adding the paper, glass, filament and germanium
 // rows; older saves are matched to rows by their old position. v6 adds the
 // Timber Camp as the first row (wood for the Paper Mill). v7 adds the
-// Jacquard Loom (1804) between the Paper Mill and Punch Cards.
-export const SAVE_VERSION = 7;
+// Jacquard Loom (1804) between the Paper Mill and Punch Cards. v8 inserts the
+// closed-testing eras (relay, mainframes, minicomputers, consoles, dial-up,
+// cloud, smartphones, AI) and keeps each older row on its id.
+export const SAVE_VERSION = 8;
 const V1_INVESTOR_DIVISOR = 1000;
 // Row order of each older save version.
 const V4_ORDER = ["sand", "copper", "silicon", "wafers", "tubes", "punchcards", "transistors", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];
@@ -26,6 +28,18 @@ const V4_MATERIALS = ["sand", "copper", "silicon", "wafers"];
 const NEW_IN_V5 = { paper: "punchcards", glass: "tubes", filament: "tubes", germanium: "transistors" };
 const NEW_IN_V6 = { timber: "paper" };
 const NEW_IN_V7 = { loom: "punchcards" };
+const NEW_IN_V8 = {
+  relay: "sand",
+  mainframes: "germanium",
+  minis: "cpu",
+  consoles: "gpu",
+  dialup: "gpu",
+  cloud: "rgb",
+  phones: "rgb",
+  ai: "quantum",
+};
+// bestEra in a v7 save is an index into this order.
+export const V7_ORDER = ["timber", "paper", "loom", "punchcards", "sand", "copper", "glass", "filament", "tubes", "germanium", "transistors", "silicon", "wafers", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];
 const SEED_OWNED = { sand: 8, copper: 4, silicon: 2, wafers: 1, paper: 2, glass: 2, filament: 2, germanium: 2, timber: 2 };
 // Stock to start a seeded row's material with, keyed by row id.
 const SEED_SUPPLY = { sand: 80, copper: 40, silicon: 24, wafers: 12, paper: 20, glass: 20, filament: 20, germanium: 20, timber: 20 };
@@ -79,6 +93,13 @@ export function migrateSave(data) {
     for (const [id, needs] of Object.entries(NEW_IN_V7)) {
       // Anyone who reached punch cards (or got them seeded above) already
       // passed the loom's place in history, so it starts with its weaver.
+      if (ownedOf(needs) > 0 || seed.has(needs)) seed.add(id);
+    }
+  }
+  if (version < 8) {
+    for (const [id, needs] of Object.entries(NEW_IN_V8)) {
+      // A player who already owns the era after a new row has passed that
+      // gap. Start the new row so the ladder they are on stays open.
       if (ownedOf(needs) > 0 || seed.has(needs)) seed.add(id);
     }
   }
@@ -147,6 +168,14 @@ function upgradeJob(raw, version) {
   const index = BUSINESSES.findIndex((cfg) => cfg.id === id);
   if (index < 0 || (raw.kind !== "rev" && raw.kind !== "spd")) return null;
   return { ...raw, index, id };
+}
+
+// A v7 bestEra is an index into V7_ORDER. Later saves already use the new index.
+export function remapBestEra(index, version) {
+  if (index == null || !(version < 8)) return index;
+  const id = V7_ORDER[Math.floor(index)];
+  const at = BUSINESSES.findIndex((cfg) => cfg.id === id);
+  return at >= 0 ? at : index;
 }
 
 export function getSaveData() {

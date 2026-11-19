@@ -59,6 +59,10 @@ export const GLOSSARY = {
     term: "RESEARCH DATA",
     text: "Every era you own makes a little data each second, and mastered eras make more. Data is never lost, even when you prestige. Spend it on the RESEARCH tab.",
   },
+  lab: {
+    term: "LAB PROJECTS",
+    text: "Ways to spend spare research data whenever you like: Overclock (all income x1.5 for 10 minutes, then a 20-minute cool-down), Patent Filing (data for an era token, 5 a day) and the Install Crew (upgrades install instantly, kept forever). Prices are fixed, and nothing is left to chance.",
+  },
   specialty: {
     term: "COMPANY SPECIALTY",
     text: "A bonus you buy with research data and keep forever. You get one slot at first, so pick one; each fork of the timeline opens another.",
@@ -92,6 +96,7 @@ export const GLOSSARY_ORDER = [
   "tokens",
   "research",
   "specialty",
+  "lab",
   "challenge",
   "projects",
   "fork",

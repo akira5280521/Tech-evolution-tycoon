@@ -42,6 +42,8 @@ import {
   offlineCapMs,
   startingBiz,
   autoBuyUpgrade,
+  businessIncomePerSecond,
+  creditAmount,
   creditCycles,
   dataPerSecond,
   effectiveCycleMs,
@@ -60,6 +62,7 @@ import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { generationAt } from "@/lib/generations";
+import { facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews } from "@/lib/facilities";
 import { applyOrientation } from "@/lib/orientation";
 import { SAVE_VERSION, clearSaveData, getSaveData, remapBestEra, writeSaveData } from "@/lib/gameSave";
 import { encodeSave } from "@/lib/saveCode";
@@ -170,6 +173,8 @@ function applySavedMeta(state, raw) {
   state.runStartedAt = m.runStartedAt == null ? 0 : num(m.runStartedAt);
   state.bestEra = m.bestEra == null ? null : Math.floor(num(m.bestEra));
   state.runs = readRuns(m.runs);
+  state.facilities = readFacilities(m.facilities);
+  state.news = readNews(m.news);
 }
 
 function readChallenge(raw) {
@@ -234,6 +239,8 @@ function pack(s) {
     runStartedAt: s.runStartedAt || 0,
     bestEra: Math.max(0, Math.floor(s.bestEra || 0)),
     runs: Array.isArray(s.runs) ? s.runs.slice(-40) : [],
+    facilities: readFacilities(s.facilities),
+    news: readNews(s.news),
     biz: s.biz.map((b, i) => ({
       id: BUSINESSES[i].id,
       owned: b.owned,
@@ -541,6 +548,13 @@ export function useGame() {
         armDue(i);
       });
       s.data = (s.data || 0) + dataPerSecond(s) * (dt / 1000);
+      const business = businessIncomePerSecond(s, wall);
+      const plant = facilityReport(s, business).perSecond * (dt / 1000);
+      if (plant > 0) {
+        creditAmount(s, plant, wall);
+        dirty = true;
+      }
+      if (noteFacilityNews(s, business)) dirty = true;
       if (!s.runStartedAt) s.runStartedAt = wall;
       s.playMs = (s.playMs || 0) + dt;
       if (autoBuyUpgrade(s, wall)) dirty = true;
@@ -765,7 +779,7 @@ export function useGame() {
     if (!s.prestiged) return;
     if ((s.challengesDone || []).includes(id)) return;
     const label = id === "glass" ? "Glass Ceiling" : id === "noboss" ? "No Bosses" : "Speedrun";
-    if (!window.confirm(`Start the ${label} challenge?\n\nYou lose this run's cash, businesses, managers and upgrades.\nYou keep investors, research, tokens and badges.`)) return;
+    if (!window.confirm(`Start the ${label} challenge?\n\nYou lose this run's cash, businesses, managers, upgrades and facility parts.\nYou keep investors, research, tokens and badges.`)) return;
     pushRun(s, { investorsGained: 0 });
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
@@ -892,7 +906,7 @@ export function useGame() {
     if (!doubles && have > 0) {
       lines.push("", "This is less than double your investors. Most players wait until a prestige at least doubles them.");
     }
-    lines.push("", "You lose your cash, businesses, managers and upgrades.", "You keep your investors (each one boosts all income forever), research, tokens and badges.");
+    lines.push("", "You lose your cash, businesses, managers, upgrades and facility parts.", "You keep your investors (each one boosts all income forever), research, tokens and badges.");
     if (!window.confirm(lines.join("\n"))) return;
     buzzStrong();
     pushRun(s, { investorsGained: gained });
@@ -937,7 +951,7 @@ export function useGame() {
     const bill = forkCost(s.singularities || 0);
     if ((s.investors || 0) < bill) return;
     if (singularityMult((s.singularities || 0) + 1) <= singularityMult(s.singularities || 0)) return;
-    if (!window.confirm(`Fork the timeline?\n\nThis spends ${bill} investors and starts your run over (cash, businesses, managers and upgrades).\nYou get: income x${singularityMult((s.singularities || 0) + 1).toFixed(1)} forever (now x${singularityMult(s.singularities || 0).toFixed(1)}) and another research slot.\nYou keep: your other investors, research, tokens and badges.`)) return;
+    if (!window.confirm(`Fork the timeline?\n\nThis spends ${bill} investors and starts your run over (cash, businesses, managers, upgrades and facility parts).\nYou get: income x${singularityMult((s.singularities || 0) + 1).toFixed(1)} forever (now x${singularityMult(s.singularities || 0).toFixed(1)}) and another research slot.\nYou keep: your other investors, research, tokens and badges.`)) return;
     pushRun(s, { investorsGained: 0 });
     const meta = snapshotMeta(s, { resetRunUpgrades: true });
     const next = freshState();
@@ -1000,6 +1014,15 @@ export function useGame() {
     run,
     runAll,
     buyForeman,
+    buyFacilityPart: (facilityId, partId) => {
+      const bought = purchasePart(stateRef.current, facilityId, partId);
+      if (!bought.ok) return;
+      noteFacilityNews(stateRef.current, businessIncomePerSecond(stateRef.current, Date.now()));
+      buzzLight();
+      playBuy();
+      saveNow();
+      bump();
+    },
     setOrientation: (orientation) => {
       const s = stateRef.current;
       if (orientation !== "auto" && orientation !== "portrait" && orientation !== "landscape") return;

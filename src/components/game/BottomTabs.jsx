@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { FlaskConical, Flag, Gamepad2, Package, Settings, Zap } from "lucide-react";
+import { Cpu, FlaskConical, Flag, Gamepad2, Package, Settings, Zap } from "lucide-react";
 
 const TABS = [
   { id: "game", label: "GAME", to: "/", icon: Gamepad2, isActive: (p) => p === "/" },
@@ -8,6 +8,7 @@ const TABS = [
   { id: "board", label: "BOARD", to: "/board", icon: Package, isActive: (p) => p.startsWith("/board") },
   { id: "runs", label: "RUNS", to: "/runs", icon: Flag, isActive: (p) => p.startsWith("/runs") },
   { id: "research", label: "RESEARCH", to: "/research", icon: FlaskConical, isActive: (p) => p.startsWith("/research") },
+  { id: "facilities", label: "RIGS", to: "/facilities", icon: Cpu, isActive: (p) => p.startsWith("/facilities") },
   { id: "more", label: "MORE", to: "/more", icon: Settings, isActive: (p) => p.startsWith("/more") || p.startsWith("/settings") || p.startsWith("/badges") },
 ];
 

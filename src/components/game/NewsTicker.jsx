@@ -7,9 +7,10 @@ export default function NewsTicker({ state }) {
   const [paused, setPaused] = useState(false);
   const era = currentEraIndex(state);
   const prestiged = !!(state?.prestiged || (state?.investors || 0) > 0);
-  // Only rebuilt when a new era opens, so the scroll doesn't restart every tick.
+  const newsKey = (state?.news || []).map((entry) => entry.id).join("|");
+  // Rebuilt when a new era opens or a one-time headline is filed, not every tick.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const lines = useMemo(() => headlinesFor(state), [era, prestiged]);
+  const lines = useMemo(() => headlinesFor(state), [era, prestiged, newsKey]);
   const line = lines.join("   ·   ");
   const hold = () => setPaused(true);
   const release = () => setPaused(false);

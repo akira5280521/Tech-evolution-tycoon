@@ -429,6 +429,7 @@ img[src*="/icons/"] {
     flex-direction: column;
     height: 100%;
     max-width: none;
+    overflow-y: auto;
   }
 
   .game-root,

@@ -4,11 +4,13 @@ import {
   canStartResearch,
   playerYear,
   researchItem,
+  researchCost,
   researchLock,
   researchRows,
   researchSpeed,
   serverOutput,
 } from "@/lib/research";
+import { dataPerSecond } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 
@@ -49,12 +51,13 @@ export default function ResearchPage() {
   const activeName = job ? researchItem(job.id) : null;
   const progress = job && job.durationMs > 0 ? Math.min(100, (job.progressMs / job.durationMs) * 100) : 0;
   const remaining = job ? Math.max(0, (job.durationMs - job.progressMs) / Math.max(0.25, researchSpeed(state))) : 0;
-  const rd = Math.floor(state.researchData || 0);
+  const rd = Math.floor(state.data || 0);
+  const perSecond = dataPerSecond(state) + serverOutput(state).perSecond;
 
   return (
     <ScreenShell title="RESEARCH" subtitle="One project at a time. It keeps going while the app is closed.">
       <Panel>
-        <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">Research Data {rd} · {serverOutput(state).perSecond.toFixed(1)} RD/s · year {playerYear(state) || "—"}</p>
+        <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">R&amp;D points {rd.toLocaleString("en-US")} · +{perSecond.toFixed(2)} a second · year {playerYear(state) || "—"}</p>
         {job && activeName && (
           <div data-research-active className="mt-2">
             <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">Researching {activeName.name}</p>
@@ -102,7 +105,7 @@ export default function ResearchPage() {
                     <p data-research-lock className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)]">{lock}</p>
                   ) : (
                     <div className="mt-2">
-                      <p className="font-term text-base leading-5 text-[var(--game-muted)]">{entry.rd} RD · {formatDuration(entry.durationMs / researchSpeed(state))}</p>
+                      <p className="font-term text-base leading-5 text-[var(--game-muted)]">{researchCost(entry).toLocaleString("en-US")} R&amp;D · {formatDuration(entry.durationMs / researchSpeed(state))}</p>
                       <GoldButton dataAttr={`research-${entry.id}`} disabled={!canStartResearch(state, entry.id)} onClick={() => startTech(entry.id)}>
                         <span className="font-pixel text-[0.55rem]">START</span>
                       </GoldButton>

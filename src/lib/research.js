@@ -1,5 +1,6 @@
-// Timed research. Research Data comes only from the server plant. Projects
-// keep running while the app is closed. A project can start only after the
+// Timed research, paid in R&D points: the one research currency (state.data),
+// made by the eras you own and by the research server plant. Projects keep
+// running while the app is closed; earnings while away are at the away rate. A project can start only after the
 // company's newest era is at least as new as the project's real year, and
 // after its prerequisite is done. Locked rows say "Requires 2020", never an
 // era name.
@@ -52,8 +53,18 @@ const ERA_YEAR = {
   quantum: 2019,
 };
 
-const RD_PER_WORK = 0.25;
+// R&D points a second per unit of server work. Eras make 0.008 a second
+// each (owned, and again when mastered), so one starter rack (work 8) adds
+// about as much as ten eras.
+const RD_PER_WORK = 0.01;
 const RD_CAP = 1e9;
+// Project prices in R&D points are the table's rd x this. The table was
+// written for a separate, faster currency.
+export const RD_COST_SCALE = 5;
+
+export function researchCost(entry) {
+  return Math.round((entry?.rd || 0) * RD_COST_SCALE);
+}
 
 function item(row) {
   return row;
@@ -66,18 +77,18 @@ export const RESEARCH = [
   item({ id: "cpu-286", tab: "cpu", year: 1982, name: "Chipwright 286", spec: "16-bit, 6–12 MHz, 24-bit addresses", rd: 20, durationMs: 50_000, prereq: "cpu-8086" }),
   item({ id: "cpu-386", tab: "cpu", year: 1985, name: "Chipwright 386", spec: "32-bit, first sold at 16 MHz, about 275,000 transistors", rd: 24, durationMs: 60_000, prereq: "cpu-286" }),
   item({ id: "cpu-486", tab: "cpu", year: 1989, name: "Chipwright 486", spec: "25–50 MHz, cache and floating point on the chip", rd: 28, durationMs: 70_000, prereq: "cpu-386" }),
-  item({ id: "cpu-pentium", tab: "cpu", year: 1993, name: "Chipwright Pentium", spec: "Superscalar, 60 MHz at launch, about 3.1 million transistors", rd: 32, durationMs: 80_000, prereq: "cpu-486" }),
+  item({ id: "cpu-pentium", tab: "cpu", year: 1993, name: "Chipwright 586", spec: "Superscalar, 60 MHz at launch, about 3.1 million transistors", rd: 32, durationMs: 80_000, prereq: "cpu-486" }),
   item({ id: "cpu-alder64", tab: "cpu", year: 2003, name: "Alder 64", spec: "64-bit PC chip, 130 nm", rd: 40, durationMs: 90_000, prereq: "cpu-pentium" }),
   item({ id: "cpu-dual", tab: "cpu", year: 2005, name: "Chipwright Dual", spec: "Two cores, first desktop parts at 2.8 GHz", rd: 48, durationMs: 100_000, prereq: "cpu-alder64" }),
   item({ id: "cpu-alder32", tab: "cpu", year: 2017, name: "Alder 32", spec: "Up to 32 cores, four chips on one package", rd: 60, durationMs: 120_000, prereq: "cpu-dual" }),
 
   item({ id: "gpu-2d", tab: "gpu", year: 1990, name: "Rasterline 4000", spec: "2D SVGA, ISA, up to 1024×768", rd: 16, durationMs: 40_000, prereq: null }),
   item({ id: "gpu-3d", tab: "gpu", year: 1996, name: "Threefold Add-in", spec: "3D only, PCI, 4 MB", rd: 20, durationMs: 50_000, prereq: "gpu-2d" }),
-  item({ id: "gpu-256", tab: "gpu", year: 1999, name: "Novidia 256", spec: "Hardware transform and lighting", rd: 24, durationMs: 60_000, prereq: "gpu-3d" }),
-  item({ id: "gpu-3", tab: "gpu", year: 2001, name: "Novidia 3", spec: "Programmable vertex and pixel shaders", rd: 28, durationMs: 70_000, prereq: "gpu-256" }),
-  item({ id: "gpu-8800", tab: "gpu", year: 2006, name: "Novidia 8800", spec: "128 unified processors, 768 MB", rd: 36, durationMs: 80_000, prereq: "gpu-3" }),
-  item({ id: "gpu-100", tab: "gpu", year: 2017, name: "Novidia 100", spec: "Tensor cores, 16 GB stacked memory", rd: 48, durationMs: 90_000, prereq: "gpu-8800" }),
-  item({ id: "gpu-2080", tab: "gpu", year: 2018, name: "Novidia 2080", spec: "First consumer card with ray-tracing cores", rd: 56, durationMs: 100_000, prereq: "gpu-100" }),
+  item({ id: "gpu-256", tab: "gpu", year: 1999, name: "Raster 256", spec: "Hardware transform and lighting", rd: 24, durationMs: 60_000, prereq: "gpu-3d" }),
+  item({ id: "gpu-3", tab: "gpu", year: 2001, name: "Raster 3", spec: "Programmable vertex and pixel shaders", rd: 28, durationMs: 70_000, prereq: "gpu-256" }),
+  item({ id: "gpu-8800", tab: "gpu", year: 2006, name: "Raster 8800", spec: "128 unified processors, 768 MB", rd: 36, durationMs: 80_000, prereq: "gpu-3" }),
+  item({ id: "gpu-100", tab: "gpu", year: 2017, name: "Raster 100", spec: "Tensor cores, 16 GB stacked memory", rd: 48, durationMs: 90_000, prereq: "gpu-8800" }),
+  item({ id: "gpu-2080", tab: "gpu", year: 2018, name: "Raster 2080", spec: "First consumer card with ray-tracing cores", rd: 56, durationMs: 100_000, prereq: "gpu-100" }),
 
   item({ id: "mem-dram", tab: "memory", year: 1970, name: "1K DRAM", spec: "1 kilobit dynamic RAM, the chip that replaced cores", rd: 8, durationMs: 20_000, prereq: null }),
   item({ id: "mem-simm", tab: "memory", year: 1988, name: "30-pin SIMM", spec: "8-bit module, typically 1–4 MB", rd: 16, durationMs: 40_000, prereq: "mem-dram" }),
@@ -89,7 +100,7 @@ export const RESEARCH = [
   item({ id: "mem-ddr5", tab: "memory", year: 2020, name: "DDR5-4800", spec: "DDR5, PC5-38400, 38.4 GB/s", rd: 64, durationMs: 120_000, prereq: "mem-ddr4" }),
   item({ id: "mem-ddr6", tab: "memory", year: 2024, name: "DDR6", spec: "Next memory module", rd: 0, durationMs: 0, prereq: "mem-ddr5", soon: true }),
 
-  item({ id: "store-hdd", tab: "storage", year: 1956, name: "5 MB disk", spec: "IBM 350-class disk, 5 million characters", rd: 8, durationMs: 25_000, prereq: null }),
+  item({ id: "store-hdd", tab: "storage", year: 1956, name: "5 MB disk", spec: "The first commercial disk drive: fifty platters, 5 million characters", rd: 8, durationMs: 25_000, prereq: null }),
   item({ id: "store-floppy", tab: "storage", year: 1971, name: "8-inch floppy", spec: "About 80 KB on the first disks", rd: 12, durationMs: 30_000, prereq: "store-hdd" }),
   item({ id: "store-scsi", tab: "storage", year: 1986, name: "SCSI", spec: "Parallel bus for disks, later 5–10 MB/s", rd: 16, durationMs: 40_000, prereq: "store-floppy" }),
   item({ id: "store-sata", tab: "storage", year: 2003, name: "SATA", spec: "Serial ATA, 1.5 Gbit/s at launch", rd: 24, durationMs: 50_000, prereq: "store-scsi" }),
@@ -133,6 +144,13 @@ export function playerYear(state) {
   return year;
 }
 
+// The tech timeline opens once the first project's year is reached.
+export const TECH_OPENS = Math.min(...RESEARCH.filter((entry) => !entry.soon).map((entry) => entry.year));
+
+export function techOpen(state) {
+  return playerYear(state) >= TECH_OPENS;
+}
+
 export function readTechDone(raw) {
   if (!Array.isArray(raw)) return [];
   const out = [];
@@ -142,6 +160,8 @@ export function readTechDone(raw) {
   return out.slice(0, RESEARCH.length);
 }
 
+// Saves from before the merge kept server output in its own field. It's
+// added to R&D points once, on load.
 export function readResearchData(raw) {
   const n = Number(raw);
   if (!Number.isFinite(n) || n < 0) return 0;
@@ -197,7 +217,7 @@ export function researchLock(state, entry) {
   if (year < entry.year) return `Requires ${entry.year}`;
   if (entry.prereq && !(state?.techDone || []).includes(entry.prereq)) {
     const prior = byId[entry.prereq];
-    return prior ? `Requires ${prior.year}` : "Locked";
+    return prior ? `Research ${prior.name} first` : "Locked";
   }
   return null;
 }
@@ -208,13 +228,13 @@ export function canStartResearch(state, id) {
   if (state?.techJob) return false;
   if ((state?.techDone || []).includes(id)) return false;
   if (researchLock(state, entry)) return false;
-  return readResearchData(state?.researchData) >= entry.rd;
+  return (Number(state?.data) || 0) >= researchCost(entry);
 }
 
 export function startResearch(state, id) {
   const entry = byId[id];
   if (!canStartResearch(state, id)) return { ok: false };
-  state.researchData = readResearchData(state.researchData) - entry.rd;
+  state.data = Math.max(0, (Number(state.data) || 0) - researchCost(entry));
   state.techJob = { id: entry.id, progressMs: 0, durationMs: entry.durationMs };
   pushHeadline(state, `rd-start-${entry.id}`, `R&D: ${entry.name.toUpperCase()} RESEARCH STARTS`);
   return { ok: true };
@@ -231,11 +251,12 @@ function finishResearch(state, id) {
 }
 
 // ms of real time. Servers make the bar move faster than the wall clock.
-// Research Data accrues at the plant's full rate, online or offline.
-export function advanceResearch(state, ms) {
+// rate: share of the plant's R&D output (OFFLINE_RATE while away). The
+// project timer itself runs on the real clock, like upgrade installs.
+export function advanceResearch(state, ms, rate = 1) {
   if (!state || !(ms > 0) || !Number.isFinite(ms)) return false;
-  const gain = serverOutput(state).perSecond * (ms / 1000);
-  if (gain > 0) state.researchData = Math.min(RD_CAP, readResearchData(state.researchData) + gain);
+  const gain = serverOutput(state).perSecond * (ms / 1000) * (rate > 0 ? rate : 0);
+  if (gain > 0) state.data = Math.min(RD_CAP, (Number(state.data) || 0) + gain);
   const job = readTechJob(state.techJob);
   if (!job) {
     state.techJob = null;

@@ -29,7 +29,7 @@ export const GLOSSARY = {
   },
   mastery: {
     term: "ERA MASTERY",
-    text: "Own enough of one business and buy both of its upgrades: +5% to all income for the rest of that run. Mastered eras also make extra research data.",
+    text: "Own enough of one business and buy both of its upgrades: +5% to all income for the rest of that run. Mastered eras also make extra R&D points.",
   },
   prestige: {
     term: "PRESTIGE",
@@ -56,8 +56,8 @@ export const GLOSSARY = {
     text: "All your bonuses multiply together, but the closer they get to the limit, the less each new bonus adds, so income can't run away forever. The limit starts at x50 and rises by 6 with each fork.",
   },
   research: {
-    term: "RESEARCH DATA",
-    text: "Every era you own makes a little data each second, and mastered eras make more. Data is never lost, even when you prestige. Spend it on the RESEARCH tab.",
+    term: "R&D POINTS",
+    text: "The one research currency. Every era you own makes a few each second, mastered eras make more, and research servers (from Microprocessors) add more again. Earned at half rate while the game is closed. They are never lost, even when you prestige. Spend them on the RESEARCH tab: specialties, lab projects and the tech timeline.",
   },
   lab: {
     term: "LAB PROJECTS",
@@ -65,7 +65,7 @@ export const GLOSSARY = {
   },
   specialty: {
     term: "COMPANY SPECIALTY",
-    text: "A bonus you buy with research data and keep forever. You get one slot at first, so pick one; each fork of the timeline opens another.",
+    text: "A bonus you buy with R&D points and keep forever. You get one slot at first, so pick one; each fork of the timeline opens another.",
   },
   tokens: {
     term: "ERA TOKENS",

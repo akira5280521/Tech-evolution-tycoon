@@ -74,7 +74,7 @@ export const HISTORY_CARDS = [
   { id: "homepc-2", era: "homepc", need: 100, title: "THE OFFICE STANDARD",
     text: "Inland Business Machines' Personal Computer arrived in 1981. It was built from off-the-shelf parts, so other companies made compatible clones and its design became the standard." },
   { id: "gpu-1", era: "gpu", need: 25, title: "THE FIRST \"GPU\"",
-    text: "Novidia sold its 256 card in 1999 as the world's first GPU. It took over 3D lighting and geometry work from the main processor." },
+    text: "Raster sold its 256 card in 1999 as the world's first GPU. It took over 3D lighting and geometry work from the main processor." },
   { id: "gpu-2", era: "gpu", need: 100, title: "FROM GAMES TO AI",
     text: "In the 2000s researchers began using graphics cards for general number crunching. By the 2010s GPUs had become the main hardware for training AI." },
   { id: "rgb-1", era: "rgb", need: 25, title: "THE LAN PARTY",

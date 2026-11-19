@@ -284,7 +284,7 @@ export function projectRevealed(state, project) {
 export const SHOP = [
   { id: "crate", name: "Daily Crate", cost: 0, blurb: "+6 era tokens, once each local day." },
   { id: "petty", name: "Petty Cash", cost: 18, blurb: "30 seconds of your current income. Costs 6 more tokens each time. Needs 40 tokens earned from play." },
-  { id: "sample", name: "Research Sample", cost: 36, blurb: "+40 data. Up to 20 samples. Needs 70 tokens earned from play." },
+  { id: "sample", name: "Research Sample", cost: 36, blurb: "+40 R&D points. Up to 20 samples. Needs 70 tokens earned from play." },
   { id: "key", name: "Master Key", cost: 55, blurb: "The next manager you hire is free. Once. Needs 110 tokens earned from play." },
 ];
 
@@ -295,7 +295,7 @@ export const LAB_PATENT = { cost: 25, tokens: 1, perDay: 5 };
 export const LAB_CREW = { cost: 60 };
 export const LAB_PROJECTS = [
   { id: "overclock", name: "OVERCLOCK", cost: LAB_OVERCLOCK.cost, blurb: "All income x1.5 for 10 minutes. Then the lab needs 20 minutes to cool down." },
-  { id: "patent", name: "PATENT FILING", cost: LAB_PATENT.cost, blurb: "Trade data for 1 era token. Up to 5 filings a day." },
+  { id: "patent", name: "PATENT FILING", cost: LAB_PATENT.cost, blurb: "Trade R&D points for 1 era token. Up to 5 filings a day." },
   { id: "crew", name: "INSTALL CREW", cost: LAB_CREW.cost, blurb: "Upgrades install instantly instead of taking 12 seconds. Buy once, keep forever." },
 ];
 
@@ -335,7 +335,7 @@ export function labQuote(state, id, now = Date.now()) {
     return { ok: false, reason: "No filings left today. More tomorrow.", cost: item.cost };
   }
   if (id === "crew" && lab.crew) return { ok: false, reason: "Your install crew is hired.", cost: item.cost };
-  if (data < item.cost) return { ok: false, reason: `Needs ${item.cost} data.`, cost: item.cost };
+  if (data < item.cost) return { ok: false, reason: `Needs ${item.cost} R&D points.`, cost: item.cost };
   return { ok: true, cost: item.cost };
 }
 
@@ -398,7 +398,6 @@ export function blankMeta() {
     sawPit: false,
     facilities: blankFacilities(),
     news: [],
-    researchData: 0,
     techDone: [],
     techJob: null,
     goalsDone: [],
@@ -719,15 +718,15 @@ export function replayAway(state, elapsed, end, rate = 1) {
     creditBatch(state, due, mid, rate).forEach((amount, i) => {
       gains[i] += amount;
     });
-    // Plants keep their full rate while the business rows are on the away rate.
-    const plant = facilityReport(state, businessIncomePerSecond(state, mid)).perSecond * (step / 1000);
+    // Plants earn at the same away rate as the business rows.
+    const plant = facilityReport(state, businessIncomePerSecond(state, mid)).perSecond * (step / 1000) * rate;
     if (plant > 0) {
       creditAmount(state, plant, mid);
       facilityGain += plant;
     }
   }
   noteFacilityNews(state, businessIncomePerSecond(state, end));
-  advanceResearch(state, elapsed);
+  advanceResearch(state, elapsed, rate);
   const rows = [];
   let gain = 0;
   gains.forEach((amount, i) => {
@@ -969,7 +968,7 @@ export function buyShopItem(state, id, now = Date.now()) {
   if (id === "sample") {
     state.data = (state.data || 0) + 40;
     state.shop.samples = (state.shop.samples || 0) + 1;
-    return { ok: true, cost: quote.cost, detail: "Research sample: +40 data." };
+    return { ok: true, cost: quote.cost, detail: "Research sample: +40 R&D points." };
   }
   state.shop.freeManager = true;
   return { ok: true, cost: quote.cost, detail: "The next manager is free." };
@@ -1220,7 +1219,7 @@ export function tickDilemma(state, now) {
 export function describeEffects(effects) {
   const parts = [];
   if (effects.tokens) parts.push(`+${effects.tokens} era token${effects.tokens === 1 ? "" : "s"}`);
-  if (effects.data) parts.push(`+${effects.data} data`);
+  if (effects.data) parts.push(`+${effects.data} R&D points`);
   if (effects.cash) parts.push(`${effects.cash} seconds of income`);
   if (effects.boost) parts.push(`Income x1.15 for ${effects.boost} minutes`);
   return parts.join(", ");
@@ -1338,6 +1337,10 @@ export function snapshotMeta(state, options = {}) {
     tokens: state.tokens || 0,
     grants: [...(state.grants || [])],
     data: state.data || 0,
+    // The research timeline and the ticker's own news are kept for good.
+    techDone: [...(state.techDone || [])],
+    techJob: state.techJob ? { ...state.techJob } : null,
+    news: Array.isArray(state.news) ? state.news.slice(-40) : [],
     specialties: [...(state.specialties || [])],
     upgrades: resetRunUpgrades ? {} : JSON.parse(JSON.stringify(state.upgrades || {})),
     challengesDone: [...(state.challengesDone || [])],

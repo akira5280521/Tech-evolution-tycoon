@@ -39,7 +39,7 @@ export default function LabProjects({ state, onRun }) {
         LAB PROJECTS <HelpTip term="lab" />
       </h2>
       <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
-        Spend spare data any time. Each price is fixed.
+        Spend spare R&D points any time. Each price is fixed.
       </p>
       {LAB_PROJECTS.map((item) => {
         const quote = labQuote(state, item.id, now);
@@ -49,7 +49,7 @@ export default function LabProjects({ state, onRun }) {
           <div key={item.id} data-lab={item.id} className="mt-3 border-2 border-[var(--game-border)] p-3">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h3 className="font-pixel text-[0.65rem]">{item.name}</h3>
-              <span className="font-term text-lg text-[var(--game-muted)]">{item.cost} DATA</span>
+              <span className="font-term text-lg text-[var(--game-muted)]">{item.cost} R&amp;D</span>
             </div>
             <p className="mt-2 font-term text-lg leading-6">{item.blurb}</p>
             {st && (
@@ -65,7 +65,7 @@ export default function LabProjects({ state, onRun }) {
             {!done && (
               <div className="mt-2">
                 <GoldButton disabled={!quote.ok} onClick={() => onRun(item.id)} dataAttr={`lab-${item.id}`}>
-                  <span className="font-pixel text-[0.6rem]">{quote.ok ? `${item.name} · ${item.cost} DATA` : quote.reason}</span>
+                  <span className="font-pixel text-[0.6rem]">{quote.ok ? `${item.name} · ${item.cost} R&D` : quote.reason}</span>
                 </GoldButton>
               </div>
             )}

@@ -1,7 +1,7 @@
-// Two late-game plants. Pay is a small share of current business income.
-// A larger share, paid in full while the player is away, lets a casual run
-// buy Quantum in the 39 hour session instead of at 45 hours, so the cap
-// stays at half a percent. The plants still cannot outgrow the businesses.
+// Two late-game plants. Pay is a small share of current business income,
+// capped at half a percent, so the plants never outgrow the businesses.
+// While the game is minimized or closed they earn at the away rate
+// (OFFLINE_RATE), like everything else.
 // Bitbark is a game coin: nothing here is real currency, a wallet, or a link.
 //
 // speed = min(1, min(power watts, cooling watts) / GPU watts).
@@ -36,7 +36,7 @@ export const FACILITIES = [
   {
     id: "servers",
     name: "RESEARCH SERVERS",
-    blurb: "These racks mint Research Data. It cannot be bought. It only pays for research projects.",
+    blurb: "These racks make R&D points, the same points your eras make. Spend them on the Research tab and the tech timeline.",
   },
 ];
 
@@ -148,6 +148,11 @@ function ownedId(state, id) {
 export function facilityUnlocked(state, facilityId) {
   if (facilityId === "servers") return ownedId(state, "cpu") >= 1;
   return ownedId(state, "ai") >= 1;
+}
+
+// The Facilities screen opens with its first plant (the research servers).
+export function anyFacilityOpen(state) {
+  return facilityUnlocked(state, "servers") || facilityUnlocked(state, "mine");
 }
 
 export function facilitiesOpen(state) {
@@ -362,7 +367,7 @@ export function noteFacilityNews(state, businessPerSecond) {
         ? "BITBARK MINE POURS ITS FIRST COIN"
         : facilityId === "cluster"
           ? "TRAINING CLUSTER BOOKS AN OVERNIGHT RUN"
-          : "RESEARCH SERVERS START MINTING DATA";
+          : "RESEARCH SERVERS START MAKING R&D POINTS";
       push(`${facilityId}-live`, live);
     }
     for (const [partId, count] of Object.entries(counts)) {

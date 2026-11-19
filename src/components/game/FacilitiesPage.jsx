@@ -63,7 +63,7 @@ function Plant({ facility, state, report, business, cash, onBuy }) {
         </div>
         <p className="mt-2 break-words font-term text-base leading-5 text-[var(--game-fg)]">{facility.blurb}</p>
         <p data-facility-yield className="mt-2 break-words font-term text-base leading-5 text-[var(--game-success)]">
-          {research ? `${Math.floor(serverOutput(state).perSecond)} RD/s` : money(row.perSecond) + "/s"}
+          {research ? `+${serverOutput(state).perSecond.toFixed(2)} R&D points a second` : money(row.perSecond) + "/s"}
           {!research && open && business > 0 ? ` · ${percent(row.share)} of the businesses` : ""}
         </p>
         <p data-facility-limit className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">

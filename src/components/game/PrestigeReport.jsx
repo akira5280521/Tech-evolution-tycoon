@@ -22,7 +22,7 @@ export default function PrestigeReport({ report, onDismiss }) {
 
         <h3 className="mt-3 font-pixel text-[0.55rem] text-[var(--game-fg)]">YOU KEPT</h3>
         <p className="font-term text-base leading-5 text-[var(--game-muted)]">
-          Investors, research data and picks, era tokens, badges, Museum cards, the Foreman, and challenge and project rewards.
+          Investors, R&D points and research picks, era tokens, badges, Museum cards, the Foreman, and challenge and project rewards.
         </p>
         <h3 className="mt-2 font-pixel text-[0.55rem] text-[var(--game-fg)]">STARTED OVER</h3>
         <p className="font-term text-base leading-5 text-[var(--game-muted)]">

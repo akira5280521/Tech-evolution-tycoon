@@ -39,6 +39,9 @@ function RootComponent() {
   useEffect(() => {
     installNativeLifecycle();
     if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
+    // The Android app ships its files inside the package and has no /api/sw
+    // route; the offline cache is only for the hosted web version.
+    if (window.Capacitor?.isNativePlatform?.()) return;
     navigator.serviceWorker.register("/api/sw", { scope: "/" }).catch(() => {
       /* caching unavailable in this context — the game still works online */
     });

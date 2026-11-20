@@ -55,7 +55,7 @@ import {
   upgradesOf,
 } from "./empire.js";
 import { GENERATIONS, GENERATION_BONUS, generationAt, generationIndex, generationPayMult } from "./generations.js";
-import { RESEARCH, RESEARCH_TABS, playerYear, researchCost, researchItem, researchLock, researchSpeed, serverOutput } from "./research.js";
+import { RESEARCH, RESEARCH_TABS, awayBankCap, awayBankHours, playerYear, researchCost, researchItem, researchLock, researchSpeed, serverOutput } from "./research.js";
 import { FACILITIES, PARTS, facilityReport, facilityUnlocked, partCost } from "./facilities.js";
 
 export const LOCKED_TEXT = "Unlocks later in the timeline.";
@@ -371,7 +371,16 @@ function facilityInfo(state, id) {
     const row = facilityReport(state, business)[id];
     does = `It pays cash, ${money(row.perSecond)} a second now, and both plants together are capped at a share of what your businesses make.`;
   }
-  return { title: facility.name, text: `${what} ${does}` };
+  const rows = [];
+  if (open && id === "servers" && serverOutput(state).perSecond > 0) rows.push({ label: "AWAY", text: awayLine(state) });
+  return { title: facility.name, text: `${what} ${does}`, rows };
+}
+
+// How much the servers bank while you're away.
+function awayLine(state, who = "they") {
+  const hours = awayBankHours(state);
+  const h = Number(hours.toFixed(1));
+  return `While you're away ${who} bank at most ${h} ${h === 1 ? "hour" : "hours"} of full output (${rd(awayBankCap(state))} R&D points); each TB of disk holds another hour.`;
 }
 
 function partInfo(state, facilityId, partId) {
@@ -388,7 +397,7 @@ function partInfo(state, facilityId, partId) {
   else if (part.kind === "gpu") effect = `Each adds ${part.work} work and ${part.vram} GB of card memory, and draws ${part.watts} W.`;
   else if (part.kind === "power") effect = `Each supplies ${part.power} W; ${who} slow down when they draw more than the supplies give.`;
   else if (part.kind === "cool") effect = `Each removes ${part.cool} W of heat; ${who} slow down when they make more than the fans remove.`;
-  else if (part.kind === "disk") effect = `Each adds ${part.gb.toLocaleString("en-US")} GB; racks run at full speed with 1 TB or more, half with less and a quarter with none.`;
+  else if (part.kind === "disk") effect = `Each adds ${part.gb.toLocaleString("en-US")} GB; racks need 1 TB for full speed, and each TB lets them bank another hour of R&D while you're away.`;
   else if (part.kind === "ram") effect = `Each adds ${part.gb} GB of RAM; the cluster needs enough memory for its model.`;
   else effect = "";
   const status = plantOpen
@@ -479,6 +488,7 @@ function rdInfo(state) {
   return {
     title: "R&D POINTS",
     text: `The one research currency: your eras make ${rate(dataPerSecond(state))} a second and research servers ${rate(serverOutput(state).perSecond)} a second, at half rate while away. Spend them on research, the TECH timeline and lab projects; they're never lost.`,
+    rows: serverOutput(state).perSecond > 0 ? [{ label: "AWAY", text: awayLine(state, "the servers") }] : [],
   };
 }
 

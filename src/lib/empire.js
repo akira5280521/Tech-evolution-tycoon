@@ -4,7 +4,7 @@
 // that rises with singularity points keeps the product finite.
 
 import { blankFacilities, facilityReport, noteFacilityNews, recentNews } from "./facilities.js";
-import { advanceResearch } from "./research.js";
+import { advanceResearch, awayBankCap } from "./research.js";
 import { generationPayMult } from "./generations.js";
 import { pushRun } from "./records.js";
 import { blankTutorial } from "./tutorial.js";
@@ -731,7 +731,8 @@ export function replayAway(state, elapsed, end, rate = 1) {
     }
   }
   noteFacilityNews(state, businessIncomePerSecond(state, end));
-  advanceResearch(state, elapsed, rate);
+  // The servers bank at most what their disks hold while you're away.
+  advanceResearch(state, elapsed, rate, awayBankCap(state));
   const rows = [];
   let gain = 0;
   gains.forEach((amount, i) => {

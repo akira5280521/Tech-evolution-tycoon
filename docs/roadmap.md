@@ -61,6 +61,17 @@ test shipped in 0.0.13 (see Done).
   on a tap outside, stays clear of the money panel, ticker and tab bar, and
   moves (or nudges the page) so it doesn't cover that item's BUY or Hire.
 
+- **Away bank for R&D.** While the game is closed or in the background, the
+  research servers bank at most 1 hour of full output, plus 1 hour per TB of
+  disk, up to 8 hours (`AWAY_BANK` in `src/lib/research.js`). Live play, the
+  eras' trickle and the project timer aren't capped. Casual sim (two 45 min
+  sessions a day): R&D balance on reaching Quantum 55,099 -> 4,455; projects
+  done by 72 h 42 -> 34. Business pacing unchanged (casual fork-ready 8.9 d,
+  nonstop 45.3 h, Quantum 12.7 h / 4.3 d).
+- **Tests.** `npm test` (logic, node:test) and `npm run test:e2e` (Playwright
+  against the Android web bundle; build it first with `npm run android:bundle`)
+  run on every pull request in `.github/workflows/tests.yml`.
+
 ## Earlier: after 0.0.22
 
 - **One research currency: R&D points.** The research servers and the eras

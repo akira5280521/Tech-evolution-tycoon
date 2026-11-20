@@ -1,6 +1,7 @@
 import { SHOP, incomePerSecond, pettyCost, shopQuote } from "@/lib/empire";
 import { money } from "@/lib/gameConfig";
 import { GoldButton, Panel } from "./chrome";
+import { ItemHelp } from "./HintSheet";
 
 export default function TokenShop({ state, onBuy }) {
   return (
@@ -13,8 +14,11 @@ export default function TokenShop({ state, onBuy }) {
         const quote = shopQuote(state, item.id);
         const cost = item.id === "petty" ? pettyCost(state) : item.cost;
         return (
-          <div key={item.id} className="border-2 border-[var(--game-border)] bg-[var(--game-bg-deep)] p-3">
-            <p className="font-pixel text-[0.6rem] text-[var(--game-fg)]">{item.name}</p>
+          <div key={item.id} data-help-scope className="border-2 border-[var(--game-border)] bg-[var(--game-bg-deep)] p-3">
+            <div className="flex items-start justify-between gap-2">
+              <p className="font-pixel text-[0.6rem] text-[var(--game-fg)]">{item.name}</p>
+              <ItemHelp kind="shop" id={item.id} state={state} name={item.name} className="-mr-2 -mt-2.5" />
+            </div>
             <p className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">{item.blurb}</p>
             <div className="mt-2">
               <GoldButton disabled={!quote.ok} onClick={() => onBuy(item.id)} dataAttr={item.id}>

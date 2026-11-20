@@ -3,7 +3,7 @@ import { Play } from "lucide-react";
 import { BUSINESSES, FOREMAN_COST, buyModeLabel, money, nextBuyMode } from "@/lib/gameConfig";
 import { anyFacilityOpen } from "@/lib/facilities";
 import { techOpen } from "@/lib/research";
-import { HelpTip } from "./HintSheet";
+import { ItemHelp } from "./HintSheet";
 
 const SIDE = "flex min-h-12 w-[4.5rem] shrink-0 flex-col items-center justify-center border-2 px-1 text-center font-pixel text-[0.45rem] leading-4 shadow-[2px_2px_0_0_#000]";
 
@@ -55,6 +55,7 @@ export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll
           <EraProgress state={state} />
         </div>
 
+        <div className="flex items-stretch gap-1">
         {unlocked ? (
           <button
             type="button"
@@ -80,6 +81,8 @@ export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll
             <span className="font-term text-base leading-5">{money(FOREMAN_COST)} · unlocks Run All</span>
           </button>
         )}
+        <ItemHelp kind="foreman" state={state} name="the Foreman" className="my-0 self-center" />
+        </div>
 
         <div className="flex items-stretch gap-2">
           <button
@@ -95,7 +98,7 @@ export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll
           </button>
           <SideLink to="/tech" open={techOpen(state)} data="research" label="TECH" />
           <SideLink to="/facilities" open={anyFacilityOpen(state)} data="facilities" label="FACILITIES" />
-          <HelpTip term="buymodes" className="self-center" />
+          <ItemHelp kind="topbar" id={{ tech: techOpen(state), rigs: anyFacilityOpen(state) }} state={state} name="buy amount, TECH and RIGS" className="my-0 self-center" />
         </div>
       </div>
     </header>

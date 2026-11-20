@@ -4,7 +4,7 @@ import { incomePerSecond, overclockOn } from "@/lib/empire";
 import { money } from "@/lib/gameConfig";
 import { PREFS_EVENT } from "@/lib/gamePrefs";
 import BottomTabs from "./BottomTabs";
-import { TipCard } from "./HintSheet";
+import { ItemHelp, TipCard } from "./HintSheet";
 import NewsTicker from "./NewsTicker";
 import StarterGoal from "./StarterGoal";
 import { useGameState } from "./GameState";
@@ -25,7 +25,8 @@ export function BackButton({ to = "/" }) {
 export function CashTicker({ state, cps }) {
   return (
     <div data-cash-ticker className="space-y-1.5">
-      <div data-cash-panel className="border-2 border-[var(--game-border-strong)] bg-[var(--game-bg-deep)] px-2 py-0.5 text-center shadow-[3px_3px_0_0_#000]">
+      <div data-cash-panel className="relative border-2 border-[var(--game-border-strong)] bg-[var(--game-bg-deep)] px-2 py-0.5 text-center shadow-[3px_3px_0_0_#000]">
+        <ItemHelp kind="money" state={state} name="the money panel" className="absolute right-0 top-0 my-0" />
         <div data-cash-label className="font-pixel text-[8px] leading-[10px] text-[var(--game-muted)]">CASH</div>
         <div data-cash className="break-all font-term text-3xl leading-none text-[var(--game-success)]">{money(state.cash)}</div>
         <div data-cash-rate className="break-words font-term text-[clamp(12px,4.2vw,16px)] leading-[1.15] text-[var(--game-success)]">

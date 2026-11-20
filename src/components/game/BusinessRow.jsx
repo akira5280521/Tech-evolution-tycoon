@@ -15,6 +15,7 @@ import { effectiveCycleMs, empireFactors, makesOf, managerPrice, supplyFactor, u
 import { generationAt, generationPayMult } from "@/lib/generations";
 import IconTile from "./IconTile";
 import ProgressTrack from "./ProgressTrack";
+import { ItemHelp } from "./HintSheet";
 
 // Where long era names may break on a narrow card (a hyphen shows at the break).
 const SOFT = "\u00AD";
@@ -114,11 +115,12 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
   const hireCostLine = hirePrice > 0 ? `${money(hirePrice)} cash · runs it automatically` : "Free · runs it automatically";
 
   return (
-    <div data-row={cfg.id} className={`era-row ${(st.milestoneAt || 0) > Date.now() - 1500 ? "milestone-flash" : ""} grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
+    <div data-row={cfg.id} data-help-scope className={`era-row ${(st.milestoneAt || 0) > Date.now() - 1500 ? "milestone-flash" : ""} grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
       <IconTile cfg={cfg} st={st} onRun={() => onRun(index)} />
 
       <div className="min-w-0 space-y-2">
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <div className="flex items-start gap-1">
+        <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-1">
           <h3 className="era-name min-w-0 break-words font-pixel text-sm leading-5 text-[var(--game-fg)] [overflow-wrap:anywhere]">{breakable(shownName)}</h3>
           <span className="border border-[var(--game-border-strong)] px-1 font-term text-sm leading-5 text-[var(--game-muted)]">
             {shownEra}
@@ -131,6 +133,8 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
               ×{mult}
             </span>
           )}
+        </div>
+        <ItemHelp kind="era" id={cfg.id} state={state} name={shownName} className="-mr-2 -mt-2.5 mb-0" />
         </div>
         {!compact && <p className="font-term text-base leading-5 text-[var(--game-muted)]">{shownTag}</p>}
         {commissioning ? (
@@ -175,7 +179,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
         )}
       </div>
 
-      <div className="era-actions col-span-2 flex gap-2 sm:col-span-1 sm:w-44 sm:flex-col sm:justify-center">
+      <div data-help-guard className="era-actions col-span-2 flex gap-2 sm:col-span-1 sm:w-44 sm:flex-col sm:justify-center">
         <button
           type="button"
           onClick={() => {
@@ -230,6 +234,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
             )}
           </button>
         )}
+        <ItemHelp kind="manager" id={cfg.id} state={state} name={cfg.managerName} className="my-0 self-center" />
       </div>
     </div>
   );

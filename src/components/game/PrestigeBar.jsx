@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PRESTIGE_UNIT, count, investorsFor, money, prestigeMult } from "@/lib/gameConfig";
-import { HelpTip } from "./HintSheet";
+import { ItemHelp } from "./HintSheet";
 import { empireFactors, investorPeak, nextInvestorMilestone } from "@/lib/empire";
 
 // Investors and starting over (prestige), in plain words. The exact numbers
@@ -33,12 +33,13 @@ export default function PrestigeBar({ state, onPrestige }) {
   return (
     <section
       aria-label="Investors"
+      data-help-scope
       className="border-2 border-[var(--game-violet-border)] bg-[var(--game-card)] p-3 shadow-[4px_4px_0_0_#000]"
     >
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="prestige-text">
           <h2 className="flex items-center gap-2 font-pixel text-sm text-[var(--game-violet)]">
-            INVESTORS <HelpTip term="prestige" />
+            INVESTORS <ItemHelp kind="prestige" state={state} name="prestige" />
           </h2>
           {investors > 0 && (
             <p className="font-term text-base leading-5 text-[var(--game-fg)]">

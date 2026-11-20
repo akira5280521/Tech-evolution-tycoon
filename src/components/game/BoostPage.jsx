@@ -2,7 +2,7 @@ import { BUSINESSES, UPGRADE_MS, eraOpen, money } from "@/lib/gameConfig";
 import { hasPerk, isMastered, masteryNeed, upgradeOffer, upgradesOf } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
-import { HelpTip } from "./HintSheet";
+import { HelpTip, ItemHelp } from "./HintSheet";
 import { generationAt } from "@/lib/generations";
 
 export default function BoostPage() {
@@ -35,13 +35,14 @@ export default function BoostPage() {
           // The next era: show that it exists, keep its upgrades a surprise.
           return (
             <Panel key={cfg.id}>
-              <div data-boost-locked={cfg.id} className="flex items-center gap-3 opacity-60">
-                <img src={cfg.icon} alt="" className="pixel-art h-[64px] w-[64px] shrink-0 border-2 border-[var(--game-border-strong)] object-contain grayscale" />
-                <div className="min-w-0">
+              <div data-boost-locked={cfg.id} data-help-scope className="flex items-center gap-3">
+                <img src={cfg.icon} alt="" className="pixel-art h-[64px] w-[64px] shrink-0 border-2 border-[var(--game-border-strong)] object-contain opacity-60 grayscale" />
+                <div className="min-w-0 flex-1 opacity-60">
                   <h2 className="break-words font-term text-2xl leading-6">{title}</h2>
                   {soon}
                   <p className="font-term text-base leading-5 text-[var(--game-muted)]">Buy your first {cfg.name} to see its upgrades.</p>
                 </div>
+                <ItemHelp kind="era" id={cfg.id} state={state} name={title} className="my-0 self-start" />
               </div>
             </Panel>
           );
@@ -50,14 +51,15 @@ export default function BoostPage() {
           <Panel key={cfg.id}>
             <div className="flex items-center gap-3">
               <img src={cfg.icon} alt="" className="pixel-art h-[64px] w-[64px] shrink-0 border-2 border-[var(--game-border-strong)] object-contain" />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <h2 className="break-words font-term text-2xl leading-6">{title}</h2>
                 {soon}
                 <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{owned} owned</p>
               </div>
+              <ItemHelp kind="era" id={cfg.id} state={state} name={title} className="my-0 self-start" />
             </div>
-            <UpgradeCard piece={offer.rev} owned={owned} bought={up.rev} cash={state.cash} job={state.upgradeJob} index={index} onBuy={() => purchaseUpgrade(index, "rev")} />
-            <UpgradeCard piece={offer.spd} owned={owned} bought={up.spd} cash={state.cash} job={state.upgradeJob} index={index} onBuy={() => purchaseUpgrade(index, "spd")} />
+            <UpgradeCard state={state} id={cfg.id} piece={offer.rev} owned={owned} bought={up.rev} cash={state.cash} job={state.upgradeJob} index={index} onBuy={() => purchaseUpgrade(index, "rev")} />
+            <UpgradeCard state={state} id={cfg.id} piece={offer.spd} owned={owned} bought={up.spd} cash={state.cash} job={state.upgradeJob} index={index} onBuy={() => purchaseUpgrade(index, "spd")} />
             <p className="mt-3 flex items-start gap-2 break-words font-term text-base leading-5 text-[var(--game-muted)]">
               <span>
                 ERA MASTERY: {owned >= masteryNeed(index) ? "✓" : "X"} {Math.min(owned, masteryNeed(index))}/{masteryNeed(index)} owned · {up.rev && up.spd ? "✓" : "X"} both upgrades
@@ -72,7 +74,7 @@ export default function BoostPage() {
   );
 }
 
-function UpgradeCard({ piece, owned, bought, cash, onBuy, job, index }) {
+function UpgradeCard({ piece, owned, bought, cash, onBuy, job, index, state, id }) {
   const locked = owned < piece.need;
   const afford = cash >= piece.cost;
   const installing = job && job.index === index && job.kind === piece.kind;
@@ -81,19 +83,23 @@ function UpgradeCard({ piece, owned, bought, cash, onBuy, job, index }) {
   if (locked && !bought) {
     // Not unlocked yet: greyed out, name and effect stay hidden.
     return (
-      <div data-upgrade-locked={piece.kind} className="mt-3 border-2 border-dashed border-[var(--game-border)] p-3 opacity-60">
-        <h3 className="font-pixel text-[0.6rem] leading-5 text-[var(--game-dim)]">???</h3>
-        <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
+      <div data-upgrade-locked={piece.kind} data-help-scope className="mt-3 border-2 border-dashed border-[var(--game-border)] p-3">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-pixel text-[0.6rem] leading-5 text-[var(--game-dim)] opacity-60">???</h3>
+          <ItemHelp kind={`upgrade-${piece.kind}`} id={id} state={state} name="this locked upgrade" className="-mr-2 -mt-2.5" />
+        </div>
+        <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)] opacity-60">
           Unlocks at {piece.need} owned · you have {owned}
         </p>
       </div>
     );
   }
   return (
-    <div className="mt-3 border-2 border-[var(--game-border)] p-3">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <h3 className="min-w-0 break-words font-pixel text-[0.6rem] leading-5">{piece.name}</h3>
+    <div data-help-scope className="mt-3 border-2 border-[var(--game-border)] p-3">
+      <div className="flex items-start gap-2">
+        <h3 className="min-w-0 flex-1 break-words font-pixel text-[0.6rem] leading-5">{piece.name}</h3>
         <span className="shrink-0 border-2 border-[var(--game-accent)] px-1 font-pixel text-[0.5rem] text-[var(--game-accent)]">{piece.badge}</span>
+        <ItemHelp kind={`upgrade-${piece.kind}`} id={id} state={state} name={piece.name} className="-mr-2 -mt-2.5" />
       </div>
       <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{piece.blurb}</p>
       {bought ? (

@@ -51,6 +51,15 @@ test shipped in 0.0.13 (see Done).
 - **Tutorial step 7, WHAT'S AHEAD**: after materials, the coach points at the
   locked ??? buttons and says what TECH and RIGS are, with a DONE button.
   Finished players don't see it; anyone mid-tutorial gets it at the end.
+- **A "?" on every item.** Every business card, manager, upgrade, chip,
+  material, research project, plant and part, the prestige and fork panels,
+  shop and lab items, specialties, milestones, challenges, mega-projects and
+  the money panel has a "?" that opens a short description (what it is, what
+  it does, current numbers). All the text lives in `src/lib/itemInfo.js`.
+  Locked "???" items say only that they unlock later; "Coming soon" items say
+  so. Every "?" (the glossary ones too) is a 44x44 tap target; the sheet closes
+  on a tap outside, stays clear of the money panel, ticker and tab bar, and
+  moves (or nudges the page) so it doesn't cover that item's BUY or Hire.
 
 ## Earlier: after 0.0.22
 

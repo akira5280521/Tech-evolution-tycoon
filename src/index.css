@@ -531,6 +531,14 @@ img[src*="/icons/"] {
   transform: rotate(45deg);
 }
 
+/* Every "?" is a full 44x44 tap target, even inside rows that size their
+   children (the era card's button row in landscape). */
+.help-btn {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  flex: none;
+}
+
 /* A tip moves to the top when it would cover the thing it points at. */
 .hint-sheet.hint-sheet-top {
   top: calc(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) + 0.75rem);

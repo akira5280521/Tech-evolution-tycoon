@@ -13,6 +13,7 @@ import {
 import { dataPerSecond } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
+import { ItemHelp } from "./HintSheet";
 
 function PixelMark({ id }) {
   const cells = [];
@@ -57,7 +58,10 @@ export default function ResearchPage() {
   return (
     <ScreenShell title="RESEARCH" subtitle="One project at a time. It keeps going while the app is closed.">
       <Panel>
-        <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">R&amp;D points {rd.toLocaleString("en-US")} · +{perSecond.toFixed(2)} a second · year {playerYear(state) || "—"}</p>
+        <div className="flex items-start justify-between gap-1">
+          <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">R&amp;D points {rd.toLocaleString("en-US")} · +{perSecond.toFixed(2)} a second · year {playerYear(state) || "—"}</p>
+          <ItemHelp kind="rd" state={state} name="R&D points" className="-mr-2 -mt-2.5" />
+        </div>
         {job && activeName && (
           <div data-research-active className="mt-2">
             <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">Researching {activeName.name}</p>
@@ -90,9 +94,9 @@ export default function ResearchPage() {
           const running = job?.id === entry.id;
           return (
             <Panel key={entry.id}>
-              <div data-research-item={entry.id} className={`flex items-start gap-2 ${lock ? "opacity-60" : ""}`}>
-                <PixelMark id={entry.id} />
-                <div className="min-w-0 flex-1">
+              <div data-research-item={entry.id} data-help-scope className="flex items-start gap-2">
+                <div className={lock ? "opacity-60" : ""}><PixelMark id={entry.id} /></div>
+                <div className={`min-w-0 flex-1 ${lock ? "opacity-60" : ""}`}>
                   <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)] [overflow-wrap:anywhere]">{entry.year} · {entry.name}</p>
                   <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{entry.spec}</p>
                   {entry.soon ? (
@@ -112,6 +116,7 @@ export default function ResearchPage() {
                     </div>
                   )}
                 </div>
+                <ItemHelp kind="research" id={entry.id} state={state} name={entry.name} className="-mr-2 -mt-2.5" />
               </div>
             </Panel>
           );

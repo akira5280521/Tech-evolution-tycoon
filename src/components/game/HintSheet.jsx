@@ -104,7 +104,7 @@ export function TipCard() {
           style={{ top: rect.top - 4, left: rect.left - 4, width: rect.width + 8, height: rect.height + 8 }}
         />
       )}
-      <Sheet ref={sheetRef} top={top} label="TIP" title={tip.title} text={tip.text} dataAttr={{ "data-tip": tip.id }}>
+      <Sheet ref={sheetRef} top={top} label="TIP" title={tip.title} text={tip.text} dataAttr={{ "data-tip": tip.id, "data-tip-target": tip.target || "" }}>
         <button
           type="button"
           data-tips-off

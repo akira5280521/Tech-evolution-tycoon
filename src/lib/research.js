@@ -208,6 +208,21 @@ export function serverOutput(state) {
   return { work, speed, storage, perSecond: work * speed * disk * RD_PER_WORK };
 }
 
+// While you're away the servers can only bank what their disks can hold:
+// AWAY_BANK.baseHours of full output, plus AWAY_BANK.hoursPerTB for each TB of
+// disk, up to AWAY_BANK.maxHours. Your eras' trickle and the project timer
+// aren't capped. Live play isn't capped either.
+export const AWAY_BANK = { baseHours: 1, hoursPerTB: 1, maxHours: 8 };
+
+export function awayBankHours(state) {
+  const out = serverOutput(state);
+  return Math.min(AWAY_BANK.maxHours, AWAY_BANK.baseHours + AWAY_BANK.hoursPerTB * (out.storage / 1000));
+}
+
+export function awayBankCap(state) {
+  return serverOutput(state).perSecond * 3600 * awayBankHours(state);
+}
+
 export function researchSpeed(state) {
   const out = serverOutput(state);
   return Math.min(8, 1 + out.work * out.speed * 0.08);
@@ -259,9 +274,11 @@ function finishResearch(state, id) {
 // ms of real time. Servers make the bar move faster than the wall clock.
 // rate: share of the plant's R&D output (OFFLINE_RATE while away). The
 // project timer itself runs on the real clock, like upgrade installs.
-export function advanceResearch(state, ms, rate = 1) {
+// cap: the most R&D this call may add (awayBankCap for a stretch away).
+export function advanceResearch(state, ms, rate = 1, cap = Infinity) {
   if (!state || !(ms > 0) || !Number.isFinite(ms)) return false;
-  const gain = serverOutput(state).perSecond * (ms / 1000) * (rate > 0 ? rate : 0);
+  const made = serverOutput(state).perSecond * (ms / 1000) * (rate > 0 ? rate : 0);
+  const gain = Math.min(made, cap >= 0 ? cap : 0);
   if (gain > 0) state.data = Math.min(RD_CAP, (Number(state.data) || 0) + gain);
   const job = readTechJob(state.techJob);
   if (!job) {

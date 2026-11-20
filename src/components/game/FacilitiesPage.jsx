@@ -27,6 +27,9 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state }) {
   return (
     <div data-part={part.id} data-help-scope className="border-2 border-[var(--game-border)] bg-[var(--game-bg)] p-2">
       <div className="flex items-start justify-between gap-2">
+        {part.icon && (
+          <img src={part.icon} alt="" className={`pixel-art h-10 w-10 shrink-0 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] object-contain ${part.soon || !open ? "opacity-60" : ""}`} />
+        )}
         <div className={`min-w-0 flex-1 ${part.soon || !open ? "opacity-60" : ""}`}>
           <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)] [overflow-wrap:anywhere]">{part.name}</p>
           <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{part.spec}</p>
@@ -57,10 +60,9 @@ function Plant({ facility, state, report, business, cash, onBuy }) {
     <Panel>
       <div data-facility={facility.id}>
         <div data-help-scope className="flex items-start gap-2">
-          <img src="/icons/placeholder-era.svg" alt="" className="pixel-art h-12 w-12 shrink-0 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] object-contain" />
+          <img src={facility.icon} alt="" className="pixel-art h-12 w-12 shrink-0 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] object-contain" />
           <div className="min-w-0 flex-1">
             <h2 className="break-words font-pixel text-[0.6rem] leading-4 text-[var(--game-accent)] [overflow-wrap:anywhere]">{facility.name}</h2>
-            <p className="font-pixel text-[0.45rem] leading-4 text-[var(--game-muted)]">ICON SOON</p>
           </div>
           <ItemHelp kind="facility" id={facility.id} state={state} name={facility.name} className="-mr-2 -mt-2.5" />
         </div>

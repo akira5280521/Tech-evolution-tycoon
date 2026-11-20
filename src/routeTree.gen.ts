@@ -10,7 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BadgesRouteImport } from './routes/badges'
+import { Route as BoardRouteImport } from './routes/board'
+import { Route as BoostRouteImport } from './routes/boost'
+import { Route as FacilitiesRouteImport } from './routes/facilities'
+import { Route as MoreRouteImport } from './routes/more'
+import { Route as ResearchRouteImport } from './routes/research'
+import { Route as RunsRouteImport } from './routes/runs'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as TechRouteImport } from './routes/tech'
 import { Route as ApiSwRouteImport } from './routes/api/sw'
 import { Route as ApiTimeRouteImport } from './routes/api/time'
 
@@ -19,9 +27,49 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BadgesRoute = BadgesRouteImport.update({
+  id: '/badges',
+  path: '/badges',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BoardRoute = BoardRouteImport.update({
+  id: '/board',
+  path: '/board',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BoostRoute = BoostRouteImport.update({
+  id: '/boost',
+  path: '/boost',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FacilitiesRoute = FacilitiesRouteImport.update({
+  id: '/facilities',
+  path: '/facilities',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoreRoute = MoreRouteImport.update({
+  id: '/more',
+  path: '/more',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResearchRoute = ResearchRouteImport.update({
+  id: '/research',
+  path: '/research',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RunsRoute = RunsRouteImport.update({
+  id: '/runs',
+  path: '/runs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TechRoute = TechRouteImport.update({
+  id: '/tech',
+  path: '/tech',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSwRoute = ApiSwRouteImport.update({
@@ -37,34 +85,103 @@ const ApiTimeRoute = ApiTimeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/badges': typeof BadgesRoute
+  '/board': typeof BoardRoute
+  '/boost': typeof BoostRoute
+  '/facilities': typeof FacilitiesRoute
+  '/more': typeof MoreRoute
+  '/research': typeof ResearchRoute
+  '/runs': typeof RunsRoute
   '/settings': typeof SettingsRoute
+  '/tech': typeof TechRoute
   '/api/sw': typeof ApiSwRoute
   '/api/time': typeof ApiTimeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/badges': typeof BadgesRoute
+  '/board': typeof BoardRoute
+  '/boost': typeof BoostRoute
+  '/facilities': typeof FacilitiesRoute
+  '/more': typeof MoreRoute
+  '/research': typeof ResearchRoute
+  '/runs': typeof RunsRoute
   '/settings': typeof SettingsRoute
+  '/tech': typeof TechRoute
   '/api/sw': typeof ApiSwRoute
   '/api/time': typeof ApiTimeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/badges': typeof BadgesRoute
+  '/board': typeof BoardRoute
+  '/boost': typeof BoostRoute
+  '/facilities': typeof FacilitiesRoute
+  '/more': typeof MoreRoute
+  '/research': typeof ResearchRoute
+  '/runs': typeof RunsRoute
   '/settings': typeof SettingsRoute
+  '/tech': typeof TechRoute
   '/api/sw': typeof ApiSwRoute
   '/api/time': typeof ApiTimeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/settings' | '/api/sw' | '/api/time'
+  fullPaths:
+    | '/'
+    | '/badges'
+    | '/board'
+    | '/boost'
+    | '/facilities'
+    | '/more'
+    | '/research'
+    | '/runs'
+    | '/settings'
+    | '/tech'
+    | '/api/sw'
+    | '/api/time'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/settings' | '/api/sw' | '/api/time'
-  id: '__root__' | '/' | '/settings' | '/api/sw' | '/api/time'
+  to:
+    | '/'
+    | '/badges'
+    | '/board'
+    | '/boost'
+    | '/facilities'
+    | '/more'
+    | '/research'
+    | '/runs'
+    | '/settings'
+    | '/tech'
+    | '/api/sw'
+    | '/api/time'
+  id:
+    | '__root__'
+    | '/'
+    | '/badges'
+    | '/board'
+    | '/boost'
+    | '/facilities'
+    | '/more'
+    | '/research'
+    | '/runs'
+    | '/settings'
+    | '/tech'
+    | '/api/sw'
+    | '/api/time'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BadgesRoute: typeof BadgesRoute
+  BoardRoute: typeof BoardRoute
+  BoostRoute: typeof BoostRoute
+  FacilitiesRoute: typeof FacilitiesRoute
+  MoreRoute: typeof MoreRoute
+  ResearchRoute: typeof ResearchRoute
+  RunsRoute: typeof RunsRoute
   SettingsRoute: typeof SettingsRoute
+  TechRoute: typeof TechRoute
   ApiSwRoute: typeof ApiSwRoute
   ApiTimeRoute: typeof ApiTimeRoute
 }
@@ -78,11 +195,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/badges': {
+      id: '/badges'
+      path: '/badges'
+      fullPath: '/badges'
+      preLoaderRoute: typeof BadgesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/board': {
+      id: '/board'
+      path: '/board'
+      fullPath: '/board'
+      preLoaderRoute: typeof BoardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/boost': {
+      id: '/boost'
+      path: '/boost'
+      fullPath: '/boost'
+      preLoaderRoute: typeof BoostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/facilities': {
+      id: '/facilities'
+      path: '/facilities'
+      fullPath: '/facilities'
+      preLoaderRoute: typeof FacilitiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/more': {
+      id: '/more'
+      path: '/more'
+      fullPath: '/more'
+      preLoaderRoute: typeof MoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/research': {
+      id: '/research'
+      path: '/research'
+      fullPath: '/research'
+      preLoaderRoute: typeof ResearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/runs': {
+      id: '/runs'
+      path: '/runs'
+      fullPath: '/runs'
+      preLoaderRoute: typeof RunsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tech': {
+      id: '/tech'
+      path: '/tech'
+      fullPath: '/tech'
+      preLoaderRoute: typeof TechRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/sw': {
@@ -104,7 +277,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BadgesRoute: BadgesRoute,
+  BoardRoute: BoardRoute,
+  BoostRoute: BoostRoute,
+  FacilitiesRoute: FacilitiesRoute,
+  MoreRoute: MoreRoute,
+  ResearchRoute: ResearchRoute,
+  RunsRoute: RunsRoute,
   SettingsRoute: SettingsRoute,
+  TechRoute: TechRoute,
   ApiSwRoute: ApiSwRoute,
   ApiTimeRoute: ApiTimeRoute,
 }

@@ -510,7 +510,20 @@ img[src*="/icons/"] {
   right: 0.75rem;
   bottom: calc(var(--tabbar-h, 8rem) + 0.5rem);
   max-height: 60vh;
+  /* Only the words scroll; the buttons stay in view at any text size. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.hint-sheet-body {
+  flex: 0 1 auto;
+  min-height: 0;
   overflow-y: auto;
+}
+
+.hint-sheet-actions {
+  flex: none;
 }
 
 @media (orientation: landscape) {

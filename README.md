@@ -18,6 +18,19 @@ base44 link    # one-time per clone
 base44 dev     # local backend + app together
 ```
 
+## Tests
+
+Every pull request and every push to `main` runs `.github/workflows/tests.yml`: lint, the logic tests, the Android web bundle build, and the browser tests.
+
+```bash
+npm test                      # logic tests (node:test), about a second
+npm run android:bundle        # build dist/client first
+npx playwright install chromium   # once
+npm run test:e2e              # browser tests against dist/client, a few minutes
+```
+
+Save fixtures live in `tests/fixtures/`. `old-saves.json` holds real saves written by earlier builds; when a build ships, add its saves so later builds are checked against them.
+
 ## Android app
 
 The installable app is a Capacitor wrapper around a static build of the same game. Package id `tech.evolution.tycoon`, display name Tech Evolution Tycoon, version 0.0.27 (versionCode 27). It targets Android SDK 36 (minimum 24), ships the icons, fonts, and JavaScript inside the package, keeps the save in `localStorage`, and follows the device rotation unless Settings locks portrait or landscape. Backgrounding the activity mutes audio and pauses the WebView; the existing hidden-page tick still applies the 24 hour offline budget when it wakes. The hardware back button closes a boardroom dilemma, returns from a tab to the previous screen, and leaves the app only from the game screen.

@@ -6,6 +6,7 @@ import { BUSINESSES, count, money } from "./gameConfig.js";
 import { eraNameAt, eraReachedIndex } from "./records.js";
 import { RESEARCH, serverOutput } from "./research.js";
 import { investorPeak } from "./empire.js";
+import { readErrors } from "./errorLog.js";
 
 function span(ms) {
   const min = Math.max(0, Math.floor(ms / 60000));
@@ -66,6 +67,14 @@ export function statsText(state, { version = "", code = "", now = Date.now() } =
     lines.push("");
     lines.push("Last runs (length · era · investors gained):");
     for (const r of runs) lines.push(`- ${span(r.lengthMs || 0)} · ${r.eraName || "?"} · +${count(r.investorsGained || 0)}${r.challenge ? ` · ${r.challenge}` : ""}`);
+  }
+  const errors = typeof window === "undefined" ? [] : readErrors();
+  lines.push("");
+  if (errors.length) {
+    lines.push("Recent errors (newest last):");
+    for (const e of errors) lines.push(`- ${day(e.at)} ${e.v || "?"} ${e.page}: ${e.msg}${e.n > 1 ? ` (x${e.n})` : ""}`);
+  } else {
+    lines.push("Recent errors: none");
   }
   return lines.join("\n");
 }

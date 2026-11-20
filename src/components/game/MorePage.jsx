@@ -73,7 +73,7 @@ export default function MorePage() {
           <AccountPanel state={state} onExport={exportSave} onImport={importSave} />
           <AchievementsButton />
           <SaveBackup state={state} onExport={exportSave} onImport={importSave} />
-          <FeedbackButton />
+          <FeedbackButton state={state} />
           <ResetProgress onReset={reset} />
           <AppVersionFooter />
         </div>

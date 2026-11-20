@@ -68,6 +68,14 @@ test shipped in 0.0.13 (see Done).
   sessions a day): R&D balance on reaching Quantum 55,099 -> 4,455; projects
   done by 72 h 42 -> 34. Business pacing unchanged (casual fork-ready 8.9 d,
   nonstop 45.3 h, Quantum 12.7 h / 4.3 d).
+- **Tester tools.** Copy my stats (More > Stats) with a milestone log and the
+  last 10 errors kept on the phone (`src/lib/errorLog.js`); SEND FEEDBACK can
+  attach the same text (on by default, can be turned off). Nothing is sent
+  except what the player emails.
+- **Save safety.** `tests/fixtures/old-saves.json` holds real saves written by
+  0.0.24, 0.0.25 and 0.0.26; the browser tests load each one in the current
+  build and check nothing is lost. Add the current build's saves when it
+  ships (play it briefly from the fixtures and keep what it writes).
 - **Tests.** `npm test` (logic, node:test) and `npm run test:e2e` (Playwright
   against the Android web bundle; build it first with `npm run android:bundle`)
   run on every pull request in `.github/workflows/tests.yml`.

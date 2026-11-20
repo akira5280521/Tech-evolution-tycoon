@@ -57,7 +57,7 @@ export const GLOSSARY = {
   },
   research: {
     term: "R&D POINTS",
-    text: "The one research currency. Each era you own makes a trickle, and research servers (on the RIGS tab, from Microprocessors) make most of them. Earned at half rate while the game is closed. Never lost, even when you prestige. Spend them on the RESEARCH tab and the TECH timeline."
+    text: "The one research currency. Each era you own makes a trickle, and research servers (under the RIGS button beside TECH, from Microprocessors) make most of them. Earned at half rate while the game is closed. Never lost, even when you prestige. Spend them on the RESEARCH tab and the TECH timeline."
   },
   lab: {
     term: "LAB PROJECTS",

@@ -204,7 +204,7 @@ const HOW_TO = [
     id: "rd",
     title: "R&D POINTS",
     lines: [
-      "R&D points are the one research currency. Each era you own makes a trickle; research servers (on the RIGS tab, from Microprocessors) make most of them. Both earn at half rate while the game is closed.",
+      "R&D points are the one research currency. Each era you own makes a trickle; research servers (under the RIGS button beside TECH, from Microprocessors) make most of them. Both earn at half rate while the game is closed.",
       "Spend them on the RESEARCH tab (specialties and lab projects) and on the TECH timeline. They are never lost, even when you prestige.",
     ],
   },

@@ -4,7 +4,7 @@ import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import TokenShop from "./TokenShop";
 import InvestorMilestones from "./InvestorMilestones";
-import { HelpTip } from "./HintSheet";
+import { HelpTip, ItemHelp } from "./HintSheet";
 
 function pct(factor) {
   return `${Math.round((factor - 1) * 100)}%`;
@@ -46,7 +46,7 @@ export default function BoardPage() {
         <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
           You have {count(state.investors || 0)} investors. Get more with PRESTIGE on the GAME tab.
         </p>
-        <div className="mt-3">
+        <div data-help-scope className="mt-3">
           <GoldButton disabled={!ready} onClick={forkTimeline} dataAttr="fork">
             <span className="font-pixel text-[0.6rem]">{ready ? "FORK THE TIMELINE" : `FORK NEEDS ${count(bill)} INVESTORS`}</span>
           </GoldButton>
@@ -54,7 +54,7 @@ export default function BoardPage() {
             <span>
               A bigger reset. Spend {count(bill)} investors to start your run over and get income x{singularityMult((state.singularities || 0) + 1).toFixed(1)} forever (up to x4), a higher income limit and another research slot. Each fork needs more investors.
             </span>
-            <HelpTip term="fork" />
+            <ItemHelp kind="fork" state={state} name="forking the timeline" className="my-0" />
           </p>
         </div>
       </Panel>

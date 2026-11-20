@@ -13,6 +13,7 @@ import {
 import { serverOutput } from "@/lib/research";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
+import { ItemHelp } from "./HintSheet";
 
 function percent(share) {
   if (!(share > 0)) return "0%";
@@ -20,20 +21,21 @@ function percent(share) {
   return pct >= 10 ? `${Math.round(pct)}%` : `${pct.toFixed(1)}%`;
 }
 
-function PartRow({ part, owned, open, cash, onBuy }) {
+function PartRow({ part, owned, open, cash, onBuy, facilityId, state }) {
   const cost = partCost(part, owned);
   const affordable = open && !part.soon && Number.isFinite(cost) && cash >= cost && owned < MAX_PART;
   return (
-    <div data-part={part.id} className={`border-2 border-[var(--game-border)] bg-[var(--game-bg)] p-2 ${part.soon || !open ? "opacity-60" : ""}`}>
+    <div data-part={part.id} data-help-scope className="border-2 border-[var(--game-border)] bg-[var(--game-bg)] p-2">
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
+        <div className={`min-w-0 flex-1 ${part.soon || !open ? "opacity-60" : ""}`}>
           <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)] [overflow-wrap:anywhere]">{part.name}</p>
           <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{part.spec}</p>
         </div>
         <span className="shrink-0 font-term text-base leading-5 text-[var(--game-accent)]">×{owned}</span>
+        <ItemHelp kind="part" id={`${facilityId}:${part.id}`} state={state} name={part.name} className="-mr-1 -mt-2.5" />
       </div>
       {part.soon ? (
-        <p className="mt-2 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)]">COMING SOON</p>
+        <p className="mt-2 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)] opacity-60">COMING SOON</p>
       ) : (
         <div className="mt-2">
           <GoldButton dataAttr={`buy-${part.id}`} disabled={!affordable} onClick={onBuy}>
@@ -54,12 +56,13 @@ function Plant({ facility, state, report, business, cash, onBuy }) {
   return (
     <Panel>
       <div data-facility={facility.id}>
-        <div className="flex items-start gap-2">
+        <div data-help-scope className="flex items-start gap-2">
           <img src="/icons/placeholder-era.svg" alt="" className="pixel-art h-12 w-12 shrink-0 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] object-contain" />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h2 className="break-words font-pixel text-[0.6rem] leading-4 text-[var(--game-accent)] [overflow-wrap:anywhere]">{facility.name}</h2>
             <p className="font-pixel text-[0.45rem] leading-4 text-[var(--game-muted)]">ICON SOON</p>
           </div>
+          <ItemHelp kind="facility" id={facility.id} state={state} name={facility.name} className="-mr-2 -mt-2.5" />
         </div>
         <p className="mt-2 break-words font-term text-base leading-5 text-[var(--game-fg)]">{facility.blurb}</p>
         <p data-facility-yield className="mt-2 break-words font-term text-base leading-5 text-[var(--game-success)]">
@@ -85,6 +88,8 @@ function Plant({ facility, state, report, business, cash, onBuy }) {
               open={open}
               cash={cash}
               onBuy={() => onBuy(facility.id, part.id)}
+              facilityId={facility.id}
+              state={state}
             />
           ))}
         </div>

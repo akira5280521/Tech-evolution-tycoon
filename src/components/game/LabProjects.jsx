@@ -1,6 +1,6 @@
 import { Zap } from "lucide-react";
 import { LAB_PATENT, LAB_PROJECTS, labQuote } from "@/lib/empire";
-import { HelpTip } from "./HintSheet";
+import { HelpTip, ItemHelp } from "./HintSheet";
 import { GoldButton, Panel } from "./chrome";
 
 const clock = (ms) => {
@@ -46,10 +46,13 @@ export default function LabProjects({ state, onRun }) {
         const st = status(state, item.id, now);
         const done = item.id === "crew" && state.lab?.crew;
         return (
-          <div key={item.id} data-lab={item.id} className="mt-3 border-2 border-[var(--game-border)] p-3">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h3 className="font-pixel text-[0.65rem]">{item.name}</h3>
-              <span className="font-term text-lg text-[var(--game-muted)]">{item.cost} R&amp;D</span>
+          <div key={item.id} data-lab={item.id} data-help-scope className="mt-3 border-2 border-[var(--game-border)] p-3">
+            <div className="flex items-start gap-2">
+              <div className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-2">
+                <h3 className="font-pixel text-[0.65rem]">{item.name}</h3>
+                <span className="font-term text-lg text-[var(--game-muted)]">{item.cost} R&amp;D</span>
+              </div>
+              <ItemHelp kind="lab" id={item.id} state={state} name={item.name} className="-mr-2 -mt-2.5" />
             </div>
             <p className="mt-2 font-term text-lg leading-6">{item.blurb}</p>
             {st && (

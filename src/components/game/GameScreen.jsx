@@ -15,7 +15,7 @@ import BottomTabs from "./BottomTabs";
 import DilemmaModal from "./DilemmaModal";
 import BubbleBanner from "./BubbleBanner";
 import CoachMark from "./CoachMark";
-import { HelpTip, TipCard } from "./HintSheet";
+import { ItemHelp, TipCard } from "./HintSheet";
 import { currentTutorialStep, tutorialActive } from "@/lib/tutorial";
 import { StickyHud } from "./chrome";
 
@@ -140,7 +140,7 @@ export default function GameScreen() {
               {SUPPLY_KEYS.filter((key) => supplyShown(state, key)).map((key) => (
                 <span key={key}>{key} {Math.floor(supply[key] || 0)}</span>
               ))}
-              <HelpTip term="materials" className="ml-auto" />
+              <ItemHelp kind="materials" id={SUPPLY_KEYS.filter((key) => supplyShown(state, key))} state={state} name="materials" className="ml-auto" />
             </p>
             {!playedAndBought(state) && !tutorialActive(state) && (
               <p data-onboard className="mt-2 border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-2 font-term text-lg leading-6 text-[var(--game-fg)]">
@@ -187,7 +187,7 @@ export default function GameScreen() {
           })}
 
           {firstLocked > 0 && (
-            <LockedRow prevName={pluralName(BUSINESSES[firstLocked - 1].name)} have={state.biz[firstLocked - 1]?.owned || 0} need={ERA_GATE} />
+            <LockedRow prevName={pluralName(BUSINESSES[firstLocked - 1].name)} have={state.biz[firstLocked - 1]?.owned || 0} need={ERA_GATE} id={BUSINESSES[firstLocked].id} state={state} />
           )}
         </main>
       </div>

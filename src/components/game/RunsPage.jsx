@@ -3,7 +3,7 @@ import { PROJECT_MS, money } from "@/lib/gameConfig";
 import { CHALLENGES, PROJECTS, activeChallengeGoal, projectRevealed, scaledChallengeGoal } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
-import { HelpTip } from "./HintSheet";
+import { HelpTip, ItemHelp } from "./HintSheet";
 
 export default function RunsPage() {
   const { state, startChallenge, abandonChallenge } = useGameState();
@@ -35,7 +35,11 @@ export default function RunsPage() {
         const left = active && challenge.limitMs ? Math.max(0, challenge.limitMs - (now - state.challenge.startedAt)) : 0;
         return (
           <Panel key={challenge.id}>
-            <h3 className="font-pixel text-[0.7rem]">{challenge.name}</h3>
+            <div data-help-scope>
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="font-pixel text-[0.7rem]">{challenge.name}</h3>
+              <ItemHelp kind="challenge" id={challenge.id} state={state} name={challenge.name} className="-mr-2 -mt-2.5" />
+            </div>
             <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{challenge.blurb}</p>
             <p className="mt-2 font-term text-lg leading-6">
               Goal: {money(active ? activeChallengeGoal(state) : scaledChallengeGoal(challenge, state))} this run · <span className="text-[var(--game-success)]">+10% all income, forever</span>
@@ -66,6 +70,7 @@ export default function RunsPage() {
                 </GoldButton>
               </div>
             )}
+            </div>
           </Panel>
         );
       })}
@@ -78,16 +83,22 @@ export default function RunsPage() {
         if (!projectRevealed(state, project)) {
           return (
             <Panel key={project.id}>
-              <div data-project-hidden className="opacity-60">
-                <h3 className="font-pixel text-[0.65rem] text-[var(--game-dim)]">???</h3>
-                <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">Reach more eras to reveal this project.</p>
+              <div data-project-hidden data-help-scope>
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-pixel text-[0.65rem] text-[var(--game-dim)] opacity-60">???</h3>
+                  <ItemHelp kind="project" id={project.id} state={state} name="this hidden project" className="-mr-2 -mt-2.5" />
+                </div>
+                <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)] opacity-60">Reach more eras to reveal this project.</p>
               </div>
             </Panel>
           );
         }
         return (
           <Panel key={project.id}>
-            <h3 className="break-words font-pixel text-[0.65rem]">{project.name}</h3>
+            <div data-help-scope className="flex items-start justify-between gap-2">
+              <h3 className="min-w-0 break-words font-pixel text-[0.65rem]">{project.name}</h3>
+              <ItemHelp kind="project" id={project.id} state={state} name={project.name} className="-mr-2 -mt-2.5" />
+            </div>
             <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{project.blurb}</p>
             <p className="mt-1 font-term text-lg text-[var(--game-success)]">+{Math.round(project.reward * 100)}% all income, forever · +{project.tokens} tokens</p>
             {done && <p className="mt-2 font-pixel text-[0.55rem] text-[var(--game-success)]">FINISHED</p>}

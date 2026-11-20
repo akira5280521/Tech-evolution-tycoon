@@ -61,7 +61,7 @@ export const GLOSSARY = {
   },
   lab: {
     term: "LAB PROJECTS",
-    text: "Ways to spend spare research data whenever you like: Overclock (all income x1.5 for 10 minutes, then a 20-minute cool-down), Patent Filing (data for an era token, 5 a day) and the Install Crew (upgrades install instantly, kept forever). Prices are fixed, and nothing is left to chance.",
+    text: "Ways to spend spare R&D points whenever you like: Overclock (all income x1.5 for 10 minutes, then a 20-minute cool-down), Patent Filing (R&D points for an era token, 5 a day) and the Install Crew (upgrades install instantly, kept forever). Prices are fixed, and nothing is left to chance.",
   },
   specialty: {
     term: "COMPANY SPECIALTY",

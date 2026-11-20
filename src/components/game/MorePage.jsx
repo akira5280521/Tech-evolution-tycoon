@@ -15,7 +15,7 @@ import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
 import LabProjects from "./LabProjects";
 import AccountPanel from "./AccountPanel";
-import { HelpTip } from "./HintSheet";
+import { HelpTip, ItemHelp } from "./HintSheet";
 import { GLOSSARY, GLOSSARY_ORDER } from "@/lib/glossary";
 import { AchievementsButton, AwayReminder, DisplaySettings, FeedbackButton, PlayToggles, ResetProgress, WhatsNewButton } from "./SettingsControls";
 
@@ -377,7 +377,7 @@ export function ResearchBody({ state, onCommit, onLab }) {
     <>
       <Panel>
         <p className="flex items-center gap-2 font-pixel text-[0.55rem] text-[var(--game-muted)]">
-          R&amp;D POINTS <HelpTip term="research" />
+          R&amp;D POINTS <ItemHelp kind="rd" state={state} name="R&D points" />
         </p>
         <p className="font-term text-5xl leading-none text-[var(--game-success)]">{(state.data || 0).toFixed(1)}</p>
         <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
@@ -399,10 +399,13 @@ export function ResearchBody({ state, onCommit, onLab }) {
           const elapsed = job ? Date.now() - job.startedAt : 0;
           const pct = job ? Math.max(0, Math.min(100, (elapsed / RESEARCH_MS) * 100)) : 0;
           return (
-            <div key={spec.id} className="mt-3 border-2 border-[var(--game-border)] p-3">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className="font-pixel text-[0.65rem]">{spec.name}</h3>
-                <span className="font-term text-lg text-[var(--game-muted)]">{spec.cost} R&amp;D</span>
+            <div key={spec.id} data-help-scope className="mt-3 border-2 border-[var(--game-border)] p-3">
+              <div className="flex items-start gap-2">
+                <div className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-2">
+                  <h3 className="font-pixel text-[0.65rem]">{spec.name}</h3>
+                  <span className="font-term text-lg text-[var(--game-muted)]">{spec.cost} R&amp;D</span>
+                </div>
+                <ItemHelp kind="specialty" id={spec.id} state={state} name={spec.name} className="-mr-2 -mt-2.5" />
               </div>
               <p className="mt-2 font-term text-lg leading-6">{spec.blurb}</p>
               {owned ? (

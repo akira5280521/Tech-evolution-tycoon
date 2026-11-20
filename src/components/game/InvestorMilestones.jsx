@@ -1,7 +1,7 @@
 import { INVESTOR_MILESTONES, investorPeak } from "@/lib/empire";
 import { count } from "@/lib/gameConfig";
 import { Panel } from "./chrome";
-import { HelpTip } from "./HintSheet";
+import { HelpTip, ItemHelp } from "./HintSheet";
 
 // The investor milestone ladder: reached rungs, the next one, and "???" for
 // the rest (each shows once the one before it is reached).
@@ -26,16 +26,18 @@ export default function InvestorMilestones({ state }) {
               key={m.id}
               data-investor-milestone={m.id}
               data-reached={reached ? "yes" : "no"}
-              className={`border-2 p-2 ${reached ? "border-[var(--game-success-border)] bg-[var(--game-success-bg)]" : "border-[var(--game-border)] bg-[var(--game-bg)]"} ${hidden ? "opacity-60" : ""}`}
+              data-help-scope
+              className={`border-2 p-2 ${reached ? "border-[var(--game-success-border)] bg-[var(--game-success-bg)]" : "border-[var(--game-border)] bg-[var(--game-bg)]"}`}
             >
-              <div className="flex items-baseline justify-between gap-2">
-                <span className={`font-pixel text-[0.55rem] leading-5 ${reached ? "text-[var(--game-success)]" : "text-[var(--game-fg)]"}`}>
+              <div className="flex items-start gap-2">
+                <span className={`min-w-0 flex-1 ${hidden ? "opacity-60" : ""} font-pixel text-[0.55rem] leading-5 ${reached ? "text-[var(--game-success)]" : "text-[var(--game-fg)]"}`}>
                   {hidden ? "???" : m.title}
                 </span>
-                <span className="shrink-0 font-term text-base leading-5 text-[var(--game-muted)]">
+                <span className={`shrink-0 font-term text-base leading-5 text-[var(--game-muted)] ${hidden ? "opacity-60" : ""}`}>
                   {reached ? "✓ " : ""}
                   {count(m.at)} investors
                 </span>
+                <ItemHelp kind="milestone" id={m.id} state={state} name={hidden ? "this locked milestone" : m.title} className="-mr-1 -mt-2.5" />
               </div>
               {!hidden && <p className="font-term text-base leading-5 text-[var(--game-muted)]">{m.text}</p>}
               {isNext && (

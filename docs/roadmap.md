@@ -48,6 +48,9 @@ test shipped in 0.0.13 (see Done).
   on the Tech and Facilities screens. How to Play has R&D points, Tech
   timeline and Facilities sections. Tips wait for What's New to close and
   never move up over the starter goal card.
+- **Tutorial step 7, WHAT'S AHEAD**: after materials, the coach points at the
+  locked ??? buttons and says what TECH and RIGS are, with a DONE button.
+  Finished players don't see it; anyone mid-tutorial gets it at the end.
 
 ## Earlier: after 0.0.22
 

@@ -104,6 +104,14 @@ export const TUTORIAL_STEPS = [
     text: "Tap the wood count up top. This business uses wood that Timber Camp makes, and stops paying if the wood runs out.",
     target: "[data-supply]",
   },
+  {
+    id: "later",
+    title: "WHAT'S AHEAD",
+    text: "The ??? buttons open later. TECH is research: timed projects paid with R&D points. RIGS holds research servers and other plants. A tip explains each one when it opens.",
+    target: "[data-open-research]",
+    manual: true,
+    button: "DONE",
+  },
 ];
 
 export function stepTarget(step, state) {

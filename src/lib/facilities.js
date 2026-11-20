@@ -51,18 +51,18 @@ export const PARTS = [
   { id: "ddr5_64", kind: "ram", name: "64 GB DDR5-5600", fits: ["mine", "cluster"], cost: 4_000_000_000, coef: 1.4, gb: 64, spec: "64 GB DDR5-5600, PC5-44800." },
   { id: "ddr5_128", kind: "ram", name: "128 GB DDR5-6400", fits: ["mine", "cluster"], soon: true, cost: 0, coef: 1, gb: 128, spec: "128 GB DDR5-6400, PC5-51200." },
   { id: "fans", kind: "cool", name: "Case fans", fits: ["mine", "cluster"], cost: 200_000_000, coef: 1.35, cool: 250, spec: "Moves 250 W of heat." },
-  { id: "labfan", kind: "cool", name: "Lab fan", fits: ["servers"], cost: 5_000, coef: 1.3, cool: 300, spec: "A 120 mm fan. Moves about 300 W of heat." },
+  { id: "labfan", kind: "cool", name: "Lab fan", fits: ["servers"], cost: 1_000_000, coef: 2, cool: 300, spec: "A 120 mm fan. Moves about 300 W of heat." },
   { id: "tower", kind: "cool", name: "Tower cooler", fits: ["mine", "cluster"], cost: 1_500_000_000, coef: 1.35, cool: 350, spec: "A dual-tower air cooler, 350 W." },
   { id: "liquid", kind: "cool", name: "360 mm liquid", fits: ["mine", "cluster"], cost: 6_000_000_000, coef: 1.35, cool: 700, spec: "A 360 mm liquid loop, 700 W." },
   { id: "immersion", kind: "cool", name: "Immersion tank", fits: ["mine", "cluster"], soon: true, cost: 0, coef: 1, cool: 2000, spec: "The whole rack sits in a bath. 2,000 W." },
   { id: "psu750", kind: "power", name: "750 W supply", fits: ["mine", "cluster"], cost: 800_000_000, coef: 1.35, power: 750, spec: "750 W ATX supply, 80 Plus Gold." },
   { id: "psu1200", kind: "power", name: "1200 W supply", fits: ["mine", "cluster"], cost: 3_500_000_000, coef: 1.35, power: 1200, spec: "1,200 W ATX supply, 80 Plus Platinum." },
   { id: "psu1600", kind: "power", name: "1600 W supply", fits: ["mine", "cluster"], soon: true, cost: 0, coef: 1, power: 1600, spec: "1,600 W, for a rack of data-center cards." },
-  { id: "rack1", kind: "server", name: "Foundry Rack R1", fits: ["servers"], cost: 250_000, coef: 1.45, watts: 200, work: 8, spec: "1U, two 8-core chips, 200 W. A small research server." },
-  { id: "rack4", kind: "server", name: "Foundry Rack R4", fits: ["servers"], cost: 4_000_000, coef: 1.45, watts: 500, work: 24, spec: "4U, four sockets, 500 W." },
-  { id: "psu400", kind: "power", name: "400 W supply", fits: ["servers"], cost: 20_000, coef: 1.35, power: 450, spec: "400 W ATX supply for a single rack." },
-  { id: "hdd1t", kind: "disk", name: "1 TB disk", fits: ["servers"], cost: 15_000, coef: 1.3, gb: 1000, spec: "1 TB, 7200 rpm." },
-  { id: "ssd2t", kind: "disk", name: "2 TB SSD", fits: ["servers"], cost: 2_000_000, coef: 1.3, gb: 2000, spec: "2 TB NAND, SATA." },
+  { id: "rack1", kind: "server", name: "Foundry Rack R1", fits: ["servers"], cost: 10_000_000, coef: 5, watts: 200, work: 8, spec: "1U, two 8-core chips, 200 W. A small research server." },
+  { id: "rack4", kind: "server", name: "Foundry Rack R4", fits: ["servers"], cost: 400_000_000, coef: 5, watts: 500, work: 24, spec: "4U, four sockets, 500 W." },
+  { id: "psu400", kind: "power", name: "400 W supply", fits: ["servers"], cost: 2_000_000, coef: 2, power: 450, spec: "400 W ATX supply for a single rack." },
+  { id: "hdd1t", kind: "disk", name: "1 TB disk", fits: ["servers"], cost: 1_000_000, coef: 2, gb: 1000, spec: "1 TB, 7200 rpm." },
+  { id: "ssd2t", kind: "disk", name: "2 TB SSD", fits: ["servers"], cost: 100_000_000, coef: 2, gb: 2000, spec: "2 TB NAND, SATA." },
 ];
 
 const STARTER = {
@@ -71,6 +71,9 @@ const STARTER = {
   servers: ["rack1", "psu400", "labfan", "hdd1t"],
 };
 
+// Research server parts are priced so each extra rack costs 5x the last: a
+// player adds a rack or two per era instead of filling the plant at once, so
+// R&D grows with the company.
 const PART_NEWS = {
   raster3060: "RASTER 3060 BOLTED INTO A SIDE RACK",
   raster3090: "RASTER 3090 RUMORED ON THE PLANT FLOOR",

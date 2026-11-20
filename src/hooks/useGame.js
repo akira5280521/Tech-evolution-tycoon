@@ -186,6 +186,8 @@ function applySavedMeta(state, raw) {
   state.techJob = readTechJob(m.techJob);
   state.goalsDone = readGoalsDone(m.goalsDone);
   state.boughtX10 = !!m.boughtX10;
+  state.labFinished = m.labFinished == null ? null : Math.floor(num(m.labFinished));
+  state.maxOwned = m.maxOwned == null ? null : Math.floor(num(m.maxOwned));
 }
 
 function readChallenge(raw) {
@@ -256,6 +258,8 @@ function pack(s) {
     news: readNews(s.news),
     techDone: readTechDone(s.techDone),
     techJob: readTechJob(s.techJob),
+    labFinished: Math.floor(s.labFinished || 0),
+    maxOwned: Math.floor(s.maxOwned || 0),
     biz: s.biz.map((b, i) => ({
       id: BUSINESSES[i].id,
       owned: b.owned,
@@ -313,6 +317,10 @@ function loadSave() {
     const storedEra = state.bestEra;
     if (storedEra == null) state.bestEra = Math.max(0, eraReachedIndex(state));
     if (!state.runStartedAt) state.runStartedAt = Date.now();
+    const ownedNow = state.biz.reduce((n, row) => Math.max(n, row.owned || 0), 0);
+    if (state.maxOwned == null) state.maxOwned = ownedNow;
+    else state.maxOwned = Math.max(state.maxOwned, ownedNow);
+    if (state.labFinished == null) state.labFinished = state.lab?.crew ? 1 : 0;
     state.orientation = data.orientation === "portrait" || data.orientation === "landscape" ? data.orientation : "auto";
     state.researchJob = data.researchJob || null;
     state.upgradeJob = data.upgradeJob || null;
@@ -683,6 +691,7 @@ export function useGame() {
       } : b));
       notePurchase(s, i, before, before + count);
       s.businessesBought = (s.businessesBought || 0) + count;
+      s.maxOwned = Math.max(s.maxOwned || 0, before + count);
       const reachedEra = eraReachedIndex(s);
       if (reachedEra > (s.bestEra || 0)) s.bestEra = reachedEra;
       playBuy();

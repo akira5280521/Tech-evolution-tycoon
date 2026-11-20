@@ -1,5 +1,5 @@
 // Timed research, paid in R&D points: the one research currency (state.data),
-// made by the eras you own and by the research server plant. Projects keep
+// made mostly by the research server plant, plus a trickle from each era. Projects keep
 // running while the app is closed; earnings while away are at the away rate. A project can start only after the
 // company's newest era is at least as new as the project's real year, and
 // after its prerequisite is done. Locked rows say "Requires 2020", never an
@@ -53,17 +53,23 @@ const ERA_YEAR = {
   quantum: 2019,
 };
 
-// R&D points a second per unit of server work. Eras make 0.008 a second
-// each (owned, and again when mastered), so one starter rack (work 8) adds
-// about as much as ten eras.
-const RD_PER_WORK = 0.01;
+// R&D points a second per unit of server work. Eras make 0.001 a second
+// each (owned, and again when mastered); one starter rack (work 8) makes
+// 0.04, so the servers are the main source.
+const RD_PER_WORK = 0.005;
 const RD_CAP = 1e9;
-// Project prices in R&D points are the table's rd x this. The table was
-// written for a separate, faster currency.
-export const RD_COST_SCALE = 5;
+// Project price in R&D points: the table's rd x RD_COST_SCALE, doubling every
+// RD_DOUBLING_YEARS of the project's year, so later chips cost more as the
+// servers grow. 4004 = 67, 486 = 539, DDR = 768, the 2017-19 projects about
+// 3,400-4,200; 53,433 for all 47.
+export const RD_COST_SCALE = 8;
+const RD_BASE_YEAR = 1970;
+const RD_DOUBLING_YEARS = 15;
 
 export function researchCost(entry) {
-  return Math.round((entry?.rd || 0) * RD_COST_SCALE);
+  if (!entry) return 0;
+  const year = Number(entry.year) || RD_BASE_YEAR;
+  return Math.round((entry.rd || 0) * RD_COST_SCALE * Math.pow(2, (year - RD_BASE_YEAR) / RD_DOUBLING_YEARS));
 }
 
 function item(row) {

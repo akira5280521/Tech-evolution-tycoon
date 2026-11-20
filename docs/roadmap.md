@@ -32,7 +32,27 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
-## Next build (after 0.0.22)
+## Next build (after 0.0.24)
+
+- **R&D pacing.** Eras make 0.001 R&D a second each (was 0.008); research
+  servers are the main source (0.005 per unit of work; a starter rack makes
+  0.04 a second). Rack prices rise 5x per rack (Foundry R1 from $10M, R4
+  from $400M), so the plant grows a rack or two per era instead of filling at
+  once. Timeline prices double every 15 years of the project's year (4004 =
+  67, 486 = 539, DDR = 768, 2017-19 projects about 3,400-4,200). Every other
+  R&D price and grant was cut 8x with the era rate (specialties 10, Overclock
+  4, Patent Filing 3, Install Crew 8, Research Sample +5, dilemma grants 2-3),
+  so the early game feels the same. Saves keep their balance.
+- **Tips for the new systems**: one-time tips when TECH opens, when the
+  research servers open, and when the mine and cluster open, plus page tips
+  on the Tech and Facilities screens. How to Play has R&D points, Tech
+  timeline and Facilities sections. Tips wait for What's New to close and
+  never move up over the starter goal card.
+- **Tutorial step 7, WHAT'S AHEAD**: after materials, the coach points at the
+  locked ??? buttons and says what TECH and RIGS are, with a DONE button.
+  Finished players don't see it; anyone mid-tutorial gets it at the end.
+
+## Earlier: after 0.0.22
 
 - **One research currency: R&D points.** The research servers and the eras
   now fill the same pool (the save field stays `data`), and specialties,

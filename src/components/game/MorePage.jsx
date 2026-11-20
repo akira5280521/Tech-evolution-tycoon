@@ -197,8 +197,31 @@ const HOW_TO = [
     title: "WHAT YOU KEEP FOREVER",
     lines: [
       "Investors, R&D points and your research picks, era tokens, badges, Museum cards, and the rewards from challenges and mega-projects all stay when you prestige.",
-      "Research: every era you own makes a few R&D points, and research servers make more later. Spend them on the RESEARCH tab on bonuses you keep.",
       "Era tokens come from new eras, milestones, projects and the free Daily Crate. Spend them in the shop on the BOARD tab.",
+    ],
+  },
+  {
+    id: "rd",
+    title: "R&D POINTS",
+    lines: [
+      "R&D points are the one research currency. Each era you own makes a trickle; research servers (on the RIGS tab, from Microprocessors) make most of them. Both earn at half rate while the game is closed.",
+      "Spend them on the RESEARCH tab (specialties and lab projects) and on the TECH timeline. They are never lost, even when you prestige.",
+    ],
+  },
+  {
+    id: "tech",
+    title: "THE TECH TIMELINE",
+    lines: [
+      "TECH (beside the buy button) lists real chips, memory, storage, cooling, power and networking in the order they came out. One project runs at a time and keeps going while the app is closed.",
+      "\"Requires 1985\" means your company hasn't reached that year yet. \"Research X first\" means finish the project before it. Processor and graphics projects unlock each chip generation's extra pay. Finished research is kept when you prestige.",
+    ],
+  },
+  {
+    id: "facilities",
+    title: "FACILITIES (RIGS)",
+    lines: [
+      "Research servers open with Microprocessors and make R&D points. With AI Accelerators, the Bitbark mine and the AI training cluster add a small extra income.",
+      "Buy parts for each plant. A plant runs slower when its power or cooling can't keep up with its cards or racks, and it tells you what to add next. Parts are lost when you prestige.",
     ],
   },
   {

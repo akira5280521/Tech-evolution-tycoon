@@ -9,6 +9,8 @@
 import { BUSINESSES, FOREMAN_COST, investorsFor, managerNeed, shortMaterial } from "./gameConfig.js";
 import { dataPerSecond, forkCost, managerPrice, singularityMult, upgradeOffer, upgradesOf } from "./empire.js";
 import { tutorialActive } from "./tutorial.js";
+import { facilitiesOpen, facilityUnlocked } from "./facilities.js";
+import { techOpen } from "./research.js";
 
 const maxOwned = (s) => Math.max(0, ...(s?.biz || []).map((b) => b?.owned || 0));
 
@@ -126,9 +128,33 @@ export const TIPS = [
     id: "research",
     page: "game",
     title: "R&D POINTS",
-    text: "Tap RESEARCH. Your eras make R&D points slowly. Spend them there on a bonus you keep.",
+    text: "Your eras make a trickle of R&D points. Tap RESEARCH and spend them on a bonus you keep. Research servers make far more later.",
     target: '[data-tab="research"]',
     when: (s) => (s.data || 0) >= 1 && dataPerSecond(s) > 0,
+  },
+  {
+    id: "tech",
+    page: "game",
+    title: "THE TECH TIMELINE",
+    text: "TECH lists real inventions to research with R&D points. One runs at a time, on a timer that keeps going while the app is closed. \"Requires 1985\" means your company hasn't reached that year yet. \"Research X first\" means finish the one before it.",
+    target: "[data-open-research]",
+    when: (s) => techOpen(s),
+  },
+  {
+    id: "servers",
+    page: "game",
+    title: "RESEARCH SERVERS",
+    text: "The RIGS tab now has research servers. They make most of your R&D points, far more than your eras. Buy a rack, then give it power and cooling.",
+    target: '[data-tab="facilities"]',
+    when: (s) => facilityUnlocked(s, "servers"),
+  },
+  {
+    id: "facilities",
+    page: "game",
+    title: "MINE AND CLUSTER",
+    text: "Two more plants opened on the RIGS tab: the Bitbark mine and the AI training cluster. Buy graphics cards, memory, power and cooling. They add a small extra income, and run slower if power or cooling can't keep up.",
+    target: '[data-tab="facilities"]',
+    when: (s) => facilitiesOpen(s),
   },
   {
     id: "challenges",
@@ -171,6 +197,18 @@ export const TIPS = [
     page: "research",
     title: "THE RESEARCH LAB",
     text: "Spend R&D points on one bonus you keep. You start with one slot. Spare points go to the lab projects below.",
+  },
+  {
+    id: "page-tech",
+    page: "tech",
+    title: "RESEARCH, ONE AT A TIME",
+    text: "Pick a project and tap START. It costs R&D points and finishes on its own, even with the app closed. More servers make the timer run faster. Processor and graphics projects unlock the next chip generation's pay.",
+  },
+  {
+    id: "page-facilities",
+    page: "facilities",
+    title: "YOUR PLANTS",
+    text: "Each plant shows what's holding it back: power, cooling, memory or more cards. Research servers make R&D points; the mine and cluster add a little income. Parts are lost when you prestige.",
   },
   {
     id: "page-badges",

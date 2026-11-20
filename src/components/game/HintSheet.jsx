@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useLocation } from "@tanstack/react-router";
 import { GLOSSARY } from "@/lib/glossary";
 import { currentTip } from "@/lib/tips";
+import { notesUnseen } from "@/lib/releaseNotes";
 import { useGameState } from "./GameState";
 
 // A card that sits just above the tab bar (beside it in landscape). Used for
@@ -85,10 +86,14 @@ export function TipCard() {
     const h = sheetRef.current.getBoundingClientRect().height;
     const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tabbar-h")) || 0;
     const bottomTop = window.innerHeight - bar - 8 - h;
-    const want = rect.top + rect.height > bottomTop && rect.top < window.innerHeight - bar;
+    let want = rect.top + rect.height > bottomTop && rect.top < window.innerHeight - bar;
+    // Never move up over the starter goal card under the cash readout.
+    const goal = document.querySelector("[data-starter-goal]")?.getBoundingClientRect();
+    if (want && goal && goal.height > 0 && goal.bottom > 0 && goal.top < 12 + h) want = false;
     if (want !== top) setTop(want);
   });
-  if (!tip || !host) return null;
+  // One thing at a time: no tip while the What's New card is still up.
+  if (!tip || !host || notesUnseen()) return null;
   return createPortal(
     <>
       {rect && (

@@ -33,8 +33,13 @@ import {
 } from "./gameConfig.js";
 
 export const SINGULARITY_MAX = 4;
-export const DATA_PER_ERA = 0.008;
-export const SPECIALTY_COST = 80;
+// R&D points a second for each era owned (and again when mastered). Eras are
+// a trickle; the research servers are the main source. Every R&D price and
+// grant below (specialties, lab projects, samples, dilemmas) is on this
+// scale: it was cut 8x along with the era rate, so the early game feels
+// the same.
+export const DATA_PER_ERA = 0.001;
+export const SPECIALTY_COST = 10;
 // Speed gate, mastery bar and badge count live on each era in BUSINESSES, so
 // the order of the rows can change without shifting these numbers.
 export function speedNeed(index) {
@@ -103,7 +108,7 @@ export const DILEMMAS = [
     title: "PATENT TROLL",
     text: "A shell company claims it invented the on/off switch and wants a cut.",
     choices: [
-      { key: "a", label: "FIGHT IT IN COURT", effects: { data: 20 } },
+      { key: "a", label: "FIGHT IT IN COURT", effects: { data: 3 } },
       { key: "b", label: "SETTLE AND CROSS-LICENSE", effects: { cash: 20 } },
     ],
   },
@@ -122,7 +127,7 @@ export const DILEMMAS = [
     title: "THE SUMMER INTERN",
     text: "A brilliant intern rewired the break-room toaster. Where do they go next?",
     choices: [
-      { key: "a", label: "SEND THEM TO R&D", effects: { data: 25 } },
+      { key: "a", label: "SEND THEM TO R&D", effects: { data: 3 } },
       { key: "b", label: "LEND THEM TO SALES", effects: { tokens: 3 } },
     ],
   },
@@ -143,7 +148,7 @@ export const DILEMMAS = [
     text: "The engineers swear the machines can run hotter. The fire marshal is less sure.",
     choices: [
       { key: "a", label: "PUSH IT", effects: { boost: 5 } },
-      { key: "b", label: "LOG THE THERMALS", effects: { data: 15 } },
+      { key: "b", label: "LOG THE THERMALS", effects: { data: 2 } },
     ],
   },
   {
@@ -152,7 +157,7 @@ export const DILEMMAS = [
     title: "WEEKEND HACKATHON",
     text: "Local hackers want to use your servers for a 48-hour coding marathon.",
     choices: [
-      { key: "a", label: "SPONSOR IT", effects: { tokens: 1, data: 15 } },
+      { key: "a", label: "SPONSOR IT", effects: { tokens: 1, data: 2 } },
       { key: "b", label: "RENT THEM THE RACKS", effects: { cash: 20 } },
     ],
   },
@@ -165,7 +170,7 @@ export const DILEMMAS = [
     title: "MILLENNIUM BUG",
     text: "Clients panic that every clock will roll back to 1900 at midnight.",
     choices: [
-      { key: "a", label: "PATCH EVERYTHING", effects: { data: 20 } },
+      { key: "a", label: "PATCH EVERYTHING", effects: { data: 3 } },
       { key: "b", label: "SELL CONSULTING HOURS", effects: { cash: 30 } },
     ],
   },
@@ -284,15 +289,15 @@ export function projectRevealed(state, project) {
 export const SHOP = [
   { id: "crate", name: "Daily Crate", cost: 0, blurb: "+6 era tokens, once each local day." },
   { id: "petty", name: "Petty Cash", cost: 18, blurb: "30 seconds of your current income. Costs 6 more tokens each time. Needs 40 tokens earned from play." },
-  { id: "sample", name: "Research Sample", cost: 36, blurb: "+40 R&D points. Up to 20 samples. Needs 70 tokens earned from play." },
+  { id: "sample", name: "Research Sample", cost: 36, blurb: "+5 R&D points. Up to 20 samples. Needs 70 tokens earned from play." },
   { id: "key", name: "Master Key", cost: 55, blurb: "The next manager you hire is free. Once. Needs 110 tokens earned from play." },
 ];
 
 // Lab projects: ways to spend spare research data at any time, each at a
 // fixed price shown up front. No chance rolls.
-export const LAB_OVERCLOCK = { cost: 30, ms: 10 * 60 * 1000, coolMs: 20 * 60 * 1000, mult: 1.5 };
-export const LAB_PATENT = { cost: 25, tokens: 1, perDay: 5 };
-export const LAB_CREW = { cost: 60 };
+export const LAB_OVERCLOCK = { cost: 4, ms: 10 * 60 * 1000, coolMs: 20 * 60 * 1000, mult: 1.5 };
+export const LAB_PATENT = { cost: 3, tokens: 1, perDay: 5 };
+export const LAB_CREW = { cost: 8 };
 export const LAB_PROJECTS = [
   { id: "overclock", name: "OVERCLOCK", cost: LAB_OVERCLOCK.cost, blurb: "All income x1.5 for 10 minutes. Then the lab needs 20 minutes to cool down." },
   { id: "patent", name: "PATENT FILING", cost: LAB_PATENT.cost, blurb: "Trade R&D points for 1 era token. Up to 5 filings a day." },
@@ -966,9 +971,9 @@ export function buyShopItem(state, id, now = Date.now()) {
     return { ok: true, cost: quote.cost, detail: `Petty cash pays ${money(gain)}.` };
   }
   if (id === "sample") {
-    state.data = (state.data || 0) + 40;
+    state.data = (state.data || 0) + 5;
     state.shop.samples = (state.shop.samples || 0) + 1;
-    return { ok: true, cost: quote.cost, detail: "Research sample: +40 R&D points." };
+    return { ok: true, cost: quote.cost, detail: "Research sample: +5 R&D points." };
   }
   state.shop.freeManager = true;
   return { ok: true, cost: quote.cost, detail: "The next manager is free." };

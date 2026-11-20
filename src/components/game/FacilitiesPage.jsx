@@ -28,7 +28,10 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state }) {
     <div data-part={part.id} data-help-scope className="border-2 border-[var(--game-border)] bg-[var(--game-bg)] p-2">
       <div className="flex items-start justify-between gap-2">
         {part.icon && (
-          <img src={part.icon} alt="" className={`pixel-art h-10 w-10 shrink-0 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] object-contain ${part.soon || !open ? "opacity-60" : ""}`} />
+          // The art leaves a wide empty border; zoom in so the part fills the box.
+          <div className={`h-14 w-14 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] ${part.soon || !open ? "opacity-60" : ""}`}>
+            <img src={part.icon} alt="" className="pixel-art h-full w-full scale-[1.4] object-contain" />
+          </div>
         )}
         <div className={`min-w-0 flex-1 ${part.soon || !open ? "opacity-60" : ""}`}>
           <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)] [overflow-wrap:anywhere]">{part.name}</p>
@@ -60,7 +63,9 @@ function Plant({ facility, state, report, business, cash, onBuy }) {
     <Panel>
       <div data-facility={facility.id}>
         <div data-help-scope className="flex items-start gap-2">
-          <img src={facility.icon} alt="" className="pixel-art h-12 w-12 shrink-0 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] object-contain" />
+          <div className="h-14 w-14 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]">
+            <img src={facility.icon} alt="" className="pixel-art h-full w-full scale-[1.4] object-contain" />
+          </div>
           <div className="min-w-0 flex-1">
             <h2 className="break-words font-pixel text-[0.6rem] leading-4 text-[var(--game-accent)] [overflow-wrap:anywhere]">{facility.name}</h2>
           </div>

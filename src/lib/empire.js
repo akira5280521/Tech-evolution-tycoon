@@ -1380,6 +1380,9 @@ export function snapshotMeta(state, options = {}) {
     runStartedAt: state.runStartedAt || 0,
     bestEra: Math.max(0, Math.floor(state.bestEra || 0)),
     runs: Array.isArray(state.runs) ? state.runs.slice(-40) : [],
+    milestones: { ...(state.milestones || {}) },
+    trackedSince: state.trackedSince || 0,
+    trackedFromStart: !!state.trackedFromStart,
     // Research and projects are permanent, so a job already paid for keeps its
     // clock. A cash-upgrade job does not: the fresh run would install it free.
     // A copy, not the live object, so the old state cannot clear the new job.

@@ -63,3 +63,51 @@ export function formatDuration(ms) {
   if (m >= 1) return `${m}m`;
   return `${total}s`;
 }
+
+// --- Milestones, for "Copy my stats" ---------------------------------------
+// The first time each era is reached, plus the first prestige and each fork:
+// when (wall clock) and after how much play time. Nothing leaves the phone
+// unless the player copies it.
+
+const MAX_FORKS_LOGGED = 5;
+
+export function readMilestones(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const out = {};
+  for (const [key, row] of Object.entries(raw).slice(0, 80)) {
+    if (typeof key !== "string" || key.length > 40 || !row || typeof row !== "object") continue;
+    out[key] = { at: num(row.at), play: num(row.play), before: !!row.before };
+  }
+  return out;
+}
+
+function milestoneKeys(state) {
+  const keys = [];
+  const era = eraReachedIndex(state);
+  for (let i = 0; i <= era && i < BUSINESSES.length; i++) keys.push(`era:${BUSINESSES[i].id}`);
+  if ((state?.prestigeCount || 0) >= 1) keys.push("prestige:1");
+  const forks = Math.min(MAX_FORKS_LOGGED, Math.floor(num(state?.singularities)));
+  for (let n = 1; n <= forks; n++) keys.push(`fork:${n}`);
+  return keys;
+}
+
+// An older save: what it has already done happened before tracking began.
+export function startMilestones(state, now = Date.now()) {
+  state.milestones = {};
+  for (const key of milestoneKeys(state)) state.milestones[key] = { at: 0, play: 0, before: true };
+  state.trackedSince = now;
+  state.trackedFromStart = false;
+}
+
+// Record anything new. Returns true when something was added.
+export function noteMilestones(state, now = Date.now()) {
+  if (!state) return false;
+  if (!state.milestones) state.milestones = {};
+  let added = false;
+  for (const key of milestoneKeys(state)) {
+    if (state.milestones[key]) continue;
+    state.milestones[key] = { at: now, play: Math.floor(num(state.playMs)), before: false };
+    added = true;
+  }
+  return added;
+}

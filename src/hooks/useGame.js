@@ -72,7 +72,7 @@ import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
 import { buzzLight, buzzStrong } from "@/lib/haptics";
 import { cancelCapNotification, scheduleCapNotification } from "@/lib/capNotify";
-import { pushRun, readRuns, eraReachedIndex } from "@/lib/records";
+import { noteMilestones, pushRun, readMilestones, readRuns, eraReachedIndex, startMilestones } from "@/lib/records";
 import { noteProgress } from "@/lib/achievements";
 
 const SAVE_INTERVAL_MS = 5000;
@@ -109,6 +109,9 @@ function freshState() {
     offlineReport: null,
     gainSeq: 0,
     biz: freshBiz(),
+    milestones: {},
+    trackedSince: Date.now(),
+    trackedFromStart: true,
   };
 }
 
@@ -178,6 +181,9 @@ function applySavedMeta(state, raw) {
   state.runStartedAt = m.runStartedAt == null ? 0 : num(m.runStartedAt);
   state.bestEra = m.bestEra == null ? null : Math.floor(num(m.bestEra));
   state.runs = readRuns(m.runs);
+  state.milestones = readMilestones(m.milestones);
+  state.trackedSince = m.trackedSince == null ? 0 : num(m.trackedSince);
+  state.trackedFromStart = !!m.trackedFromStart;
   state.facilities = readFacilities(m.facilities);
   state.news = readNews(m.news);
   // Older saves kept server output separately; it joins the one R&D pool.
@@ -252,6 +258,9 @@ function pack(s) {
     runStartedAt: s.runStartedAt || 0,
     bestEra: Math.max(0, Math.floor(s.bestEra || 0)),
     runs: Array.isArray(s.runs) ? s.runs.slice(-40) : [],
+    milestones: s.milestones || {},
+    trackedSince: s.trackedSince || 0,
+    trackedFromStart: !!s.trackedFromStart,
     facilities: readFacilities(s.facilities),
     news: readNews(s.news),
     techDone: readTechDone(s.techDone),
@@ -313,6 +322,8 @@ function loadSave() {
     const storedEra = state.bestEra;
     if (storedEra == null) state.bestEra = Math.max(0, eraReachedIndex(state));
     if (!state.runStartedAt) state.runStartedAt = Date.now();
+    // Milestones for "Copy my stats": an older save starts the log now.
+    if (!state.milestones || !state.trackedSince) startMilestones(state);
     state.orientation = data.orientation === "portrait" || data.orientation === "landscape" ? data.orientation : "auto";
     state.researchJob = data.researchJob || null;
     state.upgradeJob = data.upgradeJob || null;
@@ -586,6 +597,7 @@ export function useGame() {
       if (researchMoved === "done") dirty = true;
       if (!s.runStartedAt) s.runStartedAt = wall;
       s.playMs = (s.playMs || 0) + dt;
+      if (noteMilestones(s, wall)) dirty = true;
       if (autoBuyUpgrade(s, wall)) dirty = true;
       const notes = tickDilemma(s, wall).concat(finishTimedWork(s, wall), tickBubble(s, wall));
       const cards = collectHistory(s);

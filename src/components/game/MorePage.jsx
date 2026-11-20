@@ -13,6 +13,7 @@ import NextMove from "./NextMove";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
+import CopyStats from "./CopyStats";
 import LabProjects from "./LabProjects";
 import AccountPanel from "./AccountPanel";
 import { HelpTip, ItemHelp } from "./HintSheet";
@@ -302,6 +303,7 @@ function Stats({ state, data }) {
   return (
     <>
       <AnalyticsPanel data={data} />
+      <CopyStats state={state} />
       <Panel>
         <h2 className="font-pixel text-[0.6rem]">LIFETIME</h2>
         <ul className="mt-2 space-y-1 font-term text-lg leading-6">

@@ -5,7 +5,7 @@ import { anyFacilityOpen } from "@/lib/facilities";
 import { techOpen } from "@/lib/research";
 import { ItemHelp } from "./HintSheet";
 
-const SIDE = "flex min-h-12 w-[4.5rem] shrink-0 flex-col items-center justify-center border-2 px-1 text-center font-pixel text-[0.45rem] leading-4 shadow-[2px_2px_0_0_#000]";
+const SIDE = "flex min-h-12 w-[4.5rem] shrink-0 flex-col items-center justify-center border-2 px-1 overflow-hidden break-words text-center font-pixel text-[0.45rem] leading-4 shadow-[2px_2px_0_0_#000]";
 
 // A shortcut that stays greyed out ("???") until its feature is reached.
 function SideLink({ to, open, data, label }) {
@@ -97,7 +97,7 @@ export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll
             <span className="font-term text-lg leading-5">BUY AMOUNT</span>
           </button>
           <SideLink to="/tech" open={techOpen(state)} data="research" label="TECH" />
-          <SideLink to="/facilities" open={anyFacilityOpen(state)} data="facilities" label="FACILITIES" />
+          <SideLink to="/facilities" open={anyFacilityOpen(state)} data="facilities" label="RIGS" />
           <ItemHelp kind="topbar" id={{ tech: techOpen(state), rigs: anyFacilityOpen(state) }} state={state} name="buy amount, TECH and RIGS" className="my-0 self-center" />
         </div>
       </div>

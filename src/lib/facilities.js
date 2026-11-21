@@ -643,8 +643,14 @@ export function partLock(state, part, researchName) {
   return null;
 }
 
+let openCache = { key: null, set: null };
 export function openParts(state) {
-  return new Set(PARTS.filter((part) => partOpen(state, part) && !partRetired(state, part)).map((part) => part.id));
+  const done = state?.techDone || [];
+  const key = `${playerYear(state)}|${done.length}|${done[done.length - 1] || ""}`;
+  if (openCache.key === key) return openCache.set;
+  const set = new Set(PARTS.filter((part) => partOpen(state, part) && !partRetired(state, part)).map((part) => part.id));
+  openCache = { key, set };
+  return set;
 }
 
 // --- Memory boards ---------------------------------------------------------

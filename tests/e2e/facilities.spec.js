@@ -109,3 +109,15 @@ test("the PC bench: a board, then a CPU for its socket and memory for its slots"
   await expect(bench.locator("[data-bench-build]")).toContainText("Chipwright 440BX board · CPU: Chipwright P-II 300 · Memory: 32 MB of the 32 MB it wants, 1 of 4 slots used");
   await expect(bench.locator('[data-part="m-ddr4a"] [data-part-value]')).toContainText("SDRAM DIMM");
 });
+
+test("the bench names its bottleneck and checks plugs", async ({ page }) => {
+  const bench = { "b-z77": 1, "c-3770k": 1, "m-ddr3b": 2, "p-atx3": 1, "v-4090": 1, "k-mesh": 1 };
+  await open(page, "/facilities", { ...LATE, cash: 1e40, facilities: { mine: {}, cluster: {}, servers: {}, bench } });
+  await tipsOff(page);
+  const b = page.locator('[data-facility="bench"]');
+  await expect(b.locator("[data-facility-limit]")).toContainText("Bottleneck: CPU");
+  await expect(b.locator("[data-bench-build]")).toContainText("Graphics: Raster 4090");
+  await b.locator('[data-bench-tab="psu"]').click();
+  await b.locator('[data-action="bench-show-all"]').click();
+  await expect(b.locator('[data-part="p-atx250"] [data-part-value]')).toContainText("24-pin");
+});

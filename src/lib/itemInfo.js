@@ -56,7 +56,7 @@ import {
 } from "./empire.js";
 import { GENERATIONS, GENERATION_BONUS, generationAt, generationIndex, generationPayMult } from "./generations.js";
 import { RESEARCH, RESEARCH_TABS, awayBankCap, awayBankHours, playerYear, researchCost, researchItem, researchLock, researchSpeed, researchUnlocks, serverOutput } from "./research.js";
-import { FACILITIES, MEM_NAMES, PARTS, SHARE_CAP, SOCKET_NAMES, diskSize, facilityReport, facilityUnlocked, memSize, partCost, partLock } from "./facilities.js";
+import { FACILITIES, MEM_NAMES, PARTS, SHARE_CAP, SOCKET_NAMES, diskSize, facilityReport, facilityUnlocked, FORM_NAMES, memSize, partCost, partLock } from "./facilities.js";
 
 export const LOCKED_TEXT = "Unlocks later in the timeline.";
 export const SOON_TEXT = "Coming soon: it isn't in the game yet.";
@@ -412,6 +412,12 @@ function partInfo(state, facilityId, partId) {
   let effect;
   if (part.kind === "board") effect = `${SOCKET_NAMES[part.socket]} socket, ${part.slots} ${MEM_NAMES[part.mem]} ${part.slots === 1 ? "slot" : "slots"}${part.memMax ? ` up to ${part.memMax} MT/s` : ""}${part.oc ? ", overclocking" : part.memLock ? ", memory held to the CPU's rating" : ""}; a new board sells back what doesn't fit at half price.`;
   else if (part.kind === "cpu") effect = `It needs a ${SOCKET_NAMES[part.socket]} board whose chipset supports it, and ${memSize(part.ramMb)} of memory to run at full speed${part.unlocked ? "; unlocked, so an overclocking board adds 10%" : ""}.`;
+  else if (part.kind === "video") effect = `A ${part.bus === "agp" ? `${part.agpKey === "universal" ? "universal" : `${part.agpKey} V`} AGP` : part.bus === "pcie" ? `PCI Express ${part.pcie}.0` : part.bus.toUpperCase()} card, ${part.length} mm, ${part.watts} W${part.plug !== "none" ? ", with its own power plug" : ""}; the PC goes no faster than its CPU can feed it.`;
+  else if (part.kind === "accel") effect = "It adds 3D on a PCI slot, but only beside a graphics card.";
+  else if (part.kind === "sound") effect = `A ${part.bus.toUpperCase()} card; it adds ${Math.round(part.bonus * 100)}% to the PC.`;
+  else if (part.kind === "psu") effect = `${part.supply} W with ${part.mainPlug === "at" ? "AT board plugs" : part.mainPlug === "atx24" ? "a 24-pin board plug" : "a 20-pin board plug"}${part.cpuPlugs.includes("eps8") ? " and an 8-pin CPU plug" : part.cpuPlugs.includes("p4") ? " and a 4-pin CPU plug" : ""}; the PC slows down when it draws more than that.`;
+  else if (part.kind === "case") effect = `It takes ${part.boards.map((f) => FORM_NAMES[f]).join(" or ")} boards and cards up to ${part.maxGpu} mm${part.radiators.length ? `, radiators up to ${Math.max(...part.radiators)} mm` : ""}; a case adds 5% from airflow.`;
+  else if (part.kind === "fpu") effect = `It fits a board with a ${part.fpu} socket and speeds up a CPU with no math unit of its own by 15%.`;
   else if (part.kind === "stick") effect = `Each adds ${memSize(part.mb)}${part.speed ? ` at up to ${part.speed} MT/s` : ""}; it fits only a board with ${MEM_NAMES[part.mem]} slots.`;
   else if (part.kind === "server" && room) effect = `Each adds ${part.work} work and needs ${part.watts === 1 ? "its own generator" : `${part.watts} generators`} and ${part.watts === 1 ? "a" : part.watts} ${COOLER_NAMES[part.coolant || "air"]}${part.watts === 1 ? "" : "s"}, and ${diskSize(part.diskGb)} of disk for full speed.`;
   else if (part.kind === "server") effect = `Each adds ${part.work} work and draws ${part.watts} W from the rack supplies and fans, and needs ${diskSize(part.diskGb)} of disk for full speed.`;

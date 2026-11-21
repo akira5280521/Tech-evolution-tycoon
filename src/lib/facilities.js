@@ -639,7 +639,7 @@ export function partLock(state, part, researchName) {
   if (!part) return "Locked";
   if (playerYear(state) < (part.year || 0)) return `Requires ${part.year}`;
   if (part.research && !(state?.techDone || []).includes(part.research)) return `Research ${researchName || part.name} on the Tech page`;
-  if (partRetired(state, part)) return part.kind === "accel" ? "Out of production: combined 2D and 3D cards replaced it" : "Out of production: it lost to its rival";
+  if (partRetired(state, part)) return part.kind === "accel" ? "Out of production: combined 2D and 3D cards replaced it" : ["b-915btx", "k-btx"].includes(part.id) ? "Out of production: makers went back to ATX" : "Out of production: it lost to its rival";
   return null;
 }
 
@@ -865,7 +865,7 @@ function fitBench(counts, part) {
     if (boardNow?.builtin) return { reason: "This computer has its own supply." };
     const plugMisfit = boardNow ? psuMisfit(part, boardNow) : null;
     if (plugMisfit) return { reason: plugMisfit };
-    if (caseNow && part.form !== caseNow.form) return { reason: `The ${caseNow.name} takes an ${caseNow.form.toUpperCase()} supply.` };
+    if (caseNow && !supplyFits(caseNow.form, part.form)) return { reason: `The ${caseNow.name} takes ${caseNow.form === "sfx" ? "only a small SFX" : `an ${caseNow.form.toUpperCase()}`} supply.` };
     if (cardNow && !part.plugs.includes(cardNow.plug)) return { reason: `The ${cardNow.name} needs ${PLUG_NAMES[cardNow.plug]}.` };
     for (const x of benchHas(counts, "psu")) takeOut(x, `replaces the ${x.name}`);
     next[part.id] = 1;
@@ -874,7 +874,7 @@ function fitBench(counts, part) {
   if (part.kind === "case") {
     if (boardNow?.builtin) return { reason: "This computer came in its own case." };
     if (boardNow && !part.boards.includes(boardNow.form)) return { reason: `The ${boardNow.name} is ${FORM_NAMES[boardNow.form]}; this case doesn't take it.` };
-    if (psuNow && psuNow.form !== part.form) return { reason: `This case takes an ${part.form.toUpperCase()} supply.` };
+    if (psuNow && !supplyFits(part.form, psuNow.form)) return { reason: `This case takes ${part.form === "sfx" ? "only a small SFX" : `an ${part.form.toUpperCase()}`} supply.` };
     if (cardNow && cardNow.length > part.maxGpu) return { reason: `The ${cardNow.name} is too long for it (${part.maxGpu} mm).` };
     const [coolNow] = benchHas(counts, "cooler");
     if (coolNow?.aio && !part.radiators.includes(coolNow.radiator)) return { reason: `It has no ${coolNow.radiator} mm radiator mount for the ${coolNow.name}.` };
@@ -887,7 +887,13 @@ function fitBench(counts, part) {
 }
 
 const PLUG_NAMES = { none: "no plug", molex: "a drive power plug", "6pin": "a 6-pin PCIe plug", "8pin": "an 8-pin PCIe plug", "12vhpwr": "the 16-pin 12VHPWR plug" };
-export const FORM_NAMES = { at: "AT", atx: "ATX", matx: "micro-ATX", own: "built in" };
+export const FORM_NAMES = { at: "AT", atx: "ATX", matx: "micro-ATX", itx: "mini-ITX", eatx: "E-ATX", btx: "BTX", own: "built in" };
+// An ATX case takes an ATX or (with a bracket) an SFX supply; a small case
+// only SFX; an AT case only AT.
+const SUPPLY_FITS = { at: ["at"], atx: ["atx", "sfx"], sfx: ["sfx"] };
+function supplyFits(caseForm, psuForm) {
+  return (SUPPLY_FITS[caseForm] || [caseForm]).includes(psuForm);
+}
 const BUS_NAMES = { lpt: "printer port", isa8: "8-bit ISA", isa16: "16-bit ISA", vlb: "VL-Bus", pci: "PCI", agp: "AGP", pcie: "PCI Express" };
 
 const MAIN_NAMES = { at: "AT power plugs", atx20: "a 20-pin ATX plug", atx24: "a 24-pin ATX plug" };
@@ -1004,7 +1010,9 @@ export function benchStock(counts, opts = {}) {
   const [coolerNow] = benchHas(c, "cooler");
   const mounted = coolerNow && board && coolerNow.sockets.includes(board.socket) ? coolerNow : null;
   const heatStock = chip?.watts || 0;
-  const coolCap = mounted ? mounted.cap : heatStock <= 5 ? heatStock : 0;
+  // A case moves more or less air than open air; that scales the cooler.
+  const [caseHere] = benchHas(c, "case");
+  const coolCap = mounted ? Math.round(mounted.cap * (caseHere?.airflow || 1)) : heatStock <= 5 ? heatStock : 0;
   const canOc = fits && board.oc && chip.unlocked;
   const ocOn = canOc && wantOc && coolCap >= heatStock * 1.35;
   const thermal = !fits || heatStock <= 0 ? 1 : coolCap >= heatStock ? 1 : coolCap <= 0 ? 0.5 : Math.max(0.5, coolCap / heatStock);

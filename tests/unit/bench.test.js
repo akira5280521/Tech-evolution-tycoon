@@ -219,3 +219,26 @@ test("coolers: socket mounts, case fit, heat and the overclock switch", () => {
   // Up to the 386, no cooler needed.
   assert.equal(benchStock({ "b-deskpro": 1, "c-386": 1, "m-41256": 4, "p-at150": 1 }).thermal, 1);
 });
+
+import { partLock } from "../../src/lib/facilities.js";
+test("cases: form factors, SFX supplies, airflow and the end of BTX", () => {
+  // E-ATX boards need a big case; mini-ITX boards fit almost anything.
+  assert.match(fitPart({ "b-zenith": 1 }, "bench", "k-airflow").reason, /E-ATX/);
+  assert.ok(!fitPart({ "b-zenith": 1 }, "bench", "k-mesh").reason);
+  assert.ok(!fitPart({ "b-b550i": 1 }, "bench", "k-nr200").reason);
+  assert.ok(!fitPart({ "b-b550i": 1 }, "bench", "k-lancool").reason);
+  // A small case takes only an SFX supply; an ATX case takes either.
+  assert.match(fitPart({ "k-nr200": 1 }, "bench", "p-750").reason, /SFX/);
+  assert.ok(!fitPart({ "k-nr200": 1 }, "bench", "p-sf750").reason);
+  assert.ok(!fitPart({ "k-lancool": 1 }, "bench", "p-sf750").reason);
+  assert.match(fitPart({ "p-750": 1 }, "bench", "k-m1").reason, /SFX/);
+  // BTX boards only go in BTX cases.
+  assert.match(fitPart({ "b-915btx": 1 }, "bench", "k-atxmid").reason, /BTX/);
+  assert.ok(!fitPart({ "b-915btx": 1 }, "bench", "k-btx").reason);
+  // A case with better airflow lets the same cooler take more heat.
+  const pc = { "b-z690": 1, "c-14900k": 1, "m-ddr5b": 1, "p-1600": 1, "h-d15g2": 1 };
+  assert.ok(benchStock({ ...pc, "k-mesh": 1 }).coolCap > benchStock({ ...pc, "k-o11": 1 }).coolCap);
+  // BTX went out of production once the 2008 cases arrived.
+  const s = upTo(BUSINESSES[BUSINESSES.length - 1].id);
+  assert.match(partLock(s, part("k-btx")) || "", /back to ATX/);
+});

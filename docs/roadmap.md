@@ -214,8 +214,28 @@ test shipped in 0.0.13 (see Done).
     slow down. Overclocking adds a third more heat; an OVERCLOCK switch on
     the bench turns it on or off, and a cooler that can't take it keeps
     the CPU at stock speed.
-- **A 1980s era:** the eras jump from 1977 to 1991, so 1980s hardware opens
-  at Dial-up. Worth deciding on.
+- **PC build bench, stage 5** (cases, monitors, odd cards):
+  - 35 era cases (AT desktop 1984 to Fractel North XL 2024), each with an
+    airflow rating that scales what the cooler can take. Mini-ITX and
+    E-ATX boards, a BTX board and case (out of production once the 2008
+    cases arrive), and SFX supplies: a small case takes only SFX, an ATX
+    case either.
+  - 15 monitors (Inland 5151 1981 to a 2024 4K OLED). A monitor needs a port
+    in common with the card (TTL, VGA, DVI, HDMI, DisplayPort, as on the
+    real cards of each year) and caps the graphics it can show; with no
+    monitor the PC uses a borrowed screen at 90%.
+  - Expansion cards: TV tuners, RAID controllers, the PhysX chip (out of
+    production in 2008), capture cards. Two fit at once.
+  - COAST cache modules for Pentium boards.
+  - Research servers: the ARM line on the CPU tab (ARM1 1985 to Neoverse
+    N1), low-power ARM rack servers (Calxedon 2012, Amperion Altra 2020)
+    and storage arrays (EMZ Symmetrix 1990 to all-flash 2015).
+- **Hardware Museum** (MORE > MUSEUM): four wings (Computers & servers, PC
+  parts, Peripherals, History cards), a room per kind with found/total
+  counts, decade chips and a maker filter, an icon grid oldest first, and a
+  sheet per piece with its status (in use, researched, out of production).
+  Locked pieces are silhouettes with only their decade. Keyboards and mice
+  are museum-only and open by year. View-only.
 - **Space Age plan.** How to add it, in stages: `docs/space-age-plan.md`.
 
 ## Shipped in 0.0.25-0.0.26

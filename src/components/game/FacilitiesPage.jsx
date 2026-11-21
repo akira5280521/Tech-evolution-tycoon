@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { money } from "@/lib/gameConfig";
 import { businessIncomePerSecond, incomePerSecond } from "@/lib/empire";
 import {
@@ -7,6 +8,7 @@ import {
   facilityHint,
   facilityReport,
   diskSize,
+  memSize,
   facilityUnlocked,
   fitPart,
   nextPurchase,
@@ -19,7 +21,7 @@ import {
 } from "@/lib/facilities";
 import { extrasText, partValue } from "@/lib/plantValue";
 import { toast } from "sonner";
-import { researchItem, serverOutput } from "@/lib/research";
+import { playerYear, researchItem, serverOutput } from "@/lib/research";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { ItemHelp } from "./HintSheet";
@@ -66,7 +68,7 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, busi
       ) : (
         <div className="mt-2">
           <GoldButton dataAttr={`buy-${part.id}`} disabled={!affordable} onClick={onBuy}>
-            <span className="font-pixel text-[0.55rem]">{!open || lock ? "LOCKED" : `BUY ${money(cost)}`}</span>
+            <span className="font-pixel text-[0.55rem]">{!open || lock ? "LOCKED" : facilityId === "bench" && owned > 0 && part.kind !== "stick" ? "ON THE BENCH" : `BUY ${money(cost)}`}</span>
           </GoldButton>
         </div>
       )}
@@ -86,7 +88,7 @@ function PartValue({ state, facilityId, part, business }) {
   const note = fit.note ? ` Buying it ${fit.note}, at half what they cost.` : "";
   let text;
   let good = false;
-  if (v.maxed) text = "At the most you can own.";
+  if (v.maxed) text = facilityId === "bench" ? "On the bench." : "At the most you can own.";
   else if (v.why) text = v.why;
   else {
     good = true;
@@ -121,8 +123,25 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
   const open = facilityUnlocked(state, facility.id);
   const row = report[facility.id];
   const research = facility.id === "servers";
+  const bench = facility.id === "bench";
   const counts = state.facilities?.[facility.id] || {};
-  const parts = PARTS.filter((part) => part.fits.includes(facility.id));
+  const [benchTab, setBenchTab] = useState("cpu");
+  const [showAll, setShowAll] = useState(false);
+  let parts = PARTS.filter((part) => part.fits.includes(facility.id));
+  // The bench has close to a hundred parts across 50 years: show one kind at a
+  // time, only what the company's year has reached, newest first, and the
+  // older ones on request.
+  let hiddenOld = 0;
+  let hiddenLater = 0;
+  if (bench) {
+    const year = playerYear(state);
+    const all = parts.filter((part) => part.kind === benchTab).sort((a, b) => b.year - a.year || b.cost - a.cost);
+    const reached = all.filter((part) => part.year <= year);
+    hiddenLater = all.length - reached.length;
+    const keep = reached.filter((part, i) => showAll || i < BENCH_SHOWN || (counts[part.id] || 0) > 0);
+    hiddenOld = reached.length - keep.length;
+    parts = keep;
+  }
   return (
     <Panel>
       <div data-facility={facility.id}>
@@ -137,14 +156,21 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
         </div>
         <p className="mt-2 break-words font-term text-base leading-5 text-[var(--game-fg)]">{facility.blurb}</p>
         <p data-facility-yield className="mt-2 break-words font-term text-base leading-5 text-[var(--game-success)]">
-          {research ? `+${serverOutput(state).perSecond.toFixed(2)} R&D points a second` : money(row.perSecond) + "/s"}
-          {!research && open && business > 0 ? ` · ${percent(row.share)} of the businesses` : ""}
+          {bench ? `+${row.perSecond.toFixed(3)} R&D points a second` : research ? `+${(serverOutput(state).perSecond - serverOutput(state).bench).toFixed(2)} R&D points a second` : money(row.perSecond) + "/s"}
+          {!research && !bench && open && business > 0 ? ` · ${percent(row.share)} of the businesses` : ""}
         </p>
         <p data-facility-limit className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
           {open ? row.limit : facility.id === "servers" ? "Requires 1951" : "Locked"}
           {row.tier ? ` · ${row.tier} model` : ""}
         </p>
         <p data-facility-hint className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{facilityHint(state, facility.id, business)}</p>
+        {open && facility.id === "bench" && (
+          <p data-bench-build className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
+            Board: {row.board?.name || "none"} · CPU: {row.cpu?.name || "none"} · Memory: {memSize(row.ramMb)}
+            {row.cpu ? ` of the ${memSize(row.needMb)} it wants` : ""}
+            {row.board ? `, ${row.sticks} of ${row.board.slots} slots used` : ""}
+          </p>
+        )}
         {open && research && row.gpus > 0 && (
           <p data-server-stock className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
             {serverStockText(row)}
@@ -155,10 +181,27 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
             {Math.round(row.watts)} W of cards · {Math.round(row.power)} W power · {Math.round(row.cool)} W cooling · {Math.round(row.vram)} GB on the cards · {Math.round(row.ram)} GB RAM
           </p>
         )}
-        {open && row.board && (
+        {open && row.board && !bench && (
           <p data-board className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
             Memory: {row.board.used} of {row.board.slots} slots used on the {row.board.name}.
           </p>
+        )}
+        {open && bench && (
+          <div role="tablist" className="mt-2 flex flex-wrap gap-2">
+            {BENCH_TABS.map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={benchTab === id}
+                data-bench-tab={id}
+                onClick={() => setBenchTab(id)}
+                className={`min-h-12 border-2 px-3 font-pixel text-[0.5rem] ${benchTab === id ? "border-[var(--game-accent)] text-[var(--game-accent)]" : "border-[var(--game-border-strong)] text-[var(--game-muted)]"}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         )}
         <div className="mt-2 space-y-2">
           {parts.map((part) => (
@@ -179,10 +222,25 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
             />
           ))}
         </div>
+        {open && bench && hiddenOld > 0 && (
+          <div className="mt-2">
+            <GoldButton dataAttr="bench-show-all" onClick={() => setShowAll(true)}>
+              <span className="font-pixel text-[0.55rem]">SHOW {hiddenOld} OLDER</span>
+            </GoldButton>
+          </div>
+        )}
+        {open && bench && hiddenLater > 0 && (
+          <p data-bench-later className="mt-2 break-words font-term text-base leading-5 text-[var(--game-muted)]">
+            {hiddenLater} more come with later eras.
+          </p>
+        )}
       </div>
     </Panel>
   );
 }
+
+const BENCH_TABS = [["board", "BOARDS"], ["cpu", "CPUS"], ["stick", "MEMORY"]];
+const BENCH_SHOWN = 6;
 
 // After a prestige or fork the plants start empty; this buys last run's
 // layout back, cheapest parts first, as far as cash allows.

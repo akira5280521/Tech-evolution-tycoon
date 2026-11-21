@@ -91,3 +91,21 @@ test("the Tech page shows which part a project opens", async ({ page }) => {
   await page.click('[data-research-tab="servers"]');
   await expect(page.locator('[data-research-item="srv-7090"] [data-research-opens]')).toContainText("Inland 7090");
 });
+
+test("the PC bench: a board, then a CPU for its socket and memory for its slots", async ({ page }) => {
+  await open(page, "/facilities", { ...LATE, cash: 1e40, facilities: { mine: {}, cluster: {}, servers: {}, bench: {} } });
+  await tipsOff(page);
+  const bench = page.locator('[data-facility="bench"]');
+  // Newest first; older parts on request.
+  await expect(bench.locator('[data-part="c-p2"]')).toHaveCount(0);
+  await bench.locator('[data-action="bench-show-all"]').click();
+  await expect(bench.locator('[data-part="c-p2"] [data-part-value]')).toContainText("Needs a board with a Slot 1 socket");
+  await bench.locator('[data-bench-tab="board"]').click();
+  await bench.locator('[data-action="buy-b-440bx"]').click();
+  await bench.locator('[data-bench-tab="cpu"]').click();
+  await bench.locator('[data-action="buy-c-p2"]').click();
+  await bench.locator('[data-bench-tab="stick"]').click();
+  await bench.locator('[data-action="buy-m-pc66"]').click();
+  await expect(bench.locator("[data-bench-build]")).toContainText("Chipwright 440BX board · CPU: Chipwright P-II 300 · Memory: 32 MB of the 32 MB it wants, 1 of 4 slots used");
+  await expect(bench.locator('[data-part="m-ddr4a"] [data-part-value]')).toContainText("SDRAM DIMM");
+});

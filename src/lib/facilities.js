@@ -12,6 +12,7 @@
 
 import { BUSINESSES } from "./gameConfig.js";
 import { playerYear } from "./eraYear.js";
+import { BENCH_PARTS, BENCH_RD } from "./benchParts.js";
 
 export const SHARE_CAP = 0.05;
 export const STARTER_SHARE = 0.0009;
@@ -58,6 +59,12 @@ export const FACILITIES = [
     name: "TRAINING CLUSTER",
     icon: "/icons/facilities/cluster.png",
     blurb: "The cluster trains a model and bills the studio. A bigger model needs more memory.",
+  },
+  {
+    id: "bench",
+    name: "PC BUILD BENCH",
+    icon: "/icons/facilities/bench.png",
+    blurb: "One PC at a time, built from parts that fit: a board, a CPU for its socket, and memory for its slots. It makes R&D points.",
   },
   {
     id: "servers",
@@ -128,9 +135,11 @@ export const PARTS = [
   { id: "disk10k", kind: "disk", name: "9 GB SCSI disk", icon: "/icons/parts/disk10k.png", fits: ["servers"], year: 1996, research: "store-10k", cost: 1_000_000_000, coef: 2, gb: 9, spec: "1996: 9 GB at 10,000 rpm, the first drive to spin that fast." },
   { id: "hdd1t", kind: "disk", name: "1 TB disk", icon: "/icons/parts/hdd1t.png", fits: ["servers"], year: 2007, research: "store-1tb", cost: 10_000_000_000, coef: 2, gb: 1000, spec: "2007: 1 TB on five platters, 7200 rpm." },
   { id: "ssd2t", kind: "disk", name: "2 TB SSD", icon: "/icons/parts/ssd2t.png", fits: ["servers"], year: 2015, research: "store-ssd2t", cost: 100_000_000_000, coef: 2, gb: 2000, spec: "2015: 2 TB of NAND flash on SATA." },
+  ...BENCH_PARTS,
 ];
 
 const STARTER = {
+  bench: [],
   mine: ["raster1080", "psu750", "fans", "ddr4_16"],
   cluster: ["raster1080", "psu750", "fans", "ddr4_32"],
   servers: ["mark1", "mgset", "roomac", "tape"],
@@ -178,7 +187,7 @@ const PART_NEWS = {
 const byId = Object.fromEntries(PARTS.map((part) => [part.id, part]));
 
 export function blankFacilities() {
-  return { mine: {}, cluster: {}, servers: {} };
+  return { mine: {}, cluster: {}, servers: {}, bench: {} };
 }
 
 // (Saves are read with up to 32 of a stick anywhere, so migrateFacilities can
@@ -190,6 +199,9 @@ export function partMax(part, facilityId) {
   // One generator and one air conditioner per machine-room computer, and
   // there can be more machines than 24.
   if (part?.group === "room" && (part.kind === "power" || part.kind === "cool")) return ROOM_UNITS;
+  // One board and one CPU on the bench; sticks are limited by the board.
+  if (part?.kind === "board" || part?.kind === "cpu") return 1;
+  if (part?.kind === "stick") return 8;
   return MAX_PART;
 }
 
@@ -260,12 +272,13 @@ function ownedId(state, id) {
 
 export function facilityUnlocked(state, facilityId) {
   if (facilityId === "servers") return ownedId(state, "mainframes") >= 1;
+  if (facilityId === "bench") return ownedId(state, "homepc") >= 1;
   return ownedId(state, "ai") >= 1;
 }
 
 // The Facilities screen opens with its first plant (the research servers).
 export function anyFacilityOpen(state) {
-  return facilityUnlocked(state, "servers") || facilityUnlocked(state, "mine");
+  return facilityUnlocked(state, "servers") || facilityUnlocked(state, "bench") || facilityUnlocked(state, "mine");
 }
 
 export function facilitiesOpen(state) {
@@ -333,6 +346,7 @@ function stock(counts, facilityId) {
 // What the plant is short of first: power or cooling (for the servers, per
 // kind of room), then memory, then disk. { kind, group } or null.
 function shortOf(facilityId, stocked) {
+  if (facilityId === "bench") return null;
   if (facilityId === "servers") {
     for (const [group, g] of Object.entries(stocked.groups)) {
       if (g.watts <= 0) continue;
@@ -443,6 +457,7 @@ export function facilityReport(state, businessPerSecond) {
     mine: dress(mine),
     cluster: dress(cluster),
     servers: { ...servers, share: 0, perSecond: 0 },
+    bench: { ...benchStock(countsOf(state, "bench")), limit: benchLimit(countsOf(state, "bench")), share: 0 },
   };
 }
 
@@ -567,6 +582,7 @@ export function fitPart(counts, facilityId, partId) {
   const part = byId[partId];
   const owned = counts?.[partId] || 0;
   if (!part) return { reason: "Unknown part." };
+  if (facilityId === "bench") return fitBench(counts || {}, part);
   if (part.kind !== "ram" && owned >= partMax(part, facilityId)) return { reason: "At the most you can own." };
   const next = { ...counts, [partId]: owned + 1 };
   const board = BOARDS[facilityId];
@@ -596,6 +612,156 @@ export function fitPart(counts, facilityId, partId) {
   const gb = RAM_PARTS.reduce((sum, p) => sum + (next[p.id] || 0) * p.gb, 0);
   if (gb > board.maxGb) return { reason: `The board takes ${board.maxGb} GB at most.` };
   return { counts: next, refund, note: notes.join("; ") || null };
+}
+
+// --- The PC build bench ----------------------------------------------------
+
+export const SOCKET_NAMES = {
+  8080: "8080", 6502: "6502", z80: "Z80", 8088: "8088", 286: "286", 386: "386", 486: "486",
+  socket4: "Socket 4", socket7: "Socket 7", socket8: "Socket 8", slot1: "Slot 1", slota: "Slot A",
+  socketa: "Socket A", s478: "Socket 478", s939: "Socket 939", lga775: "LGA775", am2: "AM2+",
+  lga1366: "LGA1366", lga1155: "LGA1155", am3: "AM3+", lga1150: "LGA1150", lga1151: "LGA1151",
+  am4: "AM4", tr4: "TR4", lga1151v2: "LGA1151 (300-series)", lga1700: "LGA1700", am5: "AM5", lga1851: "LGA1851",
+};
+export const MEM_NAMES = {
+  dip: "memory-chip", simm30: "30-pin SIMM", simm72: "72-pin SIMM", sdram: "SDRAM DIMM",
+  ddr: "DDR", ddr2: "DDR2", ddr3: "DDR3", ddr4: "DDR4", ddr5: "DDR5",
+};
+
+function benchHas(counts, kind) {
+  return PARTS.filter((p) => p.kind === kind && p.fits.includes("bench") && (counts[p.id] || 0) > 0);
+}
+
+// The bench's rules, as on real PCs: a CPU goes only in a board with its
+// socket, memory only in a board with its kind of slot. A new board takes out
+// the CPU and memory that don't fit it, and a new CPU replaces the old one;
+// whatever comes out is sold back at half what it cost. When every memory
+// slot is full, a bigger stick replaces the smallest.
+function fitBench(counts, part) {
+  const next = { ...counts };
+  let refund = 0;
+  const notes = [];
+  const takeOut = (p, why) => {
+    const n = next[p.id] || 0;
+    if (!n) return;
+    refund += soldBack(p, n, 0);
+    delete next[p.id];
+    if (why) notes.push(why);
+  };
+  const [boardNow] = benchHas(counts, "board");
+  if (part.kind === "board") {
+    if ((counts[part.id] || 0) > 0) return { reason: "Already on the bench." };
+    if (boardNow) takeOut(boardNow, `replaces the ${boardNow.name}`);
+    for (const c of benchHas(counts, "cpu")) if (c.socket !== part.socket) takeOut(c, `takes out the ${c.name} (wrong socket)`);
+    let sticks = 0;
+    for (const m of benchHas(counts, "stick")) {
+      if (m.mem === part.mem) continue;
+      sticks += counts[m.id];
+      takeOut(m, null);
+    }
+    if (sticks) notes.push(`takes out ${sticks} memory ${sticks === 1 ? "stick" : "sticks"} that don't fit`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
+  if (part.kind === "cpu") {
+    if ((counts[part.id] || 0) > 0) return { reason: "Already on the bench." };
+    if (!boardNow) return { reason: `Needs a board with a ${SOCKET_NAMES[part.socket]} socket.` };
+    if (boardNow.socket !== part.socket) return { reason: `Needs a board with a ${SOCKET_NAMES[part.socket]} socket; this board has ${SOCKET_NAMES[boardNow.socket]}.` };
+    for (const c of benchHas(counts, "cpu")) takeOut(c, `replaces the ${c.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
+  if (part.kind === "stick") {
+    if (!boardNow) return { reason: `Needs a board with ${MEM_NAMES[part.mem]} slots.` };
+    if (boardNow.mem !== part.mem) return { reason: `Needs a board with ${MEM_NAMES[part.mem]} slots; this board takes ${MEM_NAMES[boardNow.mem]}.` };
+    next[part.id] = (next[part.id] || 0) + 1;
+    const used = benchHas(next, "stick").reduce((n, m) => n + next[m.id], 0);
+    if (used > boardNow.slots) {
+      const smallest = benchHas(next, "stick").filter((m) => next[m.id] > (m.id === part.id ? 1 : 0)).sort((a, b) => a.mb - b.mb)[0];
+      if (!smallest || smallest.mb >= part.mb) return { reason: `All ${boardNow.slots} memory slots are full.` };
+      refund += soldBack(smallest, next[smallest.id], next[smallest.id] - 1);
+      next[smallest.id] -= 1;
+      if (!next[smallest.id]) delete next[smallest.id];
+      notes.push(`replaces a ${smallest.name}`);
+    }
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
+  return { counts: { ...counts, [part.id]: (counts[part.id] || 0) + 1 }, refund: 0, note: null };
+}
+
+// The bench's PC: CPU speed, held back when memory is short.
+export function benchStock(counts) {
+  const c = counts || {};
+  const [board] = benchHas(c, "board");
+  const [chip] = benchHas(c, "cpu");
+  const ramMb = benchHas(c, "stick").reduce((n, m) => n + m.mb * c[m.id], 0);
+  const need = chip?.ramMb || 0;
+  const memory = !chip ? 0 : ramMb <= 0 ? 0 : Math.min(1, ramMb / need);
+  const perf = chip && board && board.socket === chip.socket ? chip.perf * memory : 0;
+  const sticks = benchHas(c, "stick").reduce((n, m) => n + c[m.id], 0);
+  return { board: board || null, cpu: chip || null, ramMb, needMb: need, sticks, memory, perf, perSecond: perf * BENCH_RD };
+}
+
+// The ways to put a faster CPU on the bench right now: the CPU, a board for
+// its socket if the bench doesn't have one, and the memory it wants. Each plan
+// lists the parts in buying order, with the total cost after sell-backs.
+export function benchPlans(state) {
+  const open = openParts(state);
+  let counts = { ...countsOf(state, "bench") };
+  const now = benchStock(counts);
+  const plans = [];
+  for (const chip of PARTS.filter((p) => p.kind === "cpu" && p.fits.includes("bench") && open.has(p.id))) {
+    if (chip.perf <= (now.cpu?.perf || 0)) continue;
+    const boards = now.board?.socket === chip.socket
+      ? [now.board]
+      : PARTS.filter((p) => p.kind === "board" && p.socket === chip.socket && open.has(p.id)).sort((a, b) => a.cost - b.cost);
+    for (const board of boards.slice(0, 1)) {
+      let c = { ...counts };
+      let cost = 0;
+      const steps = [];
+      const add = (part) => {
+        const fit = fitBench(c, part);
+        if (fit.reason) return false;
+        cost += partCost(part, c[part.id] || 0) - fit.refund;
+        c = fit.counts;
+        steps.push(part.id);
+        return true;
+      };
+      if (!(c[board.id] > 0) && !add(board)) continue;
+      if (!add(chip)) continue;
+      const sticks = PARTS.filter((p) => p.kind === "stick" && p.mem === board.mem && open.has(p.id)).sort((a, b) => b.mb - a.mb);
+      for (let i = 0; i < 8 && benchStock(c).memory < 0.999 && sticks.length; i++) {
+        const fits = sticks.find((m) => !fitBench(c, m).reason);
+        if (!fits || !add(fits)) break;
+      }
+      const after = benchStock(c);
+      plans.push({ cpu: chip, board, steps, cost, perf: after.perf, perSecond: after.perSecond });
+    }
+  }
+  return plans.sort((a, b) => b.perf - a.perf);
+}
+
+export function benchLimit(counts) {
+  const b = benchStock(counts);
+  if (!b.board) return "Add a board";
+  if (!b.cpu) return "Add a CPU";
+  if (b.memory < 0.999) return "Needs more memory";
+  return "Running full";
+}
+
+export function benchHint(state) {
+  const b = benchStock(countsOf(state, "bench"));
+  if (!b.board) return "Next: a motherboard, then a CPU for its socket and memory for its slots.";
+  if (!b.cpu) return `Next: a CPU for the ${SOCKET_NAMES[b.board.socket]} socket.`;
+  if (b.memory < 0.999) return `Next: more ${MEM_NAMES[b.board.mem]} memory; the ${b.cpu.name} wants ${memSize(b.needMb)}.`;
+  return "Next: a newer board and CPU as you reach their years and research them.";
+}
+
+export function memSize(mb) {
+  if (!(mb > 0)) return "0 KB";
+  if (mb >= 1024) return `${Number((mb / 1024).toFixed(2))} GB`;
+  if (mb >= 1) return `${Number(mb.toFixed(2))} MB`;
+  return `${Math.round(mb * 1000)} KB`;
 }
 
 // Old saves: drop parts that no longer fit their plant, DDR4 sticks sharing a
@@ -761,8 +927,9 @@ function marginal(state, offer, businessPerSecond) {
 
 export function facilityHint(state, facilityId, businessPerSecond) {
   if (!facilityUnlocked(state, facilityId)) {
-    return facilityId === "servers" ? "Requires 1951" : "Own an AI Accelerator to open the plant.";
+    return facilityId === "servers" ? "Requires 1951" : facilityId === "bench" ? "Requires 1977" : "Own an AI Accelerator to open the plant.";
   }
+  if (facilityId === "bench") return benchHint(state);
   const counts = countsOf(state, facilityId);
   const row = facilityReport(state, businessPerSecond)[facilityId];
   const open = openParts(state);

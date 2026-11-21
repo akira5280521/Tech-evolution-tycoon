@@ -56,7 +56,7 @@ import {
 } from "./empire.js";
 import { GENERATIONS, GENERATION_BONUS, generationAt, generationIndex, generationPayMult } from "./generations.js";
 import { RESEARCH, RESEARCH_TABS, awayBankCap, awayBankHours, playerYear, researchCost, researchItem, researchLock, researchSpeed, researchUnlocks, serverOutput } from "./research.js";
-import { FACILITIES, PARTS, SHARE_CAP, facilityReport, diskSize, facilityUnlocked, partCost, partLock } from "./facilities.js";
+import { FACILITIES, MEM_NAMES, PARTS, SHARE_CAP, SOCKET_NAMES, diskSize, facilityReport, facilityUnlocked, memSize, partCost, partLock } from "./facilities.js";
 
 export const LOCKED_TEXT = "Unlocks later in the timeline.";
 export const SOON_TEXT = "Coming soon: it isn't in the game yet.";
@@ -112,7 +112,8 @@ export const MATERIAL_FACTS = {
 
 // What each plant is (the Facilities page).
 export const FACILITY_FACTS = {
-  servers: "A small room of rack servers that crunch numbers for your engineers.",
+  servers: "From a 1951 machine room to racks of servers, crunching numbers for your engineers.",
+  bench: "A workbench where the lab builds one PC at a time from real parts, for the engineers to work on.",
   mine: "A rack of graphics cards that mints Bitbark, a game coin that can't be traded or taken out of the game.",
   cluster: "A rack of graphics cards that trains a model and bills the studio for it.",
 };
@@ -339,10 +340,11 @@ function researchInfo(state, id) {
   }
   const opens = researchUnlocks(id);
   let effect;
-  if (opens.length) {
-    effect = `Finishing it opens the ${opens.map((p) => p.name).join(" and the ")} on the Facilities page.`;
-  } else if (gen && gen.index > 0) {
+  const opensText = opens.length ? `It opens the ${opens.map((p) => p.name).join(" and the ")} on RIGS.` : "";
+  if (gen && gen.index > 0) {
     effect = `Finishing it switches ${row.name} to this chip once you own ${gen.need}: pay +${Math.round(gen.index * GENERATION_BONUS * 100)}% over the first chip.`;
+  } else if (opens.length) {
+    effect = opensText;
   } else if (following) {
     effect = `Finishing it opens the next ${tabName(entry.tab)} project, ${following.name}.`;
   } else {
@@ -355,7 +357,9 @@ function researchInfo(state, id) {
   else if (state?.techJob?.id === id) status = "In progress; it keeps going while the app is closed.";
   else if (lock) status = playerYear(state) < entry.year ? `Opens when your newest era reaches ${entry.year}.` : `${lock}.`;
   else status = `Costs ${rd(researchCost(entry))} R&D points and takes ${duration(entry.durationMs / researchSpeed(state))}.`;
-  return { title, text: `${what} ${effect}`, rows: [{ label: "NOW", text: status }] };
+  const rows = [{ label: "NOW", text: status }];
+  if (opensText && gen && gen.index > 0) rows.push({ label: "RIGS", text: opensText });
+  return { title, text: `${what} ${effect}`, rows };
 }
 
 function tabName(tab) {
@@ -368,7 +372,11 @@ function facilityInfo(state, id) {
   const open = facilityUnlocked(state, id);
   const what = FACILITY_FACTS[id] || facility.blurb;
   let does;
-  if (!open) does = id === "servers" ? "It opens with your first Mainframe." : LOCKED_TEXT;
+  if (!open) does = id === "servers" ? "It opens with your first Mainframe." : id === "bench" ? "It opens with your first Home Computer." : LOCKED_TEXT;
+  else if (id === "bench") {
+    const b = facilityReport(state, 0).bench;
+    does = `It makes R&D points: ${rate(b.perSecond)} a second now, from the CPU on the bench and the memory it has.`;
+  }
   else if (id === "servers") {
     const out = serverOutput(state);
     does = `It makes R&D points: ${rate(out.perSecond)} a second now (half while you're away), and it speeds up timed research ×${researchSpeed(state).toFixed(2)}.`;
@@ -400,7 +408,10 @@ function partInfo(state, facilityId, partId) {
   const who = servers ? "racks" : "cards";
   const room = part.group === "room";
   let effect;
-  if (part.kind === "server" && room) effect = `Each adds ${part.work} work and needs its own generator and air conditioner, and ${diskSize(part.diskGb)} of disk for full speed.`;
+  if (part.kind === "board") effect = `It takes a CPU for the ${SOCKET_NAMES[part.socket]} socket and ${part.slots} ${MEM_NAMES[part.mem]} memory ${part.slots === 1 ? "slot" : "slots"}; a new board sells back what doesn't fit at half price.`;
+  else if (part.kind === "cpu") effect = `It needs a ${SOCKET_NAMES[part.socket]} board and ${memSize(part.ramMb)} of memory to run at full speed.`;
+  else if (part.kind === "stick") effect = `Each adds ${memSize(part.mb)}; it fits only a board with ${MEM_NAMES[part.mem]} slots.`;
+  else if (part.kind === "server" && room) effect = `Each adds ${part.work} work and needs its own generator and air conditioner, and ${diskSize(part.diskGb)} of disk for full speed.`;
   else if (part.kind === "server") effect = `Each adds ${part.work} work and draws ${part.watts} W from the rack supplies and fans, and needs ${diskSize(part.diskGb)} of disk for full speed.`;
   else if (part.kind === "power" && room) effect = "Each powers one machine-room computer.";
   else if (part.kind === "cool" && room) effect = "Each cools one machine-room computer.";
@@ -412,7 +423,7 @@ function partInfo(state, facilityId, partId) {
   else effect = "";
   const lock = plantOpen ? partLock(state, part, researchItem(part.research)?.name) : null;
   const status = !plantOpen
-    ? servers ? "Opens with your first Mainframe." : LOCKED_TEXT
+    ? servers ? "Opens with your first Mainframe." : facilityId === "bench" ? "Opens with your first Home Computer." : LOCKED_TEXT
     : lock
       ? `${lock}.`
       : `You have ${owned}; the next costs ${money(partCost(part, owned))}.`;

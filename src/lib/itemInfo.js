@@ -354,7 +354,7 @@ function researchInfo(state, id) {
   const lock = researchLock(state, entry);
   let status;
   if (done) status = "Done.";
-  else if (state?.techJob?.id === id) status = "In progress; it keeps going while the app is closed.";
+  else if (state?.techJob?.id === id || state?.techJob2?.id === id) status = "In progress; it keeps going while the app is closed.";
   else if (lock) status = playerYear(state) < entry.year ? `Opens when your newest era reaches ${entry.year}.` : `${lock}.`;
   else status = `Costs ${rd(researchCost(entry))} R&D points and takes ${duration(entry.durationMs / researchSpeed(state))}.`;
   const rows = [{ label: "NOW", text: status }];
@@ -421,6 +421,7 @@ function partInfo(state, facilityId, partId) {
   else if (part.kind === "media") effect = `It adds ${Math.round(part.bonus * 1000) / 10}% to the PC.`;
   else if (part.kind === "net") effect = `A ${part.bus.toUpperCase()} card; it adds ${Math.round(part.bonus * 1000) / 10}% to the PC.`;
   else if (part.kind === "modem") effect = `It plugs into the serial port and adds ${Math.round(part.bonus * 1000) / 10}% to the PC.`;
+  else if (part.kind === "link") effect = `${part.mbps >= 1000 ? `${part.mbps / 1000} Gbit/s` : `${part.mbps} Mbit/s`}; it carries ${part.cap.toLocaleString("en-US")} work, and a plant with more than that is network-limited.`;
   else if (part.kind === "fpu") effect = `It fits a board with a ${part.fpu} socket and speeds up a CPU with no math unit of its own by 15%.`;
   else if (part.kind === "stick") effect = `Each adds ${memSize(part.mb)}${part.speed ? ` at up to ${part.speed} MT/s` : ""}; it fits only a board with ${MEM_NAMES[part.mem]} slots.`;
   else if (part.kind === "server" && room) effect = `Each adds ${part.work} work and needs ${part.watts === 1 ? "its own generator" : `${part.watts} generators`} and ${part.watts === 1 ? "a" : part.watts} ${COOLER_NAMES[part.coolant || "air"]}${part.watts === 1 ? "" : "s"}, and ${diskSize(part.diskGb)} of disk for full speed.`;

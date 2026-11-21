@@ -3,6 +3,18 @@
 // someone who has never played an idle game.
 
 export const GLOSSARY = {
+  bench: {
+    term: "PC BUILD BENCH",
+    text: "A plant on RIGS from Home Computers: the lab builds one PC from real parts. The CPU must match the board's socket and chipset, memory its slots, cards its slots (ISA, PCI, AGP, PCI Express), and the supply its plugs. The PC makes R&D points; a four-core CPU lets two Tech projects run at once.",
+  },
+  bottleneck: {
+    term: "BOTTLENECK",
+    text: "The slowest part holds the rest back. On the bench, a graphics card faster than the CPU can feed sits partly idle, and a slow card holds a fast CPU back. Memory, drives, power supplies and networks work the same way: the report names the part to upgrade.",
+  },
+  network: {
+    term: "NETWORK",
+    text: "Racks of research servers, and the training cluster's cards, share their work over a network: a hub or switch, later InfiniBand or NVLink. Without one, or with one too slow for the work, the plant shows Network-limited.",
+  },
   materials: {
     term: "MATERIALS",
     text: "Some businesses use what an earlier one makes: the Paper Mill turns wood into card stock, glass works need sand, and so on. Each one makes 1 per cycle until you buy its x3 upgrade, which makes it 3. The strip at the top shows what you have. If a material runs out, the business that needs it stops paying until more is made.",

@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import { playerYear, researchItem, serverOutput } from "@/lib/research";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
-import { ItemHelp } from "./HintSheet";
+import { HelpTip, ItemHelp } from "./HintSheet";
 
 function percent(share) {
   if (!(share > 0)) return "0%";
@@ -116,6 +116,7 @@ function serverStockText(row) {
   if (room?.watts > 0) parts.push(`Machine room: ${room.watts} generator${room.watts === 1 ? "" : "s"} and coolers needed, ${room.power} generator${room.power === 1 ? "" : "s"}, ${room.cool} cooler${room.cool === 1 ? "" : "s"}`);
   if (rack?.watts > 0) parts.push(`Racks: ${Math.round(rack.watts)} W, ${Math.round(rack.power)} W of supplies, ${Math.round(rack.cool)} W of fans`);
   parts.push(`Disk: ${diskSize(row.storage)} of the ${diskSize(row.need)} the newest machine needs`);
+  if (rack?.work > 0) parts.push(row.linkCap > 0 ? `Network: carries ${row.linkCap.toLocaleString("en-US")} of ${rack.work.toLocaleString("en-US")} rack work` : "Network: none, so each rack works alone at half speed");
   return parts.join(" · ");
 }
 
@@ -161,8 +162,9 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
           {!research && !bench && open && business > 0 ? ` · ${percent(row.share)} of the businesses` : ""}
         </p>
         <p data-facility-limit className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
-          {open ? row.limit : facility.id === "servers" ? "Requires 1951" : "Locked"}
+          {open ? row.limit : facility.id === "servers" ? "Requires 1951" : facility.id === "bench" ? "Requires 1977" : "Locked"}
           {row.tier ? ` · ${row.tier} model` : ""}
+          {open && (/Bottleneck/.test(row.limit || "") ? <HelpTip term="bottleneck" /> : row.limit === "Network-limited" ? <HelpTip term="network" /> : null)}
         </p>
         <p data-facility-hint className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{facilityHint(state, facility.id, business)}</p>
         {open && facility.id === "bench" && (

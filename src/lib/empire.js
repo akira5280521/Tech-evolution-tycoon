@@ -402,6 +402,7 @@ export function blankMeta() {
     news: [],
     techDone: [],
     techJob: null,
+    techJob2: null,
     goalsDone: [],
     boughtX10: false,
     tutorial: blankTutorial(),
@@ -1343,6 +1344,7 @@ export function snapshotMeta(state, options = {}) {
     // The research timeline and the ticker's own news are kept for good.
     techDone: [...(state.techDone || [])],
     techJob: state.techJob ? { ...state.techJob } : null,
+    techJob2: state.techJob2 ? { ...state.techJob2 } : null,
     news: Array.isArray(state.news) ? state.news.slice(-40) : [],
     specialties: [...(state.specialties || [])],
     upgrades: resetRunUpgrades ? {} : JSON.parse(JSON.stringify(state.upgrades || {})),

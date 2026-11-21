@@ -185,3 +185,17 @@ test("losing formats go out of production; a PCIe-card SSD runs at the slot's ge
   assert.equal(driveLink(p("d-900p"), p("b-z77")).text, "on a PCIe 3.0 card");
   assert.equal(driveLink(p("d-900p"), p("b-p67")).mbs, 800, "PCIe 2.0 slot");
 });
+
+import { canStartResearch, startResearch, secondTechSlot } from "../../src/lib/research.js";
+
+test("a four-core CPU on the bench lets two Tech projects run at once", () => {
+  const s = upTo("supercluster", []);
+  s.data = 1e9;
+  s.techDone = RESEARCH.map((e) => e.id).filter((id) => !["net-be", "snd-ae7"].includes(id));
+  assert.ok(startResearch(s, "net-be").ok);
+  assert.equal(canStartResearch(s, "snd-ae7"), false, "one slot without a four-core CPU");
+  s.facilities.bench = { "b-z690": 1, "c-12900k": 1, "m-ddr5b": 1, "p-750": 1 };
+  assert.ok(secondTechSlot(s));
+  assert.ok(startResearch(s, "snd-ae7").ok);
+  assert.equal(s.techJob2.id, "snd-ae7");
+});

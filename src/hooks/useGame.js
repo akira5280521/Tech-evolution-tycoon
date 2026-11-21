@@ -196,6 +196,7 @@ function applySavedMeta(state, raw) {
   state.data = (Number.isFinite(state.data) ? state.data : 0) + readResearchData(m.researchData);
   state.techDone = readTechDone(m.techDone);
   state.techJob = readTechJob(m.techJob);
+  state.techJob2 = readTechJob(m.techJob2);
   state.goalsDone = readGoalsDone(m.goalsDone);
   state.boughtX10 = !!m.boughtX10;
 }
@@ -272,6 +273,7 @@ function pack(s) {
     news: readNews(s.news),
     techDone: readTechDone(s.techDone),
     techJob: readTechJob(s.techJob),
+    techJob2: readTechJob(s.techJob2),
     biz: s.biz.map((b, i) => ({
       id: BUSINESSES[i].id,
       owned: b.owned,

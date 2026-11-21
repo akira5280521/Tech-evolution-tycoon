@@ -9,7 +9,9 @@ import {
   researchRows,
   researchSpeed,
   researchUnlocks,
+  secondTechSlot,
   serverOutput,
+  techJobs,
 } from "@/lib/research";
 import { dataPerSecond } from "@/lib/empire";
 import { useGameState } from "./GameState";
@@ -49,29 +51,36 @@ export default function ResearchPage() {
   const { state, startTech } = useGameState();
   const [tab, setTab] = useState("cpu");
   const rows = researchRows(tab);
-  const job = state.techJob;
-  const activeName = job ? researchItem(job.id) : null;
-  const progress = job && job.durationMs > 0 ? Math.min(100, (job.progressMs / job.durationMs) * 100) : 0;
-  const remaining = job ? Math.max(0, (job.durationMs - job.progressMs) / Math.max(0.25, researchSpeed(state))) : 0;
+  const jobs = techJobs(state);
+  const twoSlots = secondTechSlot(state);
   const rd = Math.floor(state.data || 0);
   const perSecond = dataPerSecond(state) + serverOutput(state).perSecond;
 
   return (
-    <ScreenShell title="RESEARCH" subtitle="One project at a time. It keeps going while the app is closed.">
+    <ScreenShell title="RESEARCH" subtitle="Projects keep going while the app is closed.">
       <Panel>
         <div className="flex items-start justify-between gap-1">
           <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">R&amp;D points {rd.toLocaleString("en-US")} · +{perSecond.toFixed(2)} a second · year {playerYear(state) || "—"}</p>
           <ItemHelp kind="rd" state={state} name="R&D points" className="-mr-2 -mt-2.5" />
         </div>
-        {job && activeName && (
-          <div data-research-active className="mt-2">
-            <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">Researching {activeName.name}</p>
-            <p className="font-term text-base leading-5 text-[var(--game-muted)]">{formatDuration(remaining)} left</p>
-            <div className="mt-1 h-2 border border-[var(--game-border)] bg-[var(--game-bg)]" aria-hidden="true">
-              <div className="h-full bg-[var(--game-accent)]" style={{ width: `${progress}%` }} />
+        {jobs.map((job) => {
+          const activeName = researchItem(job.id);
+          if (!activeName) return null;
+          const progress = job.durationMs > 0 ? Math.min(100, (job.progressMs / job.durationMs) * 100) : 0;
+          const remaining = Math.max(0, (job.durationMs - job.progressMs) / Math.max(0.25, researchSpeed(state)));
+          return (
+            <div key={job.id} data-research-active className="mt-2">
+              <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">Researching {activeName.name}</p>
+              <p className="font-term text-base leading-5 text-[var(--game-muted)]">{formatDuration(remaining)} left</p>
+              <div className="mt-1 h-2 border border-[var(--game-border)] bg-[var(--game-bg)]" aria-hidden="true">
+                <div className="h-full bg-[var(--game-accent)]" style={{ width: `${progress}%` }} />
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })}
+        <p data-research-slots className="mt-1 break-words font-term text-base leading-5 text-[var(--game-muted)]">
+          {twoSlots ? "Two projects at once: the bench's CPU has four or more cores." : "One project at a time. A four-core CPU on the PC bench allows two."}
+        </p>
       </Panel>
       <div className="flex flex-wrap gap-2 pb-1" role="tablist">
         {RESEARCH_TABS.map((entry) => (
@@ -92,7 +101,7 @@ export default function ResearchPage() {
         {rows.map((entry) => {
           const lock = researchLock(state, entry);
           const done = (state.techDone || []).includes(entry.id);
-          const running = job?.id === entry.id;
+          const running = jobs.some((j) => j.id === entry.id);
           const opens = researchUnlocks(entry.id);
           return (
             <Panel key={entry.id}>

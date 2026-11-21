@@ -12,7 +12,7 @@
 
 import { BUSINESSES } from "./gameConfig.js";
 import { playerYear } from "./eraYear.js";
-import { BENCH_PARTS, BENCH_RD } from "./benchParts.js";
+import { BENCH_PARTS, BENCH_RD, price } from "./benchParts.js";
 
 export const SHARE_CAP = 0.05;
 export const STARTER_SHARE = 0.0009;
@@ -150,6 +150,18 @@ export const PARTS = [
   { id: "psu400", kind: "power", group: "rack", name: "400 W supply", icon: "/icons/parts/psu400.png", fits: ["servers"], year: 1995, research: "pwr-atx", cost: 2_000_000_000, coef: 2, power: 450, spec: "400 W ATX supply for a single rack." },
   { id: "labfan", kind: "cool", group: "rack", name: "Rack fan", icon: "/icons/parts/labfan.png", fits: ["servers"], year: 1989, research: null, cost: 300_000_000, coef: 2, cool: 300, spec: "A 120 mm fan. Moves about 300 W of heat out of a rack." },
 
+  // --- Networks: racks of research servers, and the training cluster's cards,
+  // share work over a network. A slow one limits them (cap: work units).
+  { id: "l-synoptix", kind: "link", group: "rack", name: "SynOptix 10BASE-T hub", icon: "/icons/parts/l-synoptix.png", fits: ["servers"], year: 1990, research: "net-10baset", cost: price(1990, 0.1), coef: 1, cap: 60, mbps: 10, spec: "1990: 10 Mbit/s Ethernet over phone-style cable, from a maker that merged away in 1994." },
+  { id: "l-cat5000", kind: "link", group: "rack", name: "Sysco Catalyst 5000", icon: "/icons/parts/l-cat5000.png", fits: ["servers"], year: 1995, research: "net-100", cost: price(1995, 0.1), coef: 1, cap: 200, mbps: 100, spec: "1995: a switch for 100 Mbit/s Ethernet." },
+  { id: "l-cat6500", kind: "link", group: "rack", name: "Sysco Catalyst 6500", icon: "/icons/parts/l-cat6500.png", fits: ["servers"], year: 1999, research: "net-gige", cost: price(1999, 0.1), coef: 1, cap: 800, mbps: 1000, spec: "1999: a gigabit chassis switch that ran for twenty years." },
+  { id: "l-nexus5000", kind: "link", group: "rack", name: "Sysco Nexus 5000", icon: "/icons/parts/l-nexus5000.png", fits: ["servers"], year: 2008, research: "net-10g", cost: price(2008, 0.1), coef: 1, cap: 3000, mbps: 10000, spec: "2008: 10 Gbit/s Ethernet at every port." },
+  { id: "l-is4", kind: "link", group: "rack", name: "Melanox InfiniScale IV", icon: "/icons/parts/l-is4.png", fits: ["servers"], year: 2008, research: "net-ibqdr", cost: price(2008, 0.14), coef: 1, cap: 5000, mbps: 40000, spec: "2008: 40 Gbit/s InfiniBand with very low delay, from a maker bought in 2020." },
+  { id: "l-edr", kind: "link", name: "Melanox Switch-IB", icon: "/icons/parts/l-edr.png", fits: ["servers", "cluster"], year: 2014, research: "net-ibedr", cost: price(2014, 0.1), coef: 1, cap: 12000, mbps: 100000, spec: "2014: 100 Gbit/s InfiniBand." },
+  { id: "l-nvlink", kind: "link", name: "Raster NVLink bridge", icon: "/icons/parts/l-nvlink.png", fits: ["cluster"], year: 2016, research: "net-nvlink", cost: price(2016, 0.05), coef: 1, cap: 4000, mbps: 160000, spec: "2016: cards talk to each other directly at 160 GB/s." },
+  { id: "l-quantum", kind: "link", name: "Melanox Quantum", icon: "/icons/parts/l-quantum.png", fits: ["servers", "cluster"], year: 2018, research: "net-ibhdr", cost: price(2018, 0.1), coef: 1, cap: 40000, mbps: 200000, spec: "2018: 200 Gbit/s InfiniBand." },
+  { id: "l-nvswitch", kind: "link", name: "Raster NVSwitch", icon: "/icons/parts/l-nvswitch.png", fits: ["cluster"], year: 2018, research: "net-nvswitch", cost: price(2018, 0.15), coef: 1, cap: 100000, mbps: 2400000, spec: "2018: every card in the box linked to every other." },
+
   // --- Research servers: storage
   { id: "tape", kind: "disk", name: "Tape drive", icon: "/icons/parts/tape.png", fits: ["servers"], year: 1951, research: null, cost: 5_000, coef: 2, gb: 0.001, spec: "Half-inch metal tape on a reel, about a megabyte a reel." },
   { id: "ramac", kind: "disk", name: "Inland 350 disk", icon: "/icons/parts/ramac.png", fits: ["servers"], year: 1956, research: "store-hdd", cost: 50_000, coef: 2, gb: 0.005, spec: "1956: fifty 24-inch platters, 5 million characters." },
@@ -225,6 +237,7 @@ export function partMax(part, facilityId) {
   if (part?.group === "room" && (part.kind === "power" || part.kind === "cool")) return ROOM_UNITS;
   // One board and one CPU on the bench; sticks are limited by the board.
   if (TWIN_ADDINS.includes(part?.id)) return 2;
+  if (part?.kind === "link") return 1;
   if (part?.kind === "board" || part?.kind === "cpu") return 1;
   if (part?.kind === "stick") return 8;
   return MAX_PART;
@@ -330,6 +343,7 @@ function stock(counts, facilityId) {
   let gpus = 0;
   let storage = 0;
   let need = 0;
+  let linkCap = 0;
   const groups = { room: { watts: 0, power: 0, cool: 0, work: 0, by: {} }, rack: { watts: 0, power: 0, cool: 0, work: 0, by: {} } };
   for (const part of PARTS) {
     if (!part.fits.includes(facilityId)) continue;
@@ -362,8 +376,11 @@ function stock(counts, facilityId) {
       }
     } else if (part.kind === "ram") ram += part.gb * n;
     else if (part.kind === "disk") storage += part.gb * n;
+    else if (part.kind === "link") linkCap = Math.max(linkCap, part.cap);
   }
   let speed = watts <= 0 ? 0 : Math.min(1, Math.min(power, cool) / watts);
+  let netFactor = 1;
+  let rawSpeed = speed;
   if (facilityId === "servers") {
     // Each kind of room runs on its own power and cooling.
     let running = 0;
@@ -378,9 +395,21 @@ function stock(counts, facilityId) {
       g.speed = g.work > 0 ? groupRunning / g.work : 0;
       running += groupRunning;
     }
+    rawSpeed = work > 0 ? running / work : 0;
+    // Racks share work over the network; without one each runs alone.
+    const rack = groups.rack;
+    if (rack.work > 0) {
+      netFactor = 0.5 + 0.5 * Math.min(1, linkCap / rack.work);
+      running -= rack.work * rack.speed * (1 - netFactor);
+    }
     speed = work > 0 ? running / work : 0;
+  } else if (facilityId === "cluster" && gpus > 1) {
+    rawSpeed = speed;
+    // Training across cards needs them linked.
+    netFactor = 0.85 + 0.15 * Math.min(1, linkCap / work);
+    speed *= netFactor;
   }
-  return { watts, power, cool, vram, ram, work, gpus, speed, storage, need, groups };
+  return { watts, power, cool, vram, ram, work, gpus, speed, rawSpeed, storage, need, groups, linkCap, netFactor };
 }
 
 // What the plant is short of first: power or cooling (for the servers, per
@@ -395,12 +424,14 @@ function shortOf(facilityId, stocked) {
         if (c.watts > 0 && c.cool < c.watts) return { kind: "cool", group, coolant };
       }
     }
+    if (stocked.netFactor < 0.999) return { kind: "link", group: null, need: stocked.groups.rack.work };
     if (stocked.need > 0 && stocked.storage < stocked.need) return { kind: "disk", group: null };
     return null;
   }
   if (stocked.power < stocked.watts) return { kind: "power", group: null };
   if (stocked.cool < stocked.watts) return { kind: "cool", group: null };
   if (memoryFactor(facilityId, stocked).limit === "Needs more RAM") return { kind: "ram", group: null };
+  if (stocked.netFactor < 0.999) return { kind: "link", group: null, need: stocked.work };
   return null;
 }
 
@@ -439,7 +470,7 @@ function nextTierRam(stocked) {
 }
 
 function hardwareLimit(stocked, mem) {
-  const powerFactor = stocked.gpus <= 0 ? 0 : stocked.speed;
+  const powerFactor = stocked.gpus <= 0 ? 0 : stocked.rawSpeed ?? stocked.speed;
   const memFactor = mem.factor >= 1 ? 1 : mem.factor;
   if (stocked.gpus <= 0) return "Add a GPU";
   if (powerFactor < 0.999 && powerFactor <= memFactor) {
@@ -450,6 +481,7 @@ function hardwareLimit(stocked, mem) {
     return stocked.power <= stocked.cool ? "Power limited" : "Cooling limited";
   }
   if (mem.limit && memFactor < 0.999) return mem.limit;
+  if (stocked.netFactor < 0.999) return "Network-limited";
   return "Running full";
 }
 
@@ -472,6 +504,8 @@ function rowOf(facilityId, counts) {
     gpus: stocked.gpus,
     board: boardOf(facilityId, counts),
     groups: stocked.groups,
+    linkCap: stocked.linkCap,
+    netFactor: stocked.netFactor,
     storage: stocked.storage,
     need: stocked.need,
   };
@@ -505,6 +539,7 @@ export function facilityReport(state, businessPerSecond) {
 
 function cheapest(facilityId, kind, counts, open = null, group = null, coolant = null) {
   if (kind === "disk") return diskFor(facilityId, counts, open);
+  if (kind === "link") return linkFor(facilityId, counts, open);
   let best = null;
   for (const part of PARTS) {
     if (part.soon || part.kind !== kind || !part.fits.includes(facilityId)) continue;
@@ -535,6 +570,22 @@ function diskFor(facilityId, counts, open) {
     const cost = partCost(part, owned);
     if (part.gb >= gap && (!best || cost < best.cost)) best = { part, cost };
     if (!biggest || part.gb > biggest.part.gb) biggest = { part, cost };
+  }
+  return best || biggest;
+}
+
+// The cheapest network that carries all of the plant's work, or the biggest.
+function linkFor(facilityId, counts, open) {
+  const stocked = stock(counts, facilityId);
+  const need = facilityId === "servers" ? stocked.groups.rack.work : stocked.work;
+  let best = null;
+  let biggest = null;
+  for (const part of PARTS) {
+    if (part.kind !== "link" || !part.fits.includes(facilityId) || (open && !open.has(part.id))) continue;
+    if ((counts[part.id] || 0) > 0 || part.cap <= stocked.linkCap) continue;
+    const cost = partCost(part, 0);
+    if (part.cap >= need && (!best || cost < best.cost)) best = { part, cost };
+    if (!biggest || part.cap > biggest.part.cap) biggest = { part, cost };
   }
   return best || biggest;
 }
@@ -1168,6 +1219,18 @@ export function settleClosedParts(state) {
       for (let i = 0; i < n; i++) refund += partCost(part, i);
       delete counts[partId];
     }
+  }
+  // Networks arrived later than the racks they serve: a save with racks (or
+  // linked cluster cards) and no network gets the first one of its day,
+  // already researched, so nothing slows down on loading.
+  for (const facilityId of ["servers", "cluster"]) {
+    const st = stock(facilities[facilityId], facilityId);
+    const needsLink = facilityId === "servers" ? st.groups.rack.work > 0 : st.gpus > 1;
+    if (!needsLink || st.linkCap > 0) continue;
+    const first = PARTS.filter((p) => p.kind === "link" && p.fits.includes(facilityId) && (p.year || 0) <= year).sort((x, y) => x.year - y.year)[0];
+    if (!first) continue;
+    facilities[facilityId][first.id] = 1;
+    if (first.research) done.add(first.research);
   }
   state.facilities = facilities;
   state.techDone = [...done];

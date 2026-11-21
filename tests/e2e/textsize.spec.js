@@ -13,7 +13,7 @@ for (const size of ["large", "xl"]) {
       await expect(page.locator("html")).toHaveAttribute("data-text", size);
       await tipsOff(page);
       const problems = [];
-      for (const path of [...ROUTES, "/more#settings", "/more#stats", "/more#howto", "/more#badges"]) {
+      for (const path of [...ROUTES, "/more#settings", "/more#stats", "/more#howto", "/more#badges", "/more#museum"]) {
         await page.goto(path);
         await page.locator("nav[aria-label='Main navigation']").waitFor();
         await page.waitForTimeout(500);

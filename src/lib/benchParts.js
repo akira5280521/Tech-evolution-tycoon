@@ -295,6 +295,8 @@ for (const b of BENCH_BOARDS) {
   if (b.gpuSlot.startsWith("agp")) buses.push(b.gpuSlot);
   if (b.gpuSlot === "pcie") buses.push("pcie");
   b.buses = buses;
+  // Sound on the board: AC'97 from 1999, HD Audio from 2004.
+  b.onboardSound = b.builtin ? 0 : b.year >= 2004 ? 0.02 : b.year >= 1999 ? 0.01 : 0;
 }
 
 // Board power plugs, as on the real boards: AT boards take the AT supply's
@@ -362,26 +364,55 @@ export const BENCH_CARDS = [
 function accel(id, name, year, research, gfx, spec) {
   return { ...base, id, kind: "accel", name, year, research, bus: "pci", gfx, watts: 15, icon: icon2(id), cost: price(year, 0.3), spec };
 }
+// 3D-only add-ins were made from 1996 until combined 2D/3D cards took over
+// in 1999; once those are researched (retiredBy), makers stop selling them,
+// though one already on the bench keeps working.
 export const BENCH_ACCELS = [
-  accel("a-voodoo", "Threefold Add-in", 1996, "gpu-3d", 2.2, "1996: 3D only, on PCI, 4 MB; a cable loops the 2D card's picture through it."),
-  accel("a-voodoo2", "Threefold Add-in 2", 1998, "vid-voodoo2", 3.2, "1998: 3D only; two could share the work over a ribbon cable."),
+  accel("a-righteous", "Orchis Righteous 3D", 1996, "gpu-3d", 2.2, "1996: the first Threefold 3D chip on a card, with a relay that clicked as games started."),
+  accel("a-monster", "Diamant Monster 3D", 1996, "gpu-3d", 2.2, "1996: the same Threefold chip on a popular board."),
+  accel("a-apoc3d", "VideoLogique Apocalypse 3D", 1996, "vid-pcx1", 1.8, "1996: a 3D-only card that sent finished frames to the 2D card over PCI."),
+  accel("a-apocalypse", "VideoLogique Apocalypse 3Dx", 1997, "vid-apocalypse", 2.6, "1997: the second, faster chip of the same kind."),
+  accel("a-m3d", "Matrix m3D", 1997, "vid-apocalypse", 2.6, "1997: the same 3D-only chip on another maker's board."),
+  accel("a-voodoo2", "Diamant Monster 3D II", 1998, "vid-voodoo2", 3.2, "1998: 3D only; two could split the work over a ribbon cable."),
+  accel("a-blaster2", "Creatix 3D Blaster V2", 1998, "vid-voodoo2", 3.2, "1998: the same chip set, 12 MB; two could also be linked."),
+  accel("a-obsidian", "Quantum Graphics Obsidian2 X-24", 1998, "vid-obsidian", 5.4, "1998: two linked 3D chip sets on one card, from a maker long gone."),
 ];
+const RETIRED_BY = {
+  "a-righteous": "vid-voodoo3", "a-monster": "vid-voodoo3", "a-voodoo2": "vid-voodoo3", "a-blaster2": "vid-voodoo3", "a-obsidian": "vid-voodoo3",
+  "a-apoc3d": "gpu-256", "a-apocalypse": "gpu-256", "a-m3d": "gpu-256",
+};
+for (const a of BENCH_ACCELS) a.retiredBy = RETIRED_BY[a.id] || null;
 
 function sound(id, name, year, research, bus, bonus, spec) {
   return { ...base, id, kind: "sound", name, year, research, bus, bonus, watts: 5, icon: icon2(id), cost: price(year, 0.08), spec };
 }
 export const BENCH_SOUND = [
+  sound("s-covox", "Covax Speech Thing", 1986, "snd-covox", "lpt", 0.015, "1986: a resistor ladder on the printer port that played digital sound."),
   sound("s-adlib", "AdLab Music Card", 1987, "snd-adlib", "isa8", 0.02, "1987: FM music on an 8-bit card, from a maker gone by 1992."),
+  sound("s-lapc", "Rowland LAPC-I", 1989, "snd-lapc", "isa8", 0.03, "1989: a studio synthesizer's sound on a card, for games that supported it."),
   sound("s-sb", "Creatix Blaster 1.0", 1989, "snd-sb", "isa8", 0.03, "1989: FM music plus digital sound effects."),
+  sound("s-dss", "Castle Sound Source", 1990, "snd-dss", "lpt", 0.02, "1990: a little speaker box on the printer port."),
+  sound("s-pas", "Media Visia Pro Audio Spectrum", 1991, "snd-pas", "isa16", 0.035, "1991: from a maker that collapsed in 1994."),
+  sound("s-sbpro", "Creatix Blaster Pro", 1991, "snd-sbpro", "isa8", 0.035, "1991: stereo, two FM chips."),
   sound("s-sb16", "Creatix Blaster 16", 1992, "snd-sb16", "isa16", 0.04, "1992: 16-bit CD-quality sound."),
   sound("s-gus", "Gravitas UltraSound", 1992, "snd-gus", "isa16", 0.045, "1992: real instrument samples on the card; the company is long gone."),
   sound("s-awe32", "Creatix AWE32", 1994, "snd-awe32", "isa16", 0.05, "1994: 32 voices of sampled instruments."),
+  sound("s-soundscape", "Ensonix Soundscape", 1994, "snd-soundscape", "isa16", 0.05, "1994: sampled instruments from a synthesizer maker."),
+  sound("s-tropez", "Tortoise Beach Tropez", 1995, "snd-tropez", "isa16", 0.05, "1995: wavetable sound with room for more samples."),
+  sound("s-awe64", "Creatix AWE64", 1996, "snd-awe64", "isa16", 0.052, "1996: 64 voices, one of the last ISA sound cards."),
+  sound("s-vortex", "Aurora Vortex", 1997, "snd-vortex", "pci", 0.052, "1997: 3D sound on PCI."),
   sound("s-audiopci", "Ensonix AudioPCI", 1997, "snd-audiopci", "pci", 0.05, "1997: a cheap PCI card that sold in huge numbers."),
+  sound("s-mx300", "Diamant Monster Sound MX300", 1998, "snd-mx300", "pci", 0.058, "1998: Aurora's second chip on a popular board."),
   sound("s-vortex2", "Aurora Vortex2", 1998, "snd-vortex2", "pci", 0.06, "1998: 3D sound from two speakers; the maker went bankrupt in 2000."),
   sound("s-live", "Creatix Live", 1998, "snd-live", "pci", 0.055, "1998: effects worked out on the card's own chip."),
   sound("s-audigy", "Creatix Audigy", 2001, "snd-audigy", "pci", 0.06, "2001: 24-bit sound and a FireWire port."),
+  sound("s-audigy2", "Creatix Audigy 2", 2002, "snd-audigy2", "pci", 0.062, "2002: 24-bit, 96 kHz, 6.1 surround."),
   sound("s-xfi", "Creatix X-Fi", 2005, "snd-xfi", "pci", 0.065, "2005: a sound chip with more transistors than a 586."),
+  sound("s-xmeridian", "Auzentek X-Meridian", 2007, "snd-xmeridian", "pci", 0.066, "2007: a card for listeners, from a maker gone by 2011."),
+  sound("s-stx", "Astra Xonar Essence STX", 2008, "snd-stx", "pcie", 0.068, "2008: a shielded card with a headphone amplifier."),
   sound("s-z", "Creatix Z", 2012, "snd-z", "pcie", 0.065, "2012: PCI Express, with a red glow."),
+  sound("s-zxr", "Creatix ZxR", 2013, "snd-zxr", "pcie", 0.07, "2013: two cards in one, with a daughterboard."),
+  sound("s-ae5", "Creatix AE-5", 2018, "snd-ae5", "pcie", 0.07, "2018: a headphone amplifier and lights on the card."),
   sound("s-ae7", "Creatix AE-7", 2019, "snd-ae7", "pcie", 0.07, "2019: a high-end card with an outboard control box."),
 ];
 
@@ -434,7 +465,82 @@ export const BENCH_FPUS = [
   fpu("f-fasmath", "Cyrus FasMath 83D87", 1989, "fpu-fasmath", "387", "1989: a faster 387 from Cyrus's first product line."),
 ];
 
-export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CARDS, ...BENCH_ACCELS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS];
+// --- Stage 3: drives, removable media, network, modems --------------------
+
+// Drives: interface (mfm, ide, sata, nvme), the link it speaks (IDE mode in
+// MB/s, SATA generation 1-3, NVMe PCIe generation), its own top speed (MB/s)
+// and size (GB). A drive runs at the slowest of itself and the board's port.
+function drive(id, name, year, research, iface, link, mbs, gb, spec) {
+  return { ...base, id, kind: "drive", name, year, research, iface, link, mbs, gb, watts: 8, icon: icon2(id), cost: price(year, 0.12), spec };
+}
+export const BENCH_DRIVES = [
+  drive("d-st506", "Seabird ST-506", 1980, "drv-st506", "mfm", 0, 0.6, 0.005, "1980: the first 5.25-inch hard disk, 5 MB."),
+  drive("d-st225", "Seabird ST-225", 1984, "drv-st225", "mfm", 0, 0.6, 0.02, "1984: 20 MB, the common PC drive of the 1980s."),
+  drive("d-cp3044", "Connor CP-3044", 1989, "drv-cp3044", "ide", 16, 1.5, 0.04, "1989: a 40 MB 3.5-inch IDE drive from a maker that merged away in 1996."),
+  drive("d-lps540", "Quanta ProDrive LPS 540", 1994, "drv-lps540", "ide", 16, 5, 0.54, "1994: 540 MB, from a drive maker sold off in 2001."),
+  drive("d-caviar", "Western Data Caviar 21600", 1996, "drv-caviar", "ide", 16, 8, 1.6, "1996: 1.6 GB on IDE."),
+  drive("d-16gp", "Inland Deskstar 16GP", 1997, "drv-16gp", "ide", 33, 12, 16.8, "1997: 16.8 GB on ATA-33."),
+  drive("d-75gxp", "Inland Deskstar 75GXP", 2000, "drv-75gxp", "ide", 100, 37, 75, "2000: 75 GB on ATA-100, remembered for failing."),
+  drive("d-dm9", "Maxtel DiamondMax Plus 9", 2003, "drv-dm9", "ide", 133, 55, 200, "2003: 200 GB on ATA-133, from a maker bought in 2006."),
+  drive("d-raptor", "Western Data Raptor", 2003, "drv-raptor", "sata", 1, 72, 36, "2003: 10,000 rpm on the first SATA, 1.5 Gbit/s."),
+  drive("d-7k1000", "Hikari Deskstar 7K1000", 2007, "drv-7k1000", "sata", 2, 85, 1000, "2007: the first 1 TB drive, SATA at 3 Gbit/s."),
+  drive("d-vraptor", "Western Data VelociRaptor", 2008, "drv-vraptor", "sata", 2, 120, 300, "2008: a 2.5-inch 10,000 rpm drive in a heatsink frame."),
+  drive("d-3tb", "Seabird Barracuda XT 3TB", 2010, "drv-3tb", "sata", 3, 150, 3000, "2010: 3 TB on SATA at 6 Gbit/s."),
+  drive("d-10tb", "Seabird 10TB", 2016, "drv-10tb", "sata", 3, 250, 10000, "2016: helium-filled, 10 TB."),
+  drive("d-18tb", "Seabird Exos 18TB", 2020, "drv-18tb", "sata", 3, 270, 18000, "2020: 18 TB."),
+  drive("d-24tb", "Seabird 24TB", 2023, "drv-24tb", "sata", 3, 285, 24000, "2023: 24 TB of spinning disk."),
+  drive("d-x25m", "Chipwright X25-M", 2008, "ssd-x25m", "sata", 2, 250, 80, "2008: an 80 GB SSD that made spinning disks feel slow."),
+  drive("d-vertex", "OXZ Vertex", 2009, "ssd-vertex", "sata", 2, 230, 120, "2009: an early SSD from a maker that went bankrupt in 2016."),
+  drive("d-840pro", "Sunsung 840 Pro", 2012, "ssd-840pro", "sata", 3, 540, 256, "2012: as fast as 6 Gbit/s SATA allows."),
+  drive("d-950pro", "Sunsung 950 Pro", 2015, "ssd-950pro", "nvme", 3, 2500, 512, "2015: an M.2 NVMe drive on four PCIe 3.0 lanes."),
+  drive("d-970evo", "Sunsung 970 Evo Plus", 2019, "ssd-970evo", "nvme", 3, 3500, 1000, "2019: 3.5 GB/s, the PCIe 3.0 limit."),
+  drive("d-980pro", "Sunsung 980 Pro", 2020, "ssd-980pro", "nvme", 4, 7000, 1000, "2020: PCIe 4.0, 7 GB/s."),
+  drive("d-990pro", "Sunsung 990 Pro", 2022, "ssd-990pro", "nvme", 4, 7450, 2000, "2022: 7.45 GB/s."),
+  drive("d-t700", "Critical T700", 2023, "ssd-t700", "nvme", 5, 12400, 2000, "2023: PCIe 5.0, 12.4 GB/s, with a big heatsink."),
+];
+
+// Floppy, optical and cartridge drives: how they connect, and a small bonus.
+function media(id, name, year, research, iface, bonus, spec) {
+  return { ...base, id, kind: "media", name, year, research, iface, bonus, watts: 5, icon: icon2(id), cost: price(year, 0.05), spec };
+}
+export const BENCH_MEDIA = [
+  media("r-disk2", "Orchard Disk II", 1978, "med-disk2", "floppy", 0.02, "1978: a 5.25-inch floppy drive, 140 KB a disk."),
+  media("r-360k", "5.25-inch 360 KB drive", 1982, "med-360k", "floppy", 0.02, "1982: double-sided disks for the Inland PC."),
+  media("r-144", "3.5-inch 1.44 MB drive", 1987, "med-144", "floppy", 0.025, "1987: a disk in a hard shell with a metal shutter."),
+  media("r-cd2x", "Creatix CD-ROM 2x", 1993, "med-cd2x", "isa", 0.03, "1993: 650 MB discs, wired to a sound card."),
+  media("r-zip", "Ioma Zip 100", 1995, "med-zip", "ide", 0.03, "1995: 100 MB cartridges, from a maker long gone."),
+  media("r-jaz", "Ioma Jaz", 1996, "med-jaz", "ide", 0.035, "1996: 1 GB removable hard-disk cartridges."),
+  media("r-dvd", "DVD-ROM drive", 1997, "med-dvd", "ide", 0.035, "1997: 4.7 GB discs."),
+  media("r-cd52", "52x CD-ROM drive", 2000, "med-cd52", "ide", 0.035, "2000: about as fast as a spinning disc can go."),
+  media("r-bd", "Blu-ray drive", 2006, "med-bd", "sata", 0.04, "2006: 25 GB a layer, read by a blue-violet laser."),
+];
+
+// Network cards plug into a bus; modems sit on the serial port.
+function net(id, name, year, research, bus, bonus, spec) {
+  return { ...base, id, kind: "net", name, year, research, bus, bonus, watts: 5, icon: icon2(id), cost: price(year, 0.06), spec };
+}
+function modem(id, name, year, research, bonus, spec) {
+  return { ...base, id, kind: "modem", name, year, research, bonus, watts: 3, icon: icon2(id), cost: price(year, 0.04), spec };
+}
+export const BENCH_NET = [
+  net("n-3c501", "TriCom EtherLink", 1982, "net-3c501", "isa8", 0.02, "1982: Ethernet on an 8-bit card, from a maker gone since 2010."),
+  net("n-3c509", "TriCom EtherLink III", 1994, "net-3c509", "isa16", 0.03, "1994: the ISA network card nearly every office had."),
+  net("n-3c595", "TriCom Fast EtherLink", 1995, "net-100", "pci", 0.04, "1995: 100 Mbit/s on PCI."),
+  net("n-killer", "Bigfeet Killer NIC", 2006, "net-killer", "pci", 0.045, "2006: a network card with its own processor, for gamers."),
+  net("n-7260", "Chipwright 7260 Wi-Fi", 2013, "net-ac", "pcie", 0.05, "2013: Wi-Fi 5, 867 Mbit/s."),
+  net("n-aqc107", "Aquanta AQC107", 2017, "net-aqc107", "pcie", 0.06, "2017: 10 Gbit/s Ethernet, from a chip maker bought in 2019."),
+  net("n-ax200", "Chipwright AX200", 2019, "net-ax", "pcie", 0.06, "2019: Wi-Fi 6."),
+  net("n-be200", "Chipwright BE200", 2024, "net-be", "pcie", 0.065, "2024: Wi-Fi 7."),
+];
+export const BENCH_MODEMS = [
+  modem("o-300", "Hays Smartmodem 300", 1981, "mod-300", 0.01, "1981: 300 bit/s; programs could dial it, from a maker gone by 1999."),
+  modem("o-2400", "Hays Smartmodem 2400", 1985, "mod-2400", 0.015, "1985: 2,400 bit/s."),
+  modem("o-14k", "US Robots Sportster 14,400", 1991, "mod-14k", 0.02, "1991: V.32bis, 14,400 bit/s."),
+  modem("o-28k", "US Robots Sportster 28,800", 1994, "mod-28k", 0.025, "1994: V.34, 28,800 bit/s."),
+  modem("o-56k", "US Robots 56K", 1998, "mod-56k", 0.03, "1998: V.90, the fastest a phone line carries."),
+];
+
+export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CARDS, ...BENCH_ACCELS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS];
 
 // R&D a second for each point of CPU perf at full memory. Tuned in the
 // simulation so the bench adds about a tenth of what the research servers make.

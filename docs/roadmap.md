@@ -157,11 +157,27 @@ test shipped in 0.0.13 (see Done).
     AIO stage), +5% airflow.
   - Math coprocessors: 8087, 287, 387 and Cyrus FasMath, +15% for a CPU
     without floating point.
-- **Stages to come:** 3, drives (MFM, IDE, SATA 1.5/3/6 Gbit/s, NVMe by
-  PCIe generation), optical and removable drives, network cards and
-  modems; 4, air coolers and AIOs, with radiators that must fit the case's
-  mounts. Defunct makers in each (Conner, Quantum, Micropolis, Maxtor, OCZ,
-  Iomega and others).
+- **PC build bench, stage 3** (drives, removable drives, network, modems):
+  - 23 hard drives and SSDs: MFM (on an ISA controller card), IDE by mode
+    (a paddle card before boards had IDE ports), SATA 1.5/3/6 Gbit/s and
+    NVMe by PCIe generation (Z97's M.2 is PCIe 2.0 x2). A drive runs at the
+    slowest of itself and the board's port; a slow disk, or none, costs up
+    to 10% against the drive of the CPU's day. Defunct makers: Connor,
+    Quanta, Maxtel, OXZ; also Seabird, Western Data, Inland, Hikari,
+    Sunsung, Critical.
+  - 9 floppy, optical and cartridge drives (Orchard Disk II to Blu-ray,
+    Ioma Zip and Jaz), 8 network cards (TriCom EtherLink 1982 to Wi-Fi 7,
+    Bigfeet Killer NIC, Aquanta 10 GbE) and 5 modems (Hays 300 to US Robots
+    56K), each adding a little.
+  - All eight 3D-only add-in cards (1996-1998: Orchis Righteous 3D, Diamant
+    Monster 3D and Monster 3D II, VideoLogique Apocalypse 3D and 3Dx, Matrix
+    m3D, Creatix 3D Blaster V2, Quantum Graphics Obsidian2). Each needs a 2D
+    card beside it; two of the same Voodoo2 card can be linked (SLI). They
+    go out of production once combined 2D/3D cards are researched (the
+    Threefold 3000 for the Voodoo boards, the Raster 256 for PowerVR); one
+    already on the bench keeps working.
+- **Stage to come:** 4, air coolers and AIOs, with radiators that must fit
+  the case's mounts.
 - **A 1980s era:** the eras jump from 1977 to 1991, so 1980s hardware opens
   at Dial-up. Worth deciding on.
 - **Space Age plan.** How to add it, in stages: `docs/space-age-plan.md`.

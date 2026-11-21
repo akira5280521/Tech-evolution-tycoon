@@ -68,7 +68,7 @@ export const RESEARCH = [
   item({ id: "cpu-alder32", tab: "cpu", year: 2017, name: "Alder 32", spec: "Up to 32 cores, four chips on one package", rd: 60, durationMs: 120_000, prereq: "cpu-dual" }),
 
   item({ id: "gpu-2d", tab: "gpu", year: 1990, name: "Rasterline 4000", spec: "2D SVGA, ISA, up to 1024×768", rd: 16, durationMs: 40_000, prereq: null }),
-  item({ id: "gpu-3d", tab: "gpu", year: 1996, name: "Threefold Add-in", spec: "3D only, PCI, 4 MB", rd: 20, durationMs: 50_000, prereq: "gpu-2d" }),
+  item({ id: "gpu-3d", tab: "gpu", year: 1996, name: "Threefold Add-in", spec: "3D only, PCI, 4 MB, beside a 2D card", rd: 20, durationMs: 50_000, prereq: "gpu-2d" }),
   item({ id: "gpu-256", tab: "gpu", year: 1999, name: "Raster 256", spec: "Hardware transform and lighting", rd: 24, durationMs: 60_000, prereq: "gpu-3d" }),
   item({ id: "gpu-3", tab: "gpu", year: 2001, name: "Raster 3", spec: "Programmable vertex and pixel shaders", rd: 28, durationMs: 70_000, prereq: "gpu-256" }),
   item({ id: "gpu-8800", tab: "gpu", year: 2006, name: "Raster 8800", spec: "128 unified processors, 768 MB", rd: 36, durationMs: 80_000, prereq: "gpu-3" }),
@@ -131,7 +131,7 @@ export const RESEARCH = [
   item({ id: "net-n", tab: "network", year: 2009, name: "Wi-Fi 4", spec: "802.11n, up to 600 Mbit/s", rd: 30, durationMs: 60_000, prereq: "net-gige" }),
   item({ id: "net-ac", tab: "network", year: 2013, name: "Wi-Fi 5", spec: "802.11ac, gigabit wireless", rd: 36, durationMs: 70_000, prereq: "net-n" }),
   item({ id: "net-ax", tab: "network", year: 2019, name: "Wi-Fi 6", spec: "802.11ax, OFDMA", rd: 44, durationMs: 80_000, prereq: "net-ac" }),
-  item({ id: "net-be", tab: "network", year: 2024, name: "Wi-Fi 7", spec: "802.11be", rd: 0, durationMs: 0, prereq: "net-ax", soon: true }),
+  item({ id: "net-be", tab: "network", year: 2024, name: "Wi-Fi 7", spec: "802.11be", rd: 48, durationMs: 90_000, prereq: "net-ax" }),
 
   // Research servers, from the machine room to the rack. The Irwell Mark 1
   // (1951) needs no research; each later machine does.
@@ -166,7 +166,7 @@ export const RESEARCH = [
 // (each after the last chip of its maker), boards on BOARDS, sticks on MEMORY.
 {
   const have = new Set(RESEARCH.map((entry) => entry.id));
-  const tabOf = { cpu: "cpu", board: "boards", stick: "memory", video: "gpu", accel: "gpu", sound: "sound", psu: "power", case: "cases", fpu: "cpu" };
+  const tabOf = { cpu: "cpu", board: "boards", stick: "memory", video: "gpu", accel: "gpu", sound: "sound", psu: "power", case: "cases", fpu: "cpu", drive: "storage", media: "storage", net: "network", modem: "network" };
   const brand = (name) => name.split(" ")[0];
   const added = PARTS.filter((part) => part.fits.includes("bench") && part.research && !have.has(part.research))
     .sort((a, b) => a.year - b.year);

@@ -174,6 +174,7 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
             {row.overclock > 1 ? " · overclocked +10%" : ""}
             {row.board && !row.board.builtin ? ` · Graphics: ${row.card?.name || (row.cpu?.igpu ? "on the CPU" : "none")} · Power: ${Math.round(row.draw)} W of ${row.supply || 0} W` : ""}
             {row.link ? ` · PCIe ${row.link}.0` : ""}
+            {row.board && !row.board.builtin ? ` · Drive: ${row.drive ? `${row.drive.name}, ${row.driveText}, ${Number(row.driveMbs.toFixed(1))} MB/s` : "none"}` : ""}
           </p>
         )}
         {open && research && row.gpus > 0 && (
@@ -252,6 +253,8 @@ const BENCH_TABS = [
   ["sound", "SOUND", ["sound"]],
   ["psu", "POWER", ["psu"]],
   ["case", "CASES", ["case"]],
+  ["drive", "DRIVES", ["drive", "media"]],
+  ["net", "NETWORK", ["net", "modem"]],
 ];
 const BENCH_SHOWN = 6;
 

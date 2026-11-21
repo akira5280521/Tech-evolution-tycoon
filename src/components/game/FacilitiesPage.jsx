@@ -113,7 +113,7 @@ function serverStockText(row) {
   const parts = [];
   const room = row.groups?.room;
   const rack = row.groups?.rack;
-  if (room?.watts > 0) parts.push(`Machine room: ${room.watts} computer${room.watts === 1 ? "" : "s"}, ${room.power} generator${room.power === 1 ? "" : "s"}, ${room.cool} air conditioner${room.cool === 1 ? "" : "s"}`);
+  if (room?.watts > 0) parts.push(`Machine room: ${room.watts} generator${room.watts === 1 ? "" : "s"} and coolers needed, ${room.power} generator${room.power === 1 ? "" : "s"}, ${room.cool} cooler${room.cool === 1 ? "" : "s"}`);
   if (rack?.watts > 0) parts.push(`Racks: ${Math.round(rack.watts)} W, ${Math.round(rack.power)} W of supplies, ${Math.round(rack.cool)} W of fans`);
   parts.push(`Disk: ${diskSize(row.storage)} of the ${diskSize(row.need)} the newest machine needs`);
   return parts.join(" · ");

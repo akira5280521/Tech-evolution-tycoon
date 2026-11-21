@@ -362,6 +362,8 @@ function researchInfo(state, id) {
   return { title, text: `${what} ${effect}`, rows };
 }
 
+const COOLER_NAMES = { air: "room air conditioner", freon: "Freon cooling unit", fluorinert: "Fluorinert exchanger", water: "chilled-water loop" };
+
 function tabName(tab) {
   return (RESEARCH_TABS.find((t) => t.id === tab)?.label || tab).toUpperCase();
 }
@@ -411,10 +413,10 @@ function partInfo(state, facilityId, partId) {
   if (part.kind === "board") effect = `It takes a CPU for the ${SOCKET_NAMES[part.socket]} socket and ${part.slots} ${MEM_NAMES[part.mem]} memory ${part.slots === 1 ? "slot" : "slots"}; a new board sells back what doesn't fit at half price.`;
   else if (part.kind === "cpu") effect = `It needs a ${SOCKET_NAMES[part.socket]} board and ${memSize(part.ramMb)} of memory to run at full speed.`;
   else if (part.kind === "stick") effect = `Each adds ${memSize(part.mb)}; it fits only a board with ${MEM_NAMES[part.mem]} slots.`;
-  else if (part.kind === "server" && room) effect = `Each adds ${part.work} work and needs its own generator and air conditioner, and ${diskSize(part.diskGb)} of disk for full speed.`;
+  else if (part.kind === "server" && room) effect = `Each adds ${part.work} work and needs ${part.watts === 1 ? "its own generator" : `${part.watts} generators`} and ${part.watts === 1 ? "a" : part.watts} ${COOLER_NAMES[part.coolant || "air"]}${part.watts === 1 ? "" : "s"}, and ${diskSize(part.diskGb)} of disk for full speed.`;
   else if (part.kind === "server") effect = `Each adds ${part.work} work and draws ${part.watts} W from the rack supplies and fans, and needs ${diskSize(part.diskGb)} of disk for full speed.`;
   else if (part.kind === "power" && room) effect = "Each powers one machine-room computer.";
-  else if (part.kind === "cool" && room) effect = "Each cools one machine-room computer.";
+  else if (part.kind === "cool" && room) effect = part.coolant ? `Each cools one generator's worth of ${part.coolant === "water" ? "water-cooled" : `${part.coolant[0].toUpperCase()}${part.coolant.slice(1)}-cooled`} machines.` : "Each cools one machine-room computer.";
   else if (part.kind === "gpu") effect = `Each adds ${part.work} work and ${part.vram} GB of card memory, and draws ${part.watts} W.`;
   else if (part.kind === "power") effect = `Each supplies ${part.power} W; ${who} slow down when they draw more than the supplies give.`;
   else if (part.kind === "cool") effect = `Each removes ${part.cool} W of heat; ${who} slow down when they make more than the fans remove.`;

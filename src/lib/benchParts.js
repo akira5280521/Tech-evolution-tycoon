@@ -471,19 +471,23 @@ export const BENCH_FPUS = [
 // MB/s, SATA generation 1-3, NVMe PCIe generation), its own top speed (MB/s)
 // and size (GB). A drive runs at the slowest of itself and the board's port.
 function drive(id, name, year, research, iface, link, mbs, gb, spec) {
-  return { ...base, id, kind: "drive", name, year, research, iface, link, mbs, gb, watts: 8, icon: icon2(id), cost: price(year, 0.12), spec };
+  return { ...base, id, kind: "drive", name, year, research, iface, link, mbs, gb, bus: iface === "pcie" ? "pcie" : null, watts: 8, icon: icon2(id), cost: price(year, 0.12), spec };
 }
 export const BENCH_DRIVES = [
   drive("d-st506", "Seabird ST-506", 1980, "drv-st506", "mfm", 0, 0.6, 0.005, "1980: the first 5.25-inch hard disk, 5 MB."),
   drive("d-st225", "Seabird ST-225", 1984, "drv-st225", "mfm", 0, 0.6, 0.02, "1984: 20 MB, the common PC drive of the 1980s."),
+  drive("d-ro352", "Rodima RO352", 1983, "drv-ro352", "mfm", 0, 0.6, 0.01, "1983: the first 3.5-inch hard disk, 10 MB, from a maker gone by 1991."),
   drive("d-cp3044", "Connor CP-3044", 1989, "drv-cp3044", "ide", 16, 1.5, 0.04, "1989: a 40 MB 3.5-inch IDE drive from a maker that merged away in 1996."),
   drive("d-lps540", "Quanta ProDrive LPS 540", 1994, "drv-lps540", "ide", 16, 5, 0.54, "1994: 540 MB, from a drive maker sold off in 2001."),
   drive("d-caviar", "Western Data Caviar 21600", 1996, "drv-caviar", "ide", 16, 8, 1.6, "1996: 1.6 GB on IDE."),
   drive("d-16gp", "Inland Deskstar 16GP", 1997, "drv-16gp", "ide", 33, 12, 16.8, "1997: 16.8 GB on ATA-33."),
+  drive("d-fireball", "Quanta Fireball Plus KA", 1999, "drv-fireball", "ide", 66, 22, 13.6, "1999: 13.6 GB on ATA-66."),
   drive("d-75gxp", "Inland Deskstar 75GXP", 2000, "drv-75gxp", "ide", 100, 37, 75, "2000: 75 GB on ATA-100, remembered for failing."),
+  drive("d-mpg", "Fujitsa MPG3409AT", 2000, "drv-mpg", "ide", 100, 30, 40.9, "2000: 40 GB on ATA-100, from a maker that left hard disks in 2009."),
   drive("d-dm9", "Maxtel DiamondMax Plus 9", 2003, "drv-dm9", "ide", 133, 55, 200, "2003: 200 GB on ATA-133, from a maker bought in 2006."),
   drive("d-raptor", "Western Data Raptor", 2003, "drv-raptor", "sata", 1, 72, 36, "2003: 10,000 rpm on the first SATA, 1.5 Gbit/s."),
   drive("d-7k1000", "Hikari Deskstar 7K1000", 2007, "drv-7k1000", "sata", 2, 85, 1000, "2007: the first 1 TB drive, SATA at 3 Gbit/s."),
+  drive("d-spinpoint", "Sunsung SpinPoint F1", 2008, "drv-spinpoint", "sata", 2, 110, 1000, "2008: 1 TB on three platters; the maker sold its disk business in 2011."),
   drive("d-vraptor", "Western Data VelociRaptor", 2008, "drv-vraptor", "sata", 2, 120, 300, "2008: a 2.5-inch 10,000 rpm drive in a heatsink frame."),
   drive("d-3tb", "Seabird Barracuda XT 3TB", 2010, "drv-3tb", "sata", 3, 150, 3000, "2010: 3 TB on SATA at 6 Gbit/s."),
   drive("d-10tb", "Seabird 10TB", 2016, "drv-10tb", "sata", 3, 250, 10000, "2016: helium-filled, 10 TB."),
@@ -492,9 +496,14 @@ export const BENCH_DRIVES = [
   drive("d-x25m", "Chipwright X25-M", 2008, "ssd-x25m", "sata", 2, 250, 80, "2008: an 80 GB SSD that made spinning disks feel slow."),
   drive("d-vertex", "OXZ Vertex", 2009, "ssd-vertex", "sata", 2, 230, 120, "2009: an early SSD from a maker that went bankrupt in 2016."),
   drive("d-840pro", "Sunsung 840 Pro", 2012, "ssd-840pro", "sata", 3, 540, 256, "2012: as fast as 6 Gbit/s SATA allows."),
+  drive("d-850evo", "Sunsung 850 Evo", 2014, "ssd-850evo", "sata", 3, 540, 500, "2014: stacked 3D flash on SATA."),
   drive("d-950pro", "Sunsung 950 Pro", 2015, "ssd-950pro", "nvme", 3, 2500, 512, "2015: an M.2 NVMe drive on four PCIe 3.0 lanes."),
+  drive("d-900p", "Chipwright Optane 900P", 2017, "ssd-900p", "pcie", 3, 2500, 280, "2017: not flash but a new memory, on a PCIe card; the line ended in 2022."),
+  drive("d-mx500", "Critical MX500", 2018, "ssd-mx500", "sata", 3, 560, 1000, "2018: a cheap, popular SATA SSD."),
+  drive("d-mp600", "Corsar MP600", 2019, "ssd-mp600", "nvme", 4, 4950, 1000, "2019: one of the first PCIe 4.0 drives, out with the X570 boards."),
   drive("d-970evo", "Sunsung 970 Evo Plus", 2019, "ssd-970evo", "nvme", 3, 3500, 1000, "2019: 3.5 GB/s, the PCIe 3.0 limit."),
   drive("d-980pro", "Sunsung 980 Pro", 2020, "ssd-980pro", "nvme", 4, 7000, 1000, "2020: PCIe 4.0, 7 GB/s."),
+  drive("d-sn850", "Western Data Black SN850", 2020, "ssd-sn850", "nvme", 4, 7000, 1000, "2020: PCIe 4.0, 7 GB/s."),
   drive("d-990pro", "Sunsung 990 Pro", 2022, "ssd-990pro", "nvme", 4, 7450, 2000, "2022: 7.45 GB/s."),
   drive("d-t700", "Critical T700", 2023, "ssd-t700", "nvme", 5, 12400, 2000, "2023: PCIe 5.0, 12.4 GB/s, with a big heatsink."),
 ];
@@ -504,14 +513,21 @@ function media(id, name, year, research, iface, bonus, spec) {
   return { ...base, id, kind: "media", name, year, research, iface, bonus, watts: 5, icon: icon2(id), cost: price(year, 0.05), spec };
 }
 export const BENCH_MEDIA = [
+  media("r-8inch", "Inland 8-inch floppy drive", 1971, "store-floppy", "floppy", 0.015, "1971: about 80 KB on a floppy disk eight inches across."),
+  media("r-sa400", "Sugart SA-400", 1976, "med-sa400", "floppy", 0.018, "1976: the first 5.25-inch floppy drive, from a maker long gone."),
   media("r-disk2", "Orchard Disk II", 1978, "med-disk2", "floppy", 0.02, "1978: a 5.25-inch floppy drive, 140 KB a disk."),
   media("r-360k", "5.25-inch 360 KB drive", 1982, "med-360k", "floppy", 0.02, "1982: double-sided disks for the Inland PC."),
   media("r-144", "3.5-inch 1.44 MB drive", 1987, "med-144", "floppy", 0.025, "1987: a disk in a hard shell with a metal shutter."),
   media("r-cd2x", "Creatix CD-ROM 2x", 1993, "med-cd2x", "isa", 0.03, "1993: 650 MB discs, wired to a sound card."),
   media("r-zip", "Ioma Zip 100", 1995, "med-zip", "ide", 0.03, "1995: 100 MB cartridges, from a maker long gone."),
+  media("r-ez135", "SyQuist EZ135", 1995, "med-ez135", "lpt", 0.028, "1995: 135 MB cartridges on the printer port, from a maker bankrupt in 1998."),
   media("r-jaz", "Ioma Jaz", 1996, "med-jaz", "ide", 0.035, "1996: 1 GB removable hard-disk cartridges."),
+  media("r-ls120", "Imagin LS-120", 1997, "med-ls120", "ide", 0.03, "1997: 120 MB disks that also read 1.44 MB floppies."),
   media("r-dvd", "DVD-ROM drive", 1997, "med-dvd", "ide", 0.035, "1997: 4.7 GB discs."),
+  media("r-cdrw", "CD-RW drive", 1998, "med-cdrw", "ide", 0.035, "1998: discs you could write, wipe and write again."),
   media("r-cd52", "52x CD-ROM drive", 2000, "med-cd52", "ide", 0.035, "2000: about as fast as a spinning disc can go."),
+  media("r-dvdrw", "DVD-RW drive", 2003, "med-dvdrw", "ide", 0.038, "2003: writes 4.7 GB discs in both rival formats."),
+  media("r-hddvd", "HD DVD drive", 2006, "med-hddvd", "sata", 0.038, "2006: the high-definition disc that lost to Blu-ray in 2008."),
   media("r-bd", "Blu-ray drive", 2006, "med-bd", "sata", 0.04, "2006: 25 GB a layer, read by a blue-violet laser."),
 ];
 
@@ -524,8 +540,12 @@ function modem(id, name, year, research, bonus, spec) {
 }
 export const BENCH_NET = [
   net("n-3c501", "TriCom EtherLink", 1982, "net-3c501", "isa8", 0.02, "1982: Ethernet on an 8-bit card, from a maker gone since 2010."),
+  net("n-tokenring", "Inland Token Ring card", 1985, "net-tokenring", "isa8", 0.02, "1985: a network that passed a token from machine to machine; Ethernet won."),
   net("n-3c509", "TriCom EtherLink III", 1994, "net-3c509", "isa16", 0.03, "1994: the ISA network card nearly every office had."),
   net("n-3c595", "TriCom Fast EtherLink", 1995, "net-100", "pci", 0.04, "1995: 100 Mbit/s on PCI."),
+  net("n-pro1000", "Chipwright PRO/1000", 1999, "net-gige", "pci", 0.045, "1999: gigabit Ethernet on PCI."),
+  net("n-orinoco", "Lucid Orinoco", 1999, "net-orinoco", "pci", 0.04, "1999: 11 Mbit/s Wi-Fi, from a maker gone by 2006."),
+  net("n-wmp54g", "Linksis WMP54G", 2003, "net-wmp54g", "pci", 0.045, "2003: 54 Mbit/s Wi-Fi in a PCI slot."),
   net("n-killer", "Bigfeet Killer NIC", 2006, "net-killer", "pci", 0.045, "2006: a network card with its own processor, for gamers."),
   net("n-7260", "Chipwright 7260 Wi-Fi", 2013, "net-ac", "pcie", 0.05, "2013: Wi-Fi 5, 867 Mbit/s."),
   net("n-aqc107", "Aquanta AQC107", 2017, "net-aqc107", "pcie", 0.06, "2017: 10 Gbit/s Ethernet, from a chip maker bought in 2019."),
@@ -534,13 +554,19 @@ export const BENCH_NET = [
 ];
 export const BENCH_MODEMS = [
   modem("o-300", "Hays Smartmodem 300", 1981, "mod-300", 0.01, "1981: 300 bit/s; programs could dial it, from a maker gone by 1999."),
+  modem("o-1200", "Hays Smartmodem 1200", 1982, "mod-1200", 0.012, "1982: 1,200 bit/s."),
   modem("o-2400", "Hays Smartmodem 2400", 1985, "mod-2400", 0.015, "1985: 2,400 bit/s."),
   modem("o-14k", "US Robots Sportster 14,400", 1991, "mod-14k", 0.02, "1991: V.32bis, 14,400 bit/s."),
   modem("o-28k", "US Robots Sportster 28,800", 1994, "mod-28k", 0.025, "1994: V.34, 28,800 bit/s."),
   modem("o-56k", "US Robots 56K", 1998, "mod-56k", 0.03, "1998: V.90, the fastest a phone line carries."),
 ];
 
+// Formats and networks that lost: out of production once the winner is
+// researched.
+const LOST_TO = { "r-hddvd": "med-bd", "n-tokenring": "net-100" };
+
 export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CARDS, ...BENCH_ACCELS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS];
+for (const part of BENCH_PARTS) if (LOST_TO[part.id]) part.retiredBy = LOST_TO[part.id];
 
 // R&D a second for each point of CPU perf at full memory. Tuned in the
 // simulation so the bench adds about a tenth of what the research servers make.

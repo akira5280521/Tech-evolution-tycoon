@@ -165,10 +165,23 @@ test shipped in 0.0.13 (see Done).
     to 10% against the drive of the CPU's day. Defunct makers: Connor,
     Quanta, Maxtel, OXZ; also Seabird, Western Data, Inland, Hikari,
     Sunsung, Critical.
-  - 9 floppy, optical and cartridge drives (Orchard Disk II to Blu-ray,
-    Ioma Zip and Jaz), 8 network cards (TriCom EtherLink 1982 to Wi-Fi 7,
-    Bigfeet Killer NIC, Aquanta 10 GbE) and 5 modems (Hays 300 to US Robots
-    56K), each adding a little.
+  - More drives: Rodima RO352 (first 3.5-inch disk), Quanta Fireball,
+    Fujitsa MPG, Sunsung SpinPoint, Sunsung 850 Evo, Critical MX500, Corsar
+    MP600, Western Data SN850, and the Chipwright Optane 900P on a PCIe card
+    (runs at the slot's PCIe generation).
+  - 16 floppy, optical and cartridge drives (Inland 8-inch, Sugart SA-400,
+    Orchard Disk II to Blu-ray, Ioma Zip and Jaz, SyQuist EZ135 on the
+    printer port, Imagin LS-120, CD-RW, DVD-RW, HD DVD), 12 network cards
+    (TriCom EtherLink 1982, Inland Token Ring, Lucid Orinoco and Linksis
+    Wi-Fi, Chipwright PRO/1000 to Wi-Fi 7, Bigfeet Killer NIC, Aquanta
+    10 GbE) and 6 modems (Hays 300 to US Robots 56K), each adding a little.
+    Formats and networks that lost go out of production once the winner is
+    researched: HD DVD after Blu-ray, Token Ring after Fast Ethernet.
+  - 27 sound cards, including Covax Speech Thing and Castle Sound Source on
+    the printer port, Rowland LAPC-I, Media Visia Pro Audio Spectrum,
+    Ensonix Soundscape, Tortoise Beach Tropez, Aurora Vortex and Diamant
+    MX300, Auzentek X-Meridian and Astra Xonar; boards have onboard sound
+    from 1999 (AC'97) and 2004 (HD Audio), and a card beats it.
   - All eight 3D-only add-in cards (1996-1998: Orchis Righteous 3D, Diamant
     Monster 3D and Monster 3D II, VideoLogique Apocalypse 3D and 3Dx, Matrix
     m3D, Creatix 3D Blaster V2, Quantum Graphics Obsidian2). Each needs a 2D

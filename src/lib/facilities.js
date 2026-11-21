@@ -588,7 +588,7 @@ export function partLock(state, part, researchName) {
   if (!part) return "Locked";
   if (playerYear(state) < (part.year || 0)) return `Requires ${part.year}`;
   if (part.research && !(state?.techDone || []).includes(part.research)) return `Research ${researchName || part.name} on the Tech page`;
-  if (partRetired(state, part)) return "Out of production: combined 2D and 3D cards replaced it";
+  if (partRetired(state, part)) return part.kind === "accel" ? "Out of production: combined 2D and 3D cards replaced it" : "Out of production: it lost to its rival";
   return null;
 }
 
@@ -841,7 +841,8 @@ function portMisfit(part, board) {
   if (part.kind === "modem") return null;
   if (part.kind === "net") return busMisfit(part, board);
   const iface = part.iface;
-  if (iface === "floppy") return null;
+  if (iface === "floppy" || iface === "lpt") return null;
+  if (iface === "pcie") return busMisfit(part, board);
   if (board.builtin) return "This computer has nowhere to connect it.";
   if (iface === "mfm") return buses.includes("isa8") || buses.includes("isa16") ? null : "Needs an ISA slot for its controller card.";
   if (iface === "isa") return buses.includes("isa16") ? null : "Needs a 16-bit ISA slot.";
@@ -864,6 +865,10 @@ export function driveLink(d, board) {
   if (d.iface === "sata") {
     const gen = Math.min(d.link, board.sata);
     return { mbs: Math.min(d.mbs, SATA_MBS[gen] || 0), text: `SATA ${[0, 1.5, 3, 6][gen]} Gbit/s` };
+  }
+  if (d.iface === "pcie") {
+    const g = Math.min(d.link, board.pcie || 0);
+    return { mbs: Math.min(d.mbs, NVME_MBS[g] || 0), text: `on a PCIe ${g}.0 card` };
   }
   const gen = Math.min(d.link, board.m2);
   return { mbs: Math.min(d.mbs, NVME_MBS[gen] || 0), text: `NVMe on PCIe ${gen}.0` };

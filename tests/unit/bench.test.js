@@ -175,3 +175,13 @@ test("sound: printer-port devices, onboard sound from 1999, cards beat onboard",
   const base = { "b-z690": 1, "c-12900k": 1, "m-ddr5b": 1, "p-750": 1, "v-3080": 1 };
   assert.ok(benchStock({ ...base, "s-ae5": 1 }).perf > benchStock(base).perf);
 });
+
+test("losing formats go out of production; a PCIe-card SSD runs at the slot's generation", () => {
+  const p = (id) => BENCH_PARTS.find((x) => x.id === id);
+  const s = upTo("supercluster", RESEARCH.map((e) => e.id));
+  assert.ok(purchasePart(s, "bench", "b-z390").ok);
+  assert.equal(purchasePart(s, "bench", "r-hddvd").ok, false, "HD DVD lost to Blu-ray");
+  assert.ok(purchasePart(s, "bench", "r-bd").ok);
+  assert.equal(driveLink(p("d-900p"), p("b-z77")).text, "on a PCIe 3.0 card");
+  assert.equal(driveLink(p("d-900p"), p("b-p67")).mbs, 800, "PCIe 2.0 slot");
+});

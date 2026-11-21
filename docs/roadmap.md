@@ -111,6 +111,40 @@ test shipped in 0.0.13 (see Done).
     about half a day with prestige timing).
   - The 23 new pictures are drawn in code in the game's pixel style, simpler
     than the existing art.
+- **PC build bench, stage 1 of 4** (CPUs, motherboards, memory):
+  - A fourth plant from Home Computers (1977). One PC at a time; it makes
+    R&D points. Parts open in their real year once researched (CPUs on the
+    CPU tab, boards on a new BOARDS tab, sticks on MEMORY).
+  - 63 CPUs: Chipwright and Alder through 2024, plus Moss 6502, Zylar Z80
+    and the defunct makers Cyrus (486DLC, 5x86, 6x86, 6x86MX, MII), NextGen
+    Nx586, Centaurus C6 and Riser mP6.
+  - 65 boards by chipset, each supporting only the CPU families it really
+    did: e.g. 430FX single-voltage (no MMX-era chips), 440LX vs 440BX, Z170
+    vs Z370, AM4's A320 to X570 and B550 (no Ryzen 1000/2000), the DDR4 and
+    DDR5 Z690, the 4790K needing a 9-series board. Defunct makers: Abacus
+    (Abit), Epox, DFX (DFI), Compass (Compaq), Mitts (MITS).
+  - Memory by type and real speed: memory runs at the slowest of the
+    sticks, the board's limit and, on boards that hold it, the CPU's rating.
+    Slow memory costs up to about 10%, fast memory adds up to 3.75%; an unlocked
+    CPU on an overclocking board adds 10%.
+  - Boards record their graphics slot (ISA, VLB, PCI, AGP 3.3 V or 1.5 V,
+    PCIe generation), IDE mode, SATA generation and M.2 generation for the
+    next stages.
+  - A new board takes out what doesn't fit, a new CPU replaces the old one,
+    a bigger stick replaces the smallest when slots are full; all sold back
+    at half price.
+- **Supercomputers and defunct server makers:** Chippewa (Cray) 1, X-MP/48,
+  2, Y-MP, C90, T3D, T90, T3E, XT3, XT5, XC30, EX; Thinking Engines CM-5,
+  Maynard AlphaServer 8400, Silicon Pictures Origin 2000, Sunrise
+  Enterprise 10000. Supercomputers need two or more generators and coolers
+  of their own coolant: Freon, Fluorinert or chilled water.
+- **Stages to come:** 2, graphics and sound cards (slot and PCIe generation
+  rules, AGP keying, CPU/GPU bottleneck); 3, drives (IDE, SATA 1.5/3/6
+  Gbit/s, NVMe by PCIe generation); 4, air coolers and AIOs. Each stage
+  includes defunct makers (3dfx, S3, Rendition, Aureal, Gravis, Conner,
+  Quantum, Maxtor and others).
+- **A 1980s era:** the eras jump from 1977 to 1991, so 1980s hardware opens
+  at Dial-up. Worth deciding on.
 - **Space Age plan.** How to add it, in stages: `docs/space-age-plan.md`.
 
 ## Shipped in 0.0.25-0.0.26

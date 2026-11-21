@@ -68,3 +68,36 @@ test("the upgrade plan buys a board, CPU and memory that work together", () => {
   assert.equal(benchStock(s.facilities.bench).memory, 1);
   assert.equal(benchStock(s.facilities.bench).cpu.id, best.cpu.id);
 });
+
+test("chipsets support only their real CPUs", () => {
+  // A 430FX board is single-voltage: no K6; the 430TX takes it.
+  assert.match(fitPart({ "b-430fx": 1 }, "bench", "c-k6").reason, /chipset/);
+  assert.ok(!fitPart({ "b-430tx": 1 }, "bench", "c-k6").reason);
+  // B550 doesn't take a first-generation AM4 chip; X370 does.
+  assert.match(fitPart({ "b-b550": 1 }, "bench", "c-1800x").reason, /chipset/);
+  assert.ok(!fitPart({ "b-x370": 1 }, "bench", "c-1800x").reason);
+  // The 4790K needs a 9-series board.
+  assert.match(fitPart({ "b-z87": 1 }, "bench", "c-4790k").reason, /chipset/);
+  // A DDR4 Z690 board takes the 12900K; an AM5 chip can't use DDR4 at all.
+  assert.ok(!fitPart({ "b-z690d4": 1 }, "bench", "c-12900k").reason);
+});
+
+test("memory speed, memory locks and overclocking change the PC's speed", () => {
+  const fast = benchStock({ "b-z390": 1, "c-9900k": 1, "m-ddr4c": 1 });
+  const locked = benchStock({ "b-b360": 1, "c-9900k": 1, "m-ddr4c": 1 });
+  assert.equal(locked.memSpeed, 2666, "B360 holds memory to the CPU's rating");
+  assert.equal(fast.memSpeed, 3600);
+  assert.equal(fast.overclock, 1.1);
+  assert.equal(locked.overclock, 1);
+  assert.ok(fast.perf > locked.perf * 1.1);
+  // Slow memory holds a CPU back a little.
+  const slow = benchStock({ "b-z390": 1, "c-9900k": 1, "m-ddr4a": 2 });
+  assert.ok(slow.perf < fast.perf && slow.perf > fast.perf * 0.8);
+});
+
+test("every board lists its drive connections", () => {
+  for (const b of BENCH_PARTS.filter((p) => p.kind === "board")) {
+    assert.ok(Number.isFinite(b.ide) && Number.isFinite(b.sata) && Number.isFinite(b.m2), b.id);
+  }
+  assert.equal(BENCH_PARTS.find((p) => p.id === "b-x670e").m2, 5);
+});

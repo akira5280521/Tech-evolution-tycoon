@@ -410,9 +410,9 @@ function partInfo(state, facilityId, partId) {
   const who = servers ? "racks" : "cards";
   const room = part.group === "room";
   let effect;
-  if (part.kind === "board") effect = `It takes a CPU for the ${SOCKET_NAMES[part.socket]} socket and ${part.slots} ${MEM_NAMES[part.mem]} memory ${part.slots === 1 ? "slot" : "slots"}; a new board sells back what doesn't fit at half price.`;
-  else if (part.kind === "cpu") effect = `It needs a ${SOCKET_NAMES[part.socket]} board and ${memSize(part.ramMb)} of memory to run at full speed.`;
-  else if (part.kind === "stick") effect = `Each adds ${memSize(part.mb)}; it fits only a board with ${MEM_NAMES[part.mem]} slots.`;
+  if (part.kind === "board") effect = `${SOCKET_NAMES[part.socket]} socket, ${part.slots} ${MEM_NAMES[part.mem]} ${part.slots === 1 ? "slot" : "slots"}${part.memMax ? ` up to ${part.memMax} MT/s` : ""}${part.oc ? ", overclocking" : part.memLock ? ", memory held to the CPU's rating" : ""}; a new board sells back what doesn't fit at half price.`;
+  else if (part.kind === "cpu") effect = `It needs a ${SOCKET_NAMES[part.socket]} board whose chipset supports it, and ${memSize(part.ramMb)} of memory to run at full speed${part.unlocked ? "; unlocked, so an overclocking board adds 10%" : ""}.`;
+  else if (part.kind === "stick") effect = `Each adds ${memSize(part.mb)}${part.speed ? ` at up to ${part.speed} MT/s` : ""}; it fits only a board with ${MEM_NAMES[part.mem]} slots.`;
   else if (part.kind === "server" && room) effect = `Each adds ${part.work} work and needs ${part.watts === 1 ? "its own generator" : `${part.watts} generators`} and ${part.watts === 1 ? "a" : part.watts} ${COOLER_NAMES[part.coolant || "air"]}${part.watts === 1 ? "" : "s"}, and ${diskSize(part.diskGb)} of disk for full speed.`;
   else if (part.kind === "server") effect = `Each adds ${part.work} work and draws ${part.watts} W from the rack supplies and fans, and needs ${diskSize(part.diskGb)} of disk for full speed.`;
   else if (part.kind === "power" && room) effect = "Each powers one machine-room computer.";

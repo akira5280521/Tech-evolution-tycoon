@@ -169,6 +169,8 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
             Board: {row.board?.name || "none"} · CPU: {row.cpu?.name || "none"} · Memory: {memSize(row.ramMb)}
             {row.cpu ? ` of the ${memSize(row.needMb)} it wants` : ""}
             {row.board ? `, ${row.sticks} of ${row.board.slots} slots used` : ""}
+            {row.memSpeed ? ` · memory at ${row.memSpeed} MT/s (rated ${row.rated})` : ""}
+            {row.overclock > 1 ? " · overclocked +10%" : ""}
           </p>
         )}
         {open && research && row.gpus > 0 && (

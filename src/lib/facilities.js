@@ -662,12 +662,30 @@ export const SOCKET_NAMES = {
   socket4: "Socket 4", nx586: "Nx586", socket7: "Socket 7", socket8: "Socket 8", slot1: "Slot 1", slota: "Slot A",
   socketa: "Socket A", s478: "Socket 478", s939: "Socket 939", lga775: "LGA775", am2: "AM2+",
   lga1366: "LGA1366", lga1155: "LGA1155", am3: "AM3+", lga1150: "LGA1150", lga1151: "LGA1151",
-  am4: "AM4", tr4: "TR4", lga1151v2: "LGA1151 (300-series)", lga1700: "LGA1700", am5: "AM5", lga1851: "LGA1851",
+  am4: "AM4", tr4: "TR4", lga1156: "LGA1156", lga1151v2: "LGA1151 (300-series)", lga1700: "LGA1700", am5: "AM5", lga1851: "LGA1851",
 };
 export const MEM_NAMES = {
   dip: "memory-chip", simm30: "30-pin SIMM", simm72: "72-pin SIMM", sdram: "SDRAM DIMM",
   ddr: "DDR", ddr2: "DDR2", ddr3: "DDR3", ddr4: "DDR4", ddr5: "DDR5",
 };
+
+// Whether a CPU works in a board: the socket, the chipset's CPU list, and,
+// for a CPU with its own memory controller, the board's memory type.
+export function cpuFitsBoard(chip, board) {
+  if (!chip || !board) return "none";
+  if (!(chip.sockets || [chip.socket]).includes(board.socket)) return "socket";
+  if (!(board.supports || []).includes(chip.gen)) return "chipset";
+  if (chip.memSpeed && chip.memSpeed[board.mem] == null) return "memory";
+  return null;
+}
+
+function cpuMisfit(chip, board) {
+  const why = cpuFitsBoard(chip, board);
+  if (!why) return null;
+  if (why === "socket") return `Needs a board with a ${SOCKET_NAMES[chip.socket]} socket; this board has ${SOCKET_NAMES[board.socket]}.`;
+  if (why === "chipset") return `The ${board.name}'s chipset doesn't support this CPU.`;
+  return `This CPU can't use the ${MEM_NAMES[board.mem]} memory on this board.`;
+}
 
 function benchHas(counts, kind) {
   return PARTS.filter((p) => p.kind === kind && p.fits.includes("bench") && (counts[p.id] || 0) > 0);
@@ -693,7 +711,7 @@ function fitBench(counts, part) {
   if (part.kind === "board") {
     if ((counts[part.id] || 0) > 0) return { reason: "Already on the bench." };
     if (boardNow) takeOut(boardNow, `replaces the ${boardNow.name}`);
-    for (const c of benchHas(counts, "cpu")) if (c.socket !== part.socket) takeOut(c, `takes out the ${c.name} (wrong socket)`);
+    for (const c of benchHas(counts, "cpu")) if (cpuFitsBoard(c, part)) takeOut(c, `takes out the ${c.name} (it doesn't fit)`);
     let sticks = 0;
     for (const m of benchHas(counts, "stick")) {
       if (m.mem === part.mem) continue;
@@ -707,7 +725,8 @@ function fitBench(counts, part) {
   if (part.kind === "cpu") {
     if ((counts[part.id] || 0) > 0) return { reason: "Already on the bench." };
     if (!boardNow) return { reason: `Needs a board with a ${SOCKET_NAMES[part.socket]} socket.` };
-    if (boardNow.socket !== part.socket) return { reason: `Needs a board with a ${SOCKET_NAMES[part.socket]} socket; this board has ${SOCKET_NAMES[boardNow.socket]}.` };
+    const misfit = cpuMisfit(part, boardNow);
+    if (misfit) return { reason: misfit };
     for (const c of benchHas(counts, "cpu")) takeOut(c, `replaces the ${c.name}`);
     next[part.id] = 1;
     return { counts: next, refund, note: notes.join("; ") || null };
@@ -730,17 +749,32 @@ function fitBench(counts, part) {
   return { counts: { ...counts, [part.id]: (counts[part.id] || 0) + 1 }, refund: 0, note: null };
 }
 
-// The bench's PC: CPU speed, held back when memory is short.
+// The bench's PC: CPU speed, held back when memory is short or slow, and a
+// little faster with fast memory, or with an unlocked CPU on a board that
+// overclocks.
 export function benchStock(counts) {
   const c = counts || {};
   const [board] = benchHas(c, "board");
   const [chip] = benchHas(c, "cpu");
-  const ramMb = benchHas(c, "stick").reduce((n, m) => n + m.mb * c[m.id], 0);
+  const sticks = benchHas(c, "stick");
+  const ramMb = sticks.reduce((n, m) => n + m.mb * c[m.id], 0);
+  const stickCount = sticks.reduce((n, m) => n + c[m.id], 0);
   const need = chip?.ramMb || 0;
   const memory = !chip ? 0 : ramMb <= 0 ? 0 : Math.min(1, ramMb / need);
-  const perf = chip && board && board.socket === chip.socket ? chip.perf * memory : 0;
-  const sticks = benchHas(c, "stick").reduce((n, m) => n + c[m.id], 0);
-  return { board: board || null, cpu: chip || null, ramMb, needMb: need, sticks, memory, perf, perSecond: perf * BENCH_RD };
+  const fits = chip && board && !cpuFitsBoard(chip, board);
+  // Memory runs at the slowest of the sticks, the board's limit and, on a
+  // board that holds memory to rated speed, the CPU's rating.
+  const rated = chip?.memSpeed?.[board?.mem] || board?.memMax || 0;
+  const stickSpeed = sticks.length ? Math.min(...sticks.map((m) => m.speed || 0)) : 0;
+  let memSpeed = 0;
+  let speedFactor = 1;
+  if (rated > 0 && stickSpeed > 0) {
+    memSpeed = Math.min(stickSpeed, board?.memMax || stickSpeed, board?.memLock ? rated : Infinity);
+    speedFactor = 0.85 + 0.15 * Math.min(1.25, memSpeed / rated);
+  }
+  const overclock = fits && board.oc && chip.unlocked ? 1.1 : 1;
+  const perf = fits ? chip.perf * memory * speedFactor * overclock : 0;
+  return { board: board || null, cpu: chip || null, ramMb, needMb: need, sticks: stickCount, memory, memSpeed, rated, speedFactor, overclock, perf, perSecond: perf * BENCH_RD };
 }
 
 // The ways to put a faster CPU on the bench right now: the CPU, a board for
@@ -753,10 +787,10 @@ export function benchPlans(state) {
   const plans = [];
   for (const chip of PARTS.filter((p) => p.kind === "cpu" && p.fits.includes("bench") && open.has(p.id))) {
     if (chip.perf <= (now.cpu?.perf || 0)) continue;
-    const boards = now.board?.socket === chip.socket
+    const boards = now.board && !cpuFitsBoard(chip, now.board)
       ? [now.board]
-      : PARTS.filter((p) => p.kind === "board" && p.socket === chip.socket && open.has(p.id)).sort((a, b) => a.cost - b.cost);
-    for (const board of boards.slice(0, 1)) {
+      : PARTS.filter((p) => p.kind === "board" && p.fits.includes("bench") && open.has(p.id) && !cpuFitsBoard(chip, p));
+    for (const board of boards) {
       let c = { ...counts };
       let cost = 0;
       const steps = [];
@@ -770,7 +804,7 @@ export function benchPlans(state) {
       };
       if (!(c[board.id] > 0) && !add(board)) continue;
       if (!add(chip)) continue;
-      const sticks = PARTS.filter((p) => p.kind === "stick" && p.mem === board.mem && open.has(p.id)).sort((a, b) => b.mb - a.mb);
+      const sticks = PARTS.filter((p) => p.kind === "stick" && p.mem === board.mem && open.has(p.id)).sort((a, b) => (b.speed || 0) - (a.speed || 0) || b.mb - a.mb);
       for (let i = 0; i < 8 && benchStock(c).memory < 0.999 && sticks.length; i++) {
         const fits = sticks.find((m) => !fitBench(c, m).reason);
         if (!fits || !add(fits)) break;
@@ -779,7 +813,7 @@ export function benchPlans(state) {
       plans.push({ cpu: chip, board, steps, cost, perf: after.perf, perSecond: after.perSecond });
     }
   }
-  return plans.sort((a, b) => b.perf - a.perf);
+  return plans.sort((a, b) => b.perf - a.perf || a.cost - b.cost);
 }
 
 export function benchLimit(counts) {

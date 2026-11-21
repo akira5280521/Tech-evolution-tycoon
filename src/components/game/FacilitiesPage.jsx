@@ -8,6 +8,7 @@ import {
   facilityHint,
   facilityReport,
   facilityUnlocked,
+  nextPurchase,
   partCost,
 } from "@/lib/facilities";
 import { serverOutput } from "@/lib/research";
@@ -21,11 +22,12 @@ function percent(share) {
   return pct >= 10 ? `${Math.round(pct)}%` : `${pct.toFixed(1)}%`;
 }
 
-function PartRow({ part, owned, open, cash, onBuy, facilityId, state }) {
+function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best }) {
   const cost = partCost(part, owned);
   const affordable = open && !part.soon && Number.isFinite(cost) && cash >= cost && owned < MAX_PART;
   return (
-    <div data-part={part.id} data-help-scope className="border-2 border-[var(--game-border)] bg-[var(--game-bg)] p-2">
+    <div data-part={part.id} data-best-part={best ? "" : undefined} data-help-scope className={`border-2 ${best ? "border-[var(--game-accent)]" : "border-[var(--game-border)]"} bg-[var(--game-bg)] p-2`}>
+      {best && <p className="mb-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">BEST NEXT PART</p>}
       <div className="flex items-start justify-between gap-2">
         {part.icon && (
           // The art leaves a wide empty border; zoom in so the part fills the box.
@@ -53,7 +55,7 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state }) {
   );
 }
 
-function Plant({ facility, state, report, business, cash, onBuy }) {
+function Plant({ facility, state, report, business, cash, onBuy, next }) {
   const open = facilityUnlocked(state, facility.id);
   const row = report[facility.id];
   const research = facility.id === "servers";
@@ -97,6 +99,7 @@ function Plant({ facility, state, report, business, cash, onBuy }) {
               onBuy={() => onBuy(facility.id, part.id)}
               facilityId={facility.id}
               state={state}
+              best={next?.facilityId === facility.id && next?.partId === part.id}
             />
           ))}
         </div>
@@ -110,6 +113,8 @@ export default function FacilitiesPage() {
   const business = businessIncomePerSecond(state, Date.now());
   const report = facilityReport(state, business);
   const open = facilitiesOpen(state);
+  // The part that adds the most pay for its price (or starts a plant).
+  const next = open ? nextPurchase(state, business) : null;
   return (
     <ScreenShell title="FACILITIES" subtitle="A side plant. It pays cash, and it never outgrows the businesses.">
       {!open && (
@@ -124,8 +129,17 @@ export default function FacilitiesPage() {
           Both plants together pay {money(report.perSecond)}/s, {percent(report.share)} of the businesses. Short power or cooling throttles the cards. The cluster also needs enough memory for its model.
         </p>
       )}
+      {open && (
+        <p data-next-part className="break-words px-1 font-term text-base leading-5 text-[var(--game-accent)]">
+          {next
+            ? `Best next part: ${next.name} for the ${next.facilityId === "mine" ? "mine" : "cluster"}${next.extras?.length ? `, with ${next.extras.join(" and ")} to run it` : ""}, ${money(next.bundleCost || next.cost)}${next.payback ? `; pays for itself in about ${Math.max(1, Math.round(next.payback / 60))} min` : " to get it running"}.`
+            : report.capped
+              ? "Both plants are at the income cap; more parts won't add pay."
+              : "No part pays for itself within 15 minutes right now."}
+        </p>
+      )}
       {FACILITIES.map((facility) => (
-        <Plant key={facility.id} facility={facility} state={state} report={report} business={business} cash={state.cash || 0} onBuy={buyFacilityPart} />
+        <Plant key={facility.id} facility={facility} state={state} report={report} business={business} cash={state.cash || 0} onBuy={buyFacilityPart} next={next} />
       ))}
     </ScreenShell>
   );

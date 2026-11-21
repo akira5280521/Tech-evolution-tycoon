@@ -47,14 +47,6 @@ export function recordError(error, version = "") {
   }
 }
 
-export function clearErrors() {
-  try {
-    window.localStorage.removeItem(KEY);
-  } catch {
-    /* nothing stored */
-  }
-}
-
 let installed = false;
 export function installErrorLog(version = "") {
   if (installed || typeof window === "undefined") return;

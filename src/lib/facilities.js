@@ -1,17 +1,19 @@
-// Two late-game plants. Pay is a small share of current business income,
-// capped at half a percent, so the plants never outgrow the businesses.
+// Two late-game plants. Pay is a share of current business income,
+// capped at 5% for both together, so the plants never outgrow the businesses.
 // While the game is minimized or closed they earn at the away rate
 // (OFFLINE_RATE), like everything else.
 // Bitbark is a game coin: nothing here is real currency, a wallet, or a link.
 //
 // speed = min(1, min(power watts, cooling watts) / GPU watts).
-// A full Raster 3060 (powered, cooled, with RAM) is STARTER_SHARE of business
-// income. More cards scale that share until SHARE_CAP.
+// A plant's power is its cards' work x speed x memory factor, in Raster 3060s.
+// Its share of business income is STARTER_SHARE x sqrt(power): one full 3060
+// is STARTER_SHARE, and each better card still adds, a little less each time,
+// until both plants together reach SHARE_CAP.
 
 import { BUSINESSES } from "./gameConfig.js";
 
-export const SHARE_CAP = 0.005;
-export const STARTER_SHARE = 0.005;
+export const SHARE_CAP = 0.05;
+export const STARTER_SHARE = 0.0009;
 export const MAX_PART = 24;
 const REFERENCE_WORK = 13;
 const MINE_RAM_GB = 16;
@@ -226,7 +228,8 @@ function rowOf(facilityId, counts) {
   const stocked = stock(counts, facilityId);
   const mem = memoryFactor(facilityId, stocked);
   const running = stocked.gpus > 0 && stocked.work > 0 && stocked.speed > 0;
-  const share = running ? (STARTER_SHARE * stocked.work * stocked.speed * mem.factor) / REFERENCE_WORK : 0;
+  const power = running ? (stocked.work * stocked.speed * mem.factor) / REFERENCE_WORK : 0;
+  const share = running ? STARTER_SHARE * Math.sqrt(power) : 0;
   return {
     share,
     limit: hardwareLimit(stocked, mem),
@@ -321,14 +324,46 @@ export function nextPurchase(state, businessPerSecond) {
       const owned = counts[part.id] || 0;
       if (owned >= MAX_PART) continue;
       const offer = { facilityId, partId: part.id, name: part.name, cost: partCost(part, owned) };
-      const added = marginal(state, offer, businessPerSecond);
+      // A part is worth what it adds once the plant has the power, cooling
+      // and memory to run it; a card alone may only be throttled, and a power
+      // supply alone does nothing while cooling is short. Judge each part with
+      // the cheapest extras it needs, so the suggestion never stalls.
+      const plan = withSupport(state, facilityId, part.id);
+      if (!plan) continue;
+      const before = facilityReport(state, businessPerSecond).perSecond;
+      const added = facilityReport(plan.state, businessPerSecond).perSecond - before;
       if (!(added > 0)) continue;
-      const payback = offer.cost / added;
+      const payback = plan.cost / added;
       if (payback > 15 * 60) continue;
-      if (!best || payback < best.payback) best = { ...offer, payback };
+      if (!best || payback < best.payback) best = { ...offer, payback, bundleCost: plan.cost, extras: plan.extras };
     }
   }
   return best;
+}
+
+// Add one part, then the cheapest power, cooling and memory until the plant
+// runs at full speed (at most a few parts). Returns the new state, the total cost and
+// the names of the extra parts, or null if it can't be supported.
+function withSupport(state, facilityId, partId) {
+  let next = withPart(state, facilityId, partId);
+  let cost = partCost(byId[partId], countsOf(state, facilityId)[partId] || 0);
+  const extras = [];
+  for (let i = 0; i < 8; i++) {
+    const counts = countsOf(next, facilityId);
+    const stocked = stock(counts, facilityId);
+    const mem = memoryFactor(facilityId, stocked);
+    let kind = null;
+    if (stocked.power < stocked.watts) kind = "power";
+    else if (stocked.cool < stocked.watts) kind = "cool";
+    else if (mem.limit === "Needs more RAM") kind = "ram";
+    if (!kind) return { state: next, cost, extras };
+    const add = cheapest(facilityId, kind, counts);
+    if (!add) return null;
+    next = withPart(next, facilityId, add.part.id);
+    cost += add.cost;
+    extras.push(add.part.name);
+  }
+  return null;
 }
 
 function marginal(state, offer, businessPerSecond) {

@@ -10,7 +10,6 @@ import { pushRun } from "./records.js";
 import { blankTutorial } from "./tutorial.js";
 import {
   BUSINESSES,
-  COMMISSION_MS,
   ERA_GATE,
   MILESTONES,
   OFFLINE_CAP_MS,
@@ -20,10 +19,8 @@ import {
   UPGRADE_MS,
   blankSupply,
   blockedByGlass,
-  costOf,
   eraOpen,
   indexOfBusiness,
-  investorsFor,
   managerNeed,
   milestoneMult,
   milestoneSpeed,
@@ -1391,10 +1388,6 @@ export function snapshotMeta(state, options = {}) {
     projectJob: copyTimedJob(state.projectJob),
     modStamp: (state.modStamp || 0) + 1,
   };
-}
-
-export function investorsReady(state) {
-  return investorsFor(state.lifetime || 0);
 }
 
 // Ticker headlines, each tied to the era it belongs to, so the news never

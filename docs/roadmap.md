@@ -189,8 +189,31 @@ test shipped in 0.0.13 (see Done).
     go out of production once combined 2D/3D cards are researched (the
     Threefold 3000 for the Voodoo boards, the Raster 256 for PowerVR); one
     already on the bench keeps working.
-- **Stage to come:** 4, air coolers and AIOs, with radiators that must fit
-  the case's mounts.
+- **RIGS networks and two Tech slots:**
+  - Racks of research servers need a network (SynOptix 10BASE-T hub 1990,
+    Sysco Catalyst 5000 and 6500, Sysco Nexus 5000, Melanox InfiniScale
+    IV, Switch-IB and Quantum); without one each rack works alone at half
+    speed, and one too slow for the racks' work shows Network-limited.
+    The training cluster's cards need linking (InfiniBand, Raster NVLink
+    bridge, NVSwitch) or lose up to 15%. Old saves get the first network
+    of their day.
+  - A CPU with four or more cores on the PC bench lets two Tech projects
+    run at once.
+  - Glossary and "?" entries: PC build bench, bottleneck, network.
+  - Research fixes: DDR2-533 and DDR3-1066 at launch, the Alder 1950X its
+    own project, the 80 Plus Titanium date.
+- **PC build bench, stage 4** (coolers):
+  - 15 air coolers (clip-on heatsink 1989 to Noctuo NH-D15 G2 2024, incl.
+    Thermaltech Golden Orb, Alpha Novatek PAL8045, Zalmon CNPS7000, Scythie
+    Ninja, Cooler Mister Hyper 212, Be Calm Dark Rock Pro 4, Thermalwrite
+    Peerless Assassin) and 7 AIOs (Corsar H50 2009 to Arktik Liquid
+    Freezer III), each with the sockets its mounting kits fit.
+  - Air coolers must fit the case's height; an AIO's radiator (120 to 420
+    mm) must match a mount in the case.
+  - Heat: CPUs past the 386 need a cooler that moves their watts or they
+    slow down. Overclocking adds a third more heat; an OVERCLOCK switch on
+    the bench turns it on or off, and a cooler that can't take it keeps
+    the CPU at stock speed.
 - **A 1980s era:** the eras jump from 1977 to 1991, so 1980s hardware opens
   at Dial-up. Worth deciding on.
 - **Space Age plan.** How to add it, in stages: `docs/space-age-plan.md`.

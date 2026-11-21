@@ -111,7 +111,7 @@ test("the PC bench: a board, then a CPU for its socket and memory for its slots"
 });
 
 test("the bench names its bottleneck and checks plugs", async ({ page }) => {
-  const bench = { "b-z77": 1, "c-3770k": 1, "m-ddr3b": 2, "p-atx3": 1, "v-4090": 1, "k-mesh": 1 };
+  const bench = { "b-z77": 1, "c-3770k": 1, "m-ddr3b": 2, "p-atx3": 1, "v-4090": 1, "k-mesh": 1, "h-d14": 1 };
   await open(page, "/facilities", { ...LATE, cash: 1e40, facilities: { mine: {}, cluster: {}, servers: {}, bench } });
   await tipsOff(page);
   const b = page.locator('[data-facility="bench"]');

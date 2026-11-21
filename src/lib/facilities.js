@@ -533,7 +533,7 @@ export function facilityReport(state, businessPerSecond) {
     mine: dress(mine),
     cluster: dress(cluster),
     servers: { ...servers, share: 0, perSecond: 0 },
-    bench: { ...benchStock(countsOf(state, "bench")), limit: benchLimit(countsOf(state, "bench")), share: 0 },
+    bench: { ...benchStock(countsOf(state, "bench"), { oc: state?.benchOc !== false }), limit: benchLimit(countsOf(state, "bench"), { oc: state?.benchOc !== false }), share: 0 },
   };
 }
 
@@ -783,6 +783,7 @@ function fitBench(counts, part) {
       for (const x of benchHas(counts, k)) if (busMisfit(x, part)) takeOut(x, `takes out the ${x.name} (no slot for it)`);
     }
     for (const f of benchHas(counts, "fpu")) if (part.fpu !== f.fpu) takeOut(f, `takes out the ${f.name}`);
+    for (const k of benchHas(counts, "cooler")) if (!k.sockets.includes(part.socket)) takeOut(k, `takes out the ${k.name} (no mount for this socket)`);
     for (const k of benchHas(counts, "case")) if (part.builtin || !k.boards.includes(part.form)) takeOut(k, `takes out the ${k.name} (the board doesn't fit it)`);
     for (const ps of benchHas(counts, "psu")) if (psuMisfit(ps, part)) takeOut(ps, `takes out the ${ps.name} (it doesn't have the board's plugs)`);
     next[part.id] = 1;
@@ -831,6 +832,15 @@ function fitBench(counts, part) {
     next[part.id] = 1;
     return { counts: next, refund, note: notes.join("; ") || null };
   }
+  if (part.kind === "cooler") {
+    if (!boardNow) return { reason: "Needs a board to mount on." };
+    if (!part.sockets.includes(boardNow.socket)) return { reason: `It has no mounting kit for ${SOCKET_NAMES[boardNow.socket]}.` };
+    if (caseNow && part.aio && !caseNow.radiators.includes(part.radiator)) return { reason: `The ${caseNow.name} has no ${part.radiator} mm radiator mount.` };
+    if (caseNow && !part.aio && part.height > caseNow.maxCooler) return { reason: `At ${part.height} mm it's too tall for the ${caseNow.name} (${caseNow.maxCooler} mm).` };
+    for (const x of benchHas(counts, "cooler")) takeOut(x, `replaces the ${x.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
   if (["drive", "media", "net", "modem"].includes(part.kind)) {
     if (!boardNow) return { reason: "Needs a board to connect to." };
     const misfit = portMisfit(part, boardNow);
@@ -860,6 +870,9 @@ function fitBench(counts, part) {
     if (boardNow && !part.boards.includes(boardNow.form)) return { reason: `The ${boardNow.name} is ${FORM_NAMES[boardNow.form]}; this case doesn't take it.` };
     if (psuNow && psuNow.form !== part.form) return { reason: `This case takes an ${part.form.toUpperCase()} supply.` };
     if (cardNow && cardNow.length > part.maxGpu) return { reason: `The ${cardNow.name} is too long for it (${part.maxGpu} mm).` };
+    const [coolNow] = benchHas(counts, "cooler");
+    if (coolNow?.aio && !part.radiators.includes(coolNow.radiator)) return { reason: `It has no ${coolNow.radiator} mm radiator mount for the ${coolNow.name}.` };
+    if (coolNow && !coolNow.aio && coolNow.height > part.maxCooler) return { reason: `The ${coolNow.name} is too tall for it (${part.maxCooler} mm).` };
     for (const x of benchHas(counts, "case")) takeOut(x, `replaces the ${x.name}`);
     next[part.id] = 1;
     return { counts: next, refund, note: notes.join("; ") || null };
@@ -958,8 +971,9 @@ function busMisfit(part, board) {
 // The bench's PC: CPU speed, held back when memory is short or slow, and a
 // little faster with fast memory, or with an unlocked CPU on a board that
 // overclocks.
-export function benchStock(counts) {
+export function benchStock(counts, opts = {}) {
   const c = counts || {};
+  const wantOc = opts.oc !== false;
   const [board] = benchHas(c, "board");
   const [chip] = benchHas(c, "cpu");
   const sticks = benchHas(c, "stick");
@@ -978,10 +992,20 @@ export function benchStock(counts) {
     memSpeed = Math.min(stickSpeed, board?.memMax || stickSpeed, board?.memLock ? rated : Infinity);
     speedFactor = 0.85 + 0.15 * Math.min(1.25, memSpeed / rated);
   }
-  const overclock = fits && board.oc && chip.unlocked ? 1.1 : 1;
+  // Heat: chips past the 386 need a cooler. Overclocking adds a third more
+  // heat; if the cooler can't take it the CPU stays at stock speed, and if it
+  // can't take even stock heat the CPU slows down.
+  const [coolerNow] = benchHas(c, "cooler");
+  const mounted = coolerNow && board && coolerNow.sockets.includes(board.socket) ? coolerNow : null;
+  const heatStock = chip?.watts || 0;
+  const coolCap = mounted ? mounted.cap : heatStock <= 5 ? heatStock : 0;
+  const canOc = fits && board.oc && chip.unlocked;
+  const ocOn = canOc && wantOc && coolCap >= heatStock * 1.35;
+  const thermal = !fits || heatStock <= 0 ? 1 : coolCap >= heatStock ? 1 : coolCap <= 0 ? 0.5 : Math.max(0.5, coolCap / heatStock);
+  const overclock = ocOn ? 1.1 : 1;
   const [fpuChip] = benchHas(c, "fpu");
   const math = fits && fpuChip && chip.noFpu && board.fpu === fpuChip.fpu ? 1.15 : 1;
-  const cpuPerf = fits ? chip.perf * memory * speedFactor * overclock * math : 0;
+  const cpuPerf = fits ? chip.perf * memory * speedFactor * overclock * math * thermal : 0;
   // Graphics: the card (plus a 3D add-in beside it), at the slowest PCI
   // Express generation of card, slot and CPU (3% for each step down), or the
   // computer's own video, or a CPU's on-chip graphics.
@@ -1013,7 +1037,8 @@ export function benchStock(counts) {
   else if (cpuPerf > 0 && gfx > cpuPerf * 1.3) bottleneck = "cpu";
   // Power: the supply has to cover the CPU, card and the rest (20 W).
   const draw = 20 + (chip?.watts || 0) + (unplugged ? 0 : card?.watts || 0) + (addIn?.watts || 0) + (snd?.watts || 0) + (fpuChip?.watts || 0)
-    + benchHas(c, "drive").reduce((n, x) => n + x.watts, 0) + benchHas(c, "media").reduce((n, x) => n + x.watts, 0);
+    + benchHas(c, "drive").reduce((n, x) => n + x.watts, 0) + benchHas(c, "media").reduce((n, x) => n + x.watts, 0)
+    + (coolerNow?.watts || 0) + (chip && board?.oc && chip.unlocked && wantOc ? chip.watts * 0.35 : 0);
   const supply = board?.builtin ? Math.max(draw, board.builtinWatts) : psuNow && !psuMisfit(psuNow, board) ? psuNow.supply : 0;
   const power = !board ? 0 : supply <= 0 ? 0 : Math.min(1, supply / draw);
   const soundBonus = 1 + Math.max(snd && board && !busMisfit(snd, board) ? snd.bonus : 0, board?.onboardSound || 0);
@@ -1034,6 +1059,7 @@ export function benchStock(counts) {
   return {
     board: board || null, cpu: chip || null, ramMb, needMb: need, sticks: stickCount, memory, memSpeed, rated, speedFactor, overclock, math,
     cpuPerf, gfx, link, unplugged, bottleneck, draw, supply, power, sound: snd || null, case: caseNow || null, card: card || null,
+    cooler: mounted, heat: heatStock * (ocOn ? 1.35 : 1), coolCap, canOc, ocOn, ocBlocked: canOc && wantOc && !ocOn, thermal,
     drive: disk || null, driveMbs: diskLink.mbs, driveText: diskLink.text, diskExpected: expected, media: removable || null, net: nic || null, modem: mdm || null,
     perf, perSecond: perf * BENCH_RD,
   };
@@ -1069,6 +1095,14 @@ export function benchPlans(state) {
     for (let i = 0; i < 8 && benchStock(c).memory < 0.999 && sticks.length; i++) {
       const fits = sticks.find((m) => !fitBench(c, m).reason);
       if (!fits || !add(fits)) break;
+    }
+    {
+      const st = benchStock(c);
+      if (st.cpu && (st.thermal < 0.999 || (st.canOc && !st.ocOn))) {
+        const k = benchParts("cooler").filter((x) => !fitBench(c, x).reason && x.cap >= st.cpu.watts * (st.canOc ? 1.35 : 1)).sort((a, b) => a.cost - b.cost)[0]
+          || benchParts("cooler").filter((x) => !fitBench(c, x).reason && x.cap >= st.cpu.watts).sort((a, b) => a.cost - b.cost)[0];
+        if (k) add(k);
+      }
     }
     if (!board.builtin) {
       const st = benchStock(c);
@@ -1120,7 +1154,7 @@ export function benchPlans(state) {
       const plan = finish(c, first, card.name);
       if (plan) plans.push({ ...plan, card });
     }
-    for (const kind of ["sound", "fpu", "accel", "drive", "media", "net", "modem"]) {
+    for (const kind of ["sound", "fpu", "accel", "drive", "media", "net", "modem", "cooler"]) {
       for (const part of benchParts(kind)) {
         if (benchHas(counts, kind).some((x) => x.id === part.id)) continue;
         const plan = finish(counts, [part], part.name);
@@ -1131,12 +1165,13 @@ export function benchPlans(state) {
   return plans.sort((a, b) => b.perf - a.perf || a.cost - b.cost);
 }
 
-export function benchLimit(counts) {
-  const b = benchStock(counts);
+export function benchLimit(counts, opts) {
+  const b = benchStock(counts, opts);
   if (!b.board) return "Add a board";
   if (!b.cpu) return "Add a CPU";
   if (!b.board.builtin && !b.supply) return "Add a power supply";
   if (b.power < 0.999) return "Power limited";
+  if (b.thermal < 0.999) return "Overheating";
   if (b.memory < 0.999) return "Needs more memory";
   if (b.unplugged) return "Card not plugged in";
   if (b.bottleneck === "graphics") return "Bottleneck: graphics";
@@ -1145,13 +1180,15 @@ export function benchLimit(counts) {
 }
 
 export function benchHint(state) {
-  const b = benchStock(countsOf(state, "bench"));
+  const b = benchStock(countsOf(state, "bench"), { oc: state?.benchOc !== false });
   if (!b.board) return "Next: a motherboard, then a CPU for its socket and memory for its slots.";
   if (!b.cpu) return `Next: a CPU for the ${SOCKET_NAMES[b.board.socket]} socket.`;
   if (!b.board.builtin && !b.supply) return `Next: an ${b.board.form === "at" ? "AT" : "ATX"} power supply; the PC draws about ${Math.round(b.draw)} W.`;
   if (b.power < 0.999) return `Next: a bigger supply; the PC draws ${Math.round(b.draw)} W from a ${b.supply} W supply.`;
   if (b.memory < 0.999) return `Next: more ${MEM_NAMES[b.board.mem]} memory; the ${b.cpu.name} wants ${memSize(b.needMb)}.`;
   if (b.unplugged) return `Next: a supply with the plug the ${b.card.name} needs.`;
+  if (b.thermal < 0.999) return `Next: a cooler for ${SOCKET_NAMES[b.board.socket]} that moves ${Math.round(b.cpu.watts)} W; the CPU is slowing down from heat.`;
+  if (b.ocBlocked) return `Overclock is off: the cooler moves ${b.coolCap} W and an overclocked ${b.cpu.name} makes ${Math.round(b.cpu.watts * 1.35)} W.`;
   if (b.bottleneck === "graphics") return "Bottleneck: the graphics. A faster card lets the CPU do more.";
   if (b.bottleneck === "cpu") return "Bottleneck: the CPU. The card waits on it; a faster CPU uses more of it.";
   return "Next: newer parts as you reach their years and research them.";

@@ -167,6 +167,17 @@ export const RESEARCH = [
   item({ id: "srv-blade", tab: "servers", year: 2006, name: "Foundry Blade B2", spec: "Two dual-core chips on a blade", rd: 30, durationMs: 70_000, prereq: "srv-2u" }),
   item({ id: "srv-r1", tab: "servers", year: 2012, name: "Foundry Rack R1", spec: "1U, two 8-core chips", rd: 36, durationMs: 80_000, prereq: "srv-blade" }),
   item({ id: "srv-r4", tab: "servers", year: 2012, name: "Foundry Rack R4", spec: "4U, four 8-core chips", rd: 44, durationMs: 90_000, prereq: "srv-r1" }),
+  item({ id: "arm-arm1", tab: "cpu", year: 1985, name: "Akorn ARM1", spec: "A 32-bit RISC chip with 25,000 transistors, built for a home computer", rd: 22, durationMs: 50_000, prereq: "cpu-286" }),
+  item({ id: "arm-7tdmi", tab: "cpu", year: 1994, name: "Arem ARM7TDMI", spec: "The low-power core inside phones and music players for a decade", rd: 26, durationMs: 60_000, prereq: "arm-arm1" }),
+  item({ id: "arm-a9", tab: "cpu", year: 2010, name: "Arem Cortex-A9", spec: "Two cores at 1 GHz in the first big tablets", rd: 34, durationMs: 75_000, prereq: "arm-7tdmi" }),
+  item({ id: "arm-a15", tab: "cpu", year: 2012, name: "Arem Cortex-A15", spec: "Out-of-order cores fast enough to think about servers", rd: 38, durationMs: 80_000, prereq: "arm-a9" }),
+  item({ id: "arm-n1", tab: "cpu", year: 2019, name: "Arem Neoverse N1", spec: "An ARM core designed for data centres", rd: 46, durationMs: 95_000, prereq: "arm-a15" }),
+  item({ id: "srv-calx", tab: "servers", year: 2012, name: "Calxedon EnergyCore box", spec: "Low-power ARM servers by the dozen in one box", rd: 38, durationMs: 80_000, prereq: "arm-a9" }),
+  item({ id: "srv-altra", tab: "servers", year: 2020, name: "Amperion Altra 1U", spec: "80 ARM cores in one server socket", rd: 50, durationMs: 100_000, prereq: "arm-n1" }),
+  item({ id: "store-symm", tab: "storage", year: 1990, name: "EMZ Symmetrix 4200", spec: "A cabinet of small disks working as one, with a big cache", rd: 18, durationMs: 45_000, prereq: "store-scsi" }),
+  item({ id: "store-thumper", tab: "storage", year: 2006, name: "Sunrise Fire X4500", spec: "48 disks in one 4U server", rd: 28, durationMs: 55_000, prereq: "store-sata" }),
+  item({ id: "store-pod", tab: "storage", year: 2009, name: "Backblayz Storage Pod", spec: "45 cheap disks in a box anyone could build", rd: 30, durationMs: 60_000, prereq: "store-thumper" }),
+  item({ id: "store-flasharray", tab: "storage", year: 2015, name: "Purely FlashArray//m", spec: "A whole array of flash in 3U", rd: 38, durationMs: 70_000, prereq: "store-pod" }),
 ];
 
 // Bench parts that need a project of their own get one: CPUs on the CPU tab

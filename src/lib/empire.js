@@ -1138,7 +1138,7 @@ export function legacyBadgeIds(state) {
   if ((state.investors || 0) >= forkCost(0)) ids.push("time-board");
   if ((state.singularities || 0) >= 1) ids.push("time-fork");
   if ((state.specialties || []).length >= 1) ids.push("time-lab");
-  if ((state.streak || 0) >= 7) ids.push("time-streak");
+  if ((state.streak || 0) >= 14) ids.push("time-streak");
   return ids;
 }
 

@@ -639,7 +639,7 @@ export function partLock(state, part, researchName) {
   if (!part) return "Locked";
   if (playerYear(state) < (part.year || 0)) return `Requires ${part.year}`;
   if (part.research && !(state?.techDone || []).includes(part.research)) return `Research ${researchName || part.name} on the Tech page`;
-  if (partRetired(state, part)) return part.kind === "accel" ? "Out of production: combined 2D and 3D cards replaced it" : ["b-915btx", "k-btx"].includes(part.id) ? "Out of production: makers went back to ATX" : "Out of production: it lost to its rival";
+  if (partRetired(state, part)) return part.kind === "accel" ? "Out of production: combined 2D and 3D cards replaced it" : ["b-915btx", "k-btx"].includes(part.id) ? "Out of production: makers went back to ATX" : part.id === "x-physx" ? "Out of production: graphics cards took over physics" : "Out of production: it lost to its rival";
   return null;
 }
 
@@ -828,6 +828,16 @@ function fitBench(counts, part) {
   const [caseNow] = benchHas(counts, "case");
   const [psuNow] = benchHas(counts, "psu");
   const [cardNow] = benchHas(counts, "video");
+  if (part.kind === "addin") {
+    if (!boardNow) return { reason: "Needs a board to plug into." };
+    const misfit = busMisfit(part, boardNow);
+    if (misfit) return { reason: misfit };
+    if (part.job === "raid" && !benchHas(counts, "drive").length) return { reason: "Needs a disk to run." };
+    const others = benchHas(counts, "addin");
+    if (others.length >= 2) takeOut(others[0], `replaces the ${others[0].name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
   if (part.kind === "monitor") {
     if (!boardNow) return { reason: "Needs a PC to plug into." };
     if (boardNow.builtin && !cardNow) return { reason: "This computer has its own screen." };
@@ -1072,7 +1082,7 @@ export function benchStock(counts, opts = {}) {
   else if (cpuPerf > 0 && gfx > cpuPerf * 1.3) bottleneck = "cpu";
   // Power: the supply has to cover the CPU, card and the rest (20 W).
   const draw = 20 + (chip?.watts || 0) + (unplugged ? 0 : card?.watts || 0) + (addIn?.watts || 0) + (snd?.watts || 0) + (fpuChip?.watts || 0)
-    + benchHas(c, "drive").reduce((n, x) => n + x.watts, 0) + benchHas(c, "media").reduce((n, x) => n + x.watts, 0)
+    + benchHas(c, "drive").reduce((n, x) => n + x.watts, 0) + benchHas(c, "media").reduce((n, x) => n + x.watts, 0) + benchHas(c, "addin").reduce((n, x) => n + x.watts, 0)
     + (coolerNow?.watts || 0) + (chip && board?.oc && chip.unlocked && wantOc ? chip.watts * 0.35 : 0);
   const supply = board?.builtin ? Math.max(draw, board.builtinWatts) : psuNow && !psuMisfit(psuNow, board) ? psuNow.supply : 0;
   const power = !board ? 0 : supply <= 0 ? 0 : Math.min(1, supply / draw);
@@ -1088,7 +1098,8 @@ export function benchStock(counts, opts = {}) {
   const diskFactor = diskLink.mbs > 0 ? 0.9 + 0.1 * Math.min(1.2, diskLink.mbs / expected) : board?.builtin && (chip?.year || 0) < 1980 ? 1 : 0.9;
   const extras = (removable && board && !portMisfit(removable, board) ? 1 + removable.bonus : 1)
     * (nic && board && !portMisfit(nic, board) ? 1 + nic.bonus : 1)
-    * (mdm ? 1 + mdm.bonus : 1);
+    * (mdm ? 1 + mdm.bonus : 1)
+    * benchHas(c, "addin").reduce((n, x) => n * (board && !busMisfit(x, board) ? 1 + x.bonus : 1), 1);
   const caseBonus = caseNow && board && caseNow.boards.includes(board.form) ? 1.05 : 1;
   const perf = pcPerf * power * soundBonus * caseBonus * diskFactor * extras;
   return {
@@ -1198,7 +1209,7 @@ export function benchPlans(state) {
       const plan = finish(c, first, card.name);
       if (plan) plans.push({ ...plan, card });
     }
-    for (const kind of ["sound", "fpu", "accel", "drive", "media", "net", "modem", "cooler", "monitor"]) {
+    for (const kind of ["sound", "fpu", "accel", "drive", "media", "net", "modem", "cooler", "monitor", "addin"]) {
       for (const part of benchParts(kind)) {
         if (benchHas(counts, kind).some((x) => x.id === part.id)) continue;
         const plan = finish(counts, [part], part.name);

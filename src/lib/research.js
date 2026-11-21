@@ -173,7 +173,7 @@ export const RESEARCH = [
 // (each after the last chip of its maker), boards on BOARDS, sticks on MEMORY.
 {
   const have = new Set(RESEARCH.map((entry) => entry.id));
-  const tabOf = { cpu: "cpu", board: "boards", stick: "memory", video: "gpu", monitor: "gpu", accel: "gpu", sound: "sound", psu: "power", case: "cases", fpu: "cpu", drive: "storage", media: "storage", net: "network", modem: "network", cooler: "cooling" };
+  const tabOf = { cpu: "cpu", board: "boards", stick: "memory", video: "gpu", monitor: "gpu", accel: "gpu", addin: "boards", sound: "sound", psu: "power", case: "cases", fpu: "cpu", drive: "storage", media: "storage", net: "network", modem: "network", cooler: "cooling" };
   const brand = (name) => name.split(" ")[0];
   const added = PARTS.filter((part) => part.fits.includes("bench") && part.research && !have.has(part.research))
     .sort((a, b) => a.year - b.year);

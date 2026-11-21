@@ -262,6 +262,7 @@ const BENCH_TABS = [
   ["video", "GRAPHICS", ["video", "accel"]],
   ["monitor", "DISPLAYS", ["monitor"]],
   ["sound", "SOUND", ["sound"]],
+  ["addin", "CARDS", ["addin"]],
   ["psu", "POWER", ["psu"]],
   ["case", "CASES", ["case"]],
   ["drive", "DRIVES", ["drive", "media"]],

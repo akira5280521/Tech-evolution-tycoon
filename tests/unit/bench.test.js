@@ -261,3 +261,16 @@ test("monitors: ports must match, and a monitor caps the graphics it shows", () 
   assert.ok(capped.screenCapped);
   assert.ok(full.perf >= capped.perf);
 });
+
+test("expansion cards: the right slot, two at most, RAID needs a disk, PhysX retires", () => {
+  const pc = { "b-z87": 1, "c-4770k": 1 };
+  assert.match(fitPart({ "b-z690": 1 }, "bench", "x-wintv").reason, /ISA/);
+  assert.match(fitPart(pc, "bench", "x-raid5805").reason, /disk/);
+  let c = fitPart(pc, "bench", "x-hd60").counts;
+  c = fitPart(c, "bench", "x-physx").counts;
+  const third = fitPart(c, "bench", "x-4k60");
+  assert.equal(Object.keys(third.counts).filter((k) => k.startsWith("x-")).length, 2, "a third card replaces one");
+  assert.match(third.note, /replaces/);
+  const s = upTo(BUSINESSES[BUSINESSES.length - 1].id);
+  assert.match(partLock(s, part("x-physx")) || "", /graphics cards took over/);
+});

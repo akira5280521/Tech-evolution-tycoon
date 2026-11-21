@@ -667,6 +667,26 @@ export const BENCH_COOLERS = [
   aio("a-lf3", "Arktik Liquid Freezer III 360", 2024, "cool-lf3", ["lga1700", "lga1851", "am4", "am5"], 330, 360, "2024: a 360 mm radiator with a contact frame for LGA1700."),
 ];
 
+// --- Stage 5: odd expansion cards --------------------------------------------
+// Cards for one job each: a TV tuner, a RAID controller, a physics chip, a
+// game capture card. Two fit in the spare slots; each adds a little.
+function addin(id, name, year, research, bus, bonus, job, spec) {
+  return { ...base, id, kind: "addin", name, year, research, bus, bonus, job, watts: 10, icon: icon2(id), cost: price(year, 0.06), spec };
+}
+export const BENCH_ADDINS = [
+  addin("x-wintv", "Happaug WinTV", 1993, "add-wintv", "isa16", 0.005, "tv", "1993: TV in a window on the desktop, from an analog tuner."),
+  addin("x-wintvpci", "Happaug WinTV PCI", 1997, "add-wintvpci", "pci", 0.006, "tv", "1997: the TV card moved to PCI and could record to disk."),
+  addin("x-fasttrak", "Promys FastTrak66", 1999, "add-fasttrak", "pci", 0.01, "raid", "1999: two IDE disks as one, striped for speed or mirrored for safety."),
+  addin("x-physx", "Agea PhysX P1", 2006, "add-physx", "pci", 0.015, "physics", "2006: a chip just for game physics; Raster bought the maker in 2008 and moved it onto graphics cards."),
+  addin("x-raid5805", "Adapto RAID 5805", 2008, "add-raid5805", "pcie", 0.012, "raid", "2008: eight SATA disks on one card, with its own cache memory."),
+  addin("x-wintvhd", "Happaug WinTV-HVR-2250", 2009, "add-wintvhd", "pcie", 0.006, "tv", "2009: two digital TV tuners after the analog shutoff."),
+  addin("x-hd60", "Elgatto HD60 Pro", 2015, "add-hd60", "pcie", 0.008, "capture", "2015: records and streams a console's 1080p picture."),
+  addin("x-4k60", "Elgatto 4K60 Pro", 2018, "add-4k60", "pcie", 0.01, "capture", "2018: captures 4K at 60 frames a second."),
+];
+// The PhysX chip went out of production when its maker's buyer put it on
+// graphics cards.
+BENCH_ADDINS.find((x) => x.id === "x-physx").retiredBy = "vid-gtx280";
+
 // --- Stage 5: monitors ----------------------------------------------------
 // A monitor shows only so much: past its resolution and refresh rate, a
 // faster card is wasted (cap, on the graphics scale). It needs a port in
@@ -713,7 +733,7 @@ for (const b of BENCH_BOARDS) b.ports = b.year >= 2017 ? ["hdmi", "dp"] : b.year
 // researched. BTX boards and cases stopped around 2008.
 const LOST_TO = { "r-hddvd": "med-bd", "n-tokenring": "net-100", "b-915btx": "case-haf932", "k-btx": "case-haf932" };
 
-export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CARDS, ...BENCH_MONITORS, ...BENCH_ACCELS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS, ...BENCH_COOLERS];
+export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CARDS, ...BENCH_MONITORS, ...BENCH_ACCELS, ...BENCH_ADDINS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS, ...BENCH_COOLERS];
 for (const part of BENCH_PARTS) if (LOST_TO[part.id]) part.retiredBy = LOST_TO[part.id];
 
 // R&D a second for each point of CPU perf at full memory. Tuned in the

@@ -647,7 +647,7 @@ export function partLock(state, part, researchName) {
   if (!part) return "Locked";
   if (playerYear(state) < (part.year || 0)) return `Requires ${part.year}`;
   if (part.research && !(state?.techDone || []).includes(part.research)) return `Research ${researchName || part.name} on the Tech page`;
-  if (partRetired(state, part)) return part.kind === "accel" ? "Out of production: combined 2D and 3D cards replaced it" : ["b-915btx", "k-btx"].includes(part.id) ? "Out of production: makers went back to ATX" : part.id === "x-physx" ? "Out of production: graphics cards took over physics" : "Out of production: it lost to its rival";
+  if (partRetired(state, part)) return part.kind === "accel" ? "Out of production: combined 2D and 3D cards replaced it" : ["b-915btx", "k-btx"].includes(part.id) ? "Out of production: makers went back to ATX" : part.kind === "cache" ? "Out of production: the cache moved onto the CPU" : part.id === "x-physx" ? "Out of production: graphics cards took over physics" : "Out of production: it lost to its rival";
   return null;
 }
 
@@ -836,6 +836,12 @@ function fitBench(counts, part) {
   const [caseNow] = benchHas(counts, "case");
   const [psuNow] = benchHas(counts, "psu");
   const [cardNow] = benchHas(counts, "video");
+  if (part.kind === "cache") {
+    if (!boardNow?.coast) return { reason: "Needs a board with a COAST cache slot." };
+    for (const x of benchHas(counts, "cache")) takeOut(x, `replaces the ${x.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
   if (part.kind === "addin") {
     if (!boardNow) return { reason: "Needs a board to plug into." };
     const misfit = busMisfit(part, boardNow);
@@ -1107,6 +1113,7 @@ export function benchStock(counts, opts = {}) {
   const extras = (removable && board && !portMisfit(removable, board) ? 1 + removable.bonus : 1)
     * (nic && board && !portMisfit(nic, board) ? 1 + nic.bonus : 1)
     * (mdm ? 1 + mdm.bonus : 1)
+    * benchHas(c, "cache").reduce((n, x) => n * (board?.coast ? 1 + x.bonus : 1), 1)
     * benchHas(c, "addin").reduce((n, x) => n * (board && !busMisfit(x, board) ? 1 + x.bonus : 1), 1);
   const caseBonus = caseNow && board && caseNow.boards.includes(board.form) ? 1.05 : 1;
   const perf = pcPerf * power * soundBonus * caseBonus * diskFactor * extras;
@@ -1217,7 +1224,7 @@ export function benchPlans(state) {
       const plan = finish(c, first, card.name);
       if (plan) plans.push({ ...plan, card });
     }
-    for (const kind of ["sound", "fpu", "accel", "drive", "media", "net", "modem", "cooler", "monitor", "addin"]) {
+    for (const kind of ["sound", "fpu", "accel", "drive", "media", "net", "modem", "cooler", "monitor", "addin", "cache"]) {
       for (const part of benchParts(kind)) {
         if (benchHas(counts, kind).some((x) => x.id === part.id)) continue;
         const plan = finish(counts, [part], part.name);

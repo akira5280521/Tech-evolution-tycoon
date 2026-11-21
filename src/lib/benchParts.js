@@ -667,6 +667,19 @@ export const BENCH_COOLERS = [
   aio("a-lf3", "Arktik Liquid Freezer III 360", 2024, "cool-lf3", ["lga1700", "lga1851", "am4", "am5"], 330, 360, "2024: a 360 mm radiator with a contact frame for LGA1700."),
 ];
 
+// --- Stage 5: cache modules --------------------------------------------------
+// Some Pentium boards left the second-level cache to a module in a COAST
+// slot ("cache on a stick"). Once the cache moved onto the CPU, the slot went.
+function cache(id, name, year, research, kb, bonus, spec) {
+  return { ...base, id, kind: "cache", name, year, research, kb, bonus, icon: icon2(id), cost: price(year, 0.04), retiredBy: "board-440bx", spec };
+}
+export const BENCH_CACHES = [
+  cache("q-coast256", "256 KB COAST module", 1995, "cache-coast256", 256, 0.04, "1995: pipeline-burst cache on a little card that stands in the board."),
+  cache("q-coast512", "512 KB COAST module", 1996, "cache-coast512", 512, 0.06, "1996: twice the cache, for boards that took the bigger module."),
+];
+const COAST = ["b-430fx", "b-430tx"];
+for (const b of BENCH_BOARDS) b.coast = COAST.includes(b.id);
+
 // --- Stage 5: odd expansion cards --------------------------------------------
 // Cards for one job each: a TV tuner, a RAID controller, a physics chip, a
 // game capture card. Two fit in the spare slots; each adds a little.
@@ -733,7 +746,7 @@ for (const b of BENCH_BOARDS) b.ports = b.year >= 2017 ? ["hdmi", "dp"] : b.year
 // researched. BTX boards and cases stopped around 2008.
 const LOST_TO = { "r-hddvd": "med-bd", "n-tokenring": "net-100", "b-915btx": "case-haf932", "k-btx": "case-haf932" };
 
-export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CARDS, ...BENCH_MONITORS, ...BENCH_ACCELS, ...BENCH_ADDINS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS, ...BENCH_COOLERS];
+export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CACHES, ...BENCH_CARDS, ...BENCH_MONITORS, ...BENCH_ACCELS, ...BENCH_ADDINS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS, ...BENCH_COOLERS];
 for (const part of BENCH_PARTS) if (LOST_TO[part.id]) part.retiredBy = LOST_TO[part.id];
 
 // R&D a second for each point of CPU perf at full memory. Tuned in the

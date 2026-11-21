@@ -274,3 +274,13 @@ test("expansion cards: the right slot, two at most, RAID needs a disk, PhysX ret
   const s = upTo(BUSINESSES[BUSINESSES.length - 1].id);
   assert.match(partLock(s, part("x-physx")) || "", /graphics cards took over/);
 });
+
+test("COAST cache: only on boards with the slot, adds a little, gone once cache moved onto the CPU", () => {
+  assert.match(fitPart({ "b-440bx": 1 }, "bench", "q-coast256").reason, /COAST/);
+  const pc = { "b-430fx": 1, "c-k5": 1, "m-edo": 2, "p-at230": 1, "h-586fan": 1 };
+  const with256 = fitPart(pc, "bench", "q-coast256");
+  assert.ok(!with256.reason);
+  assert.ok(benchStock(with256.counts).perf > benchStock(pc).perf);
+  const s = upTo(BUSINESSES[BUSINESSES.length - 1].id);
+  assert.match(partLock(s, part("q-coast512")) || "", /onto the CPU/);
+});

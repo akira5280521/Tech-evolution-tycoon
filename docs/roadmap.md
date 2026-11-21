@@ -47,9 +47,30 @@ test shipped in 0.0.13 (see Done).
   rebuild including research servers 12.9 h / 46.3 h; rebuild mine and
   cluster with the payback rule 12.6 h / 45.8 h, casual unchanged. The
   servers are left out of REBUILD for that reason.
-- **Mine memory.** The mine needs only 16 GB, so the 64 and 128 GB sticks
-  never added anything there; they're cluster-only now, and any a save held
-  in the mine are refunded on load.
+- **Memory boards with real slots.** Modelled on the real hardware:
+  - Mine: a 2017 mining board (like the ASUS B250 Mining Expert) with 2
+    desktop DDR4 slots, 32 GB at most. It takes a new 16 GB DDR4-2400 stick;
+    the mine needs 16 GB. The 32/64/128 GB server sticks are cluster-only.
+  - Cluster: a 32-slot server board, DDR4 (EPYC Rome, A100-era servers, up
+    to 1 TB with 32 GB sticks) until the first DDR5 stick, which swaps in a
+    DDR5 board (H100-era servers, 2 TB in 32 slots). DDR4 and DDR5 don't
+    fit the same slots, so the DDR4 sticks are sold back at half what they
+    cost, and no more DDR4 can be added.
+  - Full board: a bigger stick replaces the smallest (sold back at half);
+    a same-size stick is refused. Up to 32 of one stick (other parts stay
+    at 24).
+  - New top model, **Foundation**: 1,400 GB on the cards and 2 TB of RAM,
+    x3.5. Only a DDR5 board can hold 2 TB, which is what makes the 64 and
+    128 GB sticks worth it.
+  - The Facilities page shows "n of 32 slots used on the DDR4/DDR5 server
+    board", each stick's row says when buying it switches boards or replaces
+    a stick, and the "?" card has a BOARD row.
+  - Old saves: sticks that don't fit their plant, DDR4 sharing a board with
+    DDR5, or sticks over a board's slots or size are removed and refunded in
+    full on load (the rules changed, not the player).
+  - Sim with boards (nonstop Quantum / fork-ready, casual): 12.8 h / 2.0 d,
+    4.3 d / 8.8 d, the same as before. The bot switches the cluster to DDR5
+    and reaches Foundation (12x 64 GB + 10x 128 GB) in long runs.
 - **Frontier model.** A fourth cluster model above Mural: 400 GB on the
   cards and 512 GB of RAM, x3.0 (Mural x2.2). Before, the 128 GB stick was the
   dearest memory per GB at every point and never worth buying; at 512 GB it's

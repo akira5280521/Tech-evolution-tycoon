@@ -18,15 +18,31 @@ export const MAX_PART = 24;
 const REFERENCE_WORK = 13;
 const MINE_RAM_GB = 16;
 
-// The cluster trains the biggest model its memory allows. Frontier is the
-// late-game target: 512 GB of RAM is where the 128 GB sticks are the
-// cheapest way up, and 400 GB on the cards is two or three Tensor cards.
+// The cluster trains the biggest model its memory allows. Frontier needs
+// 512 GB of RAM (16 DDR4 sticks, or 8 DDR5); Foundation needs 2 TB, a full
+// DDR5 board like an H100 server (32 x 64 GB), and about 1.4 TB on the cards,
+// like an eight-card B200 server.
 const TIERS = [
+  { id: "foundation", name: "Foundation", vram: 1400, ram: 2048, mult: 3.5 },
   { id: "frontier", name: "Frontier", vram: 400, ram: 512, mult: 3 },
   { id: "mural", name: "Mural", vram: 80, ram: 128, mult: 2.2 },
   { id: "portrait", name: "Portrait", vram: 24, ram: 64, mult: 1.6 },
   { id: "sketch", name: "Sketch", vram: 12, ram: 32, mult: 1 },
 ];
+
+// Memory boards. The mine runs on a mining motherboard: 2 slots of desktop
+// DDR4, 32 GB at most (the 2017 B250 mining boards). The cluster runs on a
+// dual-socket server board with 32 slots: DDR4 (EPYC "Rome" class, as in the
+// 2020 A100 servers) until the first DDR5 stick, then a DDR5 board (as in the
+// 2022 H100 servers). DDR4 and DDR5 sticks don't fit the same board, so the
+// first DDR5 stick takes the DDR4 sticks out (sold back at half what they
+// cost). When every slot is full, a bigger stick replaces the smallest one
+// (also sold back at half); a stick no bigger than that can't be added.
+export const BOARDS = {
+  mine: { slots: 2, maxGb: 32, name: "DDR4 mining board (32 GB at most)" },
+  cluster: { slots: 32, maxGb: Infinity, name: "server board" },
+};
+const SELL_BACK = 0.5;
 
 export const FACILITIES = [
   {
@@ -56,9 +72,10 @@ export const PARTS = [
   { id: "tensorA100", kind: "gpu", name: "Tensor A100", icon: "/icons/parts/tensorA100.png", fits: ["cluster"], cost: 220_000_000_000, coef: 1.55, watts: 400, vram: 80, work: 78, spec: "80 GB HBM2e, 400 W, 19.5 TFLOPS FP32 and 156 TFLOPS TF32. An A100 80 GB." },
   { id: "tensorH100", kind: "gpu", name: "Tensor H100", icon: "/icons/parts/tensorH100.png", fits: ["cluster"], cost: 700_000_000_000, coef: 1.55, watts: 700, vram: 80, work: 160, spec: "80 GB HBM3, 700 W, 67 TFLOPS FP32 and about 990 TFLOPS TF32. An H100 SXM." },
   { id: "tensorB200", kind: "gpu", name: "Tensor B200", icon: "/icons/parts/tensorB200.png", fits: ["cluster"], cost: 2_200_000_000_000, coef: 1.55, watts: 1000, vram: 192, work: 400, spec: "192 GB HBM3e, about 1,000 W, two dies on one package. A B200-class board." },
-  { id: "ddr4_32", kind: "ram", name: "32 GB DDR4-3200", icon: "/icons/parts/ddr4_32.png", fits: ["mine", "cluster"], cost: 600_000_000, coef: 1.4, gb: 32, spec: "32 GB DDR4-3200, PC4-25600." },
-  { id: "ddr5_64", kind: "ram", name: "64 GB DDR5-5600", icon: "/icons/parts/ddr5_64.png", fits: ["cluster"], cost: 4_000_000_000, coef: 1.4, gb: 64, spec: "64 GB DDR5-5600, PC5-44800." },
-  { id: "ddr5_128", kind: "ram", name: "128 GB DDR5-6400", icon: "/icons/parts/ddr5_128.png", fits: ["cluster"], cost: 20_000_000_000, coef: 1.4, gb: 128, spec: "128 GB DDR5-6400, PC5-51200." },
+  { id: "ddr4_16", kind: "ram", gen: "DDR4", name: "16 GB DDR4-2400", icon: "/icons/parts/ddr4_32.png", fits: ["mine"], cost: 150_000_000, coef: 1.4, gb: 16, spec: "16 GB DDR4-2400 desktop stick (unbuffered), PC4-19200." },
+  { id: "ddr4_32", kind: "ram", gen: "DDR4", name: "32 GB DDR4-3200", icon: "/icons/parts/ddr4_32.png", fits: ["cluster"], cost: 600_000_000, coef: 1.4, gb: 32, spec: "32 GB DDR4-3200 registered server stick (RDIMM), PC4-25600." },
+  { id: "ddr5_64", kind: "ram", gen: "DDR5", name: "64 GB DDR5-5600", icon: "/icons/parts/ddr5_64.png", fits: ["cluster"], cost: 4_000_000_000, coef: 1.4, gb: 64, spec: "64 GB DDR5-5600 registered server stick (RDIMM), PC5-44800." },
+  { id: "ddr5_128", kind: "ram", gen: "DDR5", name: "128 GB DDR5-6400", icon: "/icons/parts/ddr5_128.png", fits: ["cluster"], cost: 20_000_000_000, coef: 1.4, gb: 128, spec: "128 GB DDR5-6400 registered server stick (RDIMM), PC5-51200." },
   { id: "fans", kind: "cool", name: "Case fans", icon: "/icons/parts/fans.png", fits: ["mine", "cluster"], cost: 200_000_000, coef: 1.35, cool: 250, spec: "Moves 250 W of heat." },
   { id: "labfan", kind: "cool", name: "Lab fan", icon: "/icons/parts/labfan.png", fits: ["servers"], cost: 1_000_000, coef: 2, cool: 300, spec: "A 120 mm fan. Moves about 300 W of heat." },
   { id: "tower", kind: "cool", name: "Tower cooler", icon: "/icons/parts/tower.png", fits: ["mine", "cluster"], cost: 1_500_000_000, coef: 1.35, cool: 350, spec: "A dual-tower air cooler, 350 W." },
@@ -75,7 +92,7 @@ export const PARTS = [
 ];
 
 const STARTER = {
-  mine: ["raster3060", "psu750", "fans", "ddr4_32"],
+  mine: ["raster3060", "psu750", "fans", "ddr4_16"],
   cluster: ["raster3060", "psu750", "fans", "ddr4_32"],
   servers: ["rack1", "psu400", "labfan", "hdd1t"],
 };
@@ -89,6 +106,7 @@ const PART_NEWS = {
   raster4090: "RASTER 4090 DRAWS MORE POWER THAN THE BREAK ROOM",
   tensorA100: "TENSOR A100 TAKES THE OVERNIGHT TRAINING SHIFT",
   tensorH100: "TENSOR H100 ARRIVES UNDER ARMED ESCORT",
+  ddr4_16: "DESKTOP DDR4 STICK SLOTTED INTO THE MINING BOARD",
   ddr4_32: "DDR4-3200 STICKS REACH THE RACK",
   ddr5_64: "DDR5-5600 STICKS CLEAR THE LOADING DOCK",
   fans: "CASE FANS AUDIBLE FROM THE CAR PARK",
@@ -110,6 +128,15 @@ export function blankFacilities() {
   return { mine: {}, cluster: {}, servers: {} };
 }
 
+// (Saves are read with up to 32 of a stick anywhere, so migrateFacilities can
+// refund what's over a board's slots.)
+// The most of one part a plant can hold: a memory stick is limited by the
+// board's slots (32 on a server board), anything else by MAX_PART.
+export function partMax(part, facilityId) {
+  if (part?.kind === "ram") return facilityId === "mine" ? 2 : 32;
+  return MAX_PART;
+}
+
 export function readFacilities(raw) {
   const out = blankFacilities();
   if (!raw || typeof raw !== "object") return out;
@@ -119,7 +146,7 @@ export function readFacilities(raw) {
     for (const part of PARTS) {
       if (!part.fits.includes(facilityId)) continue;
       const n = Math.floor(Number(src[part.id]));
-      if (Number.isFinite(n) && n > 0) out[facilityId][part.id] = Math.min(MAX_PART, n);
+      if (Number.isFinite(n) && n > 0) out[facilityId][part.id] = Math.min(partMax(part, "cluster"), n);
     }
   }
   return out;
@@ -136,7 +163,7 @@ export function unfitRefund(raw) {
     if (!src || typeof src !== "object") continue;
     for (const part of PARTS) {
       if (part.fits.includes(facilityId)) continue;
-      const n = Math.min(MAX_PART, Math.floor(Number(src[part.id])) || 0);
+      const n = Math.min(partMax(part, "cluster"), Math.floor(Number(src[part.id])) || 0);
       for (let i = 0; i < n; i++) refund += partCost(part, i);
     }
   }
@@ -273,6 +300,7 @@ function rowOf(facilityId, counts) {
     vram: stocked.vram,
     ram: stocked.ram,
     gpus: stocked.gpus,
+    board: boardOf(facilityId, counts),
   };
 }
 
@@ -306,7 +334,8 @@ function cheapest(facilityId, kind, counts) {
   for (const part of PARTS) {
     if (part.soon || part.kind !== kind || !part.fits.includes(facilityId)) continue;
     const owned = counts[part.id] || 0;
-    if (owned >= MAX_PART) continue;
+    if (owned >= partMax(part, facilityId)) continue;
+    if (fitPart(counts, facilityId, part.id).reason) continue;
     const cost = partCost(part, owned);
     if (!best || cost < best.cost) best = { part, cost };
   }
@@ -332,11 +361,115 @@ function starterNext(facilityId, counts) {
   return null;
 }
 
-function withPart(state, facilityId, partId) {
+// --- Memory boards ---------------------------------------------------------
+
+const RAM_PARTS = PARTS.filter((p) => p.kind === "ram");
+
+// What a plant's board holds now: slots used, total GB, DDR generation.
+export function boardOf(facilityId, counts) {
+  const board = BOARDS[facilityId];
+  if (!board) return null;
+  let used = 0;
+  let gb = 0;
+  let ddr5 = false;
+  for (const part of RAM_PARTS) {
+    const n = counts?.[part.id] || 0;
+    if (!n || !part.fits.includes(facilityId)) continue;
+    used += n;
+    gb += n * part.gb;
+    if (part.gen === "DDR5") ddr5 = true;
+  }
+  const gen = ddr5 ? "DDR5" : "DDR4";
+  const name = facilityId === "cluster" ? `${gen} ${board.name}` : board.name;
+  return { slots: board.slots, used, gb, gen, maxGb: board.maxGb, name };
+}
+
+// Half of what the last sticks bought (from count `from` down to `to`) cost.
+function soldBack(part, from, to) {
+  let total = 0;
+  for (let i = to; i < from; i++) total += partCost(part, i);
+  return total * SELL_BACK;
+}
+
+// Add one part under the board rules. Returns { counts, refund, note } or
+// { reason } when it can't go in.
+export function fitPart(counts, facilityId, partId) {
+  const part = byId[partId];
+  const owned = counts?.[partId] || 0;
+  if (!part) return { reason: "Unknown part." };
+  if (part.kind !== "ram" && owned >= MAX_PART) return { reason: "At the most you can own." };
+  const next = { ...counts, [partId]: owned + 1 };
+  const board = BOARDS[facilityId];
+  if (part.kind !== "ram" || !board) return { counts: next, refund: 0, note: null };
+  let refund = 0;
+  const notes = [];
+  const otherGen = RAM_PARTS.filter((p) => p.gen !== part.gen && (counts?.[p.id] || 0) > 0);
+  if (otherGen.length) {
+    if (part.gen === "DDR4") return { reason: "This board takes DDR5 now." };
+    let sticks = 0;
+    for (const other of otherGen) {
+      refund += soldBack(other, counts[other.id], 0);
+      sticks += counts[other.id];
+      delete next[other.id];
+    }
+    notes.push(`switches to a DDR5 board (${sticks} DDR4 stick${sticks === 1 ? "" : "s"} sold back)`);
+  }
+  const used = RAM_PARTS.reduce((sum, p) => sum + (next[p.id] || 0), 0);
+  if (used > board.slots) {
+    const smallest = RAM_PARTS.filter((p) => (next[p.id] || 0) > (p.id === partId ? 1 : 0)).sort((a, b) => a.gb - b.gb)[0];
+    if (!smallest || smallest.gb >= part.gb) return { reason: `All ${board.slots} memory slots are full.` };
+    refund += soldBack(smallest, next[smallest.id], next[smallest.id] - 1);
+    next[smallest.id] -= 1;
+    if (!next[smallest.id]) delete next[smallest.id];
+    notes.push(`replaces a ${smallest.gb} GB stick`);
+  }
+  const gb = RAM_PARTS.reduce((sum, p) => sum + (next[p.id] || 0) * p.gb, 0);
+  if (gb > board.maxGb) return { reason: `The board takes ${board.maxGb} GB at most.` };
+  return { counts: next, refund, note: notes.join("; ") || null };
+}
+
+// Old saves: drop parts that no longer fit their plant, DDR4 sticks sharing a
+// board with DDR5, and sticks beyond a board's slots or size, refunding what
+// they cost in full (the rules changed, not the player).
+export function migrateFacilities(raw) {
+  const facilities = readFacilities(raw);
+  let refund = unfitRefund(raw);
+  for (const facilityId of Object.keys(BOARDS)) {
+    const counts = facilities[facilityId];
+    const board = BOARDS[facilityId];
+    const full = (part, n) => {
+      let total = 0;
+      for (let i = 0; i < n; i++) total += partCost(part, i);
+      return total;
+    };
+    if (RAM_PARTS.some((p) => p.gen === "DDR5" && counts[p.id]) && RAM_PARTS.some((p) => p.gen === "DDR4" && counts[p.id])) {
+      for (const p of RAM_PARTS.filter((x) => x.gen === "DDR4" && counts[x.id])) {
+        refund += full(p, counts[p.id]);
+        delete counts[p.id];
+      }
+    }
+    const order = RAM_PARTS.filter((p) => counts[p.id]).sort((a, b) => a.gb - b.gb);
+    for (const p of order) {
+      while (counts[p.id] && (boardOf(facilityId, counts).used > board.slots || boardOf(facilityId, counts).gb > board.maxGb)) {
+        refund += partCost(p, counts[p.id] - 1);
+        counts[p.id] -= 1;
+        if (!counts[p.id]) delete counts[p.id];
+      }
+    }
+  }
+  return { facilities, refund: Number.isFinite(refund) ? refund : 0 };
+}
+
+function applyPart(state, facilityId, partId) {
   const facilities = readFacilities(state?.facilities);
-  const owned = facilities[facilityId][partId] || 0;
-  facilities[facilityId] = { ...facilities[facilityId], [partId]: owned + 1 };
-  return { ...state, facilities };
+  const fit = fitPart(facilities[facilityId], facilityId, partId);
+  if (fit.reason) return null;
+  facilities[facilityId] = fit.counts;
+  return { state: { ...state, facilities }, refund: fit.refund, note: fit.note };
+}
+
+function withPart(state, facilityId, partId) {
+  return applyPart(state, facilityId, partId)?.state || null;
 }
 
 export function nextPurchase(state, businessPerSecond) {
@@ -354,7 +487,7 @@ export function nextPurchase(state, businessPerSecond) {
     for (const part of PARTS) {
       if (part.soon || !part.fits.includes(facilityId)) continue;
       const owned = counts[part.id] || 0;
-      if (owned >= MAX_PART) continue;
+      if (owned >= partMax(part, facilityId)) continue;
       const offer = { facilityId, partId: part.id, name: part.name, cost: partCost(part, owned) };
       // A part is worth what it adds once the plant has the power, cooling
       // and memory to run it; a card alone may only be throttled, and a power
@@ -381,22 +514,30 @@ export function supportPlan(state, facilityId, partId) {
 }
 
 function withSupport(state, facilityId, partId) {
-  let next = withPart(state, facilityId, partId);
-  let cost = partCost(byId[partId], countsOf(state, facilityId)[partId] || 0);
+  const first = applyPart(state, facilityId, partId);
+  if (!first) return null;
+  let next = first.state;
+  let cost = partCost(byId[partId], countsOf(state, facilityId)[partId] || 0) - first.refund;
   const extras = [];
+  const notes = first.note ? [first.note] : [];
+  const add = (id) => {
+    const owned = countsOf(next, facilityId)[id] || 0;
+    const step = applyPart(next, facilityId, id);
+    if (!step) return false;
+    next = step.state;
+    cost += partCost(byId[id], owned) - step.refund;
+    extras.push(byId[id].name);
+    if (step.note && !notes.includes(step.note)) notes.push(step.note);
+    return true;
+  };
   // A memory stick for the cluster is judged as the sticks it takes to reach
   // the next model the cards' memory allows; one stick on its own often adds
   // nothing until the set is complete.
   if (facilityId === "cluster" && byId[partId]?.kind === "ram") {
     const goal = nextTierRam(stock(countsOf(state, facilityId), facilityId));
-    for (let i = 0; goal && i < 12; i++) {
-      const counts = countsOf(next, facilityId);
-      if (stock(counts, facilityId).ram >= goal) break;
-      const owned = counts[partId] || 0;
-      if (owned >= MAX_PART) return null;
-      next = withPart(next, facilityId, partId);
-      cost += partCost(byId[partId], owned);
-      extras.push(byId[partId].name);
+    for (let i = 0; goal && i < BOARDS.cluster.slots; i++) {
+      if (stock(countsOf(next, facilityId), facilityId).ram >= goal) break;
+      if (!add(partId)) return null;
     }
   }
   for (let i = 0; i < 8; i++) {
@@ -408,19 +549,18 @@ function withSupport(state, facilityId, partId) {
     else if (stocked.cool < stocked.watts) kind = "cool";
     else if (mem.limit === "Needs more RAM") kind = "ram";
     else if (facilityId === "servers" && stocked.storage < 1000) kind = "disk";
-    if (!kind) return { state: next, cost, extras };
-    const add = cheapest(facilityId, kind, counts);
-    if (!add) return null;
-    next = withPart(next, facilityId, add.part.id);
-    cost += add.cost;
-    extras.push(add.part.name);
+    if (!kind) return { state: next, cost, extras, notes };
+    const pick = cheapest(facilityId, kind, counts);
+    if (!pick || !add(pick.part.id)) return null;
   }
   return null;
 }
 
 function marginal(state, offer, businessPerSecond) {
   const before = facilityReport(state, businessPerSecond).perSecond;
-  const after = facilityReport(withPart(state, offer.facilityId, offer.partId), businessPerSecond).perSecond;
+  const next = withPart(state, offer.facilityId, offer.partId);
+  if (!next) return 0;
+  const after = facilityReport(next, businessPerSecond).perSecond;
   return Math.max(0, after - before);
 }
 
@@ -496,8 +636,10 @@ export function rebuildList(state) {
       const part = byId[partId];
       if (!part || part.soon || !part.fits.includes(facilityId)) continue;
       const have = now[facilityId]?.[partId] || 0;
-      const goal = Math.min(MAX_PART, want);
-      if (goal > have) list.push({ facilityId, partId, have, want: goal });
+      const goal = Math.min(partMax(part, facilityId), want);
+      if (goal <= have) continue;
+      if (fitPart(now[facilityId], facilityId, partId).reason) continue;
+      list.push({ facilityId, partId, have, want: goal });
     }
   }
   return list;
@@ -575,11 +717,13 @@ export function purchasePart(state, facilityId, partId) {
   if (!part || part.soon || !part.fits.includes(facilityId)) return { ok: false };
   const facilities = readFacilities(state.facilities);
   const owned = facilities[facilityId][partId] || 0;
-  if (owned >= MAX_PART) return { ok: false };
+  const fit = fitPart(facilities[facilityId], facilityId, partId);
+  if (fit.reason) return { ok: false, reason: fit.reason };
   const cost = partCost(part, owned);
   if (!Number.isFinite(state.cash) || !(state.cash >= cost)) return { ok: false };
   state.cash -= cost;
-  facilities[facilityId] = { ...facilities[facilityId], [partId]: owned + 1 };
+  state.cash += fit.refund;
+  facilities[facilityId] = fit.counts;
   state.facilities = facilities;
-  return { ok: true, cost };
+  return { ok: true, cost, refund: fit.refund, note: fit.note };
 }

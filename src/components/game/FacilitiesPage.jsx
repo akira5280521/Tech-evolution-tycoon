@@ -2,14 +2,15 @@ import { money } from "@/lib/gameConfig";
 import { businessIncomePerSecond, incomePerSecond } from "@/lib/empire";
 import {
   FACILITIES,
-  MAX_PART,
   PARTS,
   facilitiesOpen,
   facilityHint,
   facilityReport,
   facilityUnlocked,
+  fitPart,
   nextPurchase,
   partCost,
+  partMax,
   REBUILD_SECONDS,
   rebuildCost,
   rebuildReady,
@@ -29,7 +30,10 @@ function percent(share) {
 
 function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, business }) {
   const cost = partCost(part, owned);
-  const affordable = open && !part.soon && Number.isFinite(cost) && cash >= cost && owned < MAX_PART;
+  // Memory goes in the board's slots: the board can refuse a stick (full, or
+  // the wrong DDR generation), or a stick can replace others.
+  const fit = fitPart(state.facilities?.[facilityId] || {}, facilityId, part.id);
+  const affordable = open && !part.soon && !fit.reason && Number.isFinite(cost) && cash >= cost && owned < partMax(part, facilityId);
   return (
     <div data-part={part.id} data-best-part={best ? "" : undefined} data-help-scope className={`border-2 ${best ? "border-[var(--game-accent)]" : "border-[var(--game-border)]"} bg-[var(--game-bg)] p-2`}>
       {best && <p className="mb-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">BEST NEXT PART</p>}
@@ -69,6 +73,8 @@ function rate(n) {
 function PartValue({ state, facilityId, part, business }) {
   const v = partValue(state, facilityId, part.id, business);
   if (!v) return null;
+  const fit = fitPart(state.facilities?.[facilityId] || {}, facilityId, part.id);
+  const note = fit.note ? ` Buying it ${fit.note}, at half what they cost.` : "";
   let text;
   let good = false;
   if (v.maxed) text = "At the most you can own.";
@@ -82,6 +88,7 @@ function PartValue({ state, facilityId, part, business }) {
     const payback = v.payback ? ` · pays back in ${Math.max(1, Math.round(v.payback / 60)).toLocaleString("en-US")} min` : "";
     text = `${gain}${extras}${payback}`;
   }
+  if (!v.maxed && note) text += note;
   return (
     <p data-part-value className={`break-words font-term text-base leading-5 ${good ? "text-[var(--game-success)]" : "text-[var(--game-muted)]"}`}>
       {text}
@@ -122,6 +129,11 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
             {Math.round(row.watts)} W of cards · {Math.round(row.power)} W power · {Math.round(row.cool)} W cooling · {Math.round(row.vram)} GB on the cards · {Math.round(row.ram)} GB RAM
           </p>
         )}
+        {open && row.board && (
+          <p data-board className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
+            Memory: {row.board.used} of {row.board.slots} slots used on the {row.board.name}.
+          </p>
+        )}
         <div className="mt-2 space-y-2">
           {parts.map((part) => (
             <PartRow
@@ -130,7 +142,10 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
               owned={counts[part.id] || 0}
               open={open}
               cash={cash}
-              onBuy={() => onBuy(facility.id, part.id)}
+              onBuy={() => {
+                const done = onBuy(facility.id, part.id);
+                if (done?.ok && done.refund > 0) toast(`${part.name} installed`, { description: `It ${done.note}. ${money(done.refund)} back for the old sticks.` });
+              }}
               facilityId={facility.id}
               state={state}
               best={next?.facilityId === facility.id && next?.partId === part.id}

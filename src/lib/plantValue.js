@@ -3,14 +3,16 @@
 // is judged with the cheapest power, cooling, memory and disk it needs to run,
 // the same way the best-next-part suggestion judges it.
 
-import { MAX_PART, PARTS, SHARE_CAP, facilityReport, facilityUnlocked, supportPlan } from "./facilities.js";
+import { PARTS, SHARE_CAP, facilityReport, facilityUnlocked, fitPart, partMax, supportPlan } from "./facilities.js";
 import { awayBankHours, serverOutput } from "./research.js";
 
 export function partValue(state, facilityId, partId, businessPerSecond) {
   const part = PARTS.find((p) => p.id === partId);
   if (!part || part.soon || !part.fits.includes(facilityId) || !facilityUnlocked(state, facilityId)) return null;
   const owned = state?.facilities?.[facilityId]?.[partId] || 0;
-  if (owned >= MAX_PART) return { maxed: true };
+  if (owned >= partMax(part, facilityId)) return { maxed: true };
+  const fit = fitPart(state?.facilities?.[facilityId] || {}, facilityId, partId);
+  if (fit.reason) return { added: 0, why: fit.reason };
   const plan = supportPlan(state, facilityId, partId);
   if (!plan) return { added: 0, why: "There are no more parts to power or cool it." };
   if (facilityId === "servers") {
@@ -35,6 +37,7 @@ export function partValue(state, facilityId, partId, businessPerSecond) {
     share: Math.max(0, after.share - before.share),
     cost: plan.cost,
     extras: plan.extras,
+    notes: plan.notes || [],
     payback: added > 0 ? plan.cost / added : null,
     why: added > 0 ? null : capped ? `The plants are at the ${Math.round(SHARE_CAP * 100)}% cap.` : notNeeded(part, facilityId),
   };

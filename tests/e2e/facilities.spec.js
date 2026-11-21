@@ -36,7 +36,7 @@ test("every open part shows what it would add", async ({ page }) => {
 
 test("REBUILD buys last run's plants back after a prestige", async ({ page }) => {
   const late = SAVES.late;
-  const lastPlants = { mine: { raster3060: 2, psu750: 1, fans: 2, ddr4_32: 1 }, cluster: { raster3060: 2, psu750: 1, fans: 2, ddr4_32: 1 }, servers: { rack1: 1, psu400: 1, labfan: 1, hdd1t: 1 } };
+  const lastPlants = { mine: { raster3060: 2, psu750: 1, fans: 2, ddr4_16: 1 }, cluster: { raster3060: 2, psu750: 1, fans: 2, ddr4_32: 1 }, servers: { rack1: 1, psu400: 1, labfan: 1, hdd1t: 1 } };
   await open(page, "/facilities", { ...late, facilities: { mine: {}, cluster: {}, servers: {} }, lastPlants, cash: 1e15, lastSeen: Date.now() });
   await tipsOff(page);
   await expect(page.locator("[data-rebuild]")).toContainText("12 parts to go");
@@ -50,4 +50,19 @@ test("64 GB sticks an old save held in the mine are refunded", async ({ page }) 
   await open(page, "/", { ...late, cash: 1000, facilities: { mine: { ddr5_64: 1 }, cluster: {}, servers: {} }, lastSeen: Date.now() });
   await expect.poll(async () => (await saved(page))?.cash).toBeGreaterThan(1e9);
   expect((await saved(page)).facilities.mine.ddr5_64 || 0).toBe(0);
+});
+
+test("the cluster's memory board shows its slots and swaps to DDR5", async ({ page }) => {
+  const late = SAVES.late;
+  const cluster = { raster3060: 2, psu750: 2, fans: 2, ddr4_32: 3 };
+  await open(page, "/facilities", { ...late, cash: 1e15, facilities: { mine: {}, cluster, servers: {} }, lastSeen: Date.now() });
+  await tipsOff(page);
+  const board = page.locator('[data-facility="cluster"] [data-board]');
+  await expect(board).toContainText("3 of 32 slots used on the DDR4 server board");
+  const ddr5 = page.locator('[data-facility="cluster"] [data-part="ddr5_64"]');
+  await expect(ddr5.locator("[data-part-value]")).toContainText("switches to a DDR5 board");
+  await ddr5.locator('[data-action="buy-ddr5_64"]').click();
+  await expect(board).toContainText("1 of 32 slots used on the DDR5 server board");
+  await expect(page.locator('[data-facility="cluster"] [data-action="buy-ddr4_32"]')).toBeDisabled();
+  await expect(page.locator('[data-facility="cluster"] [data-part="ddr4_32"] [data-part-value]')).toContainText("This board takes DDR5 now.");
 });

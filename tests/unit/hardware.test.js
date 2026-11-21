@@ -93,3 +93,16 @@ test("racks need a network fast enough for their work, or run at half speed", ()
   const linked = serverOutput(s).perSecond;
   assert.ok(Math.abs(linked / alone - 2) < 1e-9, `${linked} vs ${alone}`);
 });
+
+import { migrateSave, remapBestEra } from "../../src/lib/gameSave.js";
+
+test("a v11 save past a new era gets that row started, and its best era still points at the same era", () => {
+  const ids = ["timber", "paper", "loom", "punchcards", "relay", "sand", "copper", "glass", "filament", "tubes", "mainframes", "germanium", "transistors", "silicon", "wafers", "ics", "minis", "cpu", "homepc", "consoles", "dialup", "gpu", "cloud", "phones", "rgb", "ai", "quantum"];
+  const v11 = { version: 11, investors: 5, biz: ids.map((id) => ({ id, owned: id === "gpu" || id === "dialup" ? 3 : 1 })) };
+  const out = migrateSave(v11);
+  const row = (id) => out.biz[BUSINESSES.findIndex((b) => b.id === id)];
+  for (const id of ["supercomputers", "workstations", "laptops", "multimedia", "accel3d"]) assert.ok(row(id).owned > 0, id);
+  assert.equal(row("tablets").owned > 0, true, "past RGB Battlestations");
+  // bestEra 21 was Graphics Cards in the v11 order.
+  assert.equal(BUSINESSES[remapBestEra(21, 11)].id, "gpu");
+});

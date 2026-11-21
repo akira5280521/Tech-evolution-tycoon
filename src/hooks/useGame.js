@@ -200,6 +200,7 @@ function applySavedMeta(state, raw) {
   state.goalsDone = readGoalsDone(m.goalsDone);
   state.boughtX10 = !!m.boughtX10;
   state.benchOc = m.benchOc !== false;
+  state.restartSeen = !!m.restartSeen;
 }
 
 function readChallenge(raw) {
@@ -249,6 +250,7 @@ function pack(s) {
     goalsDone: Array.isArray(s.goalsDone) ? s.goalsDone : [],
     boughtX10: !!s.boughtX10,
     benchOc: s.benchOc !== false,
+    restartSeen: !!s.restartSeen,
     tutorial: s.tutorial || null,
     orientation: s.orientation || "auto",
     buyMode: normalizeBuyMode(s.buyMode),
@@ -345,6 +347,9 @@ function loadSave() {
     state.projectJob = data.projectJob || null;
     const prior = Number.isFinite(data.meta?.version) ? data.meta.version : 1;
     if (storedEra != null) state.bestEra = remapBestEra(storedEra, prior);
+    // A save from before the hardware and era rework (v12): offer a fresh
+    // start once. The save keeps working either way.
+    state.restartSuggested = prior < 12 && ((state.lifetime || 0) > 0 || (state.investors || 0) > 0);
     if (prior < 3) {
       const held = new Set(state.badgesEarned || []);
       for (const id of legacyBadgeIds(state)) held.add(id);
@@ -1115,6 +1120,13 @@ export function useGame() {
     startTech: (id) => {
       const started = startResearch(stateRef.current, id);
       if (!started.ok) return;
+      saveNow();
+      bump();
+    },
+    dismissRestart: () => {
+      const s = stateRef.current;
+      s.restartSeen = true;
+      s.restartSuggested = false;
       saveNow();
       bump();
     },

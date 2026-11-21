@@ -8,7 +8,9 @@ const BIZ = 1e12;
 const open = (cluster = {}, mine = {}) => ({ biz: [{ id: "cpu", owned: 1 }], facilities: { mine, cluster, servers: {} }, cash: 1e30 });
 // facilityUnlocked looks the AI row up by id in BUSINESSES order, so give it a full row list.
 import { BUSINESSES } from "../../src/lib/gameConfig.js";
-const withAi = (state) => ({ ...state, biz: BUSINESSES.map((b) => ({ id: b.id, owned: b.id === "ai" || b.id === "cpu" ? 1 : 0 })) });
+// Every era reached and everything researched, so every part is open.
+import { RESEARCH } from "../../src/lib/research.js";
+const withAi = (state) => ({ ...state, biz: BUSINESSES.map((b) => ({ id: b.id, owned: 1 })), techDone: RESEARCH.map((e) => e.id) });
 
 test("one running 3060 is the starter share, well under the cap", () => {
   const r = facilityReport(withAi(open({ raster3060: 1, psu750: 1, fans: 1, ddr4_32: 1 })), BIZ);

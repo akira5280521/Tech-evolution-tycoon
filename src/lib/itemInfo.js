@@ -55,8 +55,8 @@ import {
   upgradesOf,
 } from "./empire.js";
 import { GENERATIONS, GENERATION_BONUS, generationAt, generationIndex, generationPayMult } from "./generations.js";
-import { RESEARCH, RESEARCH_TABS, awayBankCap, awayBankHours, playerYear, researchCost, researchItem, researchLock, researchSpeed, serverOutput } from "./research.js";
-import { FACILITIES, PARTS, SHARE_CAP, facilityReport, facilityUnlocked, partCost } from "./facilities.js";
+import { RESEARCH, RESEARCH_TABS, awayBankCap, awayBankHours, playerYear, researchCost, researchItem, researchLock, researchSpeed, researchUnlocks, serverOutput } from "./research.js";
+import { FACILITIES, PARTS, SHARE_CAP, facilityReport, diskSize, facilityUnlocked, partCost, partLock } from "./facilities.js";
 
 export const LOCKED_TEXT = "Unlocks later in the timeline.";
 export const SOON_TEXT = "Coming soon: it isn't in the game yet.";
@@ -92,6 +92,9 @@ export const ERA_FACTS = {
   rgb: "RGB battlestations are gaming PCs with lit fans, glass sides and fast graphics cards, everywhere from the mid-2010s.",
   ai: "Tensor Foundry's T1 (2016) is a chip built for neural networks: a 256 by 256 grid of 8-bit multiply-accumulators.",
   quantum: "Quantum computers keep qubits near absolute zero under a gold-plated 'chandelier'; in 2019 a 53-qubit chip ran a test in minutes.",
+  vr: "Visor's Q2 (2020) is a headset that needs no PC or cable: 1832 by 1920 pixels for each eye, with cameras that track the room.",
+  chatbots: "Parlance (2022) put a chat window on a large language model, and a million people signed up in five days.",
+  supercluster: "AI superclusters (2024) wire tens of thousands of Tensor cards into one network to train a single model.",
 };
 
 // What each material is.
@@ -334,8 +337,11 @@ function researchInfo(state, id) {
       row = BUSINESSES[indexOf(rowId)];
     }
   }
+  const opens = researchUnlocks(id);
   let effect;
-  if (gen && gen.index > 0) {
+  if (opens.length) {
+    effect = `Finishing it opens the ${opens.map((p) => p.name).join(" and the ")} on the Facilities page.`;
+  } else if (gen && gen.index > 0) {
     effect = `Finishing it switches ${row.name} to this chip once you own ${gen.need}: pay +${Math.round(gen.index * GENERATION_BONUS * 100)}% over the first chip.`;
   } else if (following) {
     effect = `Finishing it opens the next ${tabName(entry.tab)} project, ${following.name}.`;
@@ -362,7 +368,7 @@ function facilityInfo(state, id) {
   const open = facilityUnlocked(state, id);
   const what = FACILITY_FACTS[id] || facility.blurb;
   let does;
-  if (!open) does = id === "servers" ? "It opens with your first Microprocessor." : LOCKED_TEXT;
+  if (!open) does = id === "servers" ? "It opens with your first Mainframe." : LOCKED_TEXT;
   else if (id === "servers") {
     const out = serverOutput(state);
     does = `It makes R&D points: ${rate(out.perSecond)} a second now (half while you're away), and it speeds up timed research ×${researchSpeed(state).toFixed(2)}.`;
@@ -380,7 +386,7 @@ function facilityInfo(state, id) {
 function awayLine(state, who = "they") {
   const hours = awayBankHours(state);
   const h = Number(hours.toFixed(1));
-  return `While you're away ${who} bank at most ${h} ${h === 1 ? "hour" : "hours"} of full output (${rd(awayBankCap(state))} R&D points); each TB of disk holds another hour.`;
+  return `While you're away ${who} bank at most ${h} ${h === 1 ? "hour" : "hours"} of full output (${rd(awayBankCap(state))} R&D points); each set of disk your newest machine needs holds another hour.`;
 }
 
 function partInfo(state, facilityId, partId) {
@@ -392,17 +398,24 @@ function partInfo(state, facilityId, partId) {
   const plantOpen = facilityUnlocked(state, facilityId);
   const servers = facilityId === "servers";
   const who = servers ? "racks" : "cards";
+  const room = part.group === "room";
   let effect;
-  if (part.kind === "server") effect = `Each adds ${part.work} work and draws ${part.watts} W, so it needs power and cooling to match.`;
+  if (part.kind === "server" && room) effect = `Each adds ${part.work} work and needs its own generator and air conditioner, and ${diskSize(part.diskGb)} of disk for full speed.`;
+  else if (part.kind === "server") effect = `Each adds ${part.work} work and draws ${part.watts} W from the rack supplies and fans, and needs ${diskSize(part.diskGb)} of disk for full speed.`;
+  else if (part.kind === "power" && room) effect = "Each powers one machine-room computer.";
+  else if (part.kind === "cool" && room) effect = "Each cools one machine-room computer.";
   else if (part.kind === "gpu") effect = `Each adds ${part.work} work and ${part.vram} GB of card memory, and draws ${part.watts} W.`;
   else if (part.kind === "power") effect = `Each supplies ${part.power} W; ${who} slow down when they draw more than the supplies give.`;
   else if (part.kind === "cool") effect = `Each removes ${part.cool} W of heat; ${who} slow down when they make more than the fans remove.`;
-  else if (part.kind === "disk") effect = `Each adds ${part.gb.toLocaleString("en-US")} GB; racks need 1 TB for full speed, and each TB lets them bank another hour of R&D while you're away.`;
+  else if (part.kind === "disk") effect = `Each adds ${diskSize(part.gb)}; your newest machine needs its day's disk for full speed, and each set banks another hour of R&D while you're away.`;
   else if (part.kind === "ram") effect = `Each adds ${part.gb} GB of RAM; ${facilityId === "mine" ? "the mine needs 16 GB" : "the cluster needs enough memory for its model"}.`;
   else effect = "";
-  const status = plantOpen
-    ? `You have ${owned}; the next costs ${money(partCost(part, owned))}.`
-    : servers ? "Opens with your first Microprocessor." : LOCKED_TEXT;
+  const lock = plantOpen ? partLock(state, part, researchItem(part.research)?.name) : null;
+  const status = !plantOpen
+    ? servers ? "Opens with your first Mainframe." : LOCKED_TEXT
+    : lock
+      ? `${lock}.`
+      : `You have ${owned}; the next costs ${money(partCost(part, owned))}.`;
   const rows = [{ label: "NOW", text: status }];
   if (part.kind === "ram") rows.push({ label: "BOARD", text: boardText(facilityId, part) });
   return { title, text: `${firstSentence(part.spec)} ${effect}`, rows };
@@ -411,6 +424,7 @@ function partInfo(state, facilityId, partId) {
 // The memory board's rules, as on the real hardware: a 2017 mining board took
 // two desktop DDR4 sticks; A100-era servers had 32 DDR4 slots, H100-era
 // servers 32 DDR5 slots, and the two kinds don't fit the same slots.
+
 function boardText(facilityId, part) {
   if (facilityId === "mine") return "The mining board has 2 DDR4 slots and takes 32 GB at most.";
   if (part.gen === "DDR5") return "32 slots. The first DDR5 stick swaps in a DDR5 board and sells the DDR4 sticks back at half price; when the slots are full, a bigger stick replaces the smallest.";

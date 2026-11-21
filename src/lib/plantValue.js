@@ -13,6 +13,9 @@ export function partValue(state, facilityId, partId, businessPerSecond) {
   if (owned >= partMax(part, facilityId)) return { maxed: true };
   const fit = fitPart(state?.facilities?.[facilityId] || {}, facilityId, partId);
   if (fit.reason) return { added: 0, why: fit.reason };
+  if (facilityId !== "servers" && facilityReport(state, businessPerSecond).share >= SHARE_CAP - 1e-12) {
+    return { added: 0, why: `The plants are at the ${Math.round(SHARE_CAP * 100)}% cap.` };
+  }
   const plan = supportPlan(state, facilityId, partId);
   if (!plan) return { added: 0, why: "There are no more parts to power or cool it." };
   if (facilityId === "servers") {

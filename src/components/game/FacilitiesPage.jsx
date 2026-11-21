@@ -6,10 +6,12 @@ import {
   facilitiesOpen,
   facilityHint,
   facilityReport,
+  diskSize,
   facilityUnlocked,
   fitPart,
   nextPurchase,
   partCost,
+  partLock,
   partMax,
   REBUILD_SECONDS,
   rebuildCost,
@@ -17,7 +19,7 @@ import {
 } from "@/lib/facilities";
 import { extrasText, partValue } from "@/lib/plantValue";
 import { toast } from "sonner";
-import { serverOutput } from "@/lib/research";
+import { researchItem, serverOutput } from "@/lib/research";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { ItemHelp } from "./HintSheet";
@@ -33,21 +35,28 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, busi
   // Memory goes in the board's slots: the board can refuse a stick (full, or
   // the wrong DDR generation), or a stick can replace others.
   const fit = fitPart(state.facilities?.[facilityId] || {}, facilityId, part.id);
-  const affordable = open && !part.soon && !fit.reason && Number.isFinite(cost) && cash >= cost && owned < partMax(part, facilityId);
+  // Each part opens in its real year, once it's researched on TECH.
+  const lock = open && !part.soon ? partLock(state, part, researchItem(part.research)?.name) : null;
+  const dim = part.soon || !open || !!lock;
+  const affordable = open && !lock && !part.soon && !fit.reason && Number.isFinite(cost) && cash >= cost && owned < partMax(part, facilityId);
   return (
     <div data-part={part.id} data-best-part={best ? "" : undefined} data-help-scope className={`border-2 ${best ? "border-[var(--game-accent)]" : "border-[var(--game-border)]"} bg-[var(--game-bg)] p-2`}>
       {best && <p className="mb-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">BEST NEXT PART</p>}
       <div className="flex items-start justify-between gap-2">
         {part.icon && (
           // The art leaves a wide empty border; zoom in so the part fills the box.
-          <div className={`h-14 w-14 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] ${part.soon || !open ? "opacity-60" : ""}`}>
+          <div className={`h-14 w-14 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] ${dim ? "opacity-60" : ""}`}>
             <img src={part.icon} alt="" className="pixel-art h-full w-full scale-[1.4] object-contain" />
           </div>
         )}
-        <div className={`min-w-0 flex-1 ${part.soon || !open ? "opacity-60" : ""}`}>
+        <div className={`min-w-0 flex-1 ${dim ? "opacity-60" : ""}`}>
           <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)] [overflow-wrap:anywhere]">{part.name}</p>
           <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{part.spec}</p>
-          <PartValue state={state} facilityId={facilityId} part={part} business={business} />
+          {lock ? (
+            <p data-part-lock className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{lock}.</p>
+          ) : (
+            <PartValue state={state} facilityId={facilityId} part={part} business={business} />
+          )}
         </div>
         <span className="shrink-0 font-term text-base leading-5 text-[var(--game-accent)]">×{owned}</span>
         <ItemHelp kind="part" id={`${facilityId}:${part.id}`} state={state} name={part.name} className="-mr-1 -mt-2.5" />
@@ -57,7 +66,7 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, busi
       ) : (
         <div className="mt-2">
           <GoldButton dataAttr={`buy-${part.id}`} disabled={!affordable} onClick={onBuy}>
-            <span className="font-pixel text-[0.55rem]">{open ? `BUY ${money(cost)}` : "LOCKED"}</span>
+            <span className="font-pixel text-[0.55rem]">{!open || lock ? "LOCKED" : `BUY ${money(cost)}`}</span>
           </GoldButton>
         </div>
       )}
@@ -96,6 +105,18 @@ function PartValue({ state, facilityId, part, business }) {
   );
 }
 
+// Machine room: one generator and one air conditioner per computer. Racks:
+// watts. Disk: what the newest machine needs.
+function serverStockText(row) {
+  const parts = [];
+  const room = row.groups?.room;
+  const rack = row.groups?.rack;
+  if (room?.watts > 0) parts.push(`Machine room: ${room.watts} computer${room.watts === 1 ? "" : "s"}, ${room.power} generator${room.power === 1 ? "" : "s"}, ${room.cool} air conditioner${room.cool === 1 ? "" : "s"}`);
+  if (rack?.watts > 0) parts.push(`Racks: ${Math.round(rack.watts)} W, ${Math.round(rack.power)} W of supplies, ${Math.round(rack.cool)} W of fans`);
+  parts.push(`Disk: ${diskSize(row.storage)} of the ${diskSize(row.need)} the newest machine needs`);
+  return parts.join(" · ");
+}
+
 function Plant({ facility, state, report, business, cash, onBuy, next }) {
   const open = facilityUnlocked(state, facility.id);
   const row = report[facility.id];
@@ -120,11 +141,16 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
           {!research && open && business > 0 ? ` · ${percent(row.share)} of the businesses` : ""}
         </p>
         <p data-facility-limit className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
-          {open ? row.limit : facility.id === "servers" ? "Requires 1971" : "Locked"}
+          {open ? row.limit : facility.id === "servers" ? "Requires 1951" : "Locked"}
           {row.tier ? ` · ${row.tier} model` : ""}
         </p>
         <p data-facility-hint className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{facilityHint(state, facility.id, business)}</p>
-        {open && row.gpus > 0 && (
+        {open && research && row.gpus > 0 && (
+          <p data-server-stock className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
+            {serverStockText(row)}
+          </p>
+        )}
+        {open && !research && row.gpus > 0 && (
           <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
             {Math.round(row.watts)} W of cards · {Math.round(row.power)} W power · {Math.round(row.cool)} W cooling · {Math.round(row.vram)} GB on the cards · {Math.round(row.ram)} GB RAM
           </p>

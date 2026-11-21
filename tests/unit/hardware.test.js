@@ -1,0 +1,87 @@
+// Hardware opens in its real year, once researched; the research servers go
+// back to 1951; the eras after Quantum carry the newer hardware.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { BUSINESSES } from "../../src/lib/gameConfig.js";
+import { ERA_YEAR, playerYear } from "../../src/lib/eraYear.js";
+import { PARTS, facilityUnlocked, openParts, partLock, partOpen, purchasePart, settleClosedParts, partCost } from "../../src/lib/facilities.js";
+import { RESEARCH, researchItem, researchLock, serverOutput, awayBankHours, AWAY_BANK } from "../../src/lib/research.js";
+
+const upTo = (id, techDone = []) => ({
+  biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: i <= BUSINESSES.findIndex((x) => x.id === id) ? 1 : 0 })),
+  techDone,
+  facilities: { mine: {}, cluster: {}, servers: {} },
+  cash: 1e30,
+});
+
+test("every era has a year, in order, and the last is 2024", () => {
+  for (const b of BUSINESSES) assert.ok(ERA_YEAR[b.id] != null, b.id);
+  assert.equal(playerYear(upTo(BUSINESSES.at(-1).id)), 2024);
+});
+
+test("each part's research exists, has the part's year, and nothing opens before its year", () => {
+  for (const part of PARTS) {
+    if (!part.research) continue;
+    const item = researchItem(part.research);
+    assert.ok(item, `${part.id}: no research ${part.research}`);
+    assert.equal(item.year, part.year, `${part.id} year ${part.year} vs research ${item.year}`);
+  }
+  // With everything researched, a 1971 company has nothing newer than 1971.
+  const s = upTo("cpu", RESEARCH.map((e) => e.id));
+  for (const id of openParts(s)) assert.ok(PARTS.find((p) => p.id === id).year <= 1971, id);
+});
+
+test("every research project can be finished once the last era is reached", () => {
+  const s = upTo(BUSINESSES.at(-1).id, RESEARCH.map((e) => e.id));
+  s.techDone = [];
+  for (const e of RESEARCH) {
+    if (e.soon) continue;
+    const lock = researchLock({ ...s, techDone: RESEARCH.map((x) => x.id).filter((x) => x !== e.id) }, e);
+    assert.equal(lock, null, `${e.id}: ${lock}`);
+  }
+});
+
+test("the research servers open with Mainframes, and the Mark 1 kit needs no research", () => {
+  const s = upTo("mainframes");
+  assert.ok(facilityUnlocked(s, "servers"));
+  for (const id of ["mark1", "mgset", "roomac", "tape"]) assert.ok(purchasePart(s, "servers", id).ok, id);
+  assert.ok(serverOutput(s).perSecond > 0);
+  // The 7090 waits for 1959, then for its research.
+  const p = PARTS.find((x) => x.id === "ibm7090");
+  assert.equal(partLock(s, p), "Requires 1959");
+  const later = upTo("silicon");
+  assert.match(partLock(later, p), /Research/);
+  later.techDone = ["srv-7090"];
+  assert.ok(partOpen(later, p));
+});
+
+test("machine-room computers each need a generator and an air conditioner; racks need watts", () => {
+  const s = upTo(BUSINESSES.at(-1).id, RESEARCH.map((e) => e.id));
+  s.facilities.servers = { mark1: 2, mgset: 1, roomac: 2, tape: 1 };
+  assert.ok(Math.abs(serverOutput(s).speed - 0.5) < 1e-9, "one of two machines powered");
+  s.facilities.servers = { mark1: 2, mgset: 2, roomac: 2, tape: 1, towerT4: 1, psuAT: 2, labfan: 1, disk3380: 1 };
+  assert.ok(Math.abs(serverOutput(s).speed - 1) < 1e-9, "both rooms running");
+});
+
+test("each machine needs the disk of its day, and the away bank counts sets of it", () => {
+  const s = upTo(BUSINESSES.at(-1).id, RESEARCH.map((e) => e.id));
+  s.facilities.servers = { rack1: 1, psu400: 1, labfan: 2, disk3380: 1 };
+  const short = serverOutput(s);
+  s.facilities.servers.hdd1t = 1;
+  assert.ok(serverOutput(s).perSecond > short.perSecond * 1.9, "1 TB disk brings a 2012 rack to full speed");
+  assert.ok(Math.abs(awayBankHours(s) - (AWAY_BANK.baseHours + 1.00252)) < 1e-6);
+});
+
+test("old saves keep parts bought fairly and refund the rest", () => {
+  const s = upTo("ai");
+  s.facilities = { mine: { raster3060: 2, raster1080: 1 }, cluster: {}, servers: { rack1: 1, pdp1120: 1 } };
+  const refund = settleClosedParts(s);
+  const p3060 = PARTS.find((p) => p.id === "raster3060");
+  const r1 = PARTS.find((p) => p.id === "rack1");
+  // The 3060 (2021) is too new for a 2016 company; the R1 (2012) isn't.
+  assert.equal(s.facilities.mine.raster3060 || 0, 0);
+  assert.equal(refund, partCost(p3060, 0) + partCost(p3060, 1));
+  assert.equal(s.facilities.servers.rack1, 1);
+  assert.ok(s.techDone.includes("card-1080") && s.techDone.includes("srv-r1") && s.techDone.includes("srv-1120"));
+  assert.ok(r1);
+});

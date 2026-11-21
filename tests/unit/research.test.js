@@ -21,10 +21,10 @@ test("live play isn't capped", () => {
   assert.ok(Math.abs(s.data - rate * 48 * 3600) < 1e-6);
 });
 
-test("away bank: base hours plus more per TB of disk, up to the max", () => {
+test("away bank: base hours plus one per set of the newest machine's disk, up to the max", () => {
   assert.equal(awayBankHours(plant({ rack1: 1, psu400: 1, labfan: 1 })), AWAY_BANK.baseHours);
-  assert.equal(awayBankHours(plant({ rack1: 1, psu400: 1, labfan: 1, hdd1t: 1 })), AWAY_BANK.baseHours + AWAY_BANK.hoursPerTB);
-  assert.equal(awayBankHours(plant({ rack1: 1, psu400: 1, labfan: 1, hdd1t: 1, ssd2t: 1 })), AWAY_BANK.baseHours + 3 * AWAY_BANK.hoursPerTB);
+  assert.equal(awayBankHours(plant({ rack1: 1, psu400: 1, labfan: 1, hdd1t: 1 })), AWAY_BANK.baseHours + AWAY_BANK.hoursPerSet);
+  assert.equal(awayBankHours(plant({ rack1: 1, psu400: 1, labfan: 1, hdd1t: 1, ssd2t: 1 })), AWAY_BANK.baseHours + 3 * AWAY_BANK.hoursPerSet);
   assert.equal(awayBankHours(plant({ rack1: 1, hdd1t: 24, ssd2t: 24 })), AWAY_BANK.maxHours);
 });
 

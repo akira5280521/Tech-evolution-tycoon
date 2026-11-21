@@ -11,10 +11,12 @@
 // until both plants together reach SHARE_CAP.
 
 import { BUSINESSES } from "./gameConfig.js";
+import { playerYear } from "./eraYear.js";
 
 export const SHARE_CAP = 0.05;
 export const STARTER_SHARE = 0.0009;
 export const MAX_PART = 24;
+const ROOM_UNITS = 60;
 const REFERENCE_WORK = 13;
 const MINE_RAM_GB = 16;
 
@@ -65,36 +67,73 @@ export const FACILITIES = [
   },
 ];
 
+// Every part opens in its real year (the company's newest era must have
+// reached it) and, past the first machine-room kit, once it's researched on
+// the Tech page (part.research). Prices and output are game numbers; names
+// are parodies with real model numbers, specs are the real hardware's.
+//
+// The research servers have two kinds of room. Machine-room computers
+// (1951-1977) each need a motor-generator set and an air conditioner of their
+// own (group "room", counted per machine). Rack servers (1989 on) draw watts
+// from rack supplies and fans (group "rack"). Disks serve both: each machine
+// needs the disk of its day (diskGb) for full speed.
 export const PARTS = [
-  { id: "raster3060", kind: "gpu", name: "Raster 3060", icon: "/icons/parts/raster3060.png", fits: ["mine", "cluster"], cost: 3_200_000_000, coef: 1.55, watts: 170, vram: 12, work: 13, spec: "12 GB GDDR6, 170 W, 12.7 TFLOPS FP32. A 3060-class card." },
-  { id: "raster3090", kind: "gpu", name: "Raster 3090", icon: "/icons/parts/raster3090.png", fits: ["mine", "cluster"], cost: 28_000_000_000, coef: 1.55, watts: 350, vram: 24, work: 36, spec: "24 GB GDDR6X, 350 W, 35.6 TFLOPS FP32. A 3090-class card." },
-  { id: "raster4090", kind: "gpu", name: "Raster 4090", icon: "/icons/parts/raster4090.png", fits: ["mine", "cluster"], cost: 90_000_000_000, coef: 1.55, watts: 450, vram: 24, work: 83, spec: "24 GB GDDR6X, 450 W, 82.6 TFLOPS FP32. A 4090-class card." },
-  { id: "tensorA100", kind: "gpu", name: "Tensor A100", icon: "/icons/parts/tensorA100.png", fits: ["cluster"], cost: 220_000_000_000, coef: 1.55, watts: 400, vram: 80, work: 78, spec: "80 GB HBM2e, 400 W, 19.5 TFLOPS FP32 and 156 TFLOPS TF32. An A100 80 GB." },
-  { id: "tensorH100", kind: "gpu", name: "Tensor H100", icon: "/icons/parts/tensorH100.png", fits: ["cluster"], cost: 700_000_000_000, coef: 1.55, watts: 700, vram: 80, work: 160, spec: "80 GB HBM3, 700 W, 67 TFLOPS FP32 and about 990 TFLOPS TF32. An H100 SXM." },
-  { id: "tensorB200", kind: "gpu", name: "Tensor B200", icon: "/icons/parts/tensorB200.png", fits: ["cluster"], cost: 2_200_000_000_000, coef: 1.55, watts: 1000, vram: 192, work: 400, spec: "192 GB HBM3e, about 1,000 W, two dies on one package. A B200-class board." },
-  { id: "ddr4_16", kind: "ram", gen: "DDR4", name: "16 GB DDR4-2400", icon: "/icons/parts/ddr4_32.png", fits: ["mine"], cost: 150_000_000, coef: 1.4, gb: 16, spec: "16 GB DDR4-2400 desktop stick (unbuffered), PC4-19200." },
-  { id: "ddr4_32", kind: "ram", gen: "DDR4", name: "32 GB DDR4-3200", icon: "/icons/parts/ddr4_32.png", fits: ["cluster"], cost: 600_000_000, coef: 1.4, gb: 32, spec: "32 GB DDR4-3200 registered server stick (RDIMM), PC4-25600." },
-  { id: "ddr5_64", kind: "ram", gen: "DDR5", name: "64 GB DDR5-5600", icon: "/icons/parts/ddr5_64.png", fits: ["cluster"], cost: 4_000_000_000, coef: 1.4, gb: 64, spec: "64 GB DDR5-5600 registered server stick (RDIMM), PC5-44800." },
-  { id: "ddr5_128", kind: "ram", gen: "DDR5", name: "128 GB DDR5-6400", icon: "/icons/parts/ddr5_128.png", fits: ["cluster"], cost: 20_000_000_000, coef: 1.4, gb: 128, spec: "128 GB DDR5-6400 registered server stick (RDIMM), PC5-51200." },
-  { id: "fans", kind: "cool", name: "Case fans", icon: "/icons/parts/fans.png", fits: ["mine", "cluster"], cost: 200_000_000, coef: 1.35, cool: 250, spec: "Moves 250 W of heat." },
-  { id: "labfan", kind: "cool", name: "Lab fan", icon: "/icons/parts/labfan.png", fits: ["servers"], cost: 1_000_000, coef: 2, cool: 300, spec: "A 120 mm fan. Moves about 300 W of heat." },
-  { id: "tower", kind: "cool", name: "Tower cooler", icon: "/icons/parts/tower.png", fits: ["mine", "cluster"], cost: 1_500_000_000, coef: 1.35, cool: 350, spec: "A dual-tower air cooler, 350 W." },
-  { id: "liquid", kind: "cool", name: "360 mm liquid", icon: "/icons/parts/liquid.png", fits: ["mine", "cluster"], cost: 6_000_000_000, coef: 1.35, cool: 700, spec: "A 360 mm liquid loop, 700 W." },
-  { id: "immersion", kind: "cool", name: "Immersion tank", icon: "/icons/parts/immersion.png", fits: ["mine", "cluster"], cost: 40_000_000_000, coef: 1.35, cool: 2000, spec: "The whole rack sits in a dielectric bath. 2,000 W." },
-  { id: "psu750", kind: "power", name: "750 W supply", icon: "/icons/parts/psu750.png", fits: ["mine", "cluster"], cost: 800_000_000, coef: 1.35, power: 750, spec: "750 W ATX supply, 80 Plus Gold." },
-  { id: "psu1200", kind: "power", name: "1200 W supply", icon: "/icons/parts/psu1200.png", fits: ["mine", "cluster"], cost: 3_500_000_000, coef: 1.35, power: 1200, spec: "1,200 W ATX supply, 80 Plus Platinum." },
-  { id: "psu1600", kind: "power", name: "1600 W supply", icon: "/icons/parts/psu1600.png", fits: ["mine", "cluster"], cost: 12_000_000_000, coef: 1.35, power: 1600, spec: "1,600 W, 80 Plus Titanium, for a rack of data-center cards." },
-  { id: "rack1", kind: "server", name: "Foundry Rack R1", icon: "/icons/parts/rack1.png", fits: ["servers"], cost: 10_000_000, coef: 5, watts: 200, work: 8, spec: "1U, two 8-core chips, 200 W. A small research server." },
-  { id: "rack4", kind: "server", name: "Foundry Rack R4", icon: "/icons/parts/rack4.png", fits: ["servers"], cost: 400_000_000, coef: 5, watts: 500, work: 24, spec: "4U, four sockets, 500 W." },
-  { id: "psu400", kind: "power", name: "400 W supply", icon: "/icons/parts/psu400.png", fits: ["servers"], cost: 2_000_000, coef: 2, power: 450, spec: "400 W ATX supply for a single rack." },
-  { id: "hdd1t", kind: "disk", name: "1 TB disk", icon: "/icons/parts/hdd1t.png", fits: ["servers"], cost: 1_000_000, coef: 2, gb: 1000, spec: "1 TB, 7200 rpm." },
-  { id: "ssd2t", kind: "disk", name: "2 TB SSD", icon: "/icons/parts/ssd2t.png", fits: ["servers"], cost: 100_000_000, coef: 2, gb: 2000, spec: "2 TB NAND, SATA." },
+  // --- Mine and cluster ----------------------------------------------------
+  { id: "raster1080", kind: "gpu", name: "Raster 1080", icon: "/icons/parts/raster1080.png", fits: ["mine", "cluster"], year: 2016, research: "card-1080", cost: 2_000_000_000, coef: 1.55, watts: 180, vram: 8, work: 9, spec: "8 GB GDDR5X, 180 W, 8.9 TFLOPS FP32. A 1080-class card." },
+  { id: "tensorP100", kind: "gpu", name: "Tensor P100", icon: "/icons/parts/tensorP100.png", fits: ["cluster"], year: 2016, research: "card-p100", cost: 12_000_000_000, coef: 1.55, watts: 300, vram: 16, work: 21, spec: "16 GB HBM2, 300 W, 21 TFLOPS FP16. A P100 SXM2." },
+  { id: "tensorV100", kind: "gpu", name: "Tensor V100", icon: "/icons/parts/tensorV100.png", fits: ["cluster"], year: 2017, research: "card-v100", cost: 80_000_000_000, coef: 1.55, watts: 300, vram: 16, work: 60, spec: "16 GB HBM2, 300 W, 125 TFLOPS on its tensor cores. A V100 SXM2." },
+  { id: "raster3060", kind: "gpu", name: "Raster 3060", icon: "/icons/parts/raster3060.png", fits: ["mine", "cluster"], year: 2021, research: "card-3060", cost: 3_200_000_000, coef: 1.55, watts: 170, vram: 12, work: 13, spec: "12 GB GDDR6, 170 W, 12.7 TFLOPS FP32. A 3060-class card." },
+  { id: "raster3090", kind: "gpu", name: "Raster 3090", icon: "/icons/parts/raster3090.png", fits: ["mine", "cluster"], year: 2020, research: "card-3090", cost: 28_000_000_000, coef: 1.55, watts: 350, vram: 24, work: 36, spec: "24 GB GDDR6X, 350 W, 35.6 TFLOPS FP32. A 3090-class card." },
+  { id: "raster4090", kind: "gpu", name: "Raster 4090", icon: "/icons/parts/raster4090.png", fits: ["mine", "cluster"], year: 2022, research: "card-4090", cost: 90_000_000_000, coef: 1.55, watts: 450, vram: 24, work: 83, spec: "24 GB GDDR6X, 450 W, 82.6 TFLOPS FP32. A 4090-class card." },
+  { id: "tensorA100", kind: "gpu", name: "Tensor A100", icon: "/icons/parts/tensorA100.png", fits: ["cluster"], year: 2020, research: "card-a100", cost: 220_000_000_000, coef: 1.55, watts: 400, vram: 80, work: 78, spec: "80 GB HBM2e, 400 W, 19.5 TFLOPS FP32 and 156 TFLOPS TF32. An A100 80 GB." },
+  { id: "tensorH100", kind: "gpu", name: "Tensor H100", icon: "/icons/parts/tensorH100.png", fits: ["cluster"], year: 2022, research: "card-h100", cost: 700_000_000_000, coef: 1.55, watts: 700, vram: 80, work: 160, spec: "80 GB HBM3, 700 W, 67 TFLOPS FP32 and about 990 TFLOPS TF32. An H100 SXM." },
+  { id: "tensorB200", kind: "gpu", name: "Tensor B200", icon: "/icons/parts/tensorB200.png", fits: ["cluster"], year: 2024, research: "card-b200", cost: 2_200_000_000_000, coef: 1.55, watts: 1000, vram: 192, work: 400, spec: "192 GB HBM3e, about 1,000 W, two dies on one package. A B200-class board." },
+  { id: "ddr4_16", kind: "ram", gen: "DDR4", name: "16 GB DDR4-2400", icon: "/icons/parts/ddr4_32.png", fits: ["mine"], year: 2014, research: "mem-ddr4", cost: 150_000_000, coef: 1.4, gb: 16, spec: "16 GB DDR4-2400 desktop stick (unbuffered), PC4-19200." },
+  { id: "ddr4_32", kind: "ram", gen: "DDR4", name: "32 GB DDR4-2400", icon: "/icons/parts/ddr4_32.png", fits: ["cluster"], year: 2014, research: "mem-ddr4", cost: 600_000_000, coef: 1.4, gb: 32, spec: "32 GB DDR4-2400 registered server stick (RDIMM), PC4-19200." },
+  { id: "ddr5_64", kind: "ram", gen: "DDR5", name: "64 GB DDR5-4800", icon: "/icons/parts/ddr5_64.png", fits: ["cluster"], year: 2022, research: "mem-ddr5-64", cost: 4_000_000_000, coef: 1.4, gb: 64, spec: "64 GB DDR5-4800 registered server stick (RDIMM), PC5-38400." },
+  { id: "ddr5_128", kind: "ram", gen: "DDR5", name: "128 GB DDR5-6400", icon: "/icons/parts/ddr5_128.png", fits: ["cluster"], year: 2024, research: "mem-ddr5-128", cost: 20_000_000_000, coef: 1.4, gb: 128, spec: "128 GB DDR5-6400 registered server stick (RDIMM), PC5-51200." },
+  { id: "fans", kind: "cool", name: "Case fans", icon: "/icons/parts/fans.png", fits: ["mine", "cluster"], year: 1994, research: "cool-fan", cost: 200_000_000, coef: 1.35, cool: 250, spec: "Moves 250 W of heat." },
+  { id: "tower", kind: "cool", name: "Tower cooler", icon: "/icons/parts/tower.png", fits: ["mine", "cluster"], year: 2001, research: "cool-pipe", cost: 1_500_000_000, coef: 1.35, cool: 350, spec: "A dual-tower air cooler, 350 W." },
+  { id: "liquid", kind: "cool", name: "360 mm liquid", icon: "/icons/parts/liquid.png", fits: ["mine", "cluster"], year: 2008, research: "cool-liquid", cost: 6_000_000_000, coef: 1.35, cool: 700, spec: "A 360 mm liquid loop, 700 W." },
+  { id: "immersion", kind: "cool", name: "Immersion tank", icon: "/icons/parts/immersion.png", fits: ["mine", "cluster"], year: 2022, research: "cool-immersion", cost: 40_000_000_000, coef: 1.35, cool: 2000, spec: "The whole rack sits in a dielectric bath. 2,000 W." },
+  { id: "psu750", kind: "power", name: "750 W supply", icon: "/icons/parts/psu750.png", fits: ["mine", "cluster"], year: 2008, research: "pwr-gold", cost: 800_000_000, coef: 1.35, power: 750, spec: "750 W ATX supply, 80 Plus Gold." },
+  { id: "psu1200", kind: "power", name: "1200 W supply", icon: "/icons/parts/psu1200.png", fits: ["mine", "cluster"], year: 2009, research: "pwr-plat", cost: 3_500_000_000, coef: 1.35, power: 1200, spec: "1,200 W ATX supply, 80 Plus Platinum." },
+  { id: "psu1600", kind: "power", name: "1600 W supply", icon: "/icons/parts/psu1600.png", fits: ["mine", "cluster"], year: 2015, research: "pwr-titan", cost: 12_000_000_000, coef: 1.35, power: 1600, spec: "1,600 W, 80 Plus Titanium, for a rack of data-center cards." },
+
+  // --- Research servers: machine room (one generator and one air conditioner each)
+  { id: "mark1", kind: "server", group: "room", name: "Irwell Mark 1", icon: "/icons/parts/mark1.png", fits: ["servers"], year: 1951, research: null, cost: 30_000, coef: 5, watts: 1, work: 2, diskGb: 0.001, spec: "1951: about 4,000 valves, the first commercial computer to be installed." },
+  { id: "ibm7090", kind: "server", group: "room", name: "Inland 7090", icon: "/icons/parts/ibm7090.png", fits: ["servers"], year: 1959, research: "srv-7090", cost: 300_000, coef: 5, watts: 1, work: 4, diskGb: 0.005, spec: "1959: more than 50,000 transistors, about six times the valve machine it replaced." },
+  { id: "s360", kind: "server", group: "room", name: "Inland 360/50", icon: "/icons/parts/s360.png", fits: ["servers"], year: 1965, research: "srv-360", cost: 3_000_000, coef: 5, watts: 1, work: 6, diskGb: 0.00725, spec: "1965: one of a family of machines that all ran the same programs." },
+  { id: "pdp1120", kind: "server", group: "room", name: "Maynard 11/20", icon: "/icons/parts/pdp1120.png", fits: ["servers"], year: 1970, research: "srv-1120", cost: 10_000_000, coef: 5, watts: 1, work: 8, diskGb: 0.1, spec: "1970: a 16-bit minicomputer in one cabinet." },
+  { id: "vax780", kind: "server", group: "room", name: "Maynard 11/780", icon: "/icons/parts/vax780.png", fits: ["servers"], year: 1977, research: "srv-780", cost: 400_000_000, coef: 5, watts: 1, work: 24, diskGb: 0.1, spec: "1977: 32-bit; its speed became the yardstick called 1 MIPS." },
+  { id: "mgset", kind: "power", group: "room", name: "Motor-generator set", icon: "/icons/parts/mgset.png", fits: ["servers"], year: 1951, research: null, cost: 10_000, coef: 1.35, power: 1, spec: "A motor turning a generator: steady power for one machine-room computer." },
+  { id: "roomac", kind: "cool", group: "room", name: "Room air conditioner", icon: "/icons/parts/roomac.png", fits: ["servers"], year: 1951, research: null, cost: 10_000, coef: 1.35, cool: 1, spec: "Chilled air under the raised floor, enough for one machine-room computer." },
+
+  // --- Research servers: racks (watts)
+  { id: "towerT4", kind: "server", group: "rack", name: "Foundry Tower T4", icon: "/icons/parts/towerT4.png", fits: ["servers"], year: 1989, research: "srv-tower", cost: 4_000_000_000, coef: 5, watts: 300, work: 40, diskGb: 2.52, spec: "1989: a tower server with a 486 chip, 300 W." },
+  { id: "rack2u", kind: "server", group: "rack", name: "Foundry 2U", icon: "/icons/parts/rack2u.png", fits: ["servers"], year: 1999, research: "srv-2u", cost: 30_000_000_000, coef: 5, watts: 300, work: 64, diskGb: 9, spec: "1999: two 500 MHz chips in a 2U box, 300 W." },
+  { id: "bladeB2", kind: "server", group: "rack", name: "Foundry Blade B2", icon: "/icons/parts/bladeB2.png", fits: ["servers"], year: 2006, research: "srv-blade", cost: 200_000_000_000, coef: 5, watts: 250, work: 100, diskGb: 9, spec: "2006: two dual-core chips on a blade, 250 W." },
+  { id: "rack1", kind: "server", group: "rack", name: "Foundry Rack R1", icon: "/icons/parts/rack1.png", fits: ["servers"], year: 2012, research: "srv-r1", cost: 1_000_000_000_000, coef: 5, watts: 350, work: 160, diskGb: 1000, spec: "2012: 1U, two 8-core chips, 350 W." },
+  { id: "rack4", kind: "server", group: "rack", name: "Foundry Rack R4", icon: "/icons/parts/rack4.png", fits: ["servers"], year: 2012, research: "srv-r4", cost: 5_000_000_000_000, coef: 5, watts: 1000, work: 300, diskGb: 1000, spec: "2012: 4U, four 8-core chips, 1,000 W." },
+  { id: "psuAT", kind: "power", group: "rack", name: "200 W AT supply", icon: "/icons/parts/psuAT.png", fits: ["servers"], year: 1984, research: "pwr-at", cost: 400_000_000, coef: 2, power: 200, spec: "A 200 W AT supply with a big mains switch." },
+  { id: "psu400", kind: "power", group: "rack", name: "400 W supply", icon: "/icons/parts/psu400.png", fits: ["servers"], year: 1995, research: "pwr-atx", cost: 2_000_000_000, coef: 2, power: 450, spec: "400 W ATX supply for a single rack." },
+  { id: "labfan", kind: "cool", group: "rack", name: "Rack fan", icon: "/icons/parts/labfan.png", fits: ["servers"], year: 1989, research: null, cost: 300_000_000, coef: 2, cool: 300, spec: "A 120 mm fan. Moves about 300 W of heat out of a rack." },
+
+  // --- Research servers: storage
+  { id: "tape", kind: "disk", name: "Tape drive", icon: "/icons/parts/tape.png", fits: ["servers"], year: 1951, research: null, cost: 5_000, coef: 2, gb: 0.001, spec: "Half-inch metal tape on a reel, about a megabyte a reel." },
+  { id: "ramac", kind: "disk", name: "Inland 350 disk", icon: "/icons/parts/ramac.png", fits: ["servers"], year: 1956, research: "store-hdd", cost: 50_000, coef: 2, gb: 0.005, spec: "1956: fifty 24-inch platters, 5 million characters." },
+  { id: "pack2311", kind: "disk", name: "Inland 2311 pack", icon: "/icons/parts/pack2311.png", fits: ["servers"], year: 1964, research: "store-pack", cost: 500_000, coef: 2, gb: 0.00725, spec: "1964: six platters you lift out by the handle, 7.25 MB." },
+  { id: "pack3330", kind: "disk", name: "Inland 3330 pack", icon: "/icons/parts/pack3330.png", fits: ["servers"], year: 1970, research: "store-3330", cost: 3_000_000, coef: 2, gb: 0.1, spec: "1970: eleven platters, 100 MB a pack." },
+  { id: "disk3380", kind: "disk", name: "Inland 3380 disk", icon: "/icons/parts/disk3380.png", fits: ["servers"], year: 1980, research: "store-3380", cost: 100_000_000, coef: 2, gb: 2.52, spec: "1980: the first gigabyte-class disk, 2.52 GB, the size of a fridge." },
+  { id: "disk10k", kind: "disk", name: "9 GB SCSI disk", icon: "/icons/parts/disk10k.png", fits: ["servers"], year: 1996, research: "store-10k", cost: 1_000_000_000, coef: 2, gb: 9, spec: "1996: 9 GB at 10,000 rpm, the first drive to spin that fast." },
+  { id: "hdd1t", kind: "disk", name: "1 TB disk", icon: "/icons/parts/hdd1t.png", fits: ["servers"], year: 2007, research: "store-1tb", cost: 10_000_000_000, coef: 2, gb: 1000, spec: "2007: 1 TB on five platters, 7200 rpm." },
+  { id: "ssd2t", kind: "disk", name: "2 TB SSD", icon: "/icons/parts/ssd2t.png", fits: ["servers"], year: 2015, research: "store-ssd2t", cost: 100_000_000_000, coef: 2, gb: 2000, spec: "2015: 2 TB of NAND flash on SATA." },
 ];
 
 const STARTER = {
-  mine: ["raster3060", "psu750", "fans", "ddr4_16"],
-  cluster: ["raster3060", "psu750", "fans", "ddr4_32"],
-  servers: ["rack1", "psu400", "labfan", "hdd1t"],
+  mine: ["raster1080", "psu750", "fans", "ddr4_16"],
+  cluster: ["raster1080", "psu750", "fans", "ddr4_32"],
+  servers: ["mark1", "mgset", "roomac", "tape"],
 };
 
 // Research server parts are priced so each extra rack costs 5x the last: a
@@ -107,8 +146,22 @@ const PART_NEWS = {
   tensorA100: "TENSOR A100 TAKES THE OVERNIGHT TRAINING SHIFT",
   tensorH100: "TENSOR H100 ARRIVES UNDER ARMED ESCORT",
   ddr4_16: "DESKTOP DDR4 STICK SLOTTED INTO THE MINING BOARD",
-  ddr4_32: "DDR4-3200 STICKS REACH THE RACK",
-  ddr5_64: "DDR5-5600 STICKS CLEAR THE LOADING DOCK",
+  ddr4_32: "DDR4 SERVER STICKS REACH THE RACK",
+  ddr5_64: "DDR5 STICKS CLEAR THE LOADING DOCK",
+  raster1080: "RASTER 1080 BOLTED INTO A SIDE RACK",
+  tensorP100: "TENSOR P100 STACKS ITS MEMORY ON THE CHIP",
+  tensorV100: "TENSOR V100 BRINGS THE FIRST TENSOR CORES",
+  mark1: "IRWELL MARK 1 WARMS ITS VALVES FOR THE LAB",
+  ibm7090: "INLAND 7090 SWAPS VALVES FOR TRANSISTORS",
+  s360: "INLAND 360 JOINS THE MACHINE ROOM",
+  pdp1120: "MAYNARD 11/20 WHEELED INTO THE LAB",
+  vax780: "MAYNARD 11/780 SETS THE MIPS YARDSTICK",
+  towerT4: "FOUNDRY TOWER T4 STANDS UNDER A DESK",
+  rack2u: "FOUNDRY 2U SLIDES INTO THE RACK",
+  bladeB2: "FOUNDRY BLADES FILL A CHASSIS",
+  tape: "TAPE REELS SPIN IN THE MACHINE ROOM",
+  ramac: "A DISK THE SIZE OF TWO FRIDGES ARRIVES",
+  disk3380: "A GIGABYTE DISK NEEDS A FORKLIFT",
   fans: "CASE FANS AUDIBLE FROM THE CAR PARK",
   labfan: "A LAB FAN STARTS UNDER THE RESEARCH RACK",
   tower: "TOWER COOLER ENDS THE THERMAL THROTTLE RUMOR",
@@ -134,6 +187,9 @@ export function blankFacilities() {
 // board's slots (32 on a server board), anything else by MAX_PART.
 export function partMax(part, facilityId) {
   if (part?.kind === "ram") return facilityId === "mine" ? 2 : 32;
+  // One generator and one air conditioner per machine-room computer, and
+  // there can be more machines than 24.
+  if (part?.group === "room" && (part.kind === "power" || part.kind === "cool")) return ROOM_UNITS;
   return MAX_PART;
 }
 
@@ -203,7 +259,7 @@ function ownedId(state, id) {
 }
 
 export function facilityUnlocked(state, facilityId) {
-  if (facilityId === "servers") return ownedId(state, "cpu") >= 1;
+  if (facilityId === "servers") return ownedId(state, "mainframes") >= 1;
   return ownedId(state, "ai") >= 1;
 }
 
@@ -235,22 +291,76 @@ function stock(counts, facilityId) {
   let work = 0;
   let gpus = 0;
   let storage = 0;
+  let need = 0;
+  const groups = { room: { watts: 0, power: 0, cool: 0, work: 0 }, rack: { watts: 0, power: 0, cool: 0, work: 0 } };
   for (const part of PARTS) {
     if (!part.fits.includes(facilityId)) continue;
-    const n = counts[part.id] || 0;
+    const n = counts?.[part.id] || 0;
     if (n <= 0) continue;
+    const g = groups[part.group] || null;
     if (part.kind === "gpu" || part.kind === "server") {
       watts += part.watts * n;
       vram += (part.vram || 0) * n;
       work += part.work * n;
       gpus += n;
-    } else if (part.kind === "power") power += part.power * n;
-    else if (part.kind === "cool") cool += part.cool * n;
-    else if (part.kind === "ram") ram += part.gb * n;
+      if (g) {
+        g.watts += part.watts * n;
+        g.work += part.work * n;
+      }
+      if (part.diskGb) need = Math.max(need, part.diskGb);
+    } else if (part.kind === "power") {
+      power += part.power * n;
+      if (g) g.power += part.power * n;
+    } else if (part.kind === "cool") {
+      cool += part.cool * n;
+      if (g) g.cool += part.cool * n;
+    } else if (part.kind === "ram") ram += part.gb * n;
     else if (part.kind === "disk") storage += part.gb * n;
   }
-  const speed = watts <= 0 ? 0 : Math.min(1, Math.min(power, cool) / watts);
-  return { watts, power, cool, vram, ram, work, gpus, speed, storage };
+  let speed = watts <= 0 ? 0 : Math.min(1, Math.min(power, cool) / watts);
+  if (facilityId === "servers") {
+    // Each kind of room runs on its own power and cooling.
+    let running = 0;
+    for (const g of Object.values(groups)) {
+      g.speed = g.watts <= 0 ? 0 : Math.min(1, Math.min(g.power, g.cool) / g.watts);
+      running += g.work * g.speed;
+    }
+    speed = work > 0 ? running / work : 0;
+  }
+  return { watts, power, cool, vram, ram, work, gpus, speed, storage, need, groups };
+}
+
+// What the plant is short of first: power or cooling (for the servers, per
+// kind of room), then memory, then disk. { kind, group } or null.
+function shortOf(facilityId, stocked) {
+  if (facilityId === "servers") {
+    for (const [group, g] of Object.entries(stocked.groups)) {
+      if (g.watts <= 0) continue;
+      if (g.power < g.watts) return { kind: "power", group };
+      if (g.cool < g.watts) return { kind: "cool", group };
+    }
+    if (stocked.need > 0 && stocked.storage < stocked.need) return { kind: "disk", group: null };
+    return null;
+  }
+  if (stocked.power < stocked.watts) return { kind: "power", group: null };
+  if (stocked.cool < stocked.watts) return { kind: "cool", group: null };
+  if (memoryFactor(facilityId, stocked).limit === "Needs more RAM") return { kind: "ram", group: null };
+  return null;
+}
+
+// What a plant needs next to run at full speed, and the cheapest open part
+// that fills it (for the simulation and hints).
+export function plantShort(state, facilityId) {
+  const counts = countsOf(state, facilityId);
+  const short = shortOf(facilityId, stock(counts, facilityId));
+  if (!short) return null;
+  const pick = cheapest(facilityId, short.kind, counts, openParts(state), short.group);
+  return { ...short, part: pick?.part || null, cost: pick?.cost ?? null };
+}
+
+// The research servers' stock, for research.js.
+export function serverStock(counts) {
+  return stock(counts || {}, "servers");
 }
 
 function memoryFactor(facilityId, stocked) {
@@ -277,6 +387,10 @@ function hardwareLimit(stocked, mem) {
   const memFactor = mem.factor >= 1 ? 1 : mem.factor;
   if (stocked.gpus <= 0) return "Add a GPU";
   if (powerFactor < 0.999 && powerFactor <= memFactor) {
+    if (stocked.groups && stocked.need !== undefined && Object.values(stocked.groups).some((g) => g.watts > 0 && g.speed < 0.999)) {
+      const g = Object.values(stocked.groups).find((x) => x.watts > 0 && x.speed < 0.999);
+      return g.power <= g.cool ? "Power limited" : "Cooling limited";
+    }
     return stocked.power <= stocked.cool ? "Power limited" : "Cooling limited";
   }
   if (mem.limit && memFactor < 0.999) return mem.limit;
@@ -301,6 +415,9 @@ function rowOf(facilityId, counts) {
     ram: stocked.ram,
     gpus: stocked.gpus,
     board: boardOf(facilityId, counts),
+    groups: stocked.groups,
+    storage: stocked.storage,
+    need: stocked.need,
   };
 }
 
@@ -329,10 +446,13 @@ export function facilityReport(state, businessPerSecond) {
   };
 }
 
-function cheapest(facilityId, kind, counts) {
+function cheapest(facilityId, kind, counts, open = null, group = null) {
+  if (kind === "disk") return diskFor(facilityId, counts, open);
   let best = null;
   for (const part of PARTS) {
     if (part.soon || part.kind !== kind || !part.fits.includes(facilityId)) continue;
+    if (open && !open.has(part.id)) continue;
+    if (group && part.group !== group) continue;
     const owned = counts[part.id] || 0;
     if (owned >= partMax(part, facilityId)) continue;
     if (fitPart(counts, facilityId, part.id).reason) continue;
@@ -342,23 +462,73 @@ function cheapest(facilityId, kind, counts) {
   return best;
 }
 
-function hintFor(facilityId, counts, limit) {
-  const kind = limit === "Power limited" ? "power"
-    : limit === "Cooling limited" ? "cool"
-      : limit === "Needs more RAM" ? "ram"
-        : limit === "Needs more VRAM" || limit === "Add a GPU" || limit === "Running full" ? "gpu"
-          : null;
-  if (!kind) return null;
-  return cheapest(facilityId, kind, counts);
+// The cheapest disk that covers what the newest machine still lacks, or the
+// biggest one when none covers it alone.
+function diskFor(facilityId, counts, open) {
+  const stocked = stock(counts, facilityId);
+  const gap = Math.max(0, stocked.need - stocked.storage);
+  let best = null;
+  let biggest = null;
+  for (const part of PARTS) {
+    if (part.soon || part.kind !== "disk" || !part.fits.includes(facilityId)) continue;
+    if (open && !open.has(part.id)) continue;
+    const owned = counts[part.id] || 0;
+    if (owned >= partMax(part, facilityId)) continue;
+    const cost = partCost(part, owned);
+    if (part.gb >= gap && (!best || cost < best.cost)) best = { part, cost };
+    if (!biggest || part.gb > biggest.part.gb) biggest = { part, cost };
+  }
+  return best || biggest;
 }
 
-function starterNext(facilityId, counts) {
+function hintFor(facilityId, counts, limit, open) {
+  const short = shortOf(facilityId, stock(counts, facilityId));
+  if (short && (limit === "Power limited" || limit === "Cooling limited" || limit === "Needs more RAM" || short.kind === "disk")) {
+    return cheapest(facilityId, short.kind, counts, open, short.group);
+  }
+  const kind = limit === "Needs more VRAM" || limit === "Add a GPU" || limit === "Running full" ? (facilityId === "servers" ? "server" : "gpu") : null;
+  if (!kind) return null;
+  return cheapest(facilityId, kind, counts, open);
+}
+
+function starterNext(facilityId, counts, open) {
   for (const id of STARTER[facilityId]) {
     if ((counts[id] || 0) > 0) continue;
     const part = byId[id];
+    if (open && !open.has(id)) return null;
     return { facilityId, partId: id, name: part.name, cost: partCost(part, 0), limit: "starter" };
   }
   return null;
+}
+
+// --- Which parts are open --------------------------------------------------
+
+// A part opens once the company has reached its year and, for most parts, once
+// it's researched on the Tech page. Research stays done across prestiges; the
+// year has to be reached again each run.
+export function diskSize(gb) {
+  if (!(gb > 0)) return "0 MB";
+  if (gb >= 1000) return `${Number((gb / 1000).toFixed(2))} TB`;
+  if (gb >= 1) return `${Number(gb.toFixed(2))} GB`;
+  return `${Number((gb * 1000).toFixed(2))} MB`;
+}
+
+export function partOpen(state, part) {
+  if (!part || part.soon) return false;
+  if (playerYear(state) < (part.year || 0)) return false;
+  return !part.research || (state?.techDone || []).includes(part.research);
+}
+
+// Why a part is still closed, or null when it's open.
+export function partLock(state, part, researchName) {
+  if (!part) return "Locked";
+  if (playerYear(state) < (part.year || 0)) return `Requires ${part.year}`;
+  if (part.research && !(state?.techDone || []).includes(part.research)) return `Research ${researchName || part.name} on the Tech page`;
+  return null;
+}
+
+export function openParts(state) {
+  return new Set(PARTS.filter((part) => partOpen(state, part)).map((part) => part.id));
 }
 
 // --- Memory boards ---------------------------------------------------------
@@ -397,7 +567,7 @@ export function fitPart(counts, facilityId, partId) {
   const part = byId[partId];
   const owned = counts?.[partId] || 0;
   if (!part) return { reason: "Unknown part." };
-  if (part.kind !== "ram" && owned >= MAX_PART) return { reason: "At the most you can own." };
+  if (part.kind !== "ram" && owned >= partMax(part, facilityId)) return { reason: "At the most you can own." };
   const next = { ...counts, [partId]: owned + 1 };
   const board = BOARDS[facilityId];
   if (part.kind !== "ram" || !board) return { counts: next, refund: 0, note: null };
@@ -460,6 +630,35 @@ export function migrateFacilities(raw) {
   return { facilities, refund: Number.isFinite(refund) ? refund : 0 };
 }
 
+// Saves from before parts opened by year and research: a part the company
+// owns but hasn't opened is kept, with its research marked done, when the
+// company has reached its year (it was bought fairly under the old rules);
+// otherwise it's removed and its full cost refunded. Changes state in place;
+// returns the refund.
+export function settleClosedParts(state) {
+  if (!state) return 0;
+  const facilities = readFacilities(state.facilities);
+  const year = playerYear(state);
+  const done = new Set(state.techDone || []);
+  let refund = 0;
+  for (const facilityId of Object.keys(facilities)) {
+    const counts = facilities[facilityId];
+    for (const [partId, n] of Object.entries(counts)) {
+      const part = byId[partId];
+      if (!part || !(n > 0) || partOpen({ ...state, techDone: [...done] }, part)) continue;
+      if (year >= (part.year || 0) && part.research) {
+        done.add(part.research);
+        continue;
+      }
+      for (let i = 0; i < n; i++) refund += partCost(part, i);
+      delete counts[partId];
+    }
+  }
+  state.facilities = facilities;
+  state.techDone = [...done];
+  return Number.isFinite(refund) ? refund : 0;
+}
+
 function applyPart(state, facilityId, partId) {
   const facilities = readFacilities(state?.facilities);
   const fit = fitPart(facilities[facilityId], facilityId, partId);
@@ -474,9 +673,10 @@ function withPart(state, facilityId, partId) {
 
 export function nextPurchase(state, businessPerSecond) {
   if (!facilitiesOpen(state)) return null;
-  const mineStarter = starterNext("mine", countsOf(state, "mine"));
+  const open = openParts(state);
+  const mineStarter = starterNext("mine", countsOf(state, "mine"), open);
   if (mineStarter) return mineStarter;
-  const clusterStarter = starterNext("cluster", countsOf(state, "cluster"));
+  const clusterStarter = starterNext("cluster", countsOf(state, "cluster"), open);
   if (clusterStarter) {
     const added = marginal(state, clusterStarter, businessPerSecond);
     if (added > 0 && clusterStarter.cost / added <= 15 * 60) return clusterStarter;
@@ -485,7 +685,7 @@ export function nextPurchase(state, businessPerSecond) {
   for (const facilityId of ["mine", "cluster"]) {
     const counts = countsOf(state, facilityId);
     for (const part of PARTS) {
-      if (part.soon || !part.fits.includes(facilityId)) continue;
+      if (part.soon || !part.fits.includes(facilityId) || !open.has(part.id)) continue;
       const owned = counts[part.id] || 0;
       if (owned >= partMax(part, facilityId)) continue;
       const offer = { facilityId, partId: part.id, name: part.name, cost: partCost(part, owned) };
@@ -493,7 +693,7 @@ export function nextPurchase(state, businessPerSecond) {
       // and memory to run it; a card alone may only be throttled, and a power
       // supply alone does nothing while cooling is short. Judge each part with
       // the cheapest extras it needs, so the suggestion never stalls.
-      const plan = withSupport(state, facilityId, part.id);
+      const plan = withSupport(state, facilityId, part.id, open);
       if (!plan) continue;
       const before = facilityReport(state, businessPerSecond).perSecond;
       const added = facilityReport(plan.state, businessPerSecond).perSecond - before;
@@ -513,7 +713,7 @@ export function supportPlan(state, facilityId, partId) {
   return withSupport(state, facilityId, partId);
 }
 
-function withSupport(state, facilityId, partId) {
+function withSupport(state, facilityId, partId, open = openParts(state)) {
   const first = applyPart(state, facilityId, partId);
   if (!first) return null;
   let next = first.state;
@@ -540,17 +740,12 @@ function withSupport(state, facilityId, partId) {
       if (!add(partId)) return null;
     }
   }
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 16; i++) {
     const counts = countsOf(next, facilityId);
     const stocked = stock(counts, facilityId);
-    const mem = memoryFactor(facilityId, stocked);
-    let kind = null;
-    if (stocked.power < stocked.watts) kind = "power";
-    else if (stocked.cool < stocked.watts) kind = "cool";
-    else if (mem.limit === "Needs more RAM") kind = "ram";
-    else if (facilityId === "servers" && stocked.storage < 1000) kind = "disk";
-    if (!kind) return { state: next, cost, extras, notes };
-    const pick = cheapest(facilityId, kind, counts);
+    const short = shortOf(facilityId, stocked);
+    if (!short) return { state: next, cost, extras, notes };
+    const pick = cheapest(facilityId, short.kind, counts, open, short.group);
     if (!pick || !add(pick.part.id)) return null;
   }
   return null;
@@ -566,17 +761,22 @@ function marginal(state, offer, businessPerSecond) {
 
 export function facilityHint(state, facilityId, businessPerSecond) {
   if (!facilityUnlocked(state, facilityId)) {
-    return facilityId === "servers" ? "Requires 1971" : "Own an AI Accelerator to open the plant.";
+    return facilityId === "servers" ? "Requires 1951" : "Own an AI Accelerator to open the plant.";
   }
   const counts = countsOf(state, facilityId);
   const row = facilityReport(state, businessPerSecond)[facilityId];
-  const starter = starterNext(facilityId, counts);
+  const open = openParts(state);
+  const firstMissing = STARTER[facilityId].find((id) => !(counts[id] > 0));
+  if (firstMissing && !open.has(firstMissing)) return `Next: ${byId[firstMissing].name}. ${partLock(state, byId[firstMissing])}.`;
+  const starter = starterNext(facilityId, counts, open);
   if (starter) return `Next: ${starter.name}`;
-  const hinted = hintFor(facilityId, counts, row.limit);
+  const hinted = hintFor(facilityId, counts, row.limit, open);
   if (!hinted || row.limit === "Running full" || row.limit === "At the income share cap") {
     return row.limit === "At the income share cap"
       ? "The businesses set the ceiling. A richer company lets this plant pay more."
-      : "Next: add another graphics card when you can power and cool it.";
+      : facilityId === "servers"
+        ? "Next: another machine when you can power and cool it, or research a newer one."
+        : "Next: add another graphics card when you can power and cool it.";
   }
   return `Next: ${hinted.part.name}`;
 }
@@ -591,11 +791,11 @@ export function noteFacilityNews(state, businessPerSecond) {
     if (pushHeadline(state, id, text)) added = true;
   };
   if (facilitiesOpen(state)) push("plant-open", "SIDE PLANT CLEARED BESIDE THE AI ACCELERATORS");
-  if (facilityUnlocked(state, "servers")) push("servers-open", "RESEARCH SERVERS CLEARED BESIDE THE MICROPROCESSORS");
+  if (facilityUnlocked(state, "servers")) push("servers-open", "RESEARCH MACHINE ROOM CLEARED BESIDE THE MAINFRAMES");
   const report = facilityReport(state, businessPerSecond);
   for (const facilityId of ["mine", "cluster", "servers"]) {
     const counts = countsOf(state, facilityId);
-    if (facilityId === "servers" ? (counts.rack1 || 0) > 0 : report[facilityId].perSecond > 0) {
+    if (facilityId === "servers" ? stock(counts, "servers").work > 0 : report[facilityId].perSecond > 0) {
       const live = facilityId === "mine"
         ? "BITBARK MINE POURS ITS FIRST COIN"
         : facilityId === "cluster"
@@ -638,6 +838,7 @@ export function rebuildList(state) {
       const have = now[facilityId]?.[partId] || 0;
       const goal = Math.min(partMax(part, facilityId), want);
       if (goal <= have) continue;
+      if (!partOpen(state, part)) continue;
       if (fitPart(now[facilityId], facilityId, partId).reason) continue;
       list.push({ facilityId, partId, have, want: goal });
     }
@@ -715,6 +916,7 @@ export function purchasePart(state, facilityId, partId) {
   if (!state || !facilityUnlocked(state, facilityId)) return { ok: false };
   const part = byId[partId];
   if (!part || part.soon || !part.fits.includes(facilityId)) return { ok: false };
+  if (!partOpen(state, part)) return { ok: false, reason: partLock(state, part) };
   const facilities = readFacilities(state.facilities);
   const owned = facilities[facilityId][partId] || 0;
   const fit = fitPart(facilities[facilityId], facilityId, partId);

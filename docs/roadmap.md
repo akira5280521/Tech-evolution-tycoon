@@ -76,6 +76,41 @@ test shipped in 0.0.13 (see Done).
   dearest memory per GB at every point and never worth buying; at 512 GB it's
   the cheapest way up. A memory stick is judged as the set of sticks it
   takes to reach the next model, so the suggestion and the row values see it.
+- **Hardware by year and research** (PR after the memory boards):
+  - Every Facilities part opens in its real year (the company's newest era
+    must have reached it) and, past the first machine-room kit, once it's
+    researched on TECH. Research stays done across prestiges; the year has to
+    be reached again each run. Each project that opens a part shows its
+    picture and "Opens on RIGS: ..." on the Tech page; a locked part says
+    "Requires 1959" or "Research Inland 7090 on the Tech page".
+  - Research servers open with Mainframes (1951), not Microprocessors:
+    Irwell Mark 1 (1951), Inland 7090 (1959), Inland 360/50 (1965), Maynard
+    11/20 (1970), Maynard 11/780 (1977), Foundry Tower T4 (1989), Foundry 2U
+    (1999), Foundry Blade B2 (2006), Foundry Rack R1 and R4 (2012). New
+    SERVERS tab on TECH.
+  - Machine-room computers each need a motor-generator set and a room air
+    conditioner; rack servers draw watts from AT (1984) and ATX (1995)
+    supplies and rack fans.
+  - Storage by year: tape (1951), Inland 350 disk (1956), 2311 pack (1964),
+    3330 pack (1970), 3380 disk (1980), 9 GB 10,000 rpm SCSI (1996), 1 TB
+    (2007), 2 TB SSD (2015). Each machine needs the disk of its day for full
+    speed; the away bank adds an hour per set of that disk.
+  - Mine and cluster start with 2016 hardware (Raster 1080, Tensor P100);
+    the V100 (2017) comes with Quantum; the 3090 and A100 (2020), 3060 (2021),
+    4090, H100, 64 GB DDR5 and immersion (2022), B200 and 128 GB DDR5 (2024)
+    with the new eras. Cooling and power parts are opened by the Cooling and
+    Power projects that were already on TECH (case fan, heatpipe, 360 mm
+    loop, 80 Plus Gold and Platinum, plus a new 80 Plus Titanium).
+  - Three eras after Quantum: VR Headsets (2020), Chatbots (2022), AI
+    Superclusters (2024), with history cards, tips, headlines and "?" text.
+    Fixes DDR5 research, which needed 2020 and could never be finished.
+  - Old saves: a part owned in a year the company has reached is kept and its
+    research marked done; a part owned too early is refunded in full.
+  - Sim (nonstop Quantum / fork-ready; casual): before 12.8 h / 2.0 d,
+    4.3 d / 8.8 d; after 13.9 h / 1.7 d, 4.8 d / 9.4 d (casual runs vary by
+    about half a day with prestige timing).
+  - The 23 new pictures are drawn in code in the game's pixel style, simpler
+    than the existing art.
 - **Space Age plan.** How to add it, in stages: `docs/space-age-plan.md`.
 
 ## Shipped in 0.0.25-0.0.26

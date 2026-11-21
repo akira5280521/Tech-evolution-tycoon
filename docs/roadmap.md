@@ -32,6 +32,31 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
+## Next build (after 0.0.27)
+
+- **Part value on every row.** Each Facilities part shows what it would add
+  right now (cash a second and share for the mine and cluster, R&D a second
+  and away-bank hours for the servers), with the power, cooling, memory or
+  disk it needs and how fast it pays for itself; or why it adds nothing
+  ("power to spare", "at the 5% cap"). `src/lib/plantValue.js`.
+- **Rebuild last run's plants.** A prestige or fork empties the plants; the
+  mine and cluster layout is kept (`lastPlants`) and REBUILD buys it back
+  cheapest first, but only parts that pay for themselves within 15 minutes at
+  that point of the run. Sim (nonstop Quantum / fork-ready): suggestion only
+  12.7 h / 44.4 h; rebuild everything as soon as affordable 13.1 h / 45.3 h;
+  rebuild including research servers 12.9 h / 46.3 h; rebuild mine and
+  cluster with the payback rule 12.6 h / 45.8 h, casual unchanged. The
+  servers are left out of REBUILD for that reason.
+- **Mine memory.** The mine needs only 16 GB, so the 64 and 128 GB sticks
+  never added anything there; they're cluster-only now, and any a save held
+  in the mine are refunded on load.
+- **Frontier model.** A fourth cluster model above Mural: 400 GB on the
+  cards and 512 GB of RAM, x3.0 (Mural x2.2). Before, the 128 GB stick was the
+  dearest memory per GB at every point and never worth buying; at 512 GB it's
+  the cheapest way up. A memory stick is judged as the set of sticks it
+  takes to reach the next model, so the suggestion and the row values see it.
+- **Space Age plan.** How to add it, in stages: `docs/space-age-plan.md`.
+
 ## Shipped in 0.0.25-0.0.26
 
 - **R&D pacing.** Eras make 0.001 R&D a second each (was 0.008); research

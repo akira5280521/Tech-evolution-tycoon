@@ -18,7 +18,11 @@ export const MAX_PART = 24;
 const REFERENCE_WORK = 13;
 const MINE_RAM_GB = 16;
 
+// The cluster trains the biggest model its memory allows. Frontier is the
+// late-game target: 512 GB of RAM is where the 128 GB sticks are the
+// cheapest way up, and 400 GB on the cards is two or three Tensor cards.
 const TIERS = [
+  { id: "frontier", name: "Frontier", vram: 400, ram: 512, mult: 3 },
   { id: "mural", name: "Mural", vram: 80, ram: 128, mult: 2.2 },
   { id: "portrait", name: "Portrait", vram: 24, ram: 64, mult: 1.6 },
   { id: "sketch", name: "Sketch", vram: 12, ram: 32, mult: 1 },
@@ -53,8 +57,8 @@ export const PARTS = [
   { id: "tensorH100", kind: "gpu", name: "Tensor H100", icon: "/icons/parts/tensorH100.png", fits: ["cluster"], cost: 700_000_000_000, coef: 1.55, watts: 700, vram: 80, work: 160, spec: "80 GB HBM3, 700 W, 67 TFLOPS FP32 and about 990 TFLOPS TF32. An H100 SXM." },
   { id: "tensorB200", kind: "gpu", name: "Tensor B200", icon: "/icons/parts/tensorB200.png", fits: ["cluster"], cost: 2_200_000_000_000, coef: 1.55, watts: 1000, vram: 192, work: 400, spec: "192 GB HBM3e, about 1,000 W, two dies on one package. A B200-class board." },
   { id: "ddr4_32", kind: "ram", name: "32 GB DDR4-3200", icon: "/icons/parts/ddr4_32.png", fits: ["mine", "cluster"], cost: 600_000_000, coef: 1.4, gb: 32, spec: "32 GB DDR4-3200, PC4-25600." },
-  { id: "ddr5_64", kind: "ram", name: "64 GB DDR5-5600", icon: "/icons/parts/ddr5_64.png", fits: ["mine", "cluster"], cost: 4_000_000_000, coef: 1.4, gb: 64, spec: "64 GB DDR5-5600, PC5-44800." },
-  { id: "ddr5_128", kind: "ram", name: "128 GB DDR5-6400", icon: "/icons/parts/ddr5_128.png", fits: ["mine", "cluster"], cost: 20_000_000_000, coef: 1.4, gb: 128, spec: "128 GB DDR5-6400, PC5-51200." },
+  { id: "ddr5_64", kind: "ram", name: "64 GB DDR5-5600", icon: "/icons/parts/ddr5_64.png", fits: ["cluster"], cost: 4_000_000_000, coef: 1.4, gb: 64, spec: "64 GB DDR5-5600, PC5-44800." },
+  { id: "ddr5_128", kind: "ram", name: "128 GB DDR5-6400", icon: "/icons/parts/ddr5_128.png", fits: ["cluster"], cost: 20_000_000_000, coef: 1.4, gb: 128, spec: "128 GB DDR5-6400, PC5-51200." },
   { id: "fans", kind: "cool", name: "Case fans", icon: "/icons/parts/fans.png", fits: ["mine", "cluster"], cost: 200_000_000, coef: 1.35, cool: 250, spec: "Moves 250 W of heat." },
   { id: "labfan", kind: "cool", name: "Lab fan", icon: "/icons/parts/labfan.png", fits: ["servers"], cost: 1_000_000, coef: 2, cool: 300, spec: "A 120 mm fan. Moves about 300 W of heat." },
   { id: "tower", kind: "cool", name: "Tower cooler", icon: "/icons/parts/tower.png", fits: ["mine", "cluster"], cost: 1_500_000_000, coef: 1.35, cool: 350, spec: "A dual-tower air cooler, 350 W." },
@@ -121,6 +125,24 @@ export function readFacilities(raw) {
   return out;
 }
 
+// Parts a save holds in a plant they no longer fit (the 64 and 128 GB sticks
+// left the mine in 0.0.28, where they never added anything). Refund what
+// they cost so nobody loses money to the change.
+export function unfitRefund(raw) {
+  let refund = 0;
+  if (!raw || typeof raw !== "object") return 0;
+  for (const facilityId of Object.keys(blankFacilities())) {
+    const src = raw[facilityId];
+    if (!src || typeof src !== "object") continue;
+    for (const part of PARTS) {
+      if (part.fits.includes(facilityId)) continue;
+      const n = Math.min(MAX_PART, Math.floor(Number(src[part.id])) || 0);
+      for (let i = 0; i < n; i++) refund += partCost(part, i);
+    }
+  }
+  return Number.isFinite(refund) ? refund : 0;
+}
+
 export function readNews(raw) {
   if (!Array.isArray(raw)) return [];
   const out = [];
@@ -185,6 +207,7 @@ function stock(counts, facilityId) {
   let ram = 0;
   let work = 0;
   let gpus = 0;
+  let storage = 0;
   for (const part of PARTS) {
     if (!part.fits.includes(facilityId)) continue;
     const n = counts[part.id] || 0;
@@ -197,9 +220,10 @@ function stock(counts, facilityId) {
     } else if (part.kind === "power") power += part.power * n;
     else if (part.kind === "cool") cool += part.cool * n;
     else if (part.kind === "ram") ram += part.gb * n;
+    else if (part.kind === "disk") storage += part.gb * n;
   }
   const speed = watts <= 0 ? 0 : Math.min(1, Math.min(power, cool) / watts);
-  return { watts, power, cool, vram, ram, work, gpus, speed };
+  return { watts, power, cool, vram, ram, work, gpus, speed, storage };
 }
 
 function memoryFactor(facilityId, stocked) {
@@ -211,6 +235,14 @@ function memoryFactor(facilityId, stocked) {
   const fit = TIERS.find((tier) => stocked.vram >= tier.vram && stocked.ram >= tier.ram);
   if (fit) return { factor: fit.mult, limit: null, tier: fit.name };
   return { factor: 0.2, limit: stocked.ram < 32 ? "Needs more RAM" : "Needs more VRAM", tier: null };
+}
+
+// RAM for the next model up that the cards' memory already allows, or null.
+function nextTierRam(stocked) {
+  const fit = TIERS.find((tier) => stocked.vram >= tier.vram && stocked.ram >= tier.ram);
+  const higher = TIERS.filter((tier) => (!fit || tier.mult > fit.mult) && stocked.vram >= tier.vram && stocked.ram < tier.ram);
+  if (!higher.length) return null;
+  return Math.min(...higher.map((tier) => tier.ram));
 }
 
 function hardwareLimit(stocked, mem) {
@@ -344,10 +376,29 @@ export function nextPurchase(state, businessPerSecond) {
 // Add one part, then the cheapest power, cooling and memory until the plant
 // runs at full speed (at most a few parts). Returns the new state, the total cost and
 // the names of the extra parts, or null if it can't be supported.
+export function supportPlan(state, facilityId, partId) {
+  return withSupport(state, facilityId, partId);
+}
+
 function withSupport(state, facilityId, partId) {
   let next = withPart(state, facilityId, partId);
   let cost = partCost(byId[partId], countsOf(state, facilityId)[partId] || 0);
   const extras = [];
+  // A memory stick for the cluster is judged as the sticks it takes to reach
+  // the next model the cards' memory allows; one stick on its own often adds
+  // nothing until the set is complete.
+  if (facilityId === "cluster" && byId[partId]?.kind === "ram") {
+    const goal = nextTierRam(stock(countsOf(state, facilityId), facilityId));
+    for (let i = 0; goal && i < 12; i++) {
+      const counts = countsOf(next, facilityId);
+      if (stock(counts, facilityId).ram >= goal) break;
+      const owned = counts[partId] || 0;
+      if (owned >= MAX_PART) return null;
+      next = withPart(next, facilityId, partId);
+      cost += partCost(byId[partId], owned);
+      extras.push(byId[partId].name);
+    }
+  }
   for (let i = 0; i < 8; i++) {
     const counts = countsOf(next, facilityId);
     const stocked = stock(counts, facilityId);
@@ -356,6 +407,7 @@ function withSupport(state, facilityId, partId) {
     if (stocked.power < stocked.watts) kind = "power";
     else if (stocked.cool < stocked.watts) kind = "cool";
     else if (mem.limit === "Needs more RAM") kind = "ram";
+    else if (facilityId === "servers" && stocked.storage < 1000) kind = "disk";
     if (!kind) return { state: next, cost, extras };
     const add = cheapest(facilityId, kind, counts);
     if (!add) return null;
@@ -418,6 +470,103 @@ export function noteFacilityNews(state, businessPerSecond) {
   }
   if (report.share >= SHARE_CAP - 0.0001) push("share-full", "SIDE PLANT HITS ITS FULL SHARE OF THE TAKE");
   return added;
+}
+
+// --- Rebuild ---------------------------------------------------------------
+// Plants start empty after a prestige or fork. The last run's layout is kept
+// (state.lastPlants) so one button can buy it back as far as cash allows.
+
+export function plantsHaveParts(facilities) {
+  const f = readFacilities(facilities);
+  return Object.values(f).some((counts) => Object.values(counts).some((n) => n > 0));
+}
+
+// The parts still missing from the last layout, in the mine and cluster.
+// The research servers aren't rebuilt: the sim showed last run's racks cost
+// more early in a run than the extra R&D is worth (Quantum came 0.4 h later).
+export const REBUILD_PLANTS = ["mine", "cluster"];
+
+export function rebuildList(state) {
+  const target = readFacilities(state?.lastPlants);
+  const now = readFacilities(state?.facilities);
+  const list = [];
+  for (const facilityId of REBUILD_PLANTS) {
+    if (!facilityUnlocked(state, facilityId)) continue;
+    for (const [partId, want] of Object.entries(target[facilityId])) {
+      const part = byId[partId];
+      if (!part || part.soon || !part.fits.includes(facilityId)) continue;
+      const have = now[facilityId]?.[partId] || 0;
+      const goal = Math.min(MAX_PART, want);
+      if (goal > have) list.push({ facilityId, partId, have, want: goal });
+    }
+  }
+  return list;
+}
+
+// What the rest of the rebuild would cost, and how many parts it is.
+export function rebuildCost(state) {
+  let cost = 0;
+  let parts = 0;
+  for (const row of rebuildList(state)) {
+    for (let n = row.have; n < row.want; n++) cost += partCost(byId[row.partId], n);
+    parts += row.want - row.have;
+  }
+  return { cost, parts };
+}
+
+// Rebuild only buys what's worth it at this point of the run: a part waits
+// until it pays for itself within PAYBACK_SECONDS, the rule the
+// best-next-part suggestion uses. (REBUILD_SECONDS is the cost limit for a
+// server part, kept for if servers join the rebuild.) Early in a run, last run's
+// dearest parts would otherwise drain the cash the businesses need (the sim
+// showed a slower run when it bought them anyway).
+export const REBUILD_SECONDS = 300;
+export const PAYBACK_SECONDS = 15 * 60;
+
+function rebuildOk(state, row, cost, limits) {
+  if (!limits) return true;
+  if (row.facilityId === "servers") return cost <= limits.maxCost;
+  const plan = withSupport(state, row.facilityId, row.partId);
+  if (!plan) return false;
+  const biz = limits.businessPerSecond || 0;
+  const added = facilityReport(plan.state, biz).perSecond - facilityReport(state, biz).perSecond;
+  return added > 0 && plan.cost / added <= PAYBACK_SECONDS;
+}
+
+// How many missing parts are worth buying right now.
+export function rebuildReady(state, limits) {
+  let parts = 0;
+  let cheapestCost = null;
+  for (const row of rebuildList(state)) {
+    const cost = partCost(byId[row.partId], row.have);
+    if (!rebuildOk(state, row, cost, limits)) continue;
+    parts += 1;
+    if (cheapestCost == null || cost < cheapestCost) cheapestCost = cost;
+  }
+  return { parts, cheapestCost };
+}
+
+// Buy the missing parts that are worth it, cheapest first (so power and
+// cooling arrive with the cards), until cash runs out or nothing else is worth
+// it yet. Returns how many parts and how much was spent.
+export function rebuildPlants(state, limits = null) {
+  let bought = 0;
+  let spent = 0;
+  for (let guard = 0; guard < 500; guard++) {
+    let best = null;
+    for (const row of rebuildList(state)) {
+      const cost = partCost(byId[row.partId], row.have);
+      if (best && cost >= best.cost) continue;
+      if (!rebuildOk(state, row, cost, limits)) continue;
+      best = { ...row, cost };
+    }
+    if (!best || !(state.cash >= best.cost)) break;
+    const done = purchasePart(state, best.facilityId, best.partId);
+    if (!done.ok) break;
+    bought++;
+    spent += done.cost;
+  }
+  return { bought, spent };
 }
 
 export function purchasePart(state, facilityId, partId) {

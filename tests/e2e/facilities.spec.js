@@ -22,3 +22,32 @@ test("best next part is shown, highlighted, and pays", async ({ page }) => {
   await expect.poll(pay).not.toEqual(before);
   expectClean(seen);
 });
+
+import { SAVES, saved } from "./helpers.js";
+
+test("every open part shows what it would add", async ({ page }) => {
+  await open(page, "/facilities", "late");
+  await tipsOff(page);
+  const values = await page.locator("[data-part-value]").allInnerTexts();
+  expect(values.length).toBeGreaterThan(10);
+  expect(values.some((t) => /^\+/.test(t)), "at least one part adds something").toBe(true);
+  for (const t of values) expect(t).not.toMatch(/NaN|undefined|Infinity/);
+});
+
+test("REBUILD buys last run's plants back after a prestige", async ({ page }) => {
+  const late = SAVES.late;
+  const lastPlants = { mine: { raster3060: 2, psu750: 1, fans: 2, ddr4_32: 1 }, cluster: { raster3060: 2, psu750: 1, fans: 2, ddr4_32: 1 }, servers: { rack1: 1, psu400: 1, labfan: 1, hdd1t: 1 } };
+  await open(page, "/facilities", { ...late, facilities: { mine: {}, cluster: {}, servers: {} }, lastPlants, cash: 1e15, lastSeen: Date.now() });
+  await tipsOff(page);
+  await expect(page.locator("[data-rebuild]")).toContainText("12 parts to go");
+  await page.click('[data-action="rebuild"]');
+  await expect(page.locator("[data-rebuild]")).toHaveCount(0);
+  await expect.poll(async () => (await saved(page))?.facilities?.cluster?.raster3060).toBe(2);
+});
+
+test("64 GB sticks an old save held in the mine are refunded", async ({ page }) => {
+  const late = SAVES.late;
+  await open(page, "/", { ...late, cash: 1000, facilities: { mine: { ddr5_64: 1 }, cluster: {}, servers: {} }, lastSeen: Date.now() });
+  await expect.poll(async () => (await saved(page))?.cash).toBeGreaterThan(1e9);
+  expect((await saved(page)).facilities.mine.ddr5_64 || 0).toBe(0);
+});

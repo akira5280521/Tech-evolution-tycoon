@@ -3,7 +3,7 @@
 // singularity. Every Empire Bonuses source multiplies, then a soft ceiling
 // that rises with singularity points keeps the product finite.
 
-import { blankFacilities, facilityReport, noteFacilityNews, recentNews } from "./facilities.js";
+import { blankFacilities, facilityReport, noteFacilityNews, plantsHaveParts, readFacilities, recentNews } from "./facilities.js";
 import { advanceResearch, awayBankCap } from "./research.js";
 import { generationPayMult } from "./generations.js";
 import { pushRun } from "./records.js";
@@ -1378,6 +1378,8 @@ export function snapshotMeta(state, options = {}) {
     bestEra: Math.max(0, Math.floor(state.bestEra || 0)),
     runs: Array.isArray(state.runs) ? state.runs.slice(-40) : [],
     milestones: { ...(state.milestones || {}) },
+    // The plants start empty again; remember this run's layout for REBUILD.
+    lastPlants: plantsHaveParts(state.facilities) ? readFacilities(state.facilities) : readFacilities(state.lastPlants),
     trackedSince: state.trackedSince || 0,
     trackedFromStart: !!state.trackedFromStart,
     // Research and projects are permanent, so a job already paid for keeps its

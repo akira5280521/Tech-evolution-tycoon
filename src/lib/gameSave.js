@@ -20,7 +20,7 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 // v10 adds the facility plants. A save from before v10 has no parts, so the
 // plants start empty. v11 adds the research tree. A chip generation the
 // player had already reached by owning enough of that row stays researched.
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 const V1_INVESTOR_DIVISOR = 1000;
 // Row order of each older save version.
 const V4_ORDER = ["sand", "copper", "silicon", "wafers", "tubes", "punchcards", "transistors", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];
@@ -42,6 +42,10 @@ const NEW_IN_V8 = {
   phones: "rgb",
   ai: "quantum",
 };
+// Eras added in v12, between ones players may already have passed.
+const NEW_IN_V12 = { supercomputers: "dialup", workstations: "dialup", laptops: "dialup", multimedia: "gpu", accel3d: "gpu", tablets: "rgb" };
+// Row order of a v8-v11 save (bestEra is an index into it).
+const V11_ORDER = ["timber", "paper", "loom", "punchcards", "relay", "sand", "copper", "glass", "filament", "tubes", "mainframes", "germanium", "transistors", "silicon", "wafers", "ics", "minis", "cpu", "homepc", "consoles", "dialup", "gpu", "cloud", "phones", "rgb", "ai", "quantum", "vr", "chatbots", "supercluster"];
 // bestEra in a v7 save is an index into this order.
 export const V7_ORDER = ["timber", "paper", "loom", "punchcards", "sand", "copper", "glass", "filament", "tubes", "germanium", "transistors", "silicon", "wafers", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];
 const SEED_OWNED = { sand: 8, copper: 4, silicon: 2, wafers: 1, paper: 2, glass: 2, filament: 2, germanium: 2, timber: 2 };
@@ -104,6 +108,11 @@ export function migrateSave(data) {
     for (const [id, needs] of Object.entries(NEW_IN_V8)) {
       // A player who already owns the era after a new row has passed that
       // gap. Start the new row so the ladder they are on stays open.
+      if (ownedOf(needs) > 0 || seed.has(needs)) seed.add(id);
+    }
+  }
+  if (version < 12) {
+    for (const [id, needs] of Object.entries(NEW_IN_V12)) {
       if (ownedOf(needs) > 0 || seed.has(needs)) seed.add(id);
     }
   }
@@ -177,8 +186,8 @@ function upgradeJob(raw, version) {
 
 // A v7 bestEra is an index into V7_ORDER. Later saves already use the new index.
 export function remapBestEra(index, version) {
-  if (index == null || !(version < 8)) return index;
-  const id = V7_ORDER[Math.floor(index)];
+  if (index == null || !(version < 12)) return index;
+  const id = (version < 8 ? V7_ORDER : V11_ORDER)[Math.floor(index)];
   const at = BUSINESSES.findIndex((cfg) => cfg.id === id);
   return at >= 0 ? at : index;
 }

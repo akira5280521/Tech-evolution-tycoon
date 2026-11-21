@@ -18,14 +18,25 @@ export function eraNameAt(index) {
   return BUSINESSES[index]?.name || "Timber Camp";
 }
 
+// A tracked start we can subtract from `now`. Missing, zero, or in the future
+// means the start was never recorded (or the clock jumped).
+function validStart(t, now) {
+  return typeof t === "number" && Number.isFinite(t) && t > 0 && t <= now ? t : 0;
+}
+
+// Length of the current run, or null when the start wasn't tracked.
+export function runLengthMs(state, now = Date.now()) {
+  const start = validStart(state?.runStartedAt, now) || validStart(state?.challenge?.startedAt, now);
+  return start ? now - start : null;
+}
+
 // Close the current run and start the clock on the next one.
-export function pushRun(state, extra = {}) {
+export function pushRun(state, extra = {}, now = Date.now()) {
   const era = Math.max(0, eraReachedIndex(state));
   const cfg = BUSINESSES[era] || BUSINESSES[0];
-  const now = Date.now();
   const rec = {
     earnings: num(state.lifetime),
-    lengthMs: Math.max(0, now - (state.runStartedAt || now)),
+    lengthMs: runLengthMs(state, now),
     eraId: cfg.id,
     eraName: cfg.name,
     investorsGained: Math.max(0, Math.floor(extra.investorsGained || 0)),
@@ -38,6 +49,12 @@ export function pushRun(state, extra = {}) {
   state.bestEra = Math.max(era, Math.floor(num(state.bestEra)));
 }
 
+function readLength(raw) {
+  if (raw == null) return null;
+  if (typeof raw !== "number" || !Number.isFinite(raw) || raw < 0) return null;
+  return raw;
+}
+
 export function readRuns(raw) {
   if (!Array.isArray(raw)) return [];
   return raw
@@ -45,7 +62,7 @@ export function readRuns(raw) {
     .slice(-40)
     .map((row) => ({
       earnings: num(row.earnings),
-      lengthMs: num(row.lengthMs),
+      lengthMs: readLength(row.lengthMs),
       eraId: typeof row.eraId === "string" ? row.eraId : "",
       eraName: typeof row.eraName === "string" ? row.eraName : "Unknown",
       investorsGained: Math.floor(num(row.investorsGained)),
@@ -55,13 +72,73 @@ export function readRuns(raw) {
 }
 
 export function formatDuration(ms) {
-  const total = Math.max(0, Math.floor(num(ms) / 1000));
+  if (ms == null || !Number.isFinite(ms) || ms < 0) return "unknown";
+  const total = Math.floor(ms / 1000);
   const h = Math.floor(total / 3600);
   const m = Math.floor((total % 3600) / 60);
   if (h >= 48) return `${Math.floor(h / 24)}d ${h % 24}h`;
   if (h >= 1) return `${h}h ${m}m`;
   if (m >= 1) return `${m}m`;
   return `${total}s`;
+}
+
+// Longest finished run. A run with no tracked start does not beat a known length.
+export function longestRun(runs) {
+  if (!Array.isArray(runs) || !runs.length) return null;
+  let best = null;
+  for (const run of runs) {
+    if (!run) continue;
+    const ms = run.lengthMs;
+    const known = typeof ms === "number" && Number.isFinite(ms);
+    const bestKnown = best && typeof best.lengthMs === "number" && Number.isFinite(best.lengthMs);
+    if (!best) best = run;
+    else if (known && !bestKnown) best = run;
+    else if (known && bestKnown && ms > best.lengthMs) best = run;
+  }
+  return best;
+}
+
+// Old closes used `now - (runStartedAt || now)`, so a missing start was saved
+// as 0s. A real close is never 0ms, so treat those as unknown.
+export function settleRunRecords(state) {
+  if (!state || !Array.isArray(state.runs)) return false;
+  let changed = false;
+  state.runs = state.runs.map((row) => {
+    if (!row || row.lengthMs !== 0) return row;
+    changed = true;
+    return { ...row, lengthMs: null };
+  });
+  return changed;
+}
+
+// If this run has no start time, use the challenge clock when we have one,
+// otherwise start the clock now so later closes are truthful.
+export function ensureRunStartedAt(state, now = Date.now()) {
+  if (!state) return false;
+  if (validStart(state.runStartedAt, now)) return false;
+  const fromChallenge = validStart(state.challenge?.startedAt, now);
+  state.runStartedAt = fromChallenge || now;
+  return true;
+}
+
+// Earnings from runs that actually ended (prestige, fork, or starting a
+// challenge). Completing a challenge used to log a run without resetting
+// lifetime, so those tagged rows overlap the current run and are left out.
+export function closedRunEarnings(state) {
+  return (Array.isArray(state?.runs) ? state.runs : []).reduce((n, row) => {
+    if (!row || row.challenge) return n;
+    return n + num(row.earnings);
+  }, 0);
+}
+
+// Lifetime total earned should be at least this run plus every closed run.
+// Never lowers a total; old saves that never stored careerEarnings get raised.
+export function settleCareerEarnings(state) {
+  if (!state) return false;
+  const floor = num(state.lifetime) + closedRunEarnings(state);
+  if (num(state.careerEarnings) >= floor) return false;
+  state.careerEarnings = floor;
+  return true;
 }
 
 // --- Milestones, for "Copy my stats" ---------------------------------------

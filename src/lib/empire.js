@@ -6,7 +6,6 @@
 import { blankFacilities, facilityReport, noteFacilityNews, recentNews } from "./facilities.js";
 import { advanceResearch, awayBankCap } from "./research.js";
 import { generationPayMult } from "./generations.js";
-import { pushRun } from "./records.js";
 import { blankTutorial } from "./tutorial.js";
 import {
   BUSINESSES,
@@ -788,8 +787,9 @@ function completeChallenge(state) {
     state.challengesDone = [...(state.challengesDone || []), id];
     grantTokens(state, `challenge:${id}`, 12);
   }
-  const spec = CHALLENGES.find((entry) => entry.id === id);
-  pushRun(state, { investorsGained: 0, challenge: spec?.name || id });
+  // Keep playing this run as a normal run, same as abandoning. Logging it as a
+  // finished run used to snapshot lifetime without resetting it, so the same
+  // earnings showed up both in BEST RUNS and in "this run."
   state.challenge = null;
   state.modStamp = (state.modStamp || 0) + 1;
 }
@@ -1291,6 +1291,28 @@ export function offlineCapMs(state) {
   if (hasPerk(state, "away-48")) return 48 * 3600e3;
   if (hasPerk(state, "away-36")) return 36 * 3600e3;
   return OFFLINE_CAP_MS;
+}
+
+// Lifetime "Managers hired" must be at least how many are hired right now.
+// Older saves only counted managers present when the stat was added, and
+// managers granted later (a new era row, or crews kept by a perk) were missed.
+export function countManagers(state) {
+  return (state?.biz || []).reduce((n, row) => n + (row?.manager ? 1 : 0), 0);
+}
+
+export function ensureManagersHired(state) {
+  if (!state) return false;
+  const have = countManagers(state);
+  const logged = Number.isFinite(state.managersHired) && state.managersHired >= 0 ? Math.floor(state.managersHired) : 0;
+  if (logged >= have) {
+    if (state.managersHired !== logged) {
+      state.managersHired = logged;
+      return true;
+    }
+    return false;
+  }
+  state.managersHired = have;
+  return true;
 }
 
 // The businesses a new run (prestige or fork, not a challenge) starts with.

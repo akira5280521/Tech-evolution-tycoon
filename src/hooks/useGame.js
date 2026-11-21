@@ -42,6 +42,7 @@ import {
   peakFromSave,
   offlineCapMs,
   startingBiz,
+  ensureManagersHired,
   autoBuyUpgrade,
   businessIncomePerSecond,
   creditAmount,
@@ -73,7 +74,7 @@ import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
 import { buzzLight, buzzStrong } from "@/lib/haptics";
 import { cancelCapNotification, scheduleCapNotification } from "@/lib/capNotify";
-import { noteMilestones, playStep, pushRun, readMilestones, readRuns, eraReachedIndex, settlePlayMs, startMilestones } from "@/lib/records";
+import { noteMilestones, playStep, pushRun, readMilestones, readRuns, eraReachedIndex, ensureRunStartedAt, settleCareerEarnings, settlePlayMs, settleRunRecords, startMilestones } from "@/lib/records";
 import { noteProgress } from "@/lib/achievements";
 
 const SAVE_INTERVAL_MS = 5000;
@@ -113,6 +114,7 @@ function freshState() {
     milestones: {},
     trackedSince: Date.now(),
     trackedFromStart: true,
+    runStartedAt: Date.now(),
   };
 }
 
@@ -205,6 +207,10 @@ function readChallenge(raw) {
 
 function pack(s) {
   collectBadges(s);
+  settleRunRecords(s);
+  ensureRunStartedAt(s);
+  settleCareerEarnings(s);
+  ensureManagersHired(s);
   return {
     version: SAVE_VERSION,
     cash: Number.isFinite(s.cash) && s.cash >= 0 ? s.cash : 0,
@@ -317,15 +323,15 @@ function loadSave() {
     if (state.businessesBought == null) {
       state.businessesBought = state.biz.reduce((n, row, i) => n + Math.max(0, (row.owned || 0) - (i === 0 ? 1 : 0)), 0);
     }
-    if (state.managersHired == null) {
-      state.managersHired = state.biz.reduce((n, row) => n + (row.manager ? 1 : 0), 0);
-    }
     if (state.prestigeCount == null) state.prestigeCount = state.prestiged ? 1 : 0;
     // Before time away is replayed, so the estimate is time with the app open.
     settlePlayMs(state, Date.now(), !!data.meta?.playMsChecked);
     const storedEra = state.bestEra;
     if (storedEra == null) state.bestEra = Math.max(0, eraReachedIndex(state));
-    if (!state.runStartedAt) state.runStartedAt = Date.now();
+    settleRunRecords(state);
+    ensureRunStartedAt(state);
+    settleCareerEarnings(state);
+    ensureManagersHired(state);
     // Milestones for "Copy my stats": an older save starts the log now.
     if (!state.milestones || !state.trackedSince) startMilestones(state);
     state.orientation = data.orientation === "portrait" || data.orientation === "landscape" ? data.orientation : "auto";
@@ -736,6 +742,7 @@ export function useGame() {
       const cycle = effectiveCycleMs(BUSINESSES[i], s);
       s.biz = s.biz.map((b, j) => (j === i ? { ...b, manager: true, running: true, progress: 0, cycleStart: started, cycleAt: cycle, paidLaps: 0, holdUntil: 0 } : b));
       s.managersHired = (s.managersHired || 0) + 1;
+      ensureManagersHired(s);
       const goalPay = settleGoals(s, { pay: true });
       if (goalPay.reward > 0) toast("Goal complete", { description: `+${money(goalPay.reward)} cash` });
       buzzLight();
@@ -875,7 +882,9 @@ export function useGame() {
     next.cash = 0;
     next.lifetime = 0;
     const spec = CHALLENGES.find((entry) => entry.id === id);
-    next.challenge = { id, startedAt: Date.now(), earnings: 0, goal: scaledChallengeGoal(spec, next) };
+    const startedAt = Date.now();
+    next.runStartedAt = startedAt;
+    next.challenge = { id, startedAt, earnings: 0, goal: scaledChallengeGoal(spec, next) };
     next.dilemma = null;
     stateRef.current = next;
     saveNow();
@@ -1006,9 +1015,11 @@ export function useGame() {
     next.investors = nextInvestors;
     next.investorPeak = Math.max(investorPeak(s), nextInvestors);
     next.biz = startingBiz(next, freshBiz(), s.biz);
+    ensureManagersHired(next);
     next.cash = 0;
     next.lifetime = 0;
     next.prestiged = true;
+    next.runStartedAt = Date.now();
     next.dilemma = null;
     next.challenge = null;
     // The first prestige gets a screen that shows what changed.
@@ -1045,9 +1056,11 @@ export function useGame() {
     Object.assign(next, meta);
     next.investors = Math.max(0, (s.investors || 0) - bill);
     next.biz = startingBiz(next, freshBiz(), s.biz);
+    ensureManagersHired(next);
     next.cash = 0;
     next.lifetime = 0;
     next.singularities = (s.singularities || 0) + 1;
+    next.runStartedAt = Date.now();
     next.dilemma = null;
     next.challenge = null;
     stateRef.current = next;

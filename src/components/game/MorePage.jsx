@@ -3,7 +3,7 @@ import { FlaskConical } from "lucide-react";
 import { BUSINESSES, RESEARCH_MS, count, investorsFor, money } from "@/lib/gameConfig";
 import { SPECIALTIES, canCommit, dataPerSecond, establishedCount, masteredCount, specialtySlots } from "@/lib/empire";
 import { getSaveData } from "@/lib/gameSave";
-import { eraNameAt, eraReachedIndex, formatDuration } from "@/lib/records";
+import { eraNameAt, eraReachedIndex, formatDuration, longestRun, runLengthMs } from "@/lib/records";
 import { useGameState } from "./GameState";
 import AnalyticsPanel from "./AnalyticsPanel";
 import BadgesPage from "./BadgesPage";
@@ -296,7 +296,7 @@ function Stats({ state, data }) {
   const era = Math.max(0, eraReachedIndex(state));
   const runs = Array.isArray(state.runs) ? state.runs : [];
   const bestEarn = runs.reduce((best, run) => (!best || run.earnings > best.earnings ? run : best), null);
-  const bestTime = runs.reduce((best, run) => (!best || run.lengthMs > best.lengthMs ? run : best), null);
+  const bestTime = longestRun(runs);
   const bestBackers = runs.reduce((best, run) => (!best || run.investorsGained > best.investorsGained ? run : best), null);
   const pending = investorsFor(state.lifetime || 0);
   const challengeName = state.challenge ? (state.challenge.id === "glass" ? "GLASS CEILING" : state.challenge.id === "noboss" ? "NO BOSSES" : "SPEEDRUN") : null;
@@ -319,7 +319,7 @@ function Stats({ state, data }) {
       <Panel>
         <h2 className="font-pixel text-[0.6rem]">BEST RUNS</h2>
         {runs.length === 0 ? (
-          <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">Finished runs show up here after a prestige, a fork, or a challenge. The run you're on is below.</p>
+          <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">Finished runs show up here after a prestige, a fork, or starting a challenge. The run you're on is below.</p>
         ) : (
           <ul className="mt-2 space-y-1 font-term text-lg leading-6">
             {bestEarn ? <li>Richest: {money(bestEarn.earnings)} · {bestEarn.eraName}</li> : null}
@@ -331,11 +331,11 @@ function Stats({ state, data }) {
       <Panel>
         <h2 className="font-pixel text-[0.6rem]">RUNS</h2>
         <p className="mt-2 font-term text-lg leading-6">
-          This run: {money(state.lifetime || 0)} earned · {formatDuration(Date.now() - (state.runStartedAt || Date.now()))} · {eraNameAt(era)}
+          This run: {money(state.lifetime || 0)} earned · {formatDuration(runLengthMs(state))} · {eraNameAt(era)}
           {pending > 0 ? ` · ${count(pending)} investors waiting` : ""}
           {challengeName ? ` · ${challengeName}` : ""}
         </p>
-        <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">Runs from before this update aren't listed. Length of the current run starts when tracking began.</p>
+        <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">Runs from before this update aren't listed. If a run's start wasn't tracked, its length shows as unknown.</p>
         <ul className="mt-2 space-y-2">
           {[...runs].reverse().map((run) => (
             <li key={`${run.at}-${run.eraId}`} className="font-term text-lg leading-6">

@@ -3,27 +3,10 @@ import { toast } from "sonner";
 import { count, money } from "@/lib/gameConfig";
 import { decodeSave } from "@/lib/saveCode";
 import { Panel } from "./chrome";
+import { copyText } from "@/lib/clipboard";
 
 const smallButton =
   "min-h-11 border-2 px-3 font-pixel text-[0.55rem] shadow-[2px_2px_0_0_#000] disabled:cursor-not-allowed disabled:opacity-60";
-
-async function copyText(text, field) {
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-  } catch {
-    /* fall back to selecting the text */
-  }
-  try {
-    field?.focus();
-    field?.select();
-    return document.execCommand?.("copy") === true;
-  } catch {
-    return false;
-  }
-}
 
 function savedLabel(at) {
   if (!at) return "an unknown date";

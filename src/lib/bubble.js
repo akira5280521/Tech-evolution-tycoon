@@ -8,7 +8,6 @@
 //
 // Value = BUBBLE_MAX_SECONDS of current income x (elapsed / BUBBLE_GROW_MS)^2.
 // The pop lands somewhere between BUBBLE_MIN_POP_MS and BUBBLE_GROW_MS.
-import { BUSINESSES } from "./gameConfig.js";
 import { creditAmount, eventDone, inEraSpan, incomePerSecond, markEventDone } from "./empire.js";
 
 export const BUBBLE_GROW_MS = 9 * 60 * 1000;

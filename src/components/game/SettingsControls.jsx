@@ -8,6 +8,7 @@ import { achievementsLive, openAchievements } from "@/lib/achievements";
 import { WhatsNewDialog } from "./WhatsNew";
 import { useCloud } from "./CloudSync";
 import { Panel } from "./chrome";
+import { statsText } from "@/lib/statsText";
 
 const choice = "min-h-11 border-2 px-1 font-pixel text-[0.5rem]";
 const on = "border-[var(--game-accent)] text-[var(--game-accent)]";
@@ -205,7 +206,11 @@ export function AwayReminder() {
   );
 }
 
-export function FeedbackButton() {
+// Mail apps cut very long links, so the stats are trimmed to fit.
+const MAX_STATS = 1800;
+
+export function FeedbackButton({ state }) {
+  const [withStats, setWithStats] = useState(true);
   const send = async () => {
     let version = WEB_VERSION_NAME;
     let code = String(WEB_VERSION_CODE);
@@ -231,15 +236,24 @@ export function FeedbackButton() {
       `versionCode: ${code}`,
       `Android version: ${android || "not available"}`,
       `Device: ${model.trim() || "not available"}`,
-    ].join("\n");
-    const href = `mailto:akira5280622@gmail.com?subject=${encodeURIComponent("Tech Evolution Tycoon feedback")}&body=${encodeURIComponent(body)}`;
+    ];
+    if (withStats && state) {
+      let stats = statsText(state, { version, code });
+      if (stats.length > MAX_STATS) stats = `${stats.slice(0, MAX_STATS)}\n(trimmed; use COPY MY STATS for the rest)`;
+      body.push("", stats);
+    }
+    const text = body.join("\n");
+    const href = `mailto:akira5280622@gmail.com?subject=${encodeURIComponent("Tech Evolution Tycoon feedback")}&body=${encodeURIComponent(text)}`;
     window.location.href = href;
   };
   return (
     <Panel>
       <h2 className="font-pixel text-[0.6rem]">FEEDBACK</h2>
-      <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">Opens your email app with the version filled in. Write whatever you want above the line.</p>
-      <button type="button" data-feedback onClick={send} className={`${choice} mt-3 w-full ${on}`}>
+      <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">Opens your email app with the version filled in. Write whatever you want above the line. You see the whole message before anything is sent.</p>
+      <button type="button" data-feedback-stats aria-pressed={withStats} onClick={() => setWithStats((v) => !v)} className={`${choice} mt-3 w-full ${withStats ? on : off}`}>
+        INCLUDE MY STATS AND RECENT ERRORS: {withStats ? "ON" : "OFF"}
+      </button>
+      <button type="button" data-feedback onClick={send} className={`${choice} mt-2 w-full ${on}`}>
         SEND FEEDBACK
       </button>
     </Panel>

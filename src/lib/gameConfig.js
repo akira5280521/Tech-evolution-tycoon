@@ -760,10 +760,6 @@ export function cappedTick(raw, hidden, budget) {
 // far fewer investors per run; $100B keeps it near Quantum (~6 h) and the
 // first fork near 4 days.
 export const PRESTIGE_UNIT = 1e11;
-// Kept as the old reference point. The live income ceiling is the soft cap in
-// empire.js, which starts near x14 and rises with singularity points.
-export const GLOBAL_CAP = 10;
-
 // Income multipliers stay bounded:
 //   milestoneSpeed — ×8 cycle speed by 100 owned, then flat
 //   milestoneMult — ×12 profit by 200 owned, then flat

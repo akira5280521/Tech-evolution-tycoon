@@ -10,7 +10,6 @@ import { pushRun } from "./records.js";
 import { blankTutorial } from "./tutorial.js";
 import {
   BUSINESSES,
-  COMMISSION_MS,
   ERA_GATE,
   MILESTONES,
   OFFLINE_CAP_MS,
@@ -20,10 +19,8 @@ import {
   UPGRADE_MS,
   blankSupply,
   blockedByGlass,
-  costOf,
   eraOpen,
   indexOfBusiness,
-  investorsFor,
   managerNeed,
   milestoneMult,
   milestoneSpeed,
@@ -1380,6 +1377,9 @@ export function snapshotMeta(state, options = {}) {
     runStartedAt: state.runStartedAt || 0,
     bestEra: Math.max(0, Math.floor(state.bestEra || 0)),
     runs: Array.isArray(state.runs) ? state.runs.slice(-40) : [],
+    milestones: { ...(state.milestones || {}) },
+    trackedSince: state.trackedSince || 0,
+    trackedFromStart: !!state.trackedFromStart,
     // Research and projects are permanent, so a job already paid for keeps its
     // clock. A cash-upgrade job does not: the fresh run would install it free.
     // A copy, not the live object, so the old state cannot clear the new job.
@@ -1388,10 +1388,6 @@ export function snapshotMeta(state, options = {}) {
     projectJob: copyTimedJob(state.projectJob),
     modStamp: (state.modStamp || 0) + 1,
   };
-}
-
-export function investorsReady(state) {
-  return investorsFor(state.lifetime || 0);
 }
 
 // Ticker headlines, each tied to the era it belongs to, so the news never

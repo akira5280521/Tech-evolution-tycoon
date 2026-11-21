@@ -9,6 +9,8 @@ import { GameStateProvider } from "@/components/game/GameState";
 import { UpdateCheckProvider } from "@/components/game/UpdateNotice";
 import { AuthProvider } from "@/lib/AuthContext";
 import { installNativeLifecycle } from "@/lib/nativeShell";
+import { installErrorLog } from "@/lib/errorLog";
+import { WEB_VERSION_NAME } from "@/lib/appVersion";
 import { Base44Scripts } from "base44:document";
 import appCss from "@/index.css?url";
 
@@ -38,6 +40,7 @@ function RootComponent() {
   // are cached so the game runs with no signal.
   useEffect(() => {
     installNativeLifecycle();
+    installErrorLog(WEB_VERSION_NAME);
     if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
     // The Android app ships its files inside the package and has no /api/sw
     // route; the offline cache is only for the hosted web version.

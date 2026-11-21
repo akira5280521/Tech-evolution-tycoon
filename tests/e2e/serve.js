@@ -5,7 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../dist/client");
+const root = process.env.SERVE_ROOT ? path.resolve(process.env.SERVE_ROOT) : path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../dist/client");
 const port = Number(process.env.PORT || 4173);
 const types = {
   ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json",

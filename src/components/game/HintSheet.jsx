@@ -20,10 +20,12 @@ const Sheet = forwardRef(function Sheet({ label, title, text, children, dataAttr
       {...dataAttr}
       className={`hint-sheet ${top ? "hint-sheet-top" : ""} fixed z-40 mx-auto max-w-md border-4 border-[var(--game-accent)] bg-[var(--game-card)] p-3 shadow-[6px_6px_0_0_#000]`}
     >
-      {label && <p className="font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)]">{label}</p>}
-      <h2 className="font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">{title}</h2>
-      <p className="mt-1 font-term text-lg leading-6 text-[var(--game-fg)]">{text}</p>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">{children}</div>
+      <div className="hint-sheet-body">
+        {label && <p className="font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)]">{label}</p>}
+        <h2 className="font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">{title}</h2>
+        <p className="mt-1 font-term text-lg leading-6 text-[var(--game-fg)]">{text}</p>
+      </div>
+      <div className="hint-sheet-actions mt-2 flex flex-wrap items-center justify-between gap-2">{children}</div>
     </div>
   );
 });
@@ -261,6 +263,7 @@ function HelpSheet({ id, info, anchor, onClose }) {
         style={style}
         className="hint-sheet fixed z-40 mx-auto max-w-md border-4 border-[var(--game-accent)] bg-[var(--game-card)] p-3 shadow-[6px_6px_0_0_#000]"
       >
+        <div className="hint-sheet-body">
         <h2 className="break-words font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)] [overflow-wrap:anywhere]">{info.title}</h2>
         <p className="mt-1 break-words font-term text-lg leading-6 text-[var(--game-fg)]">{info.text}</p>
         {info.rows?.length > 0 && (
@@ -273,7 +276,8 @@ function HelpSheet({ id, info, anchor, onClose }) {
             ))}
           </dl>
         )}
-        <div className="mt-2 flex justify-end">
+        </div>
+        <div className="hint-sheet-actions mt-2 flex justify-end">
           <button
             ref={okRef}
             type="button"

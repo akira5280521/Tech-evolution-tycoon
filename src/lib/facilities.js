@@ -1,17 +1,19 @@
-// Two late-game plants. Pay is a small share of current business income,
-// capped at half a percent, so the plants never outgrow the businesses.
+// Two late-game plants. Pay is a share of current business income,
+// capped at 5% for both together, so the plants never outgrow the businesses.
 // While the game is minimized or closed they earn at the away rate
 // (OFFLINE_RATE), like everything else.
 // Bitbark is a game coin: nothing here is real currency, a wallet, or a link.
 //
 // speed = min(1, min(power watts, cooling watts) / GPU watts).
-// A full Raster 3060 (powered, cooled, with RAM) is STARTER_SHARE of business
-// income. More cards scale that share until SHARE_CAP.
+// A plant's power is its cards' work x speed x memory factor, in Raster 3060s.
+// Its share of business income is STARTER_SHARE x sqrt(power): one full 3060
+// is STARTER_SHARE, and each better card still adds, a little less each time,
+// until both plants together reach SHARE_CAP.
 
 import { BUSINESSES } from "./gameConfig.js";
 
-export const SHARE_CAP = 0.005;
-export const STARTER_SHARE = 0.005;
+export const SHARE_CAP = 0.05;
+export const STARTER_SHARE = 0.0009;
 export const MAX_PART = 24;
 const REFERENCE_WORK = 13;
 const MINE_RAM_GB = 16;
@@ -49,18 +51,18 @@ export const PARTS = [
   { id: "raster4090", kind: "gpu", name: "Raster 4090", icon: "/icons/parts/raster4090.png", fits: ["mine", "cluster"], cost: 90_000_000_000, coef: 1.55, watts: 450, vram: 24, work: 83, spec: "24 GB GDDR6X, 450 W, 82.6 TFLOPS FP32. A 4090-class card." },
   { id: "tensorA100", kind: "gpu", name: "Tensor A100", icon: "/icons/parts/tensorA100.png", fits: ["cluster"], cost: 220_000_000_000, coef: 1.55, watts: 400, vram: 80, work: 78, spec: "80 GB HBM2e, 400 W, 19.5 TFLOPS FP32 and 156 TFLOPS TF32. An A100 80 GB." },
   { id: "tensorH100", kind: "gpu", name: "Tensor H100", icon: "/icons/parts/tensorH100.png", fits: ["cluster"], cost: 700_000_000_000, coef: 1.55, watts: 700, vram: 80, work: 160, spec: "80 GB HBM3, 700 W, 67 TFLOPS FP32 and about 990 TFLOPS TF32. An H100 SXM." },
-  { id: "tensorB200", kind: "gpu", name: "Tensor B200", icon: "/icons/parts/tensorB200.png", fits: ["cluster"], soon: true, cost: 0, coef: 1, watts: 1000, vram: 192, work: 0, spec: "192 GB HBM3e, about 1,000 W. A B200-class board." },
+  { id: "tensorB200", kind: "gpu", name: "Tensor B200", icon: "/icons/parts/tensorB200.png", fits: ["cluster"], cost: 2_200_000_000_000, coef: 1.55, watts: 1000, vram: 192, work: 400, spec: "192 GB HBM3e, about 1,000 W, two dies on one package. A B200-class board." },
   { id: "ddr4_32", kind: "ram", name: "32 GB DDR4-3200", icon: "/icons/parts/ddr4_32.png", fits: ["mine", "cluster"], cost: 600_000_000, coef: 1.4, gb: 32, spec: "32 GB DDR4-3200, PC4-25600." },
   { id: "ddr5_64", kind: "ram", name: "64 GB DDR5-5600", icon: "/icons/parts/ddr5_64.png", fits: ["mine", "cluster"], cost: 4_000_000_000, coef: 1.4, gb: 64, spec: "64 GB DDR5-5600, PC5-44800." },
-  { id: "ddr5_128", kind: "ram", name: "128 GB DDR5-6400", icon: "/icons/parts/ddr5_128.png", fits: ["mine", "cluster"], soon: true, cost: 0, coef: 1, gb: 128, spec: "128 GB DDR5-6400, PC5-51200." },
+  { id: "ddr5_128", kind: "ram", name: "128 GB DDR5-6400", icon: "/icons/parts/ddr5_128.png", fits: ["mine", "cluster"], cost: 20_000_000_000, coef: 1.4, gb: 128, spec: "128 GB DDR5-6400, PC5-51200." },
   { id: "fans", kind: "cool", name: "Case fans", icon: "/icons/parts/fans.png", fits: ["mine", "cluster"], cost: 200_000_000, coef: 1.35, cool: 250, spec: "Moves 250 W of heat." },
   { id: "labfan", kind: "cool", name: "Lab fan", icon: "/icons/parts/labfan.png", fits: ["servers"], cost: 1_000_000, coef: 2, cool: 300, spec: "A 120 mm fan. Moves about 300 W of heat." },
   { id: "tower", kind: "cool", name: "Tower cooler", icon: "/icons/parts/tower.png", fits: ["mine", "cluster"], cost: 1_500_000_000, coef: 1.35, cool: 350, spec: "A dual-tower air cooler, 350 W." },
   { id: "liquid", kind: "cool", name: "360 mm liquid", icon: "/icons/parts/liquid.png", fits: ["mine", "cluster"], cost: 6_000_000_000, coef: 1.35, cool: 700, spec: "A 360 mm liquid loop, 700 W." },
-  { id: "immersion", kind: "cool", name: "Immersion tank", icon: "/icons/parts/immersion.png", fits: ["mine", "cluster"], soon: true, cost: 0, coef: 1, cool: 2000, spec: "The whole rack sits in a bath. 2,000 W." },
+  { id: "immersion", kind: "cool", name: "Immersion tank", icon: "/icons/parts/immersion.png", fits: ["mine", "cluster"], cost: 40_000_000_000, coef: 1.35, cool: 2000, spec: "The whole rack sits in a dielectric bath. 2,000 W." },
   { id: "psu750", kind: "power", name: "750 W supply", icon: "/icons/parts/psu750.png", fits: ["mine", "cluster"], cost: 800_000_000, coef: 1.35, power: 750, spec: "750 W ATX supply, 80 Plus Gold." },
   { id: "psu1200", kind: "power", name: "1200 W supply", icon: "/icons/parts/psu1200.png", fits: ["mine", "cluster"], cost: 3_500_000_000, coef: 1.35, power: 1200, spec: "1,200 W ATX supply, 80 Plus Platinum." },
-  { id: "psu1600", kind: "power", name: "1600 W supply", icon: "/icons/parts/psu1600.png", fits: ["mine", "cluster"], soon: true, cost: 0, coef: 1, power: 1600, spec: "1,600 W, for a rack of data-center cards." },
+  { id: "psu1600", kind: "power", name: "1600 W supply", icon: "/icons/parts/psu1600.png", fits: ["mine", "cluster"], cost: 12_000_000_000, coef: 1.35, power: 1600, spec: "1,600 W, 80 Plus Titanium, for a rack of data-center cards." },
   { id: "rack1", kind: "server", name: "Foundry Rack R1", icon: "/icons/parts/rack1.png", fits: ["servers"], cost: 10_000_000, coef: 5, watts: 200, work: 8, spec: "1U, two 8-core chips, 200 W. A small research server." },
   { id: "rack4", kind: "server", name: "Foundry Rack R4", icon: "/icons/parts/rack4.png", fits: ["servers"], cost: 400_000_000, coef: 5, watts: 500, work: 24, spec: "4U, four sockets, 500 W." },
   { id: "psu400", kind: "power", name: "400 W supply", icon: "/icons/parts/psu400.png", fits: ["servers"], cost: 2_000_000, coef: 2, power: 450, spec: "400 W ATX supply for a single rack." },
@@ -226,7 +228,8 @@ function rowOf(facilityId, counts) {
   const stocked = stock(counts, facilityId);
   const mem = memoryFactor(facilityId, stocked);
   const running = stocked.gpus > 0 && stocked.work > 0 && stocked.speed > 0;
-  const share = running ? (STARTER_SHARE * stocked.work * stocked.speed * mem.factor) / REFERENCE_WORK : 0;
+  const power = running ? (stocked.work * stocked.speed * mem.factor) / REFERENCE_WORK : 0;
+  const share = running ? STARTER_SHARE * Math.sqrt(power) : 0;
   return {
     share,
     limit: hardwareLimit(stocked, mem),
@@ -321,14 +324,46 @@ export function nextPurchase(state, businessPerSecond) {
       const owned = counts[part.id] || 0;
       if (owned >= MAX_PART) continue;
       const offer = { facilityId, partId: part.id, name: part.name, cost: partCost(part, owned) };
-      const added = marginal(state, offer, businessPerSecond);
+      // A part is worth what it adds once the plant has the power, cooling
+      // and memory to run it; a card alone may only be throttled, and a power
+      // supply alone does nothing while cooling is short. Judge each part with
+      // the cheapest extras it needs, so the suggestion never stalls.
+      const plan = withSupport(state, facilityId, part.id);
+      if (!plan) continue;
+      const before = facilityReport(state, businessPerSecond).perSecond;
+      const added = facilityReport(plan.state, businessPerSecond).perSecond - before;
       if (!(added > 0)) continue;
-      const payback = offer.cost / added;
+      const payback = plan.cost / added;
       if (payback > 15 * 60) continue;
-      if (!best || payback < best.payback) best = { ...offer, payback };
+      if (!best || payback < best.payback) best = { ...offer, payback, bundleCost: plan.cost, extras: plan.extras };
     }
   }
   return best;
+}
+
+// Add one part, then the cheapest power, cooling and memory until the plant
+// runs at full speed (at most a few parts). Returns the new state, the total cost and
+// the names of the extra parts, or null if it can't be supported.
+function withSupport(state, facilityId, partId) {
+  let next = withPart(state, facilityId, partId);
+  let cost = partCost(byId[partId], countsOf(state, facilityId)[partId] || 0);
+  const extras = [];
+  for (let i = 0; i < 8; i++) {
+    const counts = countsOf(next, facilityId);
+    const stocked = stock(counts, facilityId);
+    const mem = memoryFactor(facilityId, stocked);
+    let kind = null;
+    if (stocked.power < stocked.watts) kind = "power";
+    else if (stocked.cool < stocked.watts) kind = "cool";
+    else if (mem.limit === "Needs more RAM") kind = "ram";
+    if (!kind) return { state: next, cost, extras };
+    const add = cheapest(facilityId, kind, counts);
+    if (!add) return null;
+    next = withPart(next, facilityId, add.part.id);
+    cost += add.cost;
+    extras.push(add.part.name);
+  }
+  return null;
 }
 
 function marginal(state, offer, businessPerSecond) {

@@ -347,6 +347,7 @@ function Stats({ state, data }) {
       </Panel>
       <Panel>
         <h2 className="font-pixel text-[0.6rem]">BY BUSINESS</h2>
+        <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">Active is how long each business has been running this run, time away included. Without a manager a business only runs while you tap it, so a low number means it sat idle.</p>
         {BUSINESSES.map((cfg, index) => {
           const st = state.biz[index];
           const minutes = Math.floor((st?.activeMs || 0) / 60000);

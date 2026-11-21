@@ -9,6 +9,7 @@ import {
   FOREMAN_COST,
   MAX_BUY,
   MILESTONES,
+  NORMAL_TICK_MS,
   OFFLINE_CAP_MS,
   OFFLINE_RATE,
   buyCount,
@@ -72,7 +73,7 @@ import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
 import { buzzLight, buzzStrong } from "@/lib/haptics";
 import { cancelCapNotification, scheduleCapNotification } from "@/lib/capNotify";
-import { noteMilestones, pushRun, readMilestones, readRuns, eraReachedIndex, startMilestones } from "@/lib/records";
+import { noteMilestones, playStep, pushRun, readMilestones, readRuns, eraReachedIndex, settlePlayMs, startMilestones } from "@/lib/records";
 import { noteProgress } from "@/lib/achievements";
 
 const SAVE_INTERVAL_MS = 5000;
@@ -255,6 +256,8 @@ function pack(s) {
     managersHired: Math.floor(s.managersHired || 0),
     prestigeCount: Math.floor(s.prestigeCount || 0),
     playMs: s.playMs || 0,
+    // The one-time play time repair has run on this save.
+    playMsChecked: true,
     runStartedAt: s.runStartedAt || 0,
     bestEra: Math.max(0, Math.floor(s.bestEra || 0)),
     runs: Array.isArray(s.runs) ? s.runs.slice(-40) : [],
@@ -318,7 +321,8 @@ function loadSave() {
       state.managersHired = state.biz.reduce((n, row) => n + (row.manager ? 1 : 0), 0);
     }
     if (state.prestigeCount == null) state.prestigeCount = state.prestiged ? 1 : 0;
-    if (state.playMs == null) state.playMs = state.biz.reduce((n, row) => n + (row.activeMs || 0), 0);
+    // Before time away is replayed, so the estimate is time with the app open.
+    settlePlayMs(state, Date.now(), !!data.meta?.playMsChecked);
     const storedEra = state.bestEra;
     if (storedEra == null) state.bestEra = Math.max(0, eraReachedIndex(state));
     if (!state.runStartedAt) state.runStartedAt = Date.now();
@@ -596,7 +600,7 @@ export function useGame() {
       const researchMoved = advanceResearch(s, dt);
       if (researchMoved === "done") dirty = true;
       if (!s.runStartedAt) s.runStartedAt = wall;
-      s.playMs = (s.playMs || 0) + dt;
+      s.playMs = (s.playMs || 0) + playStep(dt, NORMAL_TICK_MS);
       if (noteMilestones(s, wall)) dirty = true;
       if (autoBuyUpgrade(s, wall)) dirty = true;
       const notes = tickDilemma(s, wall).concat(finishTimedWork(s, wall), tickBubble(s, wall));

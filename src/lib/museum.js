@@ -75,9 +75,15 @@ export const WINGS = [
 ];
 
 // The maker is the parody brand at the front of the name ("Corsar K70").
-// Generic names ("4 MB 30-pin SIMM") have none.
+// Generic names ("ATX mid-tower", "Tape drive") have none.
+const GENERIC = new Set(["AT", "ATX", "Airflow", "Baby", "Blu-ray", "Case", "Chilled-water", "Clip-on", "Fluorinert", "Freon", "HD", "Immersion", "Mesh", "Micro-ATX", "Mini-ITX", "Motor-generator", "Rack", "Room", "Slot", "Tape", "Tower"]);
+const TWO_WORD = ["Alpha Novatek", "Be Calm", "Cooler Mister", "Danger Din", "Ess Three", "Lyan Lee", "Media Visia", "Quantum Graphics", "Radio Shed", "Silicon Pictures", "Thinking Engines", "Tortoise Beach", "US Robots", "Western Data"];
 export function makerOf(item) {
-  const first = String(item.name || "").split(" ")[0];
+  const name = String(item.name || "");
+  const two = TWO_WORD.find((b) => name.startsWith(`${b} `));
+  if (two) return two;
+  const first = name.split(" ")[0];
+  if (GENERIC.has(first) || !name.includes(" ")) return null;
   return /^[A-Z][a-z]/.test(first) || /^[A-Z]{2,}[a-z]*$/.test(first) ? first : null;
 }
 

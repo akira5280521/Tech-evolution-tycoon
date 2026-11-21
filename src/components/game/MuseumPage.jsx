@@ -125,7 +125,7 @@ export default function MuseumPage({ top = null }) {
                     aria-label={locked ? `Locked exhibit from ${item.year}` : item.name}
                     className={`min-w-0 border-2 bg-black p-1 ${locked ? "border-[var(--game-border)]" : status === "owned" ? "border-[var(--game-accent)]" : "border-[var(--game-border-strong)]"}`}
                   >
-                    <img src={item.icon} alt="" className={`aspect-square w-full object-contain ${locked ? "opacity-40 brightness-0" : status === "retired" ? "grayscale" : ""}`} />
+                    <img src={item.icon} alt="" className={`aspect-square w-full object-contain ${locked ? "brightness-0 invert opacity-20" : status === "retired" ? "grayscale" : ""}`} />
                     <span className="block font-pixel text-[0.4rem] leading-3 text-[var(--game-muted)]">{locked ? `${Math.floor(item.year / 10) * 10}s` : item.year}</span>
                   </button>
                 );
@@ -154,7 +154,7 @@ function ExhibitSheet({ state, id, roomId, onClose }) {
       className="hint-sheet fixed z-40 mx-auto max-w-md border-4 border-[var(--game-accent)] bg-[var(--game-card)] p-3 shadow-[6px_6px_0_0_#000]"
     >
       <div className="flex gap-3">
-        <img src={item.icon} alt="" className={`h-24 w-24 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain ${locked ? "opacity-40 brightness-0" : status === "retired" ? "grayscale" : ""}`} />
+        <img src={item.icon} alt="" className={`h-24 w-24 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain ${locked ? "brightness-0 invert opacity-20" : status === "retired" ? "grayscale" : ""}`} />
         <div className="min-w-0">
           <p className={`inline-block border-2 px-1 font-pixel text-[0.45rem] leading-4 ${STATUS_COLOR[status]}`}>{STATUS_LABEL[status]}</p>
           <h2 className="mt-1 break-words font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">{locked ? "???" : item.name}</h2>
@@ -164,7 +164,7 @@ function ExhibitSheet({ state, id, roomId, onClose }) {
           </p>
         </div>
       </div>
-      <p className="mt-2 break-words font-term text-lg leading-6 text-[var(--game-fg)]">{locked ? why : item.spec.replace(/^\d{4}: /, "")}</p>
+      <p className="mt-2 break-words font-term text-lg leading-6 text-[var(--game-fg)]">{locked ? why : item.spec.replace(/^\d{4}: /, "").replace(/^./, (c) => c.toUpperCase())}</p>
       <div className="mt-2 flex justify-end">
         <button type="button" data-exhibit-close onClick={onClose} className="min-h-11 border-2 border-[var(--game-border-strong)] px-3 font-pixel text-[0.5rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]">
           CLOSE

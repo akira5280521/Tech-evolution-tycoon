@@ -72,7 +72,7 @@ export default function ResearchPage() {
           </div>
         )}
       </Panel>
-      <div className="flex gap-2 overflow-x-auto pb-1" role="tablist">
+      <div className="flex flex-wrap gap-2 pb-1" role="tablist">
         {RESEARCH_TABS.map((entry) => (
           <button
             key={entry.id}

@@ -1,0 +1,3338 @@
+{
+ "v0.0.24-early": {
+  "version": 11,
+  "cash": 249820,
+  "lifetime": 249700,
+  "investors": 0,
+  "investorPeak": 0,
+  "autoUpgrades": false,
+  "briefingDay": "2026-11-20",
+  "streak": 1,
+  "careerEarnings": 249700,
+  "singularities": 0,
+  "tokens": 0,
+  "grants": [],
+  "data": 116.32191999999945,
+  "specialties": [],
+  "upgrades": {},
+  "challengesDone": [],
+  "projectsDone": [],
+  "shop": {
+   "freeManager": false,
+   "cashBuys": 0,
+   "samples": 0,
+   "crateDay": null
+  },
+  "boostUntil": 0,
+  "lab": {
+   "overclockUntil": 0,
+   "coolUntil": 0,
+   "patentDay": null,
+   "patents": 0,
+   "crew": false
+  },
+  "dilemmaDeferUntil": 0,
+  "nextDilemmaAt": 1795208108228,
+  "lastDilemma": null,
+  "nextWindfallAt": 1795208093228,
+  "prestiged": false,
+  "badgesEarned": [],
+  "museum": [],
+  "eventsDone": [],
+  "bubble": null,
+  "nextBubbleAt": 0,
+  "supply": {
+   "wood": 0,
+   "paper": 0,
+   "sand": 0,
+   "copper": 0,
+   "glass": 0,
+   "filament": 0,
+   "germanium": 0,
+   "silicon": 0,
+   "wafers": 0
+  },
+  "foreman": false,
+  "sawPit": false,
+  "goalsDone": [
+   "tap"
+  ],
+  "boughtX10": false,
+  "tutorial": {
+   "seen": [],
+   "done": true,
+   "skipped": false,
+   "replay": false,
+   "tips": [],
+   "tipsOff": false
+  },
+  "orientation": "auto",
+  "buyMode": "x1",
+  "lastSeen": 1795208082978,
+  "researchJob": null,
+  "upgradeJob": null,
+  "projectJob": null,
+  "challenge": null,
+  "dilemma": null,
+  "businessesBought": 17,
+  "managersHired": 1,
+  "prestigeCount": 0,
+  "playMs": 35001,
+  "runStartedAt": 1795208047959,
+  "bestEra": 6,
+  "runs": [],
+  "facilities": {
+   "mine": {},
+   "cluster": {},
+   "servers": {}
+  },
+  "news": [],
+  "techDone": [],
+  "techJob": null,
+  "biz": [
+   {
+    "id": "timber",
+    "owned": 1,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "paper",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "loom",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "punchcards",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "relay",
+    "owned": 10,
+    "manager": true,
+    "running": false,
+    "progress": 2868,
+    "activeMs": 7235118.999999867,
+    "commissionUntil": 0
+   },
+   {
+    "id": "sand",
+    "owned": 6,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "copper",
+    "owned": 1,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "glass",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "filament",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "tubes",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "mainframes",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "germanium",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "transistors",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "silicon",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "wafers",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ics",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "minis",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cpu",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "homepc",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "consoles",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "dialup",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "gpu",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cloud",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "phones",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "rgb",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ai",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "quantum",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   }
+  ]
+ },
+ "v0.0.24-late": {
+  "version": 11,
+  "cash": 5639857059978472,
+  "lifetime": 5639857060243472,
+  "investors": 50,
+  "investorPeak": 50,
+  "autoUpgrades": false,
+  "briefingDay": "2026-11-20",
+  "streak": 1,
+  "careerEarnings": 5639857060243472,
+  "singularities": 0,
+  "tokens": 75,
+  "grants": [
+   "project:cable",
+   "project:mainframe",
+   "project:orbital",
+   "project:y2k"
+  ],
+  "data": 985.6815319999961,
+  "specialties": [],
+  "upgrades": {},
+  "challengesDone": [],
+  "projectsDone": [
+   "cable",
+   "mainframe",
+   "orbital",
+   "y2k"
+  ],
+  "shop": {
+   "freeManager": false,
+   "cashBuys": 0,
+   "samples": 0,
+   "crateDay": null
+  },
+  "boostUntil": 0,
+  "lab": {
+   "overclockUntil": 0,
+   "coolUntil": 0,
+   "patentDay": null,
+   "patents": 0,
+   "crew": false
+  },
+  "dilemmaDeferUntil": 0,
+  "nextDilemmaAt": 1795208147051,
+  "lastDilemma": null,
+  "nextWindfallAt": 1795208132051,
+  "prestiged": true,
+  "badgesEarned": [
+   "era-timber",
+   "era-paper",
+   "era-loom",
+   "era-punchcards",
+   "era-relay",
+   "era-sand",
+   "era-copper",
+   "era-glass",
+   "era-filament",
+   "era-tubes",
+   "era-mainframes",
+   "era-germanium",
+   "era-transistors",
+   "era-silicon",
+   "era-wafers",
+   "era-ics",
+   "era-minis",
+   "life-1",
+   "life-2",
+   "life-3",
+   "life-4",
+   "pr-cable",
+   "pr-mainframe",
+   "time-prestige"
+  ],
+  "museum": [
+   "sand-1",
+   "copper-1",
+   "timber-1",
+   "paper-1",
+   "glass-1",
+   "filament-1",
+   "germanium-1",
+   "silicon-1",
+   "wafers-1",
+   "tubes-1",
+   "loom-1",
+   "punchcards-1",
+   "transistors-1",
+   "ics-1",
+   "cpu-1",
+   "homepc-1",
+   "gpu-1",
+   "rgb-1",
+   "quantum-1",
+   "relay-1",
+   "mainframes-1",
+   "minis-1",
+   "consoles-1",
+   "dialup-1",
+   "cloud-1",
+   "phones-1",
+   "ai-1",
+   "cpu-4bit",
+   "cpu-8080",
+   "gpu-2d",
+   "gpu-3d"
+  ],
+  "eventsDone": [],
+  "bubble": null,
+  "nextBubbleAt": 0,
+  "supply": {
+   "wood": 16940,
+   "paper": 0,
+   "sand": 0,
+   "copper": 85716.29670329667,
+   "glass": 0,
+   "filament": 40476.29670329688,
+   "germanium": 55320,
+   "silicon": 30,
+   "wafers": 168072.59340659337
+  },
+  "foreman": false,
+  "sawPit": false,
+  "goalsDone": [
+   "tap",
+   "timber5",
+   "hire",
+   "timber10",
+   "paper",
+   "punch"
+  ],
+  "boughtX10": false,
+  "tutorial": {
+   "seen": [],
+   "done": true,
+   "skipped": false,
+   "replay": false,
+   "tips": [
+    "bubble",
+    "prestige",
+    "fork",
+    "running-low",
+    "foreman",
+    "buy-modes",
+    "upgrades",
+    "speedups",
+    "tokens",
+    "research",
+    "challenges",
+    "contract"
+   ],
+   "tipsOff": false
+  },
+  "orientation": "auto",
+  "buyMode": "x1",
+  "lastSeen": 1795208124453,
+  "researchJob": null,
+  "upgradeJob": null,
+  "projectJob": null,
+  "challenge": null,
+  "dilemma": null,
+  "businessesBought": 809,
+  "managersHired": 27,
+  "prestigeCount": 1,
+  "playMs": 37250,
+  "runStartedAt": 1795208086706,
+  "bestEra": 26,
+  "runs": [],
+  "facilities": {
+   "mine": {},
+   "cluster": {},
+   "servers": {
+    "rack1": 1,
+    "hdd1t": 1
+   }
+  },
+  "news": [
+   {
+    "id": "plant-open",
+    "text": "SIDE PLANT CLEARED BESIDE THE AI ACCELERATORS"
+   },
+   {
+    "id": "servers-open",
+    "text": "RESEARCH SERVERS CLEARED BESIDE THE MICROPROCESSORS"
+   },
+   {
+    "id": "servers-live",
+    "text": "RESEARCH SERVERS START MAKING R&D POINTS"
+   },
+   {
+    "id": "part-servers-rack1",
+    "text": "FOUNDRY RACK R1 TAKES THE RESEARCH SHIFT · RESEARCH SERVERS"
+   },
+   {
+    "id": "part-servers-hdd1t",
+    "text": "A 1 TB DISK IS RACKED FOR THE LAB · RESEARCH SERVERS"
+   }
+  ],
+  "techDone": [
+   "cpu-4bit",
+   "cpu-8080",
+   "gpu-2d",
+   "gpu-3d"
+  ],
+  "techJob": null,
+  "biz": [
+   {
+    "id": "timber",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 919,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "paper",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 811,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "loom",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 919,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "punchcards",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "relay",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 1519,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "sand",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 919,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "copper",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 811,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "glass",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "filament",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 1519,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "tubes",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "mainframes",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "germanium",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 1519,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "transistors",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "silicon",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 119,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "wafers",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ics",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "minis",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 4719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cpu",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "homepc",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 12719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "consoles",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 6719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "dialup",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "gpu",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 36719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cloud",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 36719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "phones",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 36719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "rgb",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 36719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ai",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 86719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   },
+   {
+    "id": "quantum",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 132719,
+    "activeMs": 7237469.99999959,
+    "commissionUntil": 0
+   }
+  ]
+ },
+ "v0.0.24-newrich": {
+  "version": 11,
+  "cash": 199995.84,
+  "lifetime": 0.4,
+  "investors": 0,
+  "investorPeak": 0,
+  "autoUpgrades": false,
+  "briefingDay": "2026-11-20",
+  "streak": 1,
+  "careerEarnings": 0.4,
+  "singularities": 0,
+  "tokens": 0,
+  "grants": [],
+  "data": 28.88030799999997,
+  "specialties": [],
+  "upgrades": {},
+  "challengesDone": [],
+  "projectsDone": [],
+  "shop": {
+   "freeManager": false,
+   "cashBuys": 0,
+   "samples": 0,
+   "crateDay": null
+  },
+  "boostUntil": 0,
+  "lab": {
+   "overclockUntil": 0,
+   "coolUntil": 0,
+   "patentDay": null,
+   "patents": 0,
+   "crew": false
+  },
+  "dilemmaDeferUntil": 0,
+  "nextDilemmaAt": 1795208196560,
+  "lastDilemma": null,
+  "nextWindfallAt": 1795208171810,
+  "prestiged": false,
+  "badgesEarned": [],
+  "museum": [],
+  "eventsDone": [],
+  "bubble": null,
+  "nextBubbleAt": 0,
+  "supply": {
+   "wood": 1,
+   "paper": 0,
+   "sand": 0,
+   "copper": 0,
+   "glass": 0,
+   "filament": 0,
+   "germanium": 0,
+   "silicon": 0,
+   "wafers": 0
+  },
+  "foreman": false,
+  "sawPit": true,
+  "goalsDone": [],
+  "boughtX10": false,
+  "tutorial": {
+   "seen": [],
+   "done": false,
+   "skipped": false,
+   "replay": false,
+   "tips": [],
+   "tipsOff": false
+  },
+  "orientation": "auto",
+  "buyMode": "x1",
+  "lastSeen": 1795208136561,
+  "researchJob": null,
+  "upgradeJob": null,
+  "projectJob": null,
+  "challenge": null,
+  "dilemma": null,
+  "businessesBought": 1,
+  "managersHired": 0,
+  "prestigeCount": 0,
+  "playMs": 10001,
+  "runStartedAt": 1795208126547,
+  "bestEra": 0,
+  "runs": [],
+  "facilities": {
+   "mine": {},
+   "cluster": {},
+   "servers": {}
+  },
+  "news": [],
+  "techDone": [],
+  "techJob": null,
+  "biz": [
+   {
+    "id": "timber",
+    "owned": 2,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 2000,
+    "commissionUntil": 0
+   },
+   {
+    "id": "paper",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "loom",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "punchcards",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "relay",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "sand",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "copper",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "glass",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "filament",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "tubes",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "mainframes",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "germanium",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "transistors",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "silicon",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "wafers",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ics",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "minis",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cpu",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "homepc",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "consoles",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "dialup",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "gpu",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cloud",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "phones",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "rgb",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ai",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "quantum",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   }
+  ]
+ },
+ "v0.0.25-early": {
+  "version": 11,
+  "cash": 249820,
+  "lifetime": 249700,
+  "investors": 0,
+  "investorPeak": 0,
+  "autoUpgrades": false,
+  "briefingDay": "2026-11-20",
+  "streak": 1,
+  "careerEarnings": 249700,
+  "singularities": 0,
+  "tokens": 0,
+  "grants": [],
+  "data": 14.540189999999923,
+  "specialties": [],
+  "upgrades": {},
+  "challengesDone": [],
+  "projectsDone": [],
+  "shop": {
+   "freeManager": false,
+   "cashBuys": 0,
+   "samples": 0,
+   "crateDay": null
+  },
+  "boostUntil": 0,
+  "lab": {
+   "overclockUntil": 0,
+   "coolUntil": 0,
+   "patentDay": null,
+   "patents": 0,
+   "crew": false
+  },
+  "dilemmaDeferUntil": 0,
+  "nextDilemmaAt": 1795208199578,
+  "lastDilemma": null,
+  "nextWindfallAt": 1795208184578,
+  "prestiged": false,
+  "badgesEarned": [],
+  "museum": [],
+  "eventsDone": [],
+  "bubble": null,
+  "nextBubbleAt": 0,
+  "supply": {
+   "wood": 0,
+   "paper": 0,
+   "sand": 0,
+   "copper": 0,
+   "glass": 0,
+   "filament": 0,
+   "germanium": 0,
+   "silicon": 0,
+   "wafers": 0
+  },
+  "foreman": false,
+  "sawPit": false,
+  "goalsDone": [
+   "tap"
+  ],
+  "boughtX10": false,
+  "tutorial": {
+   "seen": [],
+   "done": true,
+   "skipped": false,
+   "replay": false,
+   "tips": [],
+   "tipsOff": false
+  },
+  "orientation": "auto",
+  "buyMode": "x1",
+  "lastSeen": 1795208174328,
+  "researchJob": null,
+  "upgradeJob": null,
+  "projectJob": null,
+  "challenge": null,
+  "dilemma": null,
+  "businessesBought": 17,
+  "managersHired": 1,
+  "prestigeCount": 0,
+  "playMs": 35000,
+  "runStartedAt": 1795208139311,
+  "bestEra": 6,
+  "runs": [],
+  "facilities": {
+   "mine": {},
+   "cluster": {},
+   "servers": {}
+  },
+  "news": [],
+  "techDone": [],
+  "techJob": null,
+  "biz": [
+   {
+    "id": "timber",
+    "owned": 1,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "paper",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "loom",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "punchcards",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "relay",
+    "owned": 10,
+    "manager": true,
+    "running": false,
+    "progress": 2844,
+    "activeMs": 7235094.999999894,
+    "commissionUntil": 0
+   },
+   {
+    "id": "sand",
+    "owned": 6,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "copper",
+    "owned": 1,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "glass",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "filament",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "tubes",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "mainframes",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "germanium",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "transistors",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "silicon",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "wafers",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ics",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "minis",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cpu",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "homepc",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "consoles",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "dialup",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "gpu",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cloud",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "phones",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "rgb",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ai",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "quantum",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   }
+  ]
+ },
+ "v0.0.25-late": {
+  "version": 11,
+  "cash": 5645342230728228,
+  "lifetime": 5645342230728228,
+  "investors": 50,
+  "investorPeak": 50,
+  "autoUpgrades": false,
+  "briefingDay": "2026-11-20",
+  "streak": 1,
+  "careerEarnings": 5645342230728228,
+  "singularities": 0,
+  "tokens": 75,
+  "grants": [
+   "project:cable",
+   "project:mainframe",
+   "project:orbital",
+   "project:y2k"
+  ],
+  "data": 299.0144135000029,
+  "specialties": [],
+  "upgrades": {},
+  "challengesDone": [],
+  "projectsDone": [
+   "cable",
+   "mainframe",
+   "orbital",
+   "y2k"
+  ],
+  "shop": {
+   "freeManager": false,
+   "cashBuys": 0,
+   "samples": 0,
+   "crateDay": null
+  },
+  "boostUntil": 0,
+  "lab": {
+   "overclockUntil": 0,
+   "coolUntil": 0,
+   "patentDay": null,
+   "patents": 0,
+   "crew": false
+  },
+  "dilemmaDeferUntil": 0,
+  "nextDilemmaAt": 1795208238347,
+  "lastDilemma": "hackathon",
+  "nextWindfallAt": 1795208463431,
+  "prestiged": true,
+  "badgesEarned": [
+   "era-timber",
+   "era-paper",
+   "era-loom",
+   "era-punchcards",
+   "era-relay",
+   "era-sand",
+   "era-copper",
+   "era-glass",
+   "era-filament",
+   "era-tubes",
+   "era-mainframes",
+   "era-germanium",
+   "era-transistors",
+   "era-silicon",
+   "era-wafers",
+   "era-ics",
+   "era-minis",
+   "life-1",
+   "life-2",
+   "life-3",
+   "life-4",
+   "pr-cable",
+   "pr-mainframe",
+   "time-prestige"
+  ],
+  "museum": [
+   "sand-1",
+   "copper-1",
+   "timber-1",
+   "paper-1",
+   "glass-1",
+   "filament-1",
+   "germanium-1",
+   "silicon-1",
+   "wafers-1",
+   "tubes-1",
+   "loom-1",
+   "punchcards-1",
+   "transistors-1",
+   "ics-1",
+   "cpu-1",
+   "homepc-1",
+   "gpu-1",
+   "rgb-1",
+   "quantum-1",
+   "relay-1",
+   "mainframes-1",
+   "minis-1",
+   "consoles-1",
+   "dialup-1",
+   "cloud-1",
+   "phones-1",
+   "ai-1",
+   "cpu-4bit",
+   "cpu-8080",
+   "gpu-2d",
+   "gpu-3d"
+  ],
+  "eventsDone": [],
+  "bubble": null,
+  "nextBubbleAt": 0,
+  "supply": {
+   "wood": 17000,
+   "paper": 0,
+   "sand": 0,
+   "copper": 86076.29670329667,
+   "glass": 0,
+   "filament": 40656.29670329688,
+   "germanium": 55560,
+   "silicon": 0,
+   "wafers": 168822.59340659337
+  },
+  "foreman": false,
+  "sawPit": false,
+  "goalsDone": [
+   "tap",
+   "timber5",
+   "hire",
+   "timber10",
+   "paper",
+   "punch"
+  ],
+  "boughtX10": false,
+  "tutorial": {
+   "seen": [],
+   "done": true,
+   "skipped": false,
+   "replay": false,
+   "tips": [
+    "bubble",
+    "prestige",
+    "fork",
+    "running-low",
+    "foreman",
+    "buy-modes",
+    "upgrades",
+    "speedups",
+    "tokens",
+    "research",
+    "challenges",
+    "contract"
+   ],
+   "tipsOff": false
+  },
+  "orientation": "auto",
+  "buyMode": "x1",
+  "lastSeen": 1795208245614,
+  "researchJob": null,
+  "upgradeJob": null,
+  "projectJob": null,
+  "challenge": null,
+  "dilemma": {
+   "id": "hackathon",
+   "expiresAt": 1795208283430
+  },
+  "businessesBought": 809,
+  "managersHired": 27,
+  "prestigeCount": 1,
+  "playMs": 67001,
+  "runStartedAt": 1795208177997,
+  "bestEra": 26,
+  "runs": [],
+  "facilities": {
+   "mine": {},
+   "cluster": {},
+   "servers": {}
+  },
+  "news": [
+   {
+    "id": "plant-open",
+    "text": "SIDE PLANT CLEARED BESIDE THE AI ACCELERATORS"
+   },
+   {
+    "id": "servers-open",
+    "text": "RESEARCH SERVERS CLEARED BESIDE THE MICROPROCESSORS"
+   }
+  ],
+  "techDone": [
+   "cpu-4bit",
+   "cpu-8080",
+   "gpu-2d",
+   "gpu-3d"
+  ],
+  "techJob": null,
+  "biz": [
+   {
+    "id": "timber",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 997,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "paper",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 605,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "loom",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 797,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "punchcards",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "relay",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 897,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "sand",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 997,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "copper",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 605,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "glass",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "filament",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 897,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "tubes",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "mainframes",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 1247,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "germanium",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 697,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "transistors",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "silicon",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "wafers",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 1697,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ics",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "minis",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 2497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cpu",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 6497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "homepc",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 18497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "consoles",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 6497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "dialup",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 30497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "gpu",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 18497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cloud",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 6497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "phones",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 66497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "rgb",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 66497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ai",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 116497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   },
+   {
+    "id": "quantum",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 162497,
+    "activeMs": 7267249.000000457,
+    "commissionUntil": 0
+   }
+  ]
+ },
+ "v0.0.25-newrich": {
+  "version": 11,
+  "cash": 199995.84,
+  "lifetime": 0.4,
+  "investors": 0,
+  "investorPeak": 0,
+  "autoUpgrades": false,
+  "briefingDay": "2026-11-20",
+  "streak": 1,
+  "careerEarnings": 0.4,
+  "singularities": 0,
+  "tokens": 0,
+  "grants": [],
+  "data": 3.6100449999999946,
+  "specialties": [],
+  "upgrades": {},
+  "challengesDone": [],
+  "projectsDone": [],
+  "shop": {
+   "freeManager": false,
+   "cashBuys": 0,
+   "samples": 0,
+   "crateDay": null
+  },
+  "boostUntil": 0,
+  "lab": {
+   "overclockUntil": 0,
+   "coolUntil": 0,
+   "patentDay": null,
+   "patents": 0,
+   "crew": false
+  },
+  "dilemmaDeferUntil": 0,
+  "nextDilemmaAt": 1795208317718,
+  "lastDilemma": null,
+  "nextWindfallAt": 1795208292968,
+  "prestiged": false,
+  "badgesEarned": [],
+  "museum": [],
+  "eventsDone": [],
+  "bubble": null,
+  "nextBubbleAt": 0,
+  "supply": {
+   "wood": 1,
+   "paper": 0,
+   "sand": 0,
+   "copper": 0,
+   "glass": 0,
+   "filament": 0,
+   "germanium": 0,
+   "silicon": 0,
+   "wafers": 0
+  },
+  "foreman": false,
+  "sawPit": true,
+  "goalsDone": [],
+  "boughtX10": false,
+  "tutorial": {
+   "seen": [],
+   "done": false,
+   "skipped": false,
+   "replay": false,
+   "tips": [],
+   "tipsOff": false
+  },
+  "orientation": "auto",
+  "buyMode": "x1",
+  "lastSeen": 1795208257718,
+  "researchJob": null,
+  "upgradeJob": null,
+  "projectJob": null,
+  "challenge": null,
+  "dilemma": null,
+  "businessesBought": 1,
+  "managersHired": 0,
+  "prestigeCount": 0,
+  "playMs": 10000,
+  "runStartedAt": 1795208247707,
+  "bestEra": 0,
+  "runs": [],
+  "facilities": {
+   "mine": {},
+   "cluster": {},
+   "servers": {}
+  },
+  "news": [],
+  "techDone": [],
+  "techJob": null,
+  "biz": [
+   {
+    "id": "timber",
+    "owned": 2,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 2000,
+    "commissionUntil": 0
+   },
+   {
+    "id": "paper",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "loom",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "punchcards",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "relay",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "sand",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "copper",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "glass",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "filament",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "tubes",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "mainframes",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "germanium",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "transistors",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "silicon",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "wafers",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ics",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "minis",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cpu",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "homepc",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "consoles",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "dialup",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "gpu",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cloud",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "phones",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "rgb",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ai",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "quantum",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   }
+  ]
+ },
+ "v0.0.26-early": {
+  "version": 11,
+  "cash": 249820,
+  "lifetime": 249700,
+  "investors": 0,
+  "investorPeak": 0,
+  "autoUpgrades": false,
+  "briefingDay": "2026-11-20",
+  "streak": 1,
+  "careerEarnings": 249700,
+  "singularities": 0,
+  "tokens": 0,
+  "grants": [],
+  "data": 14.540189999999924,
+  "specialties": [],
+  "upgrades": {},
+  "challengesDone": [],
+  "projectsDone": [],
+  "shop": {
+   "freeManager": false,
+   "cashBuys": 0,
+   "samples": 0,
+   "crateDay": null
+  },
+  "boostUntil": 0,
+  "lab": {
+   "overclockUntil": 0,
+   "coolUntil": 0,
+   "patentDay": null,
+   "patents": 0,
+   "crew": false
+  },
+  "dilemmaDeferUntil": 0,
+  "nextDilemmaAt": 1795208320734,
+  "lastDilemma": null,
+  "nextWindfallAt": 1795208305734,
+  "prestiged": false,
+  "badgesEarned": [],
+  "museum": [],
+  "eventsDone": [],
+  "bubble": null,
+  "nextBubbleAt": 0,
+  "supply": {
+   "wood": 0,
+   "paper": 0,
+   "sand": 0,
+   "copper": 0,
+   "glass": 0,
+   "filament": 0,
+   "germanium": 0,
+   "silicon": 0,
+   "wafers": 0
+  },
+  "foreman": false,
+  "sawPit": false,
+  "goalsDone": [
+   "tap"
+  ],
+  "boughtX10": false,
+  "tutorial": {
+   "seen": [],
+   "done": true,
+   "skipped": false,
+   "replay": false,
+   "tips": [],
+   "tipsOff": false
+  },
+  "orientation": "auto",
+  "buyMode": "x1",
+  "lastSeen": 1795208295484,
+  "researchJob": null,
+  "upgradeJob": null,
+  "projectJob": null,
+  "challenge": null,
+  "dilemma": null,
+  "businessesBought": 17,
+  "managersHired": 1,
+  "prestigeCount": 0,
+  "playMs": 35000,
+  "runStartedAt": 1795208260467,
+  "bestEra": 6,
+  "runs": [],
+  "facilities": {
+   "mine": {},
+   "cluster": {},
+   "servers": {}
+  },
+  "news": [],
+  "techDone": [],
+  "techJob": null,
+  "biz": [
+   {
+    "id": "timber",
+    "owned": 1,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "paper",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "loom",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "punchcards",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "relay",
+    "owned": 10,
+    "manager": true,
+    "running": false,
+    "progress": 2845,
+    "activeMs": 7235094.999999894,
+    "commissionUntil": 0
+   },
+   {
+    "id": "sand",
+    "owned": 6,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "copper",
+    "owned": 1,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "glass",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "filament",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "tubes",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "mainframes",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "germanium",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "transistors",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "silicon",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "wafers",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ics",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "minis",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cpu",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "homepc",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "consoles",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "dialup",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "gpu",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cloud",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "phones",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "rgb",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ai",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "quantum",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   }
+  ]
+ },
+ "v0.0.26-late": {
+  "version": 11,
+  "cash": 5645342230724925,
+  "lifetime": 5645342230724925,
+  "investors": 50,
+  "investorPeak": 50,
+  "autoUpgrades": false,
+  "briefingDay": "2026-11-20",
+  "streak": 1,
+  "careerEarnings": 5645342230724925,
+  "singularities": 0,
+  "tokens": 75,
+  "grants": [
+   "project:cable",
+   "project:mainframe",
+   "project:orbital",
+   "project:y2k"
+  ],
+  "data": 299.01367100000266,
+  "specialties": [],
+  "upgrades": {},
+  "challengesDone": [],
+  "projectsDone": [
+   "cable",
+   "mainframe",
+   "orbital",
+   "y2k"
+  ],
+  "shop": {
+   "freeManager": false,
+   "cashBuys": 0,
+   "samples": 0,
+   "crateDay": null
+  },
+  "boostUntil": 0,
+  "lab": {
+   "overclockUntil": 0,
+   "coolUntil": 0,
+   "patentDay": null,
+   "patents": 0,
+   "crew": false
+  },
+  "dilemmaDeferUntil": 0,
+  "nextDilemmaAt": 1795208359487,
+  "lastDilemma": "grant",
+  "nextWindfallAt": 1795208584506,
+  "prestiged": true,
+  "badgesEarned": [
+   "era-timber",
+   "era-paper",
+   "era-loom",
+   "era-punchcards",
+   "era-relay",
+   "era-sand",
+   "era-copper",
+   "era-glass",
+   "era-filament",
+   "era-tubes",
+   "era-mainframes",
+   "era-germanium",
+   "era-transistors",
+   "era-silicon",
+   "era-wafers",
+   "era-ics",
+   "era-minis",
+   "life-1",
+   "life-2",
+   "life-3",
+   "life-4",
+   "pr-cable",
+   "pr-mainframe",
+   "time-prestige"
+  ],
+  "museum": [
+   "sand-1",
+   "copper-1",
+   "timber-1",
+   "paper-1",
+   "glass-1",
+   "filament-1",
+   "germanium-1",
+   "silicon-1",
+   "wafers-1",
+   "tubes-1",
+   "loom-1",
+   "punchcards-1",
+   "transistors-1",
+   "ics-1",
+   "cpu-1",
+   "homepc-1",
+   "gpu-1",
+   "rgb-1",
+   "quantum-1",
+   "relay-1",
+   "mainframes-1",
+   "minis-1",
+   "consoles-1",
+   "dialup-1",
+   "cloud-1",
+   "phones-1",
+   "ai-1",
+   "cpu-4bit",
+   "cpu-8080",
+   "gpu-2d",
+   "gpu-3d"
+  ],
+  "eventsDone": [],
+  "bubble": null,
+  "nextBubbleAt": 0,
+  "supply": {
+   "wood": 17000,
+   "paper": 0,
+   "sand": 0,
+   "copper": 86076.29670329667,
+   "glass": 0,
+   "filament": 40656.29670329688,
+   "germanium": 55560,
+   "silicon": 0,
+   "wafers": 168822.59340659337
+  },
+  "foreman": false,
+  "sawPit": false,
+  "goalsDone": [
+   "tap",
+   "timber5",
+   "hire",
+   "timber10",
+   "paper",
+   "punch"
+  ],
+  "boughtX10": false,
+  "tutorial": {
+   "seen": [],
+   "done": true,
+   "skipped": false,
+   "replay": false,
+   "tips": [
+    "bubble",
+    "prestige",
+    "fork",
+    "running-low",
+    "foreman",
+    "buy-modes",
+    "upgrades",
+    "speedups",
+    "tokens",
+    "research",
+    "challenges",
+    "contract"
+   ],
+   "tipsOff": false
+  },
+  "orientation": "auto",
+  "buyMode": "x1",
+  "lastSeen": 1795208366696,
+  "researchJob": null,
+  "upgradeJob": null,
+  "projectJob": null,
+  "challenge": null,
+  "dilemma": {
+   "id": "grant",
+   "expiresAt": 1795208404506
+  },
+  "businessesBought": 809,
+  "managersHired": 27,
+  "prestigeCount": 1,
+  "playMs": 67001,
+  "runStartedAt": 1795208299126,
+  "bestEra": 26,
+  "runs": [],
+  "facilities": {
+   "mine": {},
+   "cluster": {},
+   "servers": {}
+  },
+  "news": [
+   {
+    "id": "plant-open",
+    "text": "SIDE PLANT CLEARED BESIDE THE AI ACCELERATORS"
+   },
+   {
+    "id": "servers-open",
+    "text": "RESEARCH SERVERS CLEARED BESIDE THE MICROPROCESSORS"
+   }
+  ],
+  "techDone": [
+   "cpu-4bit",
+   "cpu-8080",
+   "gpu-2d",
+   "gpu-3d"
+  ],
+  "techJob": null,
+  "biz": [
+   {
+    "id": "timber",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 966,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "paper",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 580,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "loom",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 766,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "punchcards",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "relay",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 866,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "sand",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 966,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "copper",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 580,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "glass",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "filament",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 866,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "tubes",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "mainframes",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 1216,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "germanium",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 666,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "transistors",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "silicon",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "wafers",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 1666,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ics",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "minis",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 2466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cpu",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 6466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "homepc",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 18466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "consoles",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 6466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "dialup",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 30466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "gpu",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 18466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cloud",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 6466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "phones",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 66466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "rgb",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 66466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ai",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 116466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   },
+   {
+    "id": "quantum",
+    "owned": 30,
+    "manager": true,
+    "running": false,
+    "progress": 162466,
+    "activeMs": 7267217.999999806,
+    "commissionUntil": 0
+   }
+  ]
+ },
+ "v0.0.26-newrich": {
+  "version": 11,
+  "cash": 199995.84,
+  "lifetime": 0.4,
+  "investors": 0,
+  "investorPeak": 0,
+  "autoUpgrades": false,
+  "briefingDay": "2026-11-20",
+  "streak": 1,
+  "careerEarnings": 0.4,
+  "singularities": 0,
+  "tokens": 0,
+  "grants": [],
+  "data": 3.6100454999999956,
+  "specialties": [],
+  "upgrades": {},
+  "challengesDone": [],
+  "projectsDone": [],
+  "shop": {
+   "freeManager": false,
+   "cashBuys": 0,
+   "samples": 0,
+   "crateDay": null
+  },
+  "boostUntil": 0,
+  "lab": {
+   "overclockUntil": 0,
+   "coolUntil": 0,
+   "patentDay": null,
+   "patents": 0,
+   "crew": false
+  },
+  "dilemmaDeferUntil": 0,
+  "nextDilemmaAt": 1795208438818,
+  "lastDilemma": null,
+  "nextWindfallAt": 1795208414068,
+  "prestiged": false,
+  "badgesEarned": [],
+  "museum": [],
+  "eventsDone": [],
+  "bubble": null,
+  "nextBubbleAt": 0,
+  "supply": {
+   "wood": 1,
+   "paper": 0,
+   "sand": 0,
+   "copper": 0,
+   "glass": 0,
+   "filament": 0,
+   "germanium": 0,
+   "silicon": 0,
+   "wafers": 0
+  },
+  "foreman": false,
+  "sawPit": true,
+  "goalsDone": [],
+  "boughtX10": false,
+  "tutorial": {
+   "seen": [],
+   "done": false,
+   "skipped": false,
+   "replay": false,
+   "tips": [],
+   "tipsOff": false
+  },
+  "orientation": "auto",
+  "buyMode": "x1",
+  "lastSeen": 1795208378818,
+  "researchJob": null,
+  "upgradeJob": null,
+  "projectJob": null,
+  "challenge": null,
+  "dilemma": null,
+  "businessesBought": 1,
+  "managersHired": 0,
+  "prestigeCount": 0,
+  "playMs": 10000,
+  "runStartedAt": 1795208368805,
+  "bestEra": 0,
+  "runs": [],
+  "facilities": {
+   "mine": {},
+   "cluster": {},
+   "servers": {}
+  },
+  "news": [],
+  "techDone": [],
+  "techJob": null,
+  "biz": [
+   {
+    "id": "timber",
+    "owned": 2,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 2000,
+    "commissionUntil": 0
+   },
+   {
+    "id": "paper",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "loom",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "punchcards",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "relay",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "sand",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "copper",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "glass",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "filament",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "tubes",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "mainframes",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "germanium",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "transistors",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "silicon",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "wafers",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ics",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "minis",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cpu",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "homepc",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "consoles",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "dialup",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "gpu",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "cloud",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "phones",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "rgb",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "ai",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   },
+   {
+    "id": "quantum",
+    "owned": 0,
+    "manager": false,
+    "running": false,
+    "progress": 0,
+    "activeMs": 0,
+    "commissionUntil": 0
+   }
+  ]
+ }
+}

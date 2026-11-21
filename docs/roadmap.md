@@ -32,7 +32,7 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
-## Next build (after 0.0.24)
+## Shipped in 0.0.25-0.0.26
 
 - **R&D pacing.** Eras make 0.001 R&D a second each (was 0.008); research
   servers are the main source (0.005 per unit of work; a starter rack makes
@@ -61,6 +61,19 @@ test shipped in 0.0.13 (see Done).
   on a tap outside, stays clear of the money panel, ticker and tab bar, and
   moves (or nudges the page) so it doesn't cover that item's BUY or Hire.
 
+## Ships in 0.0.27
+
+- **Mine and cluster rebalance.** One full Raster 3060 used to hit the 0.5%
+  cap, so every other part added nothing. Now a plant's share is
+  STARTER_SHARE x sqrt(power) (power = work x speed x memory factor, in
+  3060s), STARTER_SHARE 0.09%, both plants capped at 5% (`SHARE_CAP`). The
+  best-next-part helper (`nextPurchase`) judges each part with the cheapest
+  power, cooling and memory it needs; before, it stalled once power matched
+  the cards, because a supply alone added nothing while cooling was short.
+  The Facilities page now shows its suggestion and highlights the part. Sim
+  (bot follows the suggestion): plants reach 0.2% on the first run, 2-4.6%
+  on later runs, 5% in long runs; Quantum 12.8 h, fork-ready about 48 h
+  nonstop (45.9 h before), casual unchanged. Part prices unchanged.
 - **Away bank for R&D.** While the game is closed or in the background, the
   research servers bank at most 1 hour of full output, plus 1 hour per TB of
   disk, up to 8 hours (`AWAY_BANK` in `src/lib/research.js`). Live play, the
@@ -68,6 +81,14 @@ test shipped in 0.0.13 (see Done).
   sessions a day): R&D balance on reaching Quantum 55,099 -> 4,455; projects
   done by 72 h 42 -> 34. Business pacing unchanged (casual fork-ready 8.9 d,
   nonstop 45.3 h, Quantum 12.7 h / 4.3 d).
+- **Tester tools.** Copy my stats (More > Stats) with a milestone log and the
+  last 10 errors kept on the phone (`src/lib/errorLog.js`); SEND FEEDBACK can
+  attach the same text (on by default, can be turned off). Nothing is sent
+  except what the player emails.
+- **Save safety.** `tests/fixtures/old-saves.json` holds real saves written by
+  0.0.24, 0.0.25 and 0.0.26; the browser tests load each one in the current
+  build and check nothing is lost. Add the current build's saves when it
+  ships (play it briefly from the fixtures and keep what it writes).
 - **Tests.** `npm test` (logic, node:test) and `npm run test:e2e` (Playwright
   against the Android web bundle; build it first with `npm run android:bundle`)
   run on every pull request in `.github/workflows/tests.yml`.

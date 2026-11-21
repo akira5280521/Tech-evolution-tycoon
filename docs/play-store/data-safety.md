@@ -35,6 +35,25 @@ Answer **not collected** and **not shared** for every category, including:
 - No account is required
 - The only off-device request is an anonymous GET of the public GitHub releases document. Do not mark a data type as collected for it.
 
+## Feedback email, Copy my stats and the error log
+
+- **Send Feedback** opens the player's own email app (a `mailto:` link) with
+  the game version, Android version, phone model and, unless turned off, the
+  stats text and recent errors. The app itself transmits nothing: the player
+  sees and edits the message and sends it from their own email app. Google's
+  Data safety guidance treats transfers the player starts and sends through
+  another app as not collected by this app, so the answers above stay
+  **No**. Check this against the current help page ("Provide information for
+  Google Play's Data safety section", the user-initiated action note) before
+  submitting; if in doubt, the cautious answer is **App info and performance
+  > Crash logs / Diagnostics** and **Device or other IDs** as collected,
+  optional, for App functionality, not shared.
+- **Copy my stats** and the **error log** stay on the phone. Nothing is sent.
+- **Away-time reminder**: a local notification scheduled on the phone. No push
+  server, no token. `POST_NOTIFICATIONS` is asked for only when the player
+  turns the reminder on; `RECEIVE_BOOT_COMPLETED` restores that reminder after
+  a restart. Exact alarms and wake lock are removed from the manifest.
+
 If Console still asks about encryption or deletion because a toggle was set to Yes by mistake, go back and set collection to No.
 
 ## Once Google Play Games is switched on

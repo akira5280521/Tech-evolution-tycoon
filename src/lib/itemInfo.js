@@ -56,7 +56,7 @@ import {
 } from "./empire.js";
 import { GENERATIONS, GENERATION_BONUS, generationAt, generationIndex, generationPayMult } from "./generations.js";
 import { RESEARCH, RESEARCH_TABS, awayBankCap, awayBankHours, playerYear, researchCost, researchItem, researchLock, researchSpeed, serverOutput } from "./research.js";
-import { FACILITIES, PARTS, facilityReport, facilityUnlocked, partCost } from "./facilities.js";
+import { FACILITIES, PARTS, SHARE_CAP, facilityReport, facilityUnlocked, partCost } from "./facilities.js";
 
 export const LOCKED_TEXT = "Unlocks later in the timeline.";
 export const SOON_TEXT = "Coming soon: it isn't in the game yet.";
@@ -369,7 +369,7 @@ function facilityInfo(state, id) {
   } else {
     const business = businessIncomePerSecond(state, Date.now());
     const row = facilityReport(state, business)[id];
-    does = `It pays cash, ${money(row.perSecond)} a second now, and both plants together are capped at a share of what your businesses make.`;
+    does = `It pays cash, ${money(row.perSecond)} a second now, and both plants together are capped at ${Math.round(SHARE_CAP * 100)}% of what your businesses make.`;
   }
   const rows = [];
   if (open && id === "servers" && serverOutput(state).perSecond > 0) rows.push({ label: "AWAY", text: awayLine(state) });
@@ -543,8 +543,6 @@ const KINDS = {
   milestone: milestoneInfo,
   rd: rdInfo,
 };
-
-export const ITEM_KINDS = Object.keys(KINDS);
 
 export function itemInfo(kind, id, state) {
   const fn = KINDS[kind];

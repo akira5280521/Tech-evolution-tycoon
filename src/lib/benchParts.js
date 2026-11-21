@@ -667,11 +667,53 @@ export const BENCH_COOLERS = [
   aio("a-lf3", "Arktik Liquid Freezer III 360", 2024, "cool-lf3", ["lga1700", "lga1851", "am4", "am5"], 330, 360, "2024: a 360 mm radiator with a contact frame for LGA1700."),
 ];
 
+// --- Stage 5: monitors ----------------------------------------------------
+// A monitor shows only so much: past its resolution and refresh rate, a
+// faster card is wasted (cap, on the graphics scale). It needs a port in
+// common with the card: digital TTL (MDA, CGA, EGA), analog VGA, DVI, HDMI
+// or DisplayPort.
+function monitor(id, name, year, research, ports, cap, spec) {
+  return { ...base, id, kind: "monitor", name, year, research, ports, cap, icon: icon2(id), cost: price(year, 0.12), spec };
+}
+export const BENCH_MONITORS = [
+  monitor("y-5151", "Inland 5151 display", 1981, "mon-5151", ["ttl"], 0.7, "1981: green text on black, 80 columns, no graphics with the plain card."),
+  monitor("y-5153", "Inland 5153 color display", 1983, "mon-5153", ["ttl"], 0.8, "1983: sixteen colors for CGA."),
+  monitor("y-5154", "Inland 5154 enhanced display", 1984, "mon-5154", ["ttl"], 1.1, "1984: 640 by 350 for EGA."),
+  monitor("y-8513", "Inland 8513 color display", 1987, "mon-8513", ["vga"], 1.6, "1987: the first VGA monitor, analog, 640 by 480."),
+  monitor("y-ms3d", "NEZ MultiSync 3D", 1989, "mon-ms3d", ["vga"], 2.8, "1989: locks onto any refresh rate, up to 1024 by 768."),
+  monitor("y-17sf", "Sunrise Multiscan 17sf", 1995, "mon-17sf", ["vga"], 4.4, "1995: a 17-inch Trinitron tube, flat from top to bottom."),
+  monitor("y-fw900", "Sunrise GDM-FW900", 2000, "mon-fw900", ["vga"], 8, "2000: a 24-inch widescreen tube weighing 42 kg, still sought after."),
+  monitor("y-2001fp", "Dellwood 2001FP", 2003, "mon-2001fp", ["vga", "dvi"], 10, "2003: a 20-inch flat panel at 1600 by 1200."),
+  monitor("y-3007", "Dellwood 3007WFP", 2006, "mon-3007", ["dvi"], 17, "2006: 30 inches at 2560 by 1600, over a dual-link DVI cable only."),
+  monitor("y-vg236h", "Abacus VG236H", 2010, "mon-vg236h", ["dvi", "hdmi"], 20, "2010: 120 Hz, sold with 3D glasses."),
+  monitor("y-pg278q", "Abacus ROG Swift PG278Q", 2014, "mon-pg278q", ["dp"], 26, "2014: 1440p at 144 Hz with G-Sync, DisplayPort only."),
+  monitor("y-p2715q", "Dellwood P2715Q", 2015, "mon-p2715q", ["hdmi", "dp"], 28, "2015: a cheap 27-inch 4K screen at 60 Hz."),
+  monitor("y-pg27uq", "Abacus ROG Swift PG27UQ", 2018, "mon-pg27uq", ["hdmi", "dp"], 34, "2018: 4K at 144 Hz with HDR, and a fan inside."),
+  monitor("y-aw3423", "Alienwhere AW3423DW", 2022, "mon-aw3423", ["hdmi", "dp"], 42, "2022: a curved quantum-dot OLED at 175 Hz."),
+  monitor("y-pg32", "Abacus ROG Swift PG32UCDM", 2024, "mon-pg32", ["hdmi", "dp"], 48, "2024: 4K OLED at 240 Hz."),
+];
+// The ports on each card, as on the real ones: TTL until VGA (1987); VGA
+// until the 2016 cards dropped it; DVI from 2000 to 2016; HDMI from 2009;
+// DisplayPort from the 2009 Radeon (most cards from 2012).
+for (const card of BENCH_CARDS) {
+  const y = card.year;
+  const ports = [];
+  if (y < 1987) ports.push("ttl");
+  if (y >= 1987 && y <= 2015) ports.push("vga");
+  if (y >= 2000 && y <= 2016) ports.push("dvi");
+  if (y >= 2009) ports.push("hdmi");
+  if (y >= 2012 || card.id === "v-5870") ports.push("dp");
+  card.ports = ports;
+}
+// Boards with graphics on the CPU: VGA, DVI and HDMI to 2016, then HDMI and
+// DisplayPort.
+for (const b of BENCH_BOARDS) b.ports = b.year >= 2017 ? ["hdmi", "dp"] : b.year >= 2011 ? ["vga", "dvi", "hdmi"] : [];
+
 // Formats and networks that lost: out of production once the winner is
 // researched. BTX boards and cases stopped around 2008.
 const LOST_TO = { "r-hddvd": "med-bd", "n-tokenring": "net-100", "b-915btx": "case-haf932", "k-btx": "case-haf932" };
 
-export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CARDS, ...BENCH_ACCELS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS, ...BENCH_COOLERS];
+export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CARDS, ...BENCH_MONITORS, ...BENCH_ACCELS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS, ...BENCH_COOLERS];
 for (const part of BENCH_PARTS) if (LOST_TO[part.id]) part.retiredBy = LOST_TO[part.id];
 
 // R&D a second for each point of CPU perf at full memory. Tuned in the

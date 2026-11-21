@@ -56,7 +56,7 @@ import {
 } from "./empire.js";
 import { GENERATIONS, GENERATION_BONUS, generationAt, generationIndex, generationPayMult } from "./generations.js";
 import { RESEARCH, RESEARCH_TABS, awayBankCap, awayBankHours, playerYear, researchCost, researchItem, researchLock, researchSpeed, researchUnlocks, serverOutput } from "./research.js";
-import { FACILITIES, MEM_NAMES, PARTS, SHARE_CAP, SOCKET_NAMES, diskSize, facilityReport, facilityUnlocked, FORM_NAMES, memSize, partCost, partLock } from "./facilities.js";
+import { FACILITIES, MEM_NAMES, PARTS, SHARE_CAP, SOCKET_NAMES, diskSize, facilityReport, facilityUnlocked, FORM_NAMES, memSize, partCost, partLock, PORT_NAMES } from "./facilities.js";
 
 export const LOCKED_TEXT = "Unlocks later in the timeline.";
 export const SOON_TEXT = "Coming soon: it isn't in the game yet.";
@@ -419,6 +419,7 @@ function partInfo(state, facilityId, partId) {
   if (part.kind === "board") effect = `${SOCKET_NAMES[part.socket]} socket, ${part.slots} ${MEM_NAMES[part.mem]} ${part.slots === 1 ? "slot" : "slots"}${part.memMax ? ` up to ${part.memMax} MT/s` : ""}${part.oc ? ", overclocking" : part.memLock ? ", memory held to the CPU's rating" : ""}; a new board sells back what doesn't fit at half price.`;
   else if (part.kind === "cpu") effect = `It needs a ${SOCKET_NAMES[part.socket]} board whose chipset supports it, and ${memSize(part.ramMb)} of memory to run at full speed${part.unlocked ? "; unlocked, so an overclocking board adds 10%" : ""}.`;
   else if (part.kind === "video") effect = `A ${part.bus === "agp" ? `${part.agpKey === "universal" ? "universal" : `${part.agpKey} V`} AGP` : part.bus === "pcie" ? `PCI Express ${part.pcie}.0` : part.bus.toUpperCase()} card, ${part.length} mm, ${part.watts} W${part.plug !== "none" ? ", with its own power plug" : ""}; the PC goes no faster than its CPU can feed it.`;
+  else if (part.kind === "monitor") effect = `It plugs in by ${part.ports.map((x) => PORT_NAMES[x]).join(" or ")}; graphics faster than it can show are wasted, and without a monitor of its own the PC shows 90%.`;
   else if (part.kind === "accel") effect = "It adds 3D on a PCI slot, but only beside a graphics card.";
   else if (part.kind === "sound") effect = `${part.bus === "lpt" ? "It plugs into the printer port" : `A ${part.bus.toUpperCase()} card`}; it adds ${Math.round(part.bonus * 1000) / 10}% to the PC, more than sound on the board.`;
   else if (part.kind === "psu") effect = `${part.supply} W with ${part.mainPlug === "at" ? "AT board plugs" : part.mainPlug === "atx24" ? "a 24-pin board plug" : "a 20-pin board plug"}${part.cpuPlugs.includes("eps8") ? " and an 8-pin CPU plug" : part.cpuPlugs.includes("p4") ? " and a 4-pin CPU plug" : ""}; the PC slows down when it draws more than that.`;

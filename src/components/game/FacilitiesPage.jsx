@@ -260,6 +260,7 @@ const BENCH_TABS = [
   ["cpu", "CPUS", ["cpu", "fpu"]],
   ["stick", "MEMORY", ["stick"]],
   ["video", "GRAPHICS", ["video", "accel"]],
+  ["monitor", "DISPLAYS", ["monitor"]],
   ["sound", "SOUND", ["sound"]],
   ["psu", "POWER", ["psu"]],
   ["case", "CASES", ["case"]],

@@ -242,3 +242,22 @@ test("cases: form factors, SFX supplies, airflow and the end of BTX", () => {
   const s = upTo(BUSINESSES[BUSINESSES.length - 1].id);
   assert.match(partLock(s, part("k-btx")) || "", /back to ATX/);
 });
+
+test("monitors: ports must match, and a monitor caps the graphics it shows", () => {
+  const pc = { "b-z690": 1, "c-12900k": 1, "m-ddr5b": 1, "p-1600": 1, "h-d15g2": 1, "v-4090": 1 };
+  // A 2022 card has no VGA or DVI port.
+  assert.match(fitPart(pc, "bench", "y-fw900").reason, /No VGA port/);
+  assert.match(fitPart(pc, "bench", "y-3007").reason, /No DVI port/);
+  assert.ok(!fitPart(pc, "bench", "y-pg32").reason);
+  // The 1981 card only drives the TTL monitors; built-in computers need none.
+  assert.ok(!fitPart({ "b-5150": 1, "c-8088": 1, "v-cga": 1 }, "bench", "y-5153").reason);
+  assert.match(fitPart({ "b-orchard2": 1 }, "bench", "y-5153").reason, /own screen/);
+  // No monitor: a borrowed screen shows 90%; an old one caps a new card.
+  const bare = benchStock(pc);
+  const capped = benchStock({ ...pc, "y-p2715q": 1 });
+  const full = benchStock({ ...pc, "y-pg32": 1 });
+  assert.ok(Math.abs(bare.gfx - full.gfx * 0.9) < 1e-9);
+  assert.equal(capped.gfx, 28);
+  assert.ok(capped.screenCapped);
+  assert.ok(full.perf >= capped.perf);
+});

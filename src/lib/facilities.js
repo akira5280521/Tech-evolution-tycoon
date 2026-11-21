@@ -828,6 +828,17 @@ function fitBench(counts, part) {
   const [caseNow] = benchHas(counts, "case");
   const [psuNow] = benchHas(counts, "psu");
   const [cardNow] = benchHas(counts, "video");
+  if (part.kind === "monitor") {
+    if (!boardNow) return { reason: "Needs a PC to plug into." };
+    if (boardNow.builtin && !cardNow) return { reason: "This computer has its own screen." };
+    const [chipNow] = benchHas(counts, "cpu");
+    const source = cardNow ? cardNow.ports : chipNow?.igpu ? boardNow.ports : null;
+    if (!source) return { reason: "Needs graphics to plug into." };
+    if (!part.ports.some((p) => source.includes(p))) return { reason: `No ${part.ports.map((p) => PORT_NAMES[p]).join(" or ")} port on the ${cardNow ? cardNow.name : "board"}.` };
+    for (const x of benchHas(counts, "monitor")) takeOut(x, `replaces the ${x.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
   if (["video", "accel", "sound"].includes(part.kind)) {
     if (!boardNow) return { reason: "Needs a board to plug into." };
     const misfit = busMisfit(part, boardNow);
@@ -886,6 +897,7 @@ function fitBench(counts, part) {
   return { counts: { ...counts, [part.id]: (counts[part.id] || 0) + 1 }, refund: 0, note: null };
 }
 
+export const PORT_NAMES = { ttl: "TTL", vga: "VGA", dvi: "DVI", hdmi: "HDMI", dp: "DisplayPort" };
 const PLUG_NAMES = { none: "no plug", molex: "a drive power plug", "6pin": "a 6-pin PCIe plug", "8pin": "an 8-pin PCIe plug", "12vhpwr": "the 16-pin 12VHPWR plug" };
 export const FORM_NAMES = { at: "AT", atx: "ATX", matx: "micro-ATX", itx: "mini-ITX", eatx: "E-ATX", btx: "BTX", own: "built in" };
 // An ATX case takes an ATX or (with a bracket) an SFX supply; a small case
@@ -1045,6 +1057,15 @@ export function benchStock(counts, opts = {}) {
   else if (chip?.igpu) gfx = cpuPerf * 0.15;
   // The PC is as fast as its CPU, held back by weak graphics: a card faster
   // than the CPU can feed is partly idle.
+  // A monitor shows only so much; with none of its own the PC uses an old
+  // borrowed screen (90%). Built-in computers have their own.
+  const [screen] = benchHas(c, "monitor");
+  const source = card && gfx > 0 ? card.ports : chip?.igpu ? board?.ports || [] : [];
+  const screenOn = !!screen && screen.ports.some((p) => source.includes(p));
+  const ownScreen = board?.builtin && !(card && source.length);
+  const shownGfx = ownScreen || gfx <= 0 ? gfx : screenOn ? Math.min(gfx, screen.cap) : gfx * 0.9;
+  const screenCapped = screenOn && gfx > screen.cap;
+  gfx = shownGfx;
   const pcPerf = cpuPerf * 0.6 + Math.min(gfx, cpuPerf) * 0.4;
   let bottleneck = null;
   if (cpuPerf > 0 && gfx < cpuPerf * 0.9) bottleneck = "graphics";
@@ -1072,7 +1093,7 @@ export function benchStock(counts, opts = {}) {
   const perf = pcPerf * power * soundBonus * caseBonus * diskFactor * extras;
   return {
     board: board || null, cpu: chip || null, ramMb, needMb: need, sticks: stickCount, memory, memSpeed, rated, speedFactor, overclock, math,
-    cpuPerf, gfx, link, unplugged, bottleneck, draw, supply, power, sound: snd || null, case: caseNow || null, card: card || null,
+    cpuPerf, gfx, link, unplugged, bottleneck, monitor: screen || null, screenOn, screenCapped, ownScreen, draw, supply, power, sound: snd || null, case: caseNow || null, card: card || null,
     cooler: mounted, heat: heatStock * (ocOn ? 1.35 : 1), coolCap, canOc, ocOn, ocBlocked: canOc && wantOc && !ocOn, thermal,
     drive: disk || null, driveMbs: diskLink.mbs, driveText: diskLink.text, diskExpected: expected, media: removable || null, net: nic || null, modem: mdm || null,
     perf, perSecond: perf * BENCH_RD,
@@ -1132,6 +1153,15 @@ export function benchPlans(state) {
         if (box) add(box);
       }
     }
+    {
+      const st = benchStock(c);
+      if (st.gfx > 0 && !st.ownScreen && (!st.screenOn || st.screenCapped)) {
+        const fits = benchParts("monitor").filter((m) => !fitBench(c, m).reason && m.cap > (st.screenOn ? st.monitor.cap : 0));
+        const want = st.screenCapped || !st.screenOn ? (st.card?.gfx || st.gfx / 0.9) : 0;
+        const pick = fits.filter((m) => m.cap >= want).sort((a, b) => a.cost - b.cost)[0] || fits.sort((a, b) => b.cap - a.cap)[0];
+        if (pick) add(pick);
+      }
+    }
     const after = benchStock(c);
     if (after.perf <= now.perf) return null;
     return { label, steps, cost, perf: after.perf, perSecond: after.perSecond };
@@ -1168,7 +1198,7 @@ export function benchPlans(state) {
       const plan = finish(c, first, card.name);
       if (plan) plans.push({ ...plan, card });
     }
-    for (const kind of ["sound", "fpu", "accel", "drive", "media", "net", "modem", "cooler"]) {
+    for (const kind of ["sound", "fpu", "accel", "drive", "media", "net", "modem", "cooler", "monitor"]) {
       for (const part of benchParts(kind)) {
         if (benchHas(counts, kind).some((x) => x.id === part.id)) continue;
         const plan = finish(counts, [part], part.name);
@@ -1188,6 +1218,7 @@ export function benchLimit(counts, opts) {
   if (b.thermal < 0.999) return "Overheating";
   if (b.memory < 0.999) return "Needs more memory";
   if (b.unplugged) return "Card not plugged in";
+  if (b.screenCapped) return "Monitor limited";
   if (b.bottleneck === "graphics") return "Bottleneck: graphics";
   if (b.bottleneck === "cpu") return "Bottleneck: CPU";
   return "Running full";
@@ -1203,6 +1234,9 @@ export function benchHint(state) {
   if (b.unplugged) return `Next: a supply with the plug the ${b.card.name} needs.`;
   if (b.thermal < 0.999) return `Next: a cooler for ${SOCKET_NAMES[b.board.socket]} that moves ${Math.round(b.cpu.watts)} W; the CPU is slowing down from heat.`;
   if (b.ocBlocked) return `Overclock is off: the cooler moves ${b.coolCap} W and an overclocked ${b.cpu.name} makes ${Math.round(b.cpu.watts * 1.35)} W.`;
+  if (b.monitor && !b.screenOn && !b.ownScreen) return `Next: a monitor with a port the graphics has; the ${b.monitor.name} doesn't plug in.`;
+  if (b.screenCapped) return `Next: a better monitor; the ${b.monitor.name} can't show all the ${b.card?.name || "graphics"} draws.`;
+  if (!b.monitor && !b.ownScreen && b.gfx > 0) return "Next: a monitor of your own; a borrowed old screen shows 90% of the graphics.";
   if (b.bottleneck === "graphics") return "Bottleneck: the graphics. A faster card lets the CPU do more.";
   if (b.bottleneck === "cpu") return "Bottleneck: the CPU. The card waits on it; a faster CPU uses more of it.";
   return "Next: newer parts as you reach their years and research them.";

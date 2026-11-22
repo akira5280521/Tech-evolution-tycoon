@@ -12,7 +12,7 @@
 
 import { BUSINESSES } from "./gameConfig.js";
 import { playerYear } from "./eraYear.js";
-import { BENCH_PARTS, BENCH_RD, price } from "./benchParts.js";
+import { BENCH_PARTS, BENCH_RD, MULTI_FAMILY, price } from "./benchParts.js";
 
 export const SHARE_CAP = 0.05;
 export const STARTER_SHARE = 0.0009;
@@ -245,6 +245,7 @@ export function partMax(part, facilityId) {
   if (part?.group === "room" && (part.kind === "power" || part.kind === "cool")) return ROOM_UNITS;
   // One board and one CPU on the bench; sticks are limited by the board.
   if (TWIN_ADDINS.includes(part?.id)) return 2;
+  if (part?.kind === "video" && part.multi) return 2;
   if (part?.kind === "link") return 1;
   if (part?.kind === "board" || part?.kind === "cpu") return 1;
   if (part?.kind === "stick") return 8;
@@ -832,10 +833,28 @@ function fitBench(counts, part) {
     if (!boardNow || busMisfit(part, boardNow)) return { reason: "Needs a PCI slot." };
     return { counts: { ...counts, [part.id]: 2 }, refund: 0, note: "joins the first over a ribbon cable to split the work (SLI)" };
   }
+  // A second matching card, on a board that can run two (SLI or CrossFire).
+  if (part.kind === "video" && (counts[part.id] || 0) === 1) {
+    if (!part.multi) return { reason: "Already on the bench; this card can't pair with another." };
+    const family = MULTI_FAMILY[part.multi];
+    if (!boardNow?.multi?.includes(family)) return { reason: `The ${boardNow?.name || "board"} can't run two cards together (${family === "sli" ? "SLI" : "CrossFire"}).` };
+    const [psuPair] = benchHas(counts, "psu");
+    const note = part.multi === "xdma" ? "pairs with the first over PCI Express (CrossFire)" : `pairs with the first; it needs a ${part.multi === "nvlink" ? "NVLink" : family === "sli" ? "SLI" : "CrossFire"} bridge`;
+    return { counts: { ...counts, [part.id]: 2 }, refund: 0, note: psuPair && benchStock({ ...counts, [part.id]: 2 }).draw > psuPair.supply ? `${note}; the supply is too small for both` : note };
+  }
   if ((counts[part.id] || 0) > 0 && part.kind !== "stick") return { reason: "Already on the bench." };
   const [caseNow] = benchHas(counts, "case");
   const [psuNow] = benchHas(counts, "psu");
   const [cardNow] = benchHas(counts, "video");
+  if (part.kind === "bridge") {
+    const pair = cardNow && (counts[cardNow.id] || 0) >= 2 ? cardNow : null;
+    if (!pair) return { reason: "Needs two matching cards on the bench." };
+    if (pair.multi === "xdma") return { reason: `The ${pair.name} pair links over PCI Express; no bridge needed.` };
+    if (!part.links.includes(pair.multi)) return { reason: `Doesn't fit the ${pair.name}.` };
+    for (const x of benchHas(counts, "bridge")) takeOut(x, `replaces the ${x.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
   if (part.kind === "cache") {
     if (!boardNow?.coast) return { reason: "Needs a board with a COAST cache slot." };
     for (const x of benchHas(counts, "cache")) takeOut(x, `replaces the ${x.name}`);
@@ -1067,6 +1086,8 @@ export function benchStock(counts, opts = {}) {
   let gfx = 0;
   let link = 0;
   let unplugged = false;
+  const twoCards = !!card && (c[card.id] || 0) >= 2 && !!board?.multi?.includes(MULTI_FAMILY[card.multi]);
+  let linked = false;
   if (card && board && !busMisfit(card, board)) {
     if (psuNow && !psuNow.plugs.includes(card.plug)) unplugged = true;
     else {
@@ -1074,6 +1095,13 @@ export function benchStock(counts, opts = {}) {
       if (card.bus === "pcie") {
         link = Math.min(card.pcie, board.pcie || card.pcie, chip?.pcie || board.pcie || card.pcie);
         gfx *= 1 - 0.03 * Math.max(0, card.pcie - link);
+      }
+      // Two matching cards share the work once linked: about 70% more in the
+      // early years, falling to 50% as support faded.
+      if (twoCards) {
+        const [br] = benchHas(c, "bridge");
+        linked = card.multi === "xdma" || (!!br && br.links.includes(card.multi));
+        if (linked) gfx *= 1 + (card.year < 2010 ? 0.7 : card.year < 2016 ? 0.6 : 0.5) * (card.id === "v-1080" && br?.id === "br-sli" ? 0.7 : 1);
       }
       if (addIn && !busMisfit(addIn, board)) gfx += addIn.gfx * ((c[addIn.id] || 0) >= 2 ? 1.8 : 1);
     }
@@ -1095,7 +1123,7 @@ export function benchStock(counts, opts = {}) {
   if (cpuPerf > 0 && gfx < cpuPerf * 0.9) bottleneck = "graphics";
   else if (cpuPerf > 0 && gfx > cpuPerf * 1.3) bottleneck = "cpu";
   // Power: the supply has to cover the CPU, card and the rest (20 W).
-  const draw = 20 + (chip?.watts || 0) + (unplugged ? 0 : card?.watts || 0) + (addIn?.watts || 0) + (snd?.watts || 0) + (fpuChip?.watts || 0)
+  const draw = 20 + (chip?.watts || 0) + (unplugged ? 0 : (card?.watts || 0) * (card && (c[card.id] || 0) >= 2 ? 2 : 1)) + (addIn?.watts || 0) + (snd?.watts || 0) + (fpuChip?.watts || 0)
     + benchHas(c, "drive").reduce((n, x) => n + x.watts, 0) + benchHas(c, "media").reduce((n, x) => n + x.watts, 0) + benchHas(c, "addin").reduce((n, x) => n + x.watts, 0)
     + (coolerNow?.watts || 0) + (chip && board?.oc && chip.unlocked && wantOc ? chip.watts * 0.35 : 0);
   const supply = board?.builtin ? Math.max(draw, board.builtinWatts) : psuNow && !psuMisfit(psuNow, board) ? psuNow.supply : 0;
@@ -1119,7 +1147,7 @@ export function benchStock(counts, opts = {}) {
   const perf = pcPerf * power * soundBonus * caseBonus * diskFactor * extras;
   return {
     board: board || null, cpu: chip || null, ramMb, needMb: need, sticks: stickCount, memory, memSpeed, rated, speedFactor, overclock, math,
-    cpuPerf, gfx, link, unplugged, bottleneck, monitor: screen || null, screenOn, screenCapped, ownScreen, draw, supply, power, sound: snd || null, case: caseNow || null, card: card || null,
+    cpuPerf, gfx, link, unplugged, bottleneck, monitor: screen || null, screenOn, screenCapped, ownScreen, twoCards, linked, cardPair: !!card && (c[card.id] || 0) >= 2, draw, supply, power, sound: snd || null, case: caseNow || null, card: card || null,
     cooler: mounted, heat: heatStock * (ocOn ? 1.35 : 1), coolCap, canOc, ocOn, ocBlocked: canOc && wantOc && !ocOn, thermal,
     drive: disk || null, driveMbs: diskLink.mbs, driveText: diskLink.text, diskExpected: expected, media: removable || null, net: nic || null, modem: mdm || null,
     perf, perSecond: perf * BENCH_RD,
@@ -1260,6 +1288,8 @@ export function benchHint(state) {
   if (b.unplugged) return `Next: a supply with the plug the ${b.card.name} needs.`;
   if (b.thermal < 0.999) return `Next: a cooler for ${SOCKET_NAMES[b.board.socket]} that moves ${Math.round(b.cpu.watts)} W; the CPU is slowing down from heat.`;
   if (b.ocBlocked) return `Overclock is off: the cooler moves ${b.coolCap} W and an overclocked ${b.cpu.name} makes ${Math.round(b.cpu.watts * 1.35)} W.`;
+  if (b.cardPair && !b.twoCards) return `Next: a board that runs two cards; the ${b.board.name} uses only one ${b.card.name}.`;
+  if (b.twoCards && !b.linked) return `Next: a ${b.card.multi === "nvlink" ? "NVLink" : MULTI_FAMILY[b.card.multi] === "sli" ? "SLI" : "CrossFire"} bridge to link the two ${b.card.name} cards.`;
   if (b.monitor && !b.screenOn && !b.ownScreen) return `Next: a monitor with a port the graphics has; the ${b.monitor.name} doesn't plug in.`;
   if (b.screenCapped) return `Next: a better monitor; the ${b.monitor.name} can't show all the ${b.card?.name || "graphics"} draws.`;
   if (!b.monitor && !b.ownScreen && b.gfx > 0) return "Next: a monitor of your own; a borrowed old screen shows 90% of the graphics.";

@@ -52,7 +52,7 @@ export const WINGS = [
       { id: "boards", name: "BOARDS", match: benchKinds("board") },
       { id: "cpus", name: "CPUS", match: benchKinds("cpu", "fpu") },
       { id: "memory", name: "MEMORY", match: benchKinds("stick", "cache") },
-      { id: "graphics", name: "GRAPHICS", match: benchKinds("video", "accel") },
+      { id: "graphics", name: "GRAPHICS", match: benchKinds("video", "bridge", "accel") },
       { id: "displays", name: "DISPLAYS", match: benchKinds("monitor") },
       { id: "sound", name: "SOUND", match: benchKinds("sound") },
       { id: "cards", name: "CARDS", match: benchKinds("addin") },

@@ -700,6 +700,32 @@ export const BENCH_ADDINS = [
 // graphics cards.
 BENCH_ADDINS.find((x) => x.id === "x-physx").retiredBy = "vid-gtx280";
 
+// --- Two graphics cards: SLI and CrossFire ------------------------------------
+// From 2004 two matching cards could share the work: Raster's SLI, then
+// NVLink on the 2018 cards, and Artix's CrossFire, which from 2013 ran over
+// PCI Express with no bridge (XDMA). The board had to support it, and the
+// gain shrank as games and drivers stopped caring; the 2020 cards dropped it.
+const MULTI = {
+  "v-6800": "sli", "v-8800": "sli", "v-gtx280": "sli", "v-gtx480": "sli", "v-gtx680": "sli", "v-gtx980": "sli", "v-1080": "sli", "v-2080": "nvlink",
+  "v-x1800": "cf", "v-5870": "cf", "v-7970": "cf", "v-290x": "xdma", "v-vega64": "xdma",
+};
+for (const card of BENCH_CARDS) card.multi = MULTI[card.id] || null;
+const BOTH = ["b-x58", "b-x58c", "b-p55", "b-p67", "b-z68", "b-z77", "b-z87", "b-z97", "b-z170", "b-z270", "b-z370", "b-z390", "b-990fx",
+  "b-x370", "b-x470", "b-x570", "b-x399", "b-zenith", "b-z690", "b-z690d4", "b-z790", "b-x670e", "b-z890"];
+const CF_ONLY = ["b-p35", "b-790fx", "b-x48", "b-890fx", "b-b350", "b-b450", "b-b550"];
+for (const b of BENCH_BOARDS) b.multi = BOTH.includes(b.id) ? ["sli", "cf"] : CF_ONLY.includes(b.id) ? ["cf"] : b.id === "b-lanparty" ? ["sli"] : [];
+// Which board support a card's link needs.
+export const MULTI_FAMILY = { sli: "sli", nvlink: "sli", cf: "cf", xdma: "cf" };
+function bridge(id, name, year, research, links, retiredBy, spec) {
+  return { ...base, id, kind: "bridge", name, year, research, links, retiredBy, icon: icon2(id), cost: price(year, 0.01), spec };
+}
+export const BENCH_BRIDGES = [
+  bridge("br-sli", "Raster SLI bridge", 2004, "bridge-sli", ["sli"], "bridge-nvlink", "2004: a little board across the tops of two cards so they can split each frame."),
+  bridge("br-cf", "Artix CrossFire bridge", 2005, "bridge-cf", ["cf"], "vid-290x", "2005: links two Artix cards; from 2013 the cards talked over PCI Express instead."),
+  bridge("br-hbsli", "Raster SLI HB bridge", 2016, "bridge-hbsli", ["sli"], "bridge-nvlink", "2016: a stiffer, faster SLI bridge for the 1080; the old one held it back at high resolutions."),
+  bridge("br-nvlink", "Raster NVLink bridge", 2018, "bridge-nvlink", ["nvlink"], "vid-4090", "2018: a much faster link for the 2080; the 2022 cards dropped two-card play altogether."),
+];
+
 // --- Stage 5: monitors ----------------------------------------------------
 // A monitor shows only so much: past its resolution and refresh rate, a
 // faster card is wasted (cap, on the graphics scale). It needs a port in
@@ -746,7 +772,7 @@ for (const b of BENCH_BOARDS) b.ports = b.year >= 2017 ? ["hdmi", "dp"] : b.year
 // researched. BTX boards and cases stopped around 2008.
 const LOST_TO = { "r-hddvd": "med-bd", "n-tokenring": "net-100", "b-915btx": "case-haf932", "k-btx": "case-haf932" };
 
-export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CACHES, ...BENCH_CARDS, ...BENCH_MONITORS, ...BENCH_ACCELS, ...BENCH_ADDINS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS, ...BENCH_COOLERS];
+export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CACHES, ...BENCH_CARDS, ...BENCH_MONITORS, ...BENCH_BRIDGES, ...BENCH_ACCELS, ...BENCH_ADDINS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS, ...BENCH_COOLERS];
 for (const part of BENCH_PARTS) if (LOST_TO[part.id]) part.retiredBy = LOST_TO[part.id];
 
 // R&D a second for each point of CPU perf at full memory. Tuned in the

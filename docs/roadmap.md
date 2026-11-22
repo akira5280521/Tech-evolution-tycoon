@@ -227,6 +227,11 @@ test shipped in 0.0.13 (see Done).
   - Expansion cards: TV tuners, RAID controllers, the PhysX chip (out of
     production in 2008), capture cards. Two fit at once.
   - COAST cache modules for Pentium boards.
+  - Two graphics cards (2004–2020): a second matching card on a board with
+    SLI or CrossFire support, linked by the right bridge (SLI, SLI HB,
+    NVLink, CrossFire; none for the 2013 XDMA Artix cards). About 70% more
+    graphics early on, 50% by the end; twice the power; the monitor still
+    caps what shows. The 2022 cards can't pair.
   - Research servers: the ARM line on the CPU tab (ARM1 1985 to Neoverse
     N1), low-power ARM rack servers (Calxedon 2012, Amperion Altra 2020)
     and storage arrays (EMZ Symmetrix 1990 to all-flash 2015).

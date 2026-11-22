@@ -259,7 +259,7 @@ const BENCH_TABS = [
   ["board", "BOARDS", ["board"]],
   ["cpu", "CPUS", ["cpu", "fpu"]],
   ["stick", "MEMORY", ["stick", "cache"]],
-  ["video", "GRAPHICS", ["video", "accel"]],
+  ["video", "GRAPHICS", ["video", "bridge", "accel"]],
   ["monitor", "DISPLAYS", ["monitor"]],
   ["sound", "SOUND", ["sound"]],
   ["addin", "CARDS", ["addin"]],

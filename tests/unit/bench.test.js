@@ -284,3 +284,25 @@ test("COAST cache: only on boards with the slot, adds a little, gone once cache 
   const s = upTo(BUSINESSES[BUSINESSES.length - 1].id);
   assert.match(partLock(s, part("q-coast512")) || "", /onto the CPU/);
 });
+
+test("SLI and CrossFire: matching pair, a board that supports it, the right bridge", () => {
+  const pc = { "b-z97": 1, "c-4790k": 1, "m-ddr3b": 2, "p-1000": 1, "k-atxfull": 1, "y-pg32": 1 };
+  const one = { ...pc, "v-gtx980": 1 };
+  const two = fitPart(one, "bench", "v-gtx980");
+  assert.equal(two.counts["v-gtx980"], 2);
+  assert.match(two.note, /SLI bridge/);
+  // Not linked without a bridge; the CrossFire bridge doesn't fit.
+  assert.ok(!benchStock(two.counts).linked);
+  assert.match(fitPart(two.counts, "bench", "br-cf").reason, /Doesn't fit/);
+  const linked = fitPart(two.counts, "bench", "br-sli").counts;
+  const st = benchStock(linked);
+  assert.ok(st.linked && st.gfx > benchStock(one).gfx * 1.5);
+  assert.ok(st.draw > benchStock(one).draw + 100, "two cards draw twice the power");
+  // A card that can't pair, and a board without two-card support.
+  assert.match(fitPart({ ...pc, "v-4090": 1 }, "bench", "v-4090").reason, /can't pair/);
+  assert.match(fitPart({ "b-h87": 1, "v-gtx980": 1 }, "bench", "v-gtx980").reason, /can't run two cards/);
+  // CrossFire on the 290X needs no bridge; the 2018 cards need NVLink.
+  const xdma = fitPart({ "b-z97": 1, "v-290x": 1 }, "bench", "v-290x").counts;
+  assert.match(fitPart(xdma, "bench", "br-cf").reason, /no bridge needed/);
+  assert.match(fitPart({ "b-z390": 1, "v-2080": 2 }, "bench", "br-sli").reason, /Doesn't fit/);
+});

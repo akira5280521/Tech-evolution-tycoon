@@ -165,6 +165,7 @@ const HOW_TO = [
       "Each material's bins hold so much. When they're FULL, new output is lost. Tap a material to buy bigger bins; they stay through prestige.",
       "From Integrated Circuits on, tap silicon, copper or germanium to refine it: ten make one of a refined grade (polysilicon, oxygen-free copper, high-purity germanium) after a minute. Some late research needs them.",
       "RIGS parts take materials too: chips and boards wafers, screens and disks glass, power, cooling, cases and cables copper. From 2018 the copper parts take oxygen-free copper, and from 2020 the chip parts polysilicon. The BUY button shows what's missing.",
+      "Two lab projects use materials: FAB TEST RUN (400 wafers for an era token, three a day) and CLEAN ROOM (100 polysilicon: TECH research 25% faster for 15 minutes).",
       "Real shortages happen once each, in their years: the 1988 memory chip crunch, the 1999 Taiwan earthquake, the 2011 Thailand floods, the 2017 crypto rush and the 2020 chip shortage. Pay to keep going, or wait it out with that material made at half rate for ten minutes.",
     ],
   },

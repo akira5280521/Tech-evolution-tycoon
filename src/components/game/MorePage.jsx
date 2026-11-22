@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { FlaskConical } from "lucide-react";
 import { BUSINESSES, RESEARCH_MS, count, investorsFor, money } from "@/lib/gameConfig";
-import { SPECIALTIES, canCommit, dataPerSecond, establishedCount, masteredCount, specialtySlots } from "@/lib/empire";
+import { SPECIALTIES, canCommit, specialtySlots } from "@/lib/empire";
+import { serverOutput } from "@/lib/research";
 import { getSaveData } from "@/lib/gameSave";
 import { eraNameAt, eraReachedIndex, formatDuration, longestRun, runLengthMs } from "@/lib/records";
 import { useGameState } from "./GameState";
@@ -217,7 +218,7 @@ const HOW_TO = [
     id: "rd",
     title: "R&D POINTS",
     lines: [
-      `R&D points are the one research currency. Each era you own makes a trickle; research servers (${HUB_LABEL} beside TECH, then RIGS, from Mainframes) make most of them. Both earn at half rate while the game is closed, and the servers only bank what their disks hold: 1 hour of output, plus another hour per TB of disk.`,
+      `R&D points are the one research currency, made only by research machines in ${HUB_LABEL} (beside TECH), then RIGS: a cheap punch-card multiplier from the start, then research servers from Mainframes. They earn at half rate while the game is closed; the servers only bank what their disks hold (1 hour of output, plus another hour per TB of disk), while the punch-card machine banks all day.`,
       "Spend them on the R&D tab (specialties and lab projects) and on the TECH timeline. They are never lost, even when you prestige.",
     ],
   },
@@ -385,7 +386,7 @@ export function ResearchPage() {
 }
 
 export function ResearchBody({ state, onCommit, onLab }) {
-  const rate = dataPerSecond(state);
+  const rate = serverOutput(state).perSecond;
   const slots = specialtySlots(state);
   const picked = state.specialties || [];
   return (
@@ -396,7 +397,7 @@ export function ResearchBody({ state, onCommit, onLab }) {
         </p>
         <p className="font-term text-5xl leading-none text-[var(--game-success)]">{(state.data || 0).toFixed(1)}</p>
         <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
-          +{rate.toFixed(2)} a second from the {establishedCount(state)} {establishedCount(state) === 1 ? "era" : "eras"} you own and {masteredCount(state)} mastered. R&D points are never lost, even when you prestige.
+          +{rate.toFixed(rate > 0 && rate < 0.1 ? 3 : 2)} a second from your research machines in {HUB_LABEL} &gt; RIGS. R&D points are never lost, even when you prestige.
         </p>
       </Panel>
       <Panel>

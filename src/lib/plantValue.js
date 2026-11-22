@@ -3,7 +3,7 @@
 // is judged with the cheapest power, cooling, memory and disk it needs to run,
 // the same way the best-next-part suggestion judges it.
 
-import { PARTS, SHARE_CAP, facilityReport, facilityUnlocked, fitPart, partMax, supportPlan } from "./facilities.js";
+import { PARTS, SHARE_CAP, facilityReport, fitPart, partMax, partPlantOpen, supportPlan } from "./facilities.js";
 import { awayBankHours, serverOutput } from "./research.js";
 
 // The page asks for every row's value on every tick; the answer only moves
@@ -28,7 +28,7 @@ export function partValue(state, facilityId, partId, businessPerSecond) {
 
 function computePartValue(state, facilityId, partId, businessPerSecond) {
   const part = PARTS.find((p) => p.id === partId);
-  if (!part || part.soon || !part.fits.includes(facilityId) || !facilityUnlocked(state, facilityId)) return null;
+  if (!part || part.soon || !part.fits.includes(facilityId) || !partPlantOpen(state, facilityId, part)) return null;
   const owned = state?.facilities?.[facilityId]?.[partId] || 0;
   if (owned >= partMax(part, facilityId)) return { maxed: true };
   const fit = fitPart(state?.facilities?.[facilityId] || {}, facilityId, partId);

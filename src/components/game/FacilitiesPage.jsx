@@ -11,6 +11,7 @@ import {
   diskSize,
   memSize,
   facilityUnlocked,
+  partPlantOpen,
   fitPart,
   nextPurchase,
   partCost,
@@ -137,6 +138,9 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
   const open = facilityUnlocked(state, facility.id);
   const row = report[facility.id];
   const research = facility.id === "servers";
+  // Before Mainframes the server room opens only its tabulating corner: the
+  // starter machine. The machine room stays greyed out until then.
+  const starterOnly = research && !open;
   const bench = facility.id === "bench";
   const counts = state.facilities?.[facility.id] || {};
   const [benchTab, setBenchTab] = useState("cpu");
@@ -161,11 +165,11 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
     <Panel>
       <div data-facility={facility.id} data-locked={open ? undefined : ""}>
         <div data-help-scope className="flex items-start gap-2">
-          <div className={`h-14 w-14 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] ${open ? "" : "opacity-60"}`}>
+          <div className={`h-14 w-14 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] ${open || starterOnly ? "" : "opacity-60"}`}>
             <img src={facility.icon} alt="" className="pixel-art h-full w-full scale-[1.4] object-contain" />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className={`break-words font-pixel text-[0.6rem] leading-4 [overflow-wrap:anywhere] ${open ? "text-[var(--game-accent)]" : "text-[var(--game-dim)]"}`}>{facility.name}</h2>
+            <h2 className={`break-words font-pixel text-[0.6rem] leading-4 [overflow-wrap:anywhere] ${open || starterOnly ? "text-[var(--game-accent)]" : "text-[var(--game-dim)]"}`}>{facility.name}</h2>
           </div>
           <ItemHelp kind="facility" id={facility.id} state={state} name={facility.name} className="-mr-2 -mt-2.5" />
         </div>
@@ -185,9 +189,16 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
           </>
         ) : (
           // Not reached this run (or reset by a prestige): greyed out, with what it needs.
-          <p data-facility-limit data-facility-needs className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-dim)]">
-            {facilityNeed(facility.id)}
-          </p>
+          <>
+            {starterOnly && (
+              <p data-tabulating-room className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
+                TABULATING ROOM OPEN: the punch-card machine works from the start. The other machines:
+              </p>
+            )}
+            <p data-facility-limit data-facility-needs className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-dim)]">
+              {facilityNeed(facility.id)}
+            </p>
+          </>
         )}
         {open && facility.id === "bench" && (
           <p data-bench-build className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
@@ -247,7 +258,7 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
               key={part.id}
               part={part}
               owned={counts[part.id] || 0}
-              open={open}
+              open={partPlantOpen(state, facility.id, part)}
               cash={cash}
               onBuy={() => {
                 const done = onBuy(facility.id, part.id);

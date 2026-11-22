@@ -16,7 +16,6 @@ import {
   researchMaterials,
 } from "@/lib/research";
 import { REFINED } from "@/lib/gameConfig";
-import { dataPerSecond } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel, ProgressBar } from "./chrome";
 import { techProgress } from "@/lib/progress";
@@ -71,7 +70,7 @@ export default function ResearchPage() {
   const twoSlots = secondTechSlot(state);
   const speed = researchSpeed(state);
   const rd = Math.floor(state.data || 0);
-  const perSecond = dataPerSecond(state) + serverOutput(state).perSecond;
+  const perSecond = serverOutput(state).perSecond;
 
   return (
     <ScreenShell title="TECH" subtitle="Projects keep going while the app is closed.">

@@ -6,7 +6,7 @@
 // a prestige, fork or challenge, like research. The plants inside still need
 // their business owned this run to work.
 import { BUSINESSES } from "./gameConfig.js";
-import { FACILITY_UNLOCK, anyFacilityOpen, readNews } from "./facilities.js";
+import { FACILITY_UNLOCK, PARTS, STARTER_PART_ID, anyFacilityOpen, partCost, readNews } from "./facilities.js";
 
 // The top button's name, in one place so it can be renamed.
 export const HUB_LABEL = "HQ";
@@ -17,12 +17,23 @@ export const HUB_ITEMS = [
     id: "rigs",
     label: "RIGS",
     to: "/facilities",
-    text: "Research servers and the PC build bench that make R&D points, then the Bitbark mine and the AI training cluster that pay cash.",
-    open: (state) => !!state?.hubSeen || anyFacilityOpen(state),
+    text: "Research machines that make R&D points (a punch-card machine from the start, servers from Mainframes) and the PC build bench, then the Bitbark mine and the AI training cluster that pay cash.",
+    open: (state) => !!state?.hubSeen || anyFacilityOpen(state) || starterReady(state),
   },
 ];
 
-// The hub opens once any of its sections does, and then stays open.
+// The starter research machine is owned, or the cash for the first one is
+// there (a few dollars in the first minutes of a new game).
+export function starterReady(state) {
+  if (!state) return false;
+  const part = PARTS.find((p) => p.id === STARTER_PART_ID);
+  if (!part) return false;
+  if ((state.facilities?.servers?.[part.id] || 0) > 0) return true;
+  return (Number(state.cash) || 0) >= partCost(part, 0);
+}
+
+// The hub opens once any of its sections does (RIGS: as soon as the starter
+// machine is affordable), and then stays open.
 export function hubOpen(state) {
   return !!state?.hubSeen || HUB_ITEMS.some((item) => item.open(state));
 }
@@ -35,7 +46,7 @@ const FIRST_PLANT_INDEX = Math.min(...Object.values(FACILITY_UNLOCK).map((id) =>
 // the ticker's kept news, or the best era ever reached opens a plant.
 export function hubEvidence(state) {
   if (!state) return false;
-  if (anyFacilityOpen(state)) return true;
+  if (anyFacilityOpen(state) || starterReady(state)) return true;
   const plants = state.facilities && typeof state.facilities === "object" ? state.facilities : {};
   for (const counts of Object.values(plants)) {
     if (counts && typeof counts === "object" && Object.values(counts).some((n) => Number(n) > 0)) return true;
@@ -50,4 +61,15 @@ export function noteHubSeen(state) {
   if (!state || state.hubSeen || !hubEvidence(state)) return false;
   state.hubSeen = true;
   return true;
+}
+
+// NEXT MOVE line for a player with no research machine yet: R&D points only
+// come from research machines since 0.0.29. Null when it doesn't apply.
+export function starterHint(state) {
+  if (!state) return null;
+  const servers = state.facilities?.servers || {};
+  if (Object.values(servers).some((n) => Number(n) > 0)) return null;
+  if (!starterReady(state)) return null;
+  const part = PARTS.find((p) => p.id === STARTER_PART_ID);
+  return `Buy the ${part.name} in ${HUB_LABEL} > RIGS. Research machines make the R&D points research needs.`;
 }

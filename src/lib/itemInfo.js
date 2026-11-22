@@ -42,7 +42,6 @@ import {
   SHOP,
   SPECIALTIES,
   businessIncomePerSecond,
-  dataPerSecond,
   effectiveCycleMs,
   empireFactors,
   forkCost,
@@ -60,7 +59,7 @@ import {
 } from "./empire.js";
 import { GENERATIONS, GENERATION_BONUS, generationAt, generationIndex, generationPayMult } from "./generations.js";
 import { RESEARCH, RESEARCH_TABS, awayBankCap, awayBankHours, playerYear, researchCost, researchItem, researchLock, researchSpeed, researchUnlocks, serverOutput } from "./research.js";
-import { FACILITIES, MEM_NAMES, PARTS, SHARE_CAP, SOCKET_NAMES, diskSize, facilityReport, facilityUnlocked, FORM_NAMES, memSize, partCost, partLock, PORT_NAMES } from "./facilities.js";
+import { FACILITIES, MEM_NAMES, PARTS, SHARE_CAP, SOCKET_NAMES, diskSize, facilityReport, facilityUnlocked, partPlantOpen, FORM_NAMES, memSize, partCost, partLock, PORT_NAMES } from "./facilities.js";
 import { HUB_LABEL } from "./hub.js";
 
 export const LOCKED_TEXT = "Unlocks later in the timeline.";
@@ -321,7 +320,7 @@ function topBarInfo(state, { tech, rigs }) {
     text: "Tap the buy-amount button to change how many one BUY gets: X1, X10, X25, X50, X75, X100, then MAX.",
     rows: [
       { label: "TECH", text: tech ? "The tech timeline: timed research projects paid with R&D points. CPU and GPU projects unlock new chips." : LOCKED_TEXT },
-      { label: HUB_LABEL, text: rigs ? "Your hardware menu. Its RIGS section has research servers that make R&D points, and later a mine and a training cluster that pay cash." : LOCKED_TEXT },
+      { label: HUB_LABEL, text: rigs ? "Your hardware menu. Its RIGS section has the research machines that make R&D points (a punch-card machine from the start, servers from Mainframes), and later a mine and a training cluster that pay cash." : LOCKED_TEXT },
     ],
   };
 }
@@ -419,7 +418,7 @@ function partInfo(state, facilityId, partId) {
   const title = part.name.toUpperCase();
   if (part.soon) return { title, text: `${firstSentence(part.spec)} ${SOON_TEXT}` };
   const owned = state?.facilities?.[facilityId]?.[partId] || 0;
-  const plantOpen = facilityUnlocked(state, facilityId);
+  const plantOpen = partPlantOpen(state, facilityId, part);
   const servers = facilityId === "servers";
   const who = servers ? "racks" : "cards";
   const room = part.group === "room";
@@ -443,6 +442,7 @@ function partInfo(state, facilityId, partId) {
   else if (part.kind === "cooler") effect = `${part.aio ? `A sealed water loop with a ${part.radiator} mm radiator` : `An air cooler, ${part.height} mm tall`}; it moves ${part.cap} W of heat and mounts on ${part.sockets.map((x) => SOCKET_NAMES[x]).join(", ")}.`;
   else if (part.kind === "fpu") effect = `It fits a board with a ${part.fpu} socket and speeds up a CPU with no math unit of its own by 15%.`;
   else if (part.kind === "stick") effect = `Each adds ${memSize(part.mb)}${part.speed ? ` at up to ${part.speed} MT/s` : ""}; it fits only a board with ${MEM_NAMES[part.mem]} slots.`;
+  else if (part.kind === "tabulator") effect = `Each makes ${part.rd} R&D points a second with no generator, air conditioner or disk (up to ${part.max}), far less than the servers from Mainframes.`;
   else if (part.kind === "server" && room) effect = `Each adds ${part.work} work and needs ${part.watts === 1 ? "its own generator" : `${part.watts} generators`} and ${part.watts === 1 ? "a" : part.watts} ${COOLER_NAMES[part.coolant || "air"]}${part.watts === 1 ? "" : "s"}, and ${diskSize(part.diskGb)} of disk for full speed.`;
   else if (part.kind === "server") effect = `Each adds ${part.work} work and draws ${part.watts} W from the rack supplies and fans, and needs ${diskSize(part.diskGb)} of disk for full speed.`;
   else if (part.kind === "power" && room) effect = "Each powers one machine-room computer.";
@@ -558,7 +558,7 @@ function milestoneInfo(state, id) {
 function rdInfo(state) {
   return {
     title: "R&D POINTS",
-    text: `The one research currency: your eras make ${rate(dataPerSecond(state))} a second and research servers ${rate(serverOutput(state).perSecond)} a second, at half rate while away. Spend them on research, the TECH timeline and lab projects; they're never lost.`,
+    text: `The one research currency, made only by research machines in ${HUB_LABEL} > RIGS: ${rate(serverOutput(state).perSecond)} a second now, at half rate while away. Spend them on research, the TECH timeline and lab projects; they're never lost.`,
     rows: serverOutput(state).perSecond > 0 ? [{ label: "AWAY", text: awayLine(state, "the servers") }] : [],
   };
 }

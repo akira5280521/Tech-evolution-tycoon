@@ -71,7 +71,7 @@ import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { generationAt } from "@/lib/generations";
-import { REBUILD_SECONDS, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants, settleClosedParts } from "@/lib/facilities";
+import { REBUILD_SECONDS, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants, settleClosedParts, grantStarter } from "@/lib/facilities";
 import { noteHubSeen } from "@/lib/hub";
 import { advanceResearch, fillResearchGaps, grantOwnedResearch, readResearchData, readTechDone, readTechJob, startResearch } from "@/lib/research";
 import { currentGoal, readGoalsDone, settleGoals } from "@/lib/goals";
@@ -211,6 +211,8 @@ function applySavedMeta(state, raw) {
   state.goalsDone = readGoalsDone(m.goalsDone);
   state.boughtX10 = !!m.boughtX10;
   state.hubSeen = !!m.hubSeen;
+  // Saves from before 0.0.29 have no flag: grantStarter gives them one machine.
+  state.starterGranted = !!m.starterGranted;
   state.benchOc = m.benchOc !== false;
   state.restartSeen = !!m.restartSeen;
 }
@@ -272,6 +274,7 @@ function pack(s) {
     goalsDone: Array.isArray(s.goalsDone) ? s.goalsDone : [],
     boughtX10: !!s.boughtX10,
     hubSeen: !!s.hubSeen,
+    starterGranted: !!s.starterGranted,
     benchOc: s.benchOc !== false,
     restartSeen: !!s.restartSeen,
     tutorial: s.tutorial || null,
@@ -349,6 +352,9 @@ function loadSave() {
     // the rest (see settleClosedParts).
     const closedRefund = settleClosedParts(state);
     if (closedRefund > 0) state.cash = (state.cash || 0) + closedRefund;
+    // Eras stopped making R&D points in 0.0.29: a save before Mainframes with
+    // no research machine gets one free starter machine, once.
+    grantStarter(state);
     state.supply = data.supply;
     ensureSupply(state);
     state.storage = data.storage || {};

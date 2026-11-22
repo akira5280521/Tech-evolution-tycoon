@@ -35,12 +35,11 @@ import {
 } from "./gameConfig.js";
 
 export const SINGULARITY_MAX = 4;
-// R&D points a second for each era owned (and again when mastered). Eras are
-// a trickle; the research servers are the main source. Every R&D price and
-// grant below (specialties, lab projects, samples, dilemmas) is on this
-// scale: it was cut 8x along with the era rate, so the early game feels
-// the same.
-export const DATA_PER_ERA = 0.001;
+// Every R&D price and grant below (specialties, lab projects, samples,
+// dilemmas) is on the scale of the old era rate (0.001 a second per era),
+// which the starter punch-card machine now stands in for (0.0.29).
+// Eras made 0.001 R&D a second each until 0.0.29; now research machines do.
+export const DATA_PER_ERA = 0;
 export const SPECIALTY_COST = 10;
 // Speed gate, mastery bar and badge count live on each era in BUSINESSES, so
 // the order of the rows can change without shifting these numbers.
@@ -522,6 +521,8 @@ export function blankMeta() {
     goalsDone: [],
     boughtX10: false,
     hubSeen: false,
+    // A new game buys its own starter machine; old saves get one once (0.0.29).
+    starterGranted: true,
     tutorial: blankTutorial(),
     orientation: "auto",
     businessesBought: 0,
@@ -782,8 +783,11 @@ export function establishedCount(state) {
   return (state.biz || []).reduce((n, st) => n + (st && st.owned > 0 ? 1 : 0), 0);
 }
 
+// Eras no longer make R&D points (0.0.29): research machines in HQ > RIGS
+// do, starting with the starter machine. Kept so callers and old math read 0.
+// eslint-disable-next-line no-unused-vars
 export function dataPerSecond(state) {
-  return DATA_PER_ERA * establishedCount(state) + DATA_PER_ERA * masteredCount(state);
+  return 0;
 }
 
 // Ceiling starts at 42 and rises by 5 for each singularity point (max 15
@@ -1734,6 +1738,7 @@ export function snapshotMeta(state, options = {}) {
     goalsDone: Array.isArray(state.goalsDone) ? [...state.goalsDone] : [],
     boughtX10: !!state.boughtX10,
     hubSeen: !!state.hubSeen,
+    starterGranted: !!state.starterGranted,
     tutorial: { ...(state.tutorial || blankTutorial()), seen: [...(state.tutorial?.seen || [])], tips: [...(state.tutorial?.tips || [])] },
     orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
     buyMode: normalizeBuyMode(state.buyMode),

@@ -7,10 +7,10 @@
 // Like the tutorial, tips add no money or speed. They only explain.
 
 import { BUSINESSES, FOREMAN_COST, investorsFor, managerNeed, shortMaterial } from "./gameConfig.js";
-import { dataPerSecond, forkCost, managerPrice, singularityMult, upgradeOffer, upgradesOf } from "./empire.js";
+import { forkCost, managerPrice, singularityMult, upgradeOffer, upgradesOf } from "./empire.js";
 import { tutorialActive } from "./tutorial.js";
 import { facilitiesOpen, facilityUnlocked } from "./facilities.js";
-import { techOpen } from "./research.js";
+import { serverOutput, techOpen } from "./research.js";
 import { HUB_LABEL } from "./hub.js";
 
 const maxOwned = (s) => Math.max(0, ...(s?.biz || []).map((b) => b?.owned || 0));
@@ -129,9 +129,9 @@ export const TIPS = [
     id: "research",
     page: "game",
     title: "R&D POINTS",
-    text: "Your eras make a trickle of R&D points. Tap R&D and spend them on a bonus you keep. Research servers make far more later.",
+    text: `Your punch-card machine in ${HUB_LABEL} makes R&D points. Tap R&D and spend them on a bonus you keep. Research servers make far more later.`,
     target: '[data-tab="research"]',
-    when: (s) => (s.data || 0) >= 1 && dataPerSecond(s) > 0,
+    when: (s) => (s.data || 0) >= 1 && serverOutput(s).perSecond > 0,
   },
   {
     id: "tech",
@@ -145,7 +145,7 @@ export const TIPS = [
     id: "servers",
     page: "game",
     title: "RESEARCH SERVERS",
-    text: `Tap ${HUB_LABEL} (beside TECH), then RIGS, for research servers. They make most of your R&D points, far more than your eras. Buy a rack, then give it power and cooling.`,
+    text: `Tap ${HUB_LABEL} (beside TECH), then RIGS, for research servers. They make far more R&D points than the punch-card machine. Buy a machine, then give it power and cooling.`,
     target: '[data-open-facilities]',
     when: (s) => facilityUnlocked(s, "servers"),
   },

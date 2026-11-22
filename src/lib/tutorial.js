@@ -108,7 +108,7 @@ export const TUTORIAL_STEPS = [
   {
     id: "later",
     title: "WHAT'S AHEAD",
-    text: `The ??? buttons open later. TECH is research: timed projects paid with R&D points. ${HUB_LABEL} holds research servers and other plants. A tip explains each one when it opens.`,
+    text: `The ??? buttons open later. TECH is research: timed projects paid with R&D points. ${HUB_LABEL} holds the research machines that make R&D points, and other plants. A tip explains each one when it opens.`,
     target: "[data-open-research]",
     manual: true,
     button: "DONE",

@@ -54,8 +54,9 @@ test("top RIGS button opens the hub, and its RIGS button opens the plants", asyn
   expectClean(seen);
 });
 
-test("hub button stays ??? until the plants open", async ({ page }) => {
-  const seen = await open(page, "/", "fresh");
+test("hub button stays ??? until the starter machine is affordable", async ({ page }) => {
+  // A brand-new game (no gift: it buys its own starter) with no cash yet.
+  const seen = await open(page, "/", { ...SAVES.newgame, lastSeen: Date.now(), cash: 0, starterGranted: true, sawPit: true });
   await tipsOff(page);
   const top = page.locator("[data-open-facilities]");
   await expect(top).toHaveText("???");

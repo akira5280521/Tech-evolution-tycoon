@@ -219,3 +219,90 @@ test("coolers: socket mounts, case fit, heat and the overclock switch", () => {
   // Up to the 386, no cooler needed.
   assert.equal(benchStock({ "b-deskpro": 1, "c-386": 1, "m-41256": 4, "p-at150": 1 }).thermal, 1);
 });
+
+import { partLock } from "../../src/lib/facilities.js";
+test("cases: form factors, SFX supplies, airflow and the end of BTX", () => {
+  // E-ATX boards need a big case; mini-ITX boards fit almost anything.
+  assert.match(fitPart({ "b-zenith": 1 }, "bench", "k-airflow").reason, /E-ATX/);
+  assert.ok(!fitPart({ "b-zenith": 1 }, "bench", "k-mesh").reason);
+  assert.ok(!fitPart({ "b-b550i": 1 }, "bench", "k-nr200").reason);
+  assert.ok(!fitPart({ "b-b550i": 1 }, "bench", "k-lancool").reason);
+  // A small case takes only an SFX supply; an ATX case takes either.
+  assert.match(fitPart({ "k-nr200": 1 }, "bench", "p-750").reason, /SFX/);
+  assert.ok(!fitPart({ "k-nr200": 1 }, "bench", "p-sf750").reason);
+  assert.ok(!fitPart({ "k-lancool": 1 }, "bench", "p-sf750").reason);
+  assert.match(fitPart({ "p-750": 1 }, "bench", "k-m1").reason, /SFX/);
+  // BTX boards only go in BTX cases.
+  assert.match(fitPart({ "b-915btx": 1 }, "bench", "k-atxmid").reason, /BTX/);
+  assert.ok(!fitPart({ "b-915btx": 1 }, "bench", "k-btx").reason);
+  // A case with better airflow lets the same cooler take more heat.
+  const pc = { "b-z690": 1, "c-14900k": 1, "m-ddr5b": 1, "p-1600": 1, "h-d15g2": 1 };
+  assert.ok(benchStock({ ...pc, "k-mesh": 1 }).coolCap > benchStock({ ...pc, "k-o11": 1 }).coolCap);
+  // BTX went out of production once the 2008 cases arrived.
+  const s = upTo(BUSINESSES[BUSINESSES.length - 1].id);
+  assert.match(partLock(s, part("k-btx")) || "", /back to ATX/);
+});
+
+test("monitors: ports must match, and a monitor caps the graphics it shows", () => {
+  const pc = { "b-z690": 1, "c-12900k": 1, "m-ddr5b": 1, "p-1600": 1, "h-d15g2": 1, "v-4090": 1 };
+  // A 2022 card has no VGA or DVI port.
+  assert.match(fitPart(pc, "bench", "y-fw900").reason, /No VGA port/);
+  assert.match(fitPart(pc, "bench", "y-3007").reason, /No DVI port/);
+  assert.ok(!fitPart(pc, "bench", "y-pg32").reason);
+  // The 1981 card only drives the TTL monitors; built-in computers need none.
+  assert.ok(!fitPart({ "b-5150": 1, "c-8088": 1, "v-cga": 1 }, "bench", "y-5153").reason);
+  assert.match(fitPart({ "b-orchard2": 1 }, "bench", "y-5153").reason, /own screen/);
+  // No monitor: a borrowed screen shows 90%; an old one caps a new card.
+  const bare = benchStock(pc);
+  const capped = benchStock({ ...pc, "y-p2715q": 1 });
+  const full = benchStock({ ...pc, "y-pg32": 1 });
+  assert.ok(Math.abs(bare.gfx - full.gfx * 0.9) < 1e-9);
+  assert.equal(capped.gfx, 28);
+  assert.ok(capped.screenCapped);
+  assert.ok(full.perf >= capped.perf);
+});
+
+test("expansion cards: the right slot, two at most, RAID needs a disk, PhysX retires", () => {
+  const pc = { "b-z87": 1, "c-4770k": 1 };
+  assert.match(fitPart({ "b-z690": 1 }, "bench", "x-wintv").reason, /ISA/);
+  assert.match(fitPart(pc, "bench", "x-raid5805").reason, /disk/);
+  let c = fitPart(pc, "bench", "x-hd60").counts;
+  c = fitPart(c, "bench", "x-physx").counts;
+  const third = fitPart(c, "bench", "x-4k60");
+  assert.equal(Object.keys(third.counts).filter((k) => k.startsWith("x-")).length, 2, "a third card replaces one");
+  assert.match(third.note, /replaces/);
+  const s = upTo(BUSINESSES[BUSINESSES.length - 1].id);
+  assert.match(partLock(s, part("x-physx")) || "", /graphics cards took over/);
+});
+
+test("COAST cache: only on boards with the slot, adds a little, gone once cache moved onto the CPU", () => {
+  assert.match(fitPart({ "b-440bx": 1 }, "bench", "q-coast256").reason, /COAST/);
+  const pc = { "b-430fx": 1, "c-k5": 1, "m-edo": 2, "p-at230": 1, "h-586fan": 1 };
+  const with256 = fitPart(pc, "bench", "q-coast256");
+  assert.ok(!with256.reason);
+  assert.ok(benchStock(with256.counts).perf > benchStock(pc).perf);
+  const s = upTo(BUSINESSES[BUSINESSES.length - 1].id);
+  assert.match(partLock(s, part("q-coast512")) || "", /onto the CPU/);
+});
+
+test("SLI and CrossFire: matching pair, a board that supports it, the right bridge", () => {
+  const pc = { "b-z97": 1, "c-4790k": 1, "m-ddr3b": 2, "p-1000": 1, "k-atxfull": 1, "y-pg32": 1 };
+  const one = { ...pc, "v-gtx980": 1 };
+  const two = fitPart(one, "bench", "v-gtx980");
+  assert.equal(two.counts["v-gtx980"], 2);
+  assert.match(two.note, /SLI bridge/);
+  // Not linked without a bridge; the CrossFire bridge doesn't fit.
+  assert.ok(!benchStock(two.counts).linked);
+  assert.match(fitPart(two.counts, "bench", "br-cf").reason, /Doesn't fit/);
+  const linked = fitPart(two.counts, "bench", "br-sli").counts;
+  const st = benchStock(linked);
+  assert.ok(st.linked && st.gfx > benchStock(one).gfx * 1.5);
+  assert.ok(st.draw > benchStock(one).draw + 100, "two cards draw twice the power");
+  // A card that can't pair, and a board without two-card support.
+  assert.match(fitPart({ ...pc, "v-4090": 1 }, "bench", "v-4090").reason, /can't pair/);
+  assert.match(fitPart({ "b-h87": 1, "v-gtx980": 1 }, "bench", "v-gtx980").reason, /can't run two cards/);
+  // CrossFire on the 290X needs no bridge; the 2018 cards need NVLink.
+  const xdma = fitPart({ "b-z97": 1, "v-290x": 1 }, "bench", "v-290x").counts;
+  assert.match(fitPart(xdma, "bench", "br-cf").reason, /no bridge needed/);
+  assert.match(fitPart({ "b-z390": 1, "v-2080": 2 }, "bench", "br-sli").reason, /Doesn't fit/);
+});

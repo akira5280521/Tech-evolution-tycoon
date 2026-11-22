@@ -1,7 +1,6 @@
 import { badgeList } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell from "./chrome";
-import MuseumSection from "./MuseumSection";
 
 // `top` lets the More menu put its section buttons above the collection.
 export default function BadgesPage({ top = null }) {
@@ -16,7 +15,6 @@ export default function BadgesPage({ top = null }) {
       <p className="font-term text-lg leading-6 text-[var(--game-muted)]">
         Earn badges by unlocking new tech eras, stacking massive lifetime profit, mastering eras, and collapsing the timeline.
       </p>
-      <MuseumSection state={state} />
       {groups.map((group) => (
         <section key={group}>
           <h2 className="font-pixel text-[0.65rem] text-[var(--game-violet)]">· {group}</h2>

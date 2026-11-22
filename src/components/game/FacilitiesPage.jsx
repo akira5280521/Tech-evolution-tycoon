@@ -258,9 +258,11 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
 const BENCH_TABS = [
   ["board", "BOARDS", ["board"]],
   ["cpu", "CPUS", ["cpu", "fpu"]],
-  ["stick", "MEMORY", ["stick"]],
-  ["video", "GRAPHICS", ["video", "accel"]],
+  ["stick", "MEMORY", ["stick", "cache"]],
+  ["video", "GRAPHICS", ["video", "bridge", "accel"]],
+  ["monitor", "DISPLAYS", ["monitor"]],
   ["sound", "SOUND", ["sound"]],
+  ["addin", "CARDS", ["addin"]],
   ["psu", "POWER", ["psu"]],
   ["case", "CASES", ["case"]],
   ["drive", "DRIVES", ["drive", "media"]],

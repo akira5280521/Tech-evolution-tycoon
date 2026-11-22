@@ -97,12 +97,14 @@ export const BENCH_BOARDS = [
   board("b-nf3", "Raster nForce3 Ultra board", 2004, "s939", ["k8", "k8x2"], "ddr", 4, 400, ["oc"], "agp-1.5", 0, "2004: Socket 939 with an AGP slot."),
   board("b-nf4", "Raster nForce4 board", 2004, "s939", ["k8", "k8x2"], "ddr", 4, 400, ["oc"], "pcie", 1, "2004: Socket 939 with PCI Express graphics."),
   board("b-lanparty", "DFX LanParty nF4 board", 2005, "s939", ["k8", "k8x2"], "ddr", 4, 500, ["oc"], "pcie", 1, "2005: a glowing nForce4 board for overclockers."),
-  board("b-945p", "Chipwright 945P board", 2005, "lga775", ["pd"], "ddr2", 4, 667, [], "pcie", 1, "2005: LGA775 and DDR2 for the first dual cores."),
-  board("b-p965", "Chipwright P965 board", 2006, "lga775", ["pd", "c2"], "ddr2", 4, 800, ["oc"], "pcie", 1, "2006: DDR2-800 and support for the new two-core chips."),
+  board("b-915btx", "Chipwright D915GUX board", 2004, "lga775", ["p4-775"], "ddr2", 4, 533, [], "pcie", 1, "2004: a BTX board, built for the layout that was meant to replace ATX."),
+  board("b-945p", "Chipwright 945P board", 2005, "lga775", ["p4-775", "pd"], "ddr2", 4, 667, [], "pcie", 1, "2005: LGA775 and DDR2 for the first dual cores."),
+  board("b-p965", "Chipwright P965 board", 2006, "lga775", ["p4-775", "pd", "c2"], "ddr2", 4, 800, ["oc"], "pcie", 1, "2006: DDR2-800 and support for the new two-core chips."),
   board("b-p35", "Chipwright P35 board", 2007, "lga775", ["c2", "c2-45"], "ddr2", 4, 1066, ["oc"], "pcie", 1, "2007: the 45 nm chips, but no more NetBurst ones."),
   board("b-790fx", "Alder 790FX board", 2007, "am2", ["phenom", "ph2", "ph2-am3"], "ddr2", 4, 1066, ["oc"], "pcie", 2, "2007: AM2+, DDR2 and PCI Express 2.0."),
   board("b-x48", "Chipwright X48 board", 2008, "lga775", ["c2", "c2-45"], "ddr3", 4, 1600, ["oc"], "pcie", 2, "2008: LGA775 with DDR3 and PCI Express 2.0."),
   board("b-x58", "Chipwright X58 board", 2008, "lga1366", ["nehalem"], "ddr3", 6, 2000, ["oc"], "pcie", 2, "2008: LGA1366 and triple-channel DDR3 in six slots."),
+  board("b-x58c", "EVGO X58 Classified", 2009, "lga1366", ["nehalem"], "ddr3", 6, 2200, ["oc"], "pcie", 2, "2009: an E-ATX board with room for four graphics cards; it needs a full tower."),
   board("b-p55", "Chipwright P55 board", 2009, "lga1156", ["lynnfield"], "ddr3", 4, 2133, ["oc"], "pcie", 2, "2009: LGA1156, the first board with no northbridge."),
   board("b-890fx", "Alder 890FX board", 2010, "am3", ["ph2-am3"], "ddr3", 4, 1600, ["oc"], "pcie", 2, "2010: AM3 and DDR3; FX chips came later, on the next boards."),
   board("b-p67", "Chipwright P67 board", 2011, "lga1155", ["snb", "ivb"], "ddr3", 4, 2133, ["oc"], "pcie", 2, "2011: LGA1155 for overclocking, with no use for on-chip graphics."),
@@ -114,12 +116,14 @@ export const BENCH_BOARDS = [
   board("b-h87", "Chipwright H87 board", 2013, "lga1150", ["hsw"], "ddr3", 4, 1600, ["lock"], "pcie", 3, "2013: no overclocking, memory at rated speed."),
   board("b-z97", "Chipwright Z97 board", 2014, "lga1150", ["hsw", "hsw-r"], "ddr3", 4, 3200, ["oc"], "pcie", 3, "2014: the 4790K, and an M.2 slot."),
   board("b-z170", "Chipwright Z170 board", 2015, "lga1151", ["skl", "kbl"], "ddr4", 4, 3600, ["oc"], "pcie", 3, "2015: LGA1151, DDR4 and M.2."),
+  board("b-z170i", "Abacus Z170I mini-ITX board", 2015, "lga1151", ["skl", "kbl"], "ddr4", 2, 3600, ["oc"], "pcie", 3, "2015: the whole board in 17 cm square, two memory slots and one card slot."),
   board("b-b150", "Chipwright B150 board", 2015, "lga1151", ["skl", "kbl"], "ddr4", 4, 2133, ["lock"], "pcie", 3, "2015: a budget board: no overclocking, memory held at 2133."),
   board("b-z270", "Chipwright Z270 board", 2017, "lga1151", ["skl", "kbl"], "ddr4", 4, 4000, ["oc"], "pcie", 3, "2017: more lanes for the 7000-series chips."),
   board("b-a320", "Alder A320 board", 2017, "am4", AM4, "ddr4", 2, 2667, ["lock"], "pcie", 3, "2017: the cheapest AM4 board, no overclocking."),
   board("b-b350", "Alder B350 board", 2017, "am4", AM4, "ddr4", 4, 3200, ["oc"], "pcie", 3, "2017: AM4 with overclocking at a mid price."),
   board("b-x370", "Alder X370 board", 2017, "am4", AM4, "ddr4", 4, 3200, ["oc"], "pcie", 3, "2017: AM4's first top board; later chips came by BIOS update."),
   board("b-x399", "Alder X399 board", 2017, "tr4", ["zen1-tr", "zen+-tr"], "ddr4", 8, 3600, ["oc"], "pcie", 3, "2017: the 4,094-pin TR4 socket and eight DDR4 slots."),
+  board("b-zenith", "Abacus Zenith Extreme", 2017, "tr4", ["zen1-tr", "zen+-tr"], "ddr4", 8, 3600, ["oc"], "pcie", 3, "2017: an E-ATX X399 board, wider than ATX, for a full tower."),
   board("b-z370", "Chipwright Z370 board", 2017, "lga1151v2", ["cfl", "cfl-r"], "ddr4", 4, 4000, ["oc"], "pcie", 3, "2017: the same socket shape as Z170, but only 8000-series chips and later."),
   board("b-b360", "Chipwright B360 board", 2018, "lga1151v2", ["cfl", "cfl-r"], "ddr4", 4, 2666, ["lock"], "pcie", 3, "2018: no overclocking, memory held at 2666."),
   board("b-z390", "Chipwright Z390 board", 2018, "lga1151v2", ["cfl", "cfl-r"], "ddr4", 4, 4400, ["oc"], "pcie", 3, "2018: the board for the 9900K."),
@@ -127,11 +131,13 @@ export const BENCH_BOARDS = [
   board("b-x470", "Alder X470 board", 2018, "am4", AM4, "ddr4", 4, 3600, ["oc"], "pcie", 3, "2018: AM4's top board for the 2000-series."),
   board("b-x570", "Alder X570 board", 2019, "am4", ["zen+", "zen2", "zen3"], "ddr4", 4, 4400, ["oc"], "pcie", 4, "2019: PCI Express 4.0; no 1000-series chips."),
   board("b-b550", "Alder B550 board", 2020, "am4", ["zen2", "zen3"], "ddr4", 4, 4400, ["oc"], "pcie", 4, "2020: PCI Express 4.0 for the graphics slot; 3000-series chips and later only."),
+  board("b-b550i", "Alder B550-I mini-ITX board", 2020, "am4", ["zen2", "zen3"], "ddr4", 2, 4400, ["oc"], "pcie", 4, "2020: a small AM4 board for shoebox cases."),
   board("b-z690", "Chipwright Z690 board", 2021, "lga1700", LGA1700, "ddr5", 4, 6400, ["oc"], "pcie", 5, "2021: LGA1700, DDR5 and PCI Express 5.0."),
   board("b-z690d4", "Chipwright Z690 DDR4 board", 2021, "lga1700", LGA1700, "ddr4", 4, 4000, ["oc"], "pcie", 5, "2021: the same chipset with DDR4 slots instead."),
   board("b-b660", "Chipwright B660 board", 2022, "lga1700", LGA1700, "ddr5", 4, 5600, [], "pcie", 4, "2022: no CPU overclocking, but memory can run past rated speed."),
   board("b-h610", "Chipwright H610 board", 2022, "lga1700", LGA1700, "ddr4", 2, 3200, ["lock"], "pcie", 4, "2022: the cheapest LGA1700 board, two DDR4 slots."),
   board("b-z790", "Chipwright Z790 board", 2022, "lga1700", LGA1700, "ddr5", 4, 7200, ["oc"], "pcie", 5, "2022: faster DDR5 for the 13000-series."),
+  board("b-z790i", "Abacus Z790-I mini-ITX board", 2022, "lga1700", LGA1700, "ddr5", 2, 7600, ["oc"], "pcie", 5, "2022: DDR5 on a mini-ITX board, with M.2 slots stacked on top."),
   board("b-x670e", "Alder X670E board", 2022, "am5", ["zen4", "zen5"], "ddr5", 4, 6400, ["oc"], "pcie", 5, "2022: AM5, DDR5 only, PCI Express 5.0 graphics."),
   board("b-b650", "Alder B650 board", 2022, "am5", ["zen4", "zen5"], "ddr5", 4, 6400, ["oc"], "pcie", 4, "2022: AM5 with PCI Express 4.0 graphics."),
   board("b-a620", "Alder A620 board", 2023, "am5", ["zen4", "zen5"], "ddr5", 2, 6000, [], "pcie", 4, "2023: the cheapest AM5 board, no CPU overclocking."),
@@ -146,6 +152,7 @@ const DRIVES = {
   "b-430tx": [33, 0, 0], "b-440lx": [33, 0, 0], "b-mvp3": [66, 0, 0], "b-440bx": [33, 0, 0], "b-be6": [66, 0, 0],
   "b-amd750": [66, 0, 0], "b-kt7": [100, 0, 0], "b-845": [100, 0, 0], "b-kt266a": [100, 0, 0], "b-8rda": [133, 0, 0],
   "b-875p": [100, 1, 0], "b-ic7": [100, 1, 0], "b-nf3": [133, 1, 0], "b-nf4": [133, 2, 0], "b-lanparty": [133, 2, 0],
+  "b-915btx": [100, 1, 0], "b-x58c": [133, 2, 0], "b-z170i": [0, 3, 3], "b-zenith": [0, 3, 3], "b-b550i": [0, 3, 4], "b-z790i": [0, 3, 4],
   "b-945p": [100, 2, 0], "b-p965": [133, 2, 0], "b-p35": [133, 2, 0], "b-790fx": [133, 2, 0], "b-x48": [133, 2, 0],
   "b-x58": [133, 2, 0], "b-p55": [133, 2, 0], "b-890fx": [133, 3, 0], "b-p67": [0, 3, 0], "b-h67": [0, 3, 0],
   "b-z68": [0, 3, 0], "b-990fx": [133, 3, 0], "b-z77": [0, 3, 0], "b-z87": [0, 3, 0], "b-h87": [0, 3, 0],
@@ -192,6 +199,7 @@ export const BENCH_CPUS = [
   cpu("c-p4a", "Chipwright P4 2.0", 2001, "cpu-p4a", "s478", "p4-400", 6.2, 256, null, false, 0, "2001: 2 GHz on a 400 MHz bus."),
   cpu("c-xp", "Alder 1800+", 2001, "cpu-xp", "socketa", "xp", 6.8, 256, null, false, 0, "2001: 1.53 GHz on a 133 MHz bus, rated against a 1.8 GHz rival."),
   cpu("c-p4", "Chipwright P4 3.0C", 2003, "cpu-p4", "s478", "p4-800", 7.3, 512, null, false, 0, "2003: 3 GHz, an 800 MHz bus and two threads on one core."),
+  cpu("c-p4560", "Chipwright P4 560", 2004, "cpu-p4560", "lga775", "p4-775", 7.9, 1024, null, false, 0, "2004: 3.6 GHz on the new LGA775 socket, pins in the board instead of the chip."),
   cpu("c-a64", "Alder 64", 2003, "cpu-alder64", "s939", "k8", 7.6, 512, { ddr: 400 }, false, 0, "2003: the first 64-bit PC chip, memory controller on the chip."),
   cpu("c-x2", "Alder X2 4800+", 2005, "cpu-x2", "s939", "k8x2", 9.2, 1024, { ddr: 400 }, false, 0, "2005: two cores, 2.4 GHz."),
   cpu("c-dual", "Chipwright Dual", 2005, "cpu-dual", "lga775", "pd", 8.8, 1024, null, false, 0, "2005: two cores in one package, 2.8 GHz."),
@@ -261,7 +269,7 @@ const CPU_WATTS = {
   "c-8080": 1, "c-6502": 1, "c-z80": 1, "c-8088": 2, "c-286": 3, "c-386": 3, "c-486": 5, "c-am386": 3, "c-cx486dlc": 3,
   "c-am486": 5, "c-586": 15, "c-nx586": 12, "c-cx5x86": 6, "c-586pro": 35, "c-k5": 15, "c-6x86": 20, "c-586mmx": 17,
   "c-k6": 20, "c-6x86mx": 20, "c-c6": 12, "c-p2": 43, "c-300a": 20, "c-k62": 17, "c-mii": 20, "c-mp6": 20, "c-k7": 50,
-  "c-p3": 28, "c-tbird": 54, "c-p4a": 72, "c-xp": 66, "c-p4": 82, "c-a64": 89, "c-x2": 110, "c-dual": 130, "c-e6600": 65,
+  "c-p3": 28, "c-tbird": 54, "c-p4a": 72, "c-xp": 66, "c-p4": 82, "c-p4560": 115, "c-a64": 89, "c-x2": 110, "c-dual": 130, "c-e6600": 65,
   "c-q6600": 105, "c-phenom": 125, "c-q9650": 95, "c-i7920": 130, "c-ph2": 125, "c-i7860": 95, "c-1100t": 125,
   "c-2600k": 95, "c-fx8150": 125, "c-3770k": 77, "c-4770k": 84, "c-4790k": 88, "c-6700k": 91, "c-7700k": 91,
   "c-1800x": 95, "c-1950x": 180, "c-8700k": 95, "c-2700x": 105, "c-2990wx": 250, "c-9900k": 95, "c-3950x": 105,
@@ -288,12 +296,14 @@ for (const c of BENCH_CPUS) {
 // their own supply and video (builtin).
 const BUILTIN = { "b-altair": 0, "b-orchard2": 0, "b-trs80": 0, "b-5150": 64 };
 const MICRO = ["b-a320", "b-h610", "b-b150", "b-h67", "b-h87", "b-a620"];
+const ITX = ["b-z170i", "b-b550i", "b-z790i"];
+const EATX = ["b-x58c", "b-zenith"];
 const AT_FORM = ["b-at", "b-deskpro", "b-vlb", "b-430lx", "b-nxvl", "b-430fx", "b-440fx", "b-430tx", "b-mvp3"];
 const FPU = { "b-5150": "8087", "b-at": "287", "b-deskpro": "387" };
 for (const b of BENCH_BOARDS) {
   b.builtin = b.id in BUILTIN;
   b.builtinWatts = BUILTIN[b.id] || 0;
-  b.form = b.builtin ? "own" : AT_FORM.includes(b.id) ? "at" : MICRO.includes(b.id) ? "matx" : "atx";
+  b.form = b.builtin ? "own" : AT_FORM.includes(b.id) ? "at" : MICRO.includes(b.id) ? "matx" : ITX.includes(b.id) ? "itx" : EATX.includes(b.id) ? "eatx" : b.id === "b-915btx" ? "btx" : "atx";
   b.fpu = FPU[b.id] || null;
   const buses = [];
   if (b.gpuSlot === "isa8") buses.push("isa8");
@@ -312,7 +322,7 @@ for (const b of BENCH_BOARDS) {
 // one; Pentium 4-era boards add a 4-pin 12 V CPU plug, later boards an 8-pin
 // EPS plug. A 24-pin supply plug (20+4) still fits a 20-pin board, and an
 // 8-pin (4+4) one a 4-pin socket, but nothing new fits an AT board.
-const CPU4 = ["b-845", "b-8rda", "b-875p", "b-ic7", "b-nf3", "b-nf4", "b-lanparty", "b-945p", "b-p965", "b-p35", "b-790fx", "b-h67", "b-h87", "b-b150", "b-a320", "b-b360", "b-h610", "b-a620"];
+const CPU4 = ["b-915btx", "b-845", "b-8rda", "b-875p", "b-ic7", "b-nf3", "b-nf4", "b-lanparty", "b-945p", "b-p965", "b-p35", "b-790fx", "b-h67", "b-h87", "b-b150", "b-a320", "b-b360", "b-h610", "b-a620"];
 for (const b of BENCH_BOARDS) {
   if (b.builtin) continue;
   b.mainPlug = b.form === "at" ? "at" : b.year >= 2004 ? "atx24" : "atx20";
@@ -440,6 +450,9 @@ export const BENCH_PSUS = [
   psu("p-500", "500 W 80 Plus supply", 2004, "pwr-80", "atx", 500, ["none", "molex", "6pin"], "2004: 80% efficient, with a 6-pin plug for PCI Express cards."),
   psu("p-750", "750 W 80 Plus Gold", 2008, "pwr-gold", "atx", 750, ["none", "molex", "6pin", "8pin"], "2008: 87-90% efficient, a 24-pin and an 8-pin CPU plug, 6- and 8-pin card plugs."),
   psu("p-1000", "1000 W 80 Plus Platinum", 2009, "pwr-plat", "atx", 1000, ["none", "molex", "6pin", "8pin"], "2009: 90-94% efficient."),
+  psu("p-sfx450", "Silverstoner 450 W SFX supply", 2013, "pwr-sfx", "sfx", 450, ["none", "molex", "6pin", "8pin"], "2013: a supply a third smaller than ATX, for mini-ITX cases."),
+  psu("p-sf750", "Corsar SF750", 2019, "pwr-sf750", "sfx", 750, ["none", "molex", "6pin", "8pin"], "2019: 750 W in the small SFX size, 80 Plus Platinum."),
+  psu("p-sf1000", "Corsar SF1000", 2023, "pwr-sf1000", "sfx", 1000, ["none", "molex", "6pin", "8pin", "12vhpwr"], "2023: 1000 W SFX with the 16-pin card plug."),
   psu("p-1200", "1200 W 80 Plus Titanium", 2015, "pwr-titan", "atx", 1200, ["none", "molex", "6pin", "8pin"], "2015: up to 96% efficient."),
   psu("p-atx3", "1000 W ATX 3.0 supply", 2022, "pwr-atx3", "atx", 1000, ["none", "molex", "6pin", "8pin", "12vhpwr"], "2022: the 16-pin plug for 450 W cards, built for their power spikes."),
   psu("p-1600", "1600 W ATX 3.1 supply", 2024, "pwr-atx31", "atx", 1600, ["none", "molex", "6pin", "8pin", "12vhpwr"], "2024: the revised 16-pin plug."),
@@ -451,17 +464,62 @@ function pcCase(id, name, year, research, boards, form, maxGpu, radiators, spec)
   return { ...base, id, kind: "case", name, year, research, boards, form, maxGpu, radiators, maxCooler: CASE_COOLER[id] || 160, icon: icon2(id), cost: price(year, 0.05), spec };
 }
 // The tallest air cooler each case takes, in mm.
-const CASE_COOLER = { "k-atdesk": 70, "k-attower": 110, "k-atxmid": 160, "k-matx": 130, "k-atxfull": 170, "k-airflow": 165, "k-itx": 70, "k-mesh": 185 };
+const CASE_COOLER = {
+  "k-atdesk": 70, "k-attower": 110, "k-babyat": 100, "k-atxmid": 160, "k-matx": 130, "k-pc60": 160, "k-xaser": 165, "k-atxfull": 170,
+  "k-stacker": 175, "k-sonata": 160, "k-btx": 150, "k-p180": 165, "k-cosmos": 175, "k-haf932": 190, "k-800d": 180, "k-phantom": 180,
+  "k-torture": 999, "k-airflow": 165, "k-r4": 170, "k-900d": 200, "k-itx": 70, "k-h440": 180, "k-m1": 130, "k-defines": 180,
+  "k-570x": 170, "k-meshifyc": 172, "k-mesh": 185, "k-o11": 155, "k-o11xl": 167, "k-nr200": 155, "k-lancool": 176, "k-north": 170,
+  "k-y60": 160, "k-o11v": 167, "k-northxl": 185,
+};
 export const BENCH_CASES = [
   pcCase("k-atdesk", "AT desktop case", 1984, "case-atdesk", ["at"], "at", 340, [], "1984: a flat steel box the monitor sat on."),
   pcCase("k-attower", "AT tower case", 1990, "case-attower", ["at"], "at", 340, [], "1990: stood on the floor, with room for more drives."),
+  pcCase("k-babyat", "Baby AT mini-tower", 1993, "case-babyat", ["at"], "at", 300, [], "1993: a small beige tower for the smaller Baby AT boards."),
   pcCase("k-atxmid", "ATX mid-tower", 1996, "case-atxmid", ["atx", "matx"], "atx", 280, [], "1996: ports on the board's back panel; drive cages limit card length."),
-  pcCase("k-matx", "Micro-ATX case", 1997, "case-matx", ["matx"], "atx", 250, [], "1997: a small case for small boards."),
-  pcCase("k-atxfull", "ATX full tower", 2003, "case-atxfull", ["atx", "matx"], "atx", 330, [120], "2003: tall, with a 120 mm fan mount at the back."),
-  pcCase("k-airflow", "Airflow mid-tower", 2012, "case-airflow", ["atx", "matx"], "atx", 330, [120, 240, 280, 360], "2012: a mesh front and mounts for 360 mm radiators."),
-  pcCase("k-itx", "Mini-ITX case", 2014, "case-itx", ["matx"], "atx", 300, [120, 240], "2014: a shoebox that still takes a full-length card."),
-  pcCase("k-mesh", "Mesh full tower", 2018, "case-mesh", ["atx", "matx"], "atx", 400, [120, 240, 280, 360, 420], "2018: room for 420 mm radiators and the longest cards."),
+  pcCase("k-matx", "Micro-ATX case", 1997, "case-matx", ["matx", "itx"], "atx", 250, [], "1997: a small case for small boards."),
+  pcCase("k-pc60", "Lyan Lee PC-60", 2000, "case-pc60", ["atx", "matx"], "atx", 300, [], "2000: brushed aluminium, light enough to carry to a LAN party."),
+  pcCase("k-xaser", "Thermaltech Xaser III", 2002, "case-xaser", ["atx", "matx"], "atx", 300, [], "2002: a side window, blue lights and a fan controller on the front."),
+  pcCase("k-atxfull", "ATX full tower", 2003, "case-atxfull", ["atx", "matx", "eatx"], "atx", 330, [120], "2003: tall, with a 120 mm fan mount at the back."),
+  pcCase("k-stacker", "Cooler Mister Stacker", 2004, "case-stacker", ["atx", "matx", "eatx"], "atx", 330, [120], "2004: a full front of 5.25-inch bays to fill with drives and fans."),
+  pcCase("k-sonata", "Antek Sonata", 2004, "case-sonata", ["atx", "matx"], "atx", 280, [120], "2004: a quiet glossy-black mid-tower."),
+  pcCase("k-btx", "Chipwright BTX tower", 2004, "case-btx", ["btx"], "atx", 300, [], "2004: the layout meant to replace ATX, airflow straight through; almost no one used it."),
+  pcCase("k-p180", "Antek P180", 2005, "case-p180", ["atx", "matx"], "atx", 320, [120], "2005: the supply in its own cooled chamber at the bottom."),
+  pcCase("k-cosmos", "Cooler Mister Cosmos 1000", 2007, "case-cosmos", ["atx", "matx", "eatx"], "atx", 330, [120], "2007: aluminium rails like handles along the top."),
+  pcCase("k-haf932", "Cooler Mister HAF 932", 2008, "case-haf932", ["atx", "matx", "eatx"], "atx", 340, [120, 240, 360], "2008: huge 230 mm fans moving air at low speed."),
+  pcCase("k-800d", "Corsar Obsidian 800D", 2009, "case-800d", ["atx", "matx", "eatx"], "atx", 340, [120, 240, 360], "2009: a black brushed tower with hot-swap drive bays."),
+  pcCase("k-phantom", "NZXZ Phantom", 2010, "case-phantom", ["atx", "matx", "eatx"], "atx", 340, [120, 240, 280, 360], "2010: a curvy full tower with a fan controller."),
+  pcCase("k-torture", "Danger Din Torture Rack", 2010, "case-torture", ["atx", "matx", "eatx", "itx"], "atx", 500, [120, 240, 280, 360, 420], "2010: an open test bench, no case at all, from a maker gone by 2012."),
+  pcCase("k-airflow", "Airflow mid-tower", 2012, "case-airflow", ["atx", "matx", "itx"], "atx", 330, [120, 240, 280, 360], "2012: a mesh front and mounts for 360 mm radiators."),
+  pcCase("k-r4", "Fractel Define R4", 2012, "case-r4", ["atx", "matx", "itx"], "atx", 295, [120, 240, 280], "2012: sound-damped panels for a quiet room."),
+  pcCase("k-900d", "Corsar 900D", 2013, "case-900d", ["atx", "matx", "eatx"], "atx", 450, [120, 240, 280, 360, 420], "2013: a super tower with room for several radiators."),
+  pcCase("k-itx", "Mini-ITX case", 2014, "case-itx", ["itx"], "sfx", 300, [120, 240], "2014: a shoebox that still takes a full-length card."),
+  pcCase("k-h440", "NZXZ H440", 2014, "case-h440", ["atx", "matx", "itx"], "atx", 406, [120, 240, 280, 360], "2014: no drive bays at all, and a cover over the cables."),
+  pcCase("k-m1", "NKase M1", 2014, "case-m1", ["itx"], "sfx", 317, [120, 240], "2014: a 12.6-litre box made by a few enthusiasts with crowd funding."),
+  pcCase("k-defines", "Fractel Define S", 2015, "case-defines", ["atx", "matx", "itx"], "atx", 425, [120, 240, 280, 360, 420], "2015: no drive cages, built around a water loop."),
+  pcCase("k-570x", "Corsar Crystal 570X", 2016, "case-570x", ["atx", "matx", "itx"], "atx", 370, [120, 240, 280, 360], "2016: tempered glass on all four sides."),
+  pcCase("k-meshifyc", "Fractel Meshify C", 2017, "case-meshifyc", ["atx", "matx", "itx"], "atx", 315, [120, 240, 280, 360], "2017: a faceted mesh front for airflow."),
+  pcCase("k-mesh", "Mesh full tower", 2018, "case-mesh", ["atx", "matx", "eatx", "itx"], "atx", 400, [120, 240, 280, 360, 420], "2018: room for 420 mm radiators and the longest cards."),
+  pcCase("k-o11", "Lyan Lee O11 Dynamic", 2018, "case-o11", ["atx", "matx", "eatx", "itx"], "atx", 420, [120, 240, 280, 360], "2018: two glass sides and the supply hidden in a second chamber."),
+  pcCase("k-o11xl", "Lyan Lee O11 Dynamic XL", 2019, "case-o11xl", ["atx", "matx", "eatx", "itx"], "atx", 446, [120, 240, 280, 360, 420], "2019: the same idea, bigger, for E-ATX boards."),
+  pcCase("k-nr200", "Cooler Mister NR200", 2020, "case-nr200", ["itx"], "sfx", 330, [120, 240, 280], "2020: a cheap small case that still fits big coolers."),
+  pcCase("k-lancool", "Lyan Lee Lancool II Mesh", 2020, "case-lancool", ["atx", "matx", "eatx", "itx"], "atx", 384, [120, 240, 280, 360], "2020: a mesh front and fans included."),
+  pcCase("k-north", "Fractel North", 2022, "case-north", ["atx", "matx", "itx"], "atx", 355, [120, 240, 280, 360], "2022: a wooden front panel, like furniture."),
+  pcCase("k-y60", "Hite Y60", 2022, "case-y60", ["atx", "matx", "itx"], "atx", 375, [120, 240, 280, 360], "2022: a glass corner showing the card standing upright."),
+  pcCase("k-o11v", "Lyan Lee O11 Vision", 2023, "case-o11v", ["atx", "matx", "itx"], "atx", 455, [120, 240, 280, 360], "2023: glass on three sides with no corner posts."),
+  pcCase("k-northxl", "Fractel North XL", 2024, "case-northxl", ["atx", "matx", "eatx", "itx"], "atx", 413, [120, 240, 280, 360, 420], "2024: the wooden-front case, bigger."),
 ];
+// How well each case moves air: it scales what the cooler can handle.
+const CASE_AIRFLOW = {
+  "k-atdesk": 0.85, "k-attower": 0.9, "k-babyat": 0.85, "k-atxmid": 0.9, "k-matx": 0.85, "k-pc60": 0.95, "k-xaser": 0.95,
+  "k-atxfull": 1, "k-stacker": 1.05, "k-sonata": 0.95, "k-btx": 1.1, "k-p180": 1, "k-cosmos": 1, "k-haf932": 1.15, "k-800d": 1.05,
+  "k-phantom": 1.05, "k-torture": 1.2, "k-airflow": 1.1, "k-r4": 0.95, "k-900d": 1.1, "k-itx": 0.85, "k-h440": 1, "k-m1": 0.95,
+  "k-defines": 1.05, "k-570x": 0.95, "k-meshifyc": 1.12, "k-mesh": 1.15, "k-o11": 1.05, "k-o11xl": 1.08, "k-nr200": 1,
+  "k-lancool": 1.12, "k-north": 1.08, "k-y60": 1.0, "k-o11v": 1.05, "k-northxl": 1.1,
+};
+for (const k of BENCH_CASES) {
+  k.airflow = CASE_AIRFLOW[k.id] || 1;
+  k.open = k.id === "k-torture";
+}
 
 // Math coprocessors for boards with their socket; they speed up a CPU that
 // has no floating point of its own.
@@ -609,11 +667,112 @@ export const BENCH_COOLERS = [
   aio("a-lf3", "Arktik Liquid Freezer III 360", 2024, "cool-lf3", ["lga1700", "lga1851", "am4", "am5"], 330, 360, "2024: a 360 mm radiator with a contact frame for LGA1700."),
 ];
 
-// Formats and networks that lost: out of production once the winner is
-// researched.
-const LOST_TO = { "r-hddvd": "med-bd", "n-tokenring": "net-100" };
+// --- Stage 5: cache modules --------------------------------------------------
+// Some Pentium boards left the second-level cache to a module in a COAST
+// slot ("cache on a stick"). Once the cache moved onto the CPU, the slot went.
+function cache(id, name, year, research, kb, bonus, spec) {
+  return { ...base, id, kind: "cache", name, year, research, kb, bonus, icon: icon2(id), cost: price(year, 0.04), retiredBy: "board-440bx", spec };
+}
+export const BENCH_CACHES = [
+  cache("q-coast256", "256 KB COAST module", 1995, "cache-coast256", 256, 0.04, "1995: pipeline-burst cache on a little card that stands in the board."),
+  cache("q-coast512", "512 KB COAST module", 1996, "cache-coast512", 512, 0.06, "1996: twice the cache, for boards that took the bigger module."),
+];
+const COAST = ["b-430fx", "b-430tx"];
+for (const b of BENCH_BOARDS) b.coast = COAST.includes(b.id);
 
-export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CARDS, ...BENCH_ACCELS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS, ...BENCH_COOLERS];
+// --- Stage 5: odd expansion cards --------------------------------------------
+// Cards for one job each: a TV tuner, a RAID controller, a physics chip, a
+// game capture card. Two fit in the spare slots; each adds a little.
+function addin(id, name, year, research, bus, bonus, job, spec) {
+  return { ...base, id, kind: "addin", name, year, research, bus, bonus, job, watts: 10, icon: icon2(id), cost: price(year, 0.06), spec };
+}
+export const BENCH_ADDINS = [
+  addin("x-wintv", "Happaug WinTV", 1993, "add-wintv", "isa16", 0.005, "tv", "1993: TV in a window on the desktop, from an analog tuner."),
+  addin("x-wintvpci", "Happaug WinTV PCI", 1997, "add-wintvpci", "pci", 0.006, "tv", "1997: the TV card moved to PCI and could record to disk."),
+  addin("x-fasttrak", "Promys FastTrak66", 1999, "add-fasttrak", "pci", 0.01, "raid", "1999: two IDE disks as one, striped for speed or mirrored for safety."),
+  addin("x-physx", "Agea PhysX P1", 2006, "add-physx", "pci", 0.015, "physics", "2006: a chip just for game physics; Raster bought the maker in 2008 and moved it onto graphics cards."),
+  addin("x-raid5805", "Adapto RAID 5805", 2008, "add-raid5805", "pcie", 0.012, "raid", "2008: eight SATA disks on one card, with its own cache memory."),
+  addin("x-wintvhd", "Happaug WinTV-HVR-2250", 2009, "add-wintvhd", "pcie", 0.006, "tv", "2009: two digital TV tuners after the analog shutoff."),
+  addin("x-hd60", "Elgatto HD60 Pro", 2015, "add-hd60", "pcie", 0.008, "capture", "2015: records and streams a console's 1080p picture."),
+  addin("x-4k60", "Elgatto 4K60 Pro", 2018, "add-4k60", "pcie", 0.01, "capture", "2018: captures 4K at 60 frames a second."),
+];
+// The PhysX chip went out of production when its maker's buyer put it on
+// graphics cards.
+BENCH_ADDINS.find((x) => x.id === "x-physx").retiredBy = "vid-gtx280";
+
+// --- Two graphics cards: SLI and CrossFire ------------------------------------
+// From 2004 two matching cards could share the work: Raster's SLI, then
+// NVLink on the 2018 cards, and Artix's CrossFire, which from 2013 ran over
+// PCI Express with no bridge (XDMA). The board had to support it, and the
+// gain shrank as games and drivers stopped caring; the 2020 cards dropped it.
+const MULTI = {
+  "v-6800": "sli", "v-8800": "sli", "v-gtx280": "sli", "v-gtx480": "sli", "v-gtx680": "sli", "v-gtx980": "sli", "v-1080": "sli", "v-2080": "nvlink",
+  "v-x1800": "cf", "v-5870": "cf", "v-7970": "cf", "v-290x": "xdma", "v-vega64": "xdma",
+};
+for (const card of BENCH_CARDS) card.multi = MULTI[card.id] || null;
+const BOTH = ["b-x58", "b-x58c", "b-p55", "b-p67", "b-z68", "b-z77", "b-z87", "b-z97", "b-z170", "b-z270", "b-z370", "b-z390", "b-990fx",
+  "b-x370", "b-x470", "b-x570", "b-x399", "b-zenith", "b-z690", "b-z690d4", "b-z790", "b-x670e", "b-z890"];
+const CF_ONLY = ["b-p35", "b-790fx", "b-x48", "b-890fx", "b-b350", "b-b450", "b-b550"];
+for (const b of BENCH_BOARDS) b.multi = BOTH.includes(b.id) ? ["sli", "cf"] : CF_ONLY.includes(b.id) ? ["cf"] : b.id === "b-lanparty" ? ["sli"] : [];
+// Which board support a card's link needs.
+export const MULTI_FAMILY = { sli: "sli", nvlink: "sli", cf: "cf", xdma: "cf" };
+function bridge(id, name, year, research, links, retiredBy, spec) {
+  return { ...base, id, kind: "bridge", name, year, research, links, retiredBy, icon: icon2(id), cost: price(year, 0.01), spec };
+}
+export const BENCH_BRIDGES = [
+  bridge("br-sli", "Raster SLI bridge", 2004, "bridge-sli", ["sli"], "bridge-nvlink", "2004: a little board across the tops of two cards so they can split each frame."),
+  bridge("br-cf", "Artix CrossFire bridge", 2005, "bridge-cf", ["cf"], "vid-290x", "2005: links two Artix cards; from 2013 the cards talked over PCI Express instead."),
+  bridge("br-hbsli", "Raster SLI HB bridge", 2016, "bridge-hbsli", ["sli"], "bridge-nvlink", "2016: a stiffer, faster SLI bridge for the 1080; the old one held it back at high resolutions."),
+  bridge("br-nvlink", "Raster NVLink bridge", 2018, "bridge-nvlink", ["nvlink"], "vid-4090", "2018: a much faster link for the 2080; the 2022 cards dropped two-card play altogether."),
+];
+
+// --- Stage 5: monitors ----------------------------------------------------
+// A monitor shows only so much: past its resolution and refresh rate, a
+// faster card is wasted (cap, on the graphics scale). It needs a port in
+// common with the card: digital TTL (MDA, CGA, EGA), analog VGA, DVI, HDMI
+// or DisplayPort.
+function monitor(id, name, year, research, ports, cap, spec) {
+  return { ...base, id, kind: "monitor", name, year, research, ports, cap, icon: icon2(id), cost: price(year, 0.12), spec };
+}
+export const BENCH_MONITORS = [
+  monitor("y-5151", "Inland 5151 display", 1981, "mon-5151", ["ttl"], 0.7, "1981: green text on black, 80 columns, no graphics with the plain card."),
+  monitor("y-5153", "Inland 5153 color display", 1983, "mon-5153", ["ttl"], 0.8, "1983: sixteen colors for CGA."),
+  monitor("y-5154", "Inland 5154 enhanced display", 1984, "mon-5154", ["ttl"], 1.1, "1984: 640 by 350 for EGA."),
+  monitor("y-8513", "Inland 8513 color display", 1987, "mon-8513", ["vga"], 1.6, "1987: the first VGA monitor, analog, 640 by 480."),
+  monitor("y-ms3d", "NEZ MultiSync 3D", 1989, "mon-ms3d", ["vga"], 2.8, "1989: locks onto any refresh rate, up to 1024 by 768."),
+  monitor("y-17sf", "Sonee Multiscan 17sf", 1995, "mon-17sf", ["vga"], 4.4, "1995: a 17-inch Trinitron tube, flat from top to bottom."),
+  monitor("y-fw900", "Sonee GDM-FW900", 2000, "mon-fw900", ["vga"], 8, "2000: a 24-inch widescreen tube weighing 42 kg, still sought after."),
+  monitor("y-2001fp", "Dellwood 2001FP", 2003, "mon-2001fp", ["vga", "dvi"], 10, "2003: a 20-inch flat panel at 1600 by 1200."),
+  monitor("y-3007", "Dellwood 3007WFP", 2006, "mon-3007", ["dvi"], 17, "2006: 30 inches at 2560 by 1600, over a dual-link DVI cable only."),
+  monitor("y-vg236h", "Abacus VG236H", 2010, "mon-vg236h", ["dvi", "hdmi"], 20, "2010: 120 Hz, sold with 3D glasses."),
+  monitor("y-pg278q", "Abacus ROG Swift PG278Q", 2014, "mon-pg278q", ["dp"], 26, "2014: 1440p at 144 Hz with G-Sync, DisplayPort only."),
+  monitor("y-p2715q", "Dellwood P2715Q", 2015, "mon-p2715q", ["hdmi", "dp"], 28, "2015: a cheap 27-inch 4K screen at 60 Hz."),
+  monitor("y-pg27uq", "Abacus ROG Swift PG27UQ", 2018, "mon-pg27uq", ["hdmi", "dp"], 34, "2018: 4K at 144 Hz with HDR, and a fan inside."),
+  monitor("y-aw3423", "Alienwhere AW3423DW", 2022, "mon-aw3423", ["hdmi", "dp"], 42, "2022: a curved quantum-dot OLED at 175 Hz."),
+  monitor("y-pg32", "Abacus ROG Swift PG32UCDM", 2024, "mon-pg32", ["hdmi", "dp"], 48, "2024: 4K OLED at 240 Hz."),
+];
+// The ports on each card, as on the real ones: TTL until VGA (1987); VGA
+// until the 2016 cards dropped it; DVI from 2000 to 2016; HDMI from 2009;
+// DisplayPort from the 2009 Radeon (most cards from 2012).
+for (const card of BENCH_CARDS) {
+  const y = card.year;
+  const ports = [];
+  if (y < 1987) ports.push("ttl");
+  if (y >= 1987 && y <= 2015) ports.push("vga");
+  if (y >= 2000 && y <= 2016) ports.push("dvi");
+  if (y >= 2009) ports.push("hdmi");
+  if (y >= 2012 || card.id === "v-5870") ports.push("dp");
+  card.ports = ports;
+}
+// Boards with graphics on the CPU: VGA, DVI and HDMI to 2016, then HDMI and
+// DisplayPort.
+for (const b of BENCH_BOARDS) b.ports = b.year >= 2017 ? ["hdmi", "dp"] : b.year >= 2011 ? ["vga", "dvi", "hdmi"] : [];
+
+// Formats and networks that lost: out of production once the winner is
+// researched. BTX boards and cases stopped around 2008.
+const LOST_TO = { "r-hddvd": "med-bd", "n-tokenring": "net-100", "b-915btx": "case-haf932", "k-btx": "case-haf932" };
+
+export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CACHES, ...BENCH_CARDS, ...BENCH_MONITORS, ...BENCH_BRIDGES, ...BENCH_ACCELS, ...BENCH_ADDINS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS, ...BENCH_COOLERS];
 for (const part of BENCH_PARTS) if (LOST_TO[part.id]) part.retiredBy = LOST_TO[part.id];
 
 // R&D a second for each point of CPU perf at full memory. Tuned in the

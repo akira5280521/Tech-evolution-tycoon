@@ -12,7 +12,7 @@
 
 import { BUSINESSES } from "./gameConfig.js";
 import { playerYear } from "./eraYear.js";
-import { BENCH_PARTS, BENCH_RD, price } from "./benchParts.js";
+import { BENCH_PARTS, BENCH_RD, MULTI_FAMILY, price } from "./benchParts.js";
 
 export const SHARE_CAP = 0.05;
 export const STARTER_SHARE = 0.0009;
@@ -146,6 +146,9 @@ export const PARTS = [
   { id: "bladeB2", kind: "server", group: "rack", name: "Foundry Blade B2", icon: "/icons/parts/bladeB2.png", fits: ["servers"], year: 2006, research: "srv-blade", cost: 200_000_000_000, coef: 5, watts: 250, work: 100, diskGb: 9, spec: "2006: two dual-core chips on a blade, 250 W." },
   { id: "rack1", kind: "server", group: "rack", name: "Foundry Rack R1", icon: "/icons/parts/rack1.png", fits: ["servers"], year: 2012, research: "srv-r1", cost: 1_000_000_000_000, coef: 5, watts: 350, work: 160, diskGb: 1000, spec: "2012: 1U, two 8-core chips, 350 W." },
   { id: "rack4", kind: "server", group: "rack", name: "Foundry Rack R4", icon: "/icons/parts/rack4.png", fits: ["servers"], year: 2012, research: "srv-r4", cost: 5_000_000_000_000, coef: 5, watts: 1000, work: 300, diskGb: 1000, spec: "2012: 4U, four 8-core chips, 1,000 W." },
+  // Low-power ARM servers: more work for each watt, less for each dollar.
+  { id: "calx", kind: "server", group: "rack", name: "Calxedon EnergyCore box", icon: "/icons/parts/calx.png", fits: ["servers"], year: 2012, research: "srv-calx", cost: 2_000_000_000_000, coef: 5, watts: 100, work: 120, diskGb: 1000, spec: "2012: dozens of tiny ARM servers sharing one box, 100 W; the maker shut down in 2013." },
+  { id: "altra", kind: "server", group: "rack", name: "Amperion Altra 1U", icon: "/icons/parts/altra.png", fits: ["servers"], year: 2020, research: "srv-altra", cost: 1_400_000_000_000_000, coef: 5, watts: 250, work: 600, diskGb: 2000, spec: "2020: 80 ARM cores in one socket, 250 W." },
   { id: "psuAT", kind: "power", group: "rack", name: "200 W AT supply", icon: "/icons/parts/psuAT.png", fits: ["servers"], year: 1984, research: "pwr-at", cost: 400_000_000, coef: 2, power: 200, spec: "A 200 W AT supply with a big mains switch." },
   { id: "psu400", kind: "power", group: "rack", name: "400 W supply", icon: "/icons/parts/psu400.png", fits: ["servers"], year: 1995, research: "pwr-atx", cost: 2_000_000_000, coef: 2, power: 450, spec: "400 W ATX supply for a single rack." },
   { id: "labfan", kind: "cool", group: "rack", name: "Rack fan", icon: "/icons/parts/labfan.png", fits: ["servers"], year: 1989, research: null, cost: 300_000_000, coef: 2, cool: 300, spec: "A 120 mm fan. Moves about 300 W of heat out of a rack." },
@@ -170,6 +173,11 @@ export const PARTS = [
   { id: "disk3380", kind: "disk", name: "Inland 3380 disk", icon: "/icons/parts/disk3380.png", fits: ["servers"], year: 1980, research: "store-3380", cost: 100_000_000, coef: 2, gb: 2.52, spec: "1980: the first gigabyte-class disk, 2.52 GB, the size of a fridge." },
   { id: "disk10k", kind: "disk", name: "9 GB SCSI disk", icon: "/icons/parts/disk10k.png", fits: ["servers"], year: 1996, research: "store-10k", cost: 1_000_000_000, coef: 2, gb: 9, spec: "1996: 9 GB at 10,000 rpm, the first drive to spin that fast." },
   { id: "hdd1t", kind: "disk", name: "1 TB disk", icon: "/icons/parts/hdd1t.png", fits: ["servers"], year: 2007, research: "store-1tb", cost: 10_000_000_000, coef: 2, gb: 1000, spec: "2007: 1 TB on five platters, 7200 rpm." },
+  // Storage arrays: many disks behind one controller.
+  { id: "symm", kind: "disk", name: "EMZ Symmetrix 4200", icon: "/icons/parts/symm.png", fits: ["servers"], year: 1990, research: "store-symm", cost: 300_000_000, coef: 2, gb: 24, spec: "1990: 24 GB from a cabinet of small PC disks with a big cache, in place of one huge disk." },
+  { id: "thumper", kind: "disk", name: "Sunrise Fire X4500", icon: "/icons/parts/thumper.png", fits: ["servers"], year: 2006, research: "store-thumper", cost: 30_000_000_000, coef: 2, gb: 24000, spec: "2006: 48 disks in a 4U box, 24 TB, nicknamed Thumper." },
+  { id: "pod", kind: "disk", name: "Backblayz Storage Pod", icon: "/icons/parts/pod.png", fits: ["servers"], year: 2009, research: "store-pod", cost: 50_000_000_000, coef: 2, gb: 67000, spec: "2009: 45 cheap disks in a red 4U box, 67 TB, its design given away free." },
+  { id: "flasharray", kind: "disk", name: "Purely FlashArray//m", icon: "/icons/parts/flasharray.png", fits: ["servers"], year: 2015, research: "store-flasharray", cost: 500_000_000_000, coef: 2, gb: 120000, spec: "2015: all flash in 3U, orange front." },
   { id: "ssd2t", kind: "disk", name: "2 TB SSD", icon: "/icons/parts/ssd2t.png", fits: ["servers"], year: 2015, research: "store-ssd2t", cost: 100_000_000_000, coef: 2, gb: 2000, spec: "2015: 2 TB of NAND flash on SATA." },
   ...BENCH_PARTS,
 ];
@@ -237,6 +245,7 @@ export function partMax(part, facilityId) {
   if (part?.group === "room" && (part.kind === "power" || part.kind === "cool")) return ROOM_UNITS;
   // One board and one CPU on the bench; sticks are limited by the board.
   if (TWIN_ADDINS.includes(part?.id)) return 2;
+  if (part?.kind === "video" && part.multi) return 2;
   if (part?.kind === "link") return 1;
   if (part?.kind === "board" || part?.kind === "cpu") return 1;
   if (part?.kind === "stick") return 8;
@@ -639,7 +648,7 @@ export function partLock(state, part, researchName) {
   if (!part) return "Locked";
   if (playerYear(state) < (part.year || 0)) return `Requires ${part.year}`;
   if (part.research && !(state?.techDone || []).includes(part.research)) return `Research ${researchName || part.name} on the Tech page`;
-  if (partRetired(state, part)) return part.kind === "accel" ? "Out of production: combined 2D and 3D cards replaced it" : "Out of production: it lost to its rival";
+  if (partRetired(state, part)) return part.kind === "accel" ? "Out of production: combined 2D and 3D cards replaced it" : ["b-915btx", "k-btx"].includes(part.id) ? "Out of production: makers went back to ATX" : part.kind === "cache" ? "Out of production: the cache moved onto the CPU" : part.id === "x-physx" ? "Out of production: graphics cards took over physics" : "Out of production: it lost to its rival";
   return null;
 }
 
@@ -824,10 +833,55 @@ function fitBench(counts, part) {
     if (!boardNow || busMisfit(part, boardNow)) return { reason: "Needs a PCI slot." };
     return { counts: { ...counts, [part.id]: 2 }, refund: 0, note: "joins the first over a ribbon cable to split the work (SLI)" };
   }
+  // A second matching card, on a board that can run two (SLI or CrossFire).
+  if (part.kind === "video" && (counts[part.id] || 0) === 1) {
+    if (!part.multi) return { reason: "Already on the bench; this card can't pair with another." };
+    const family = MULTI_FAMILY[part.multi];
+    if (!boardNow?.multi?.includes(family)) return { reason: `The ${boardNow?.name || "board"} can't run two cards together (${family === "sli" ? "SLI" : "CrossFire"}).` };
+    const [psuPair] = benchHas(counts, "psu");
+    const note = part.multi === "xdma" ? "pairs with the first over PCI Express (CrossFire)" : `pairs with the first; it needs a ${part.multi === "nvlink" ? "NVLink" : family === "sli" ? "SLI" : "CrossFire"} bridge`;
+    return { counts: { ...counts, [part.id]: 2 }, refund: 0, note: psuPair && benchStock({ ...counts, [part.id]: 2 }).draw > psuPair.supply ? `${note}; the supply is too small for both` : note };
+  }
   if ((counts[part.id] || 0) > 0 && part.kind !== "stick") return { reason: "Already on the bench." };
   const [caseNow] = benchHas(counts, "case");
   const [psuNow] = benchHas(counts, "psu");
   const [cardNow] = benchHas(counts, "video");
+  if (part.kind === "bridge") {
+    const pair = cardNow && (counts[cardNow.id] || 0) >= 2 ? cardNow : null;
+    if (!pair) return { reason: "Needs two matching cards on the bench." };
+    if (pair.multi === "xdma") return { reason: `The ${pair.name} pair links over PCI Express; no bridge needed.` };
+    if (!part.links.includes(pair.multi)) return { reason: `Doesn't fit the ${pair.name}.` };
+    for (const x of benchHas(counts, "bridge")) takeOut(x, `replaces the ${x.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
+  if (part.kind === "cache") {
+    if (!boardNow?.coast) return { reason: "Needs a board with a COAST cache slot." };
+    for (const x of benchHas(counts, "cache")) takeOut(x, `replaces the ${x.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
+  if (part.kind === "addin") {
+    if (!boardNow) return { reason: "Needs a board to plug into." };
+    const misfit = busMisfit(part, boardNow);
+    if (misfit) return { reason: misfit };
+    if (part.job === "raid" && !benchHas(counts, "drive").length) return { reason: "Needs a disk to run." };
+    const others = benchHas(counts, "addin");
+    if (others.length >= 2) takeOut(others[0], `replaces the ${others[0].name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
+  if (part.kind === "monitor") {
+    if (!boardNow) return { reason: "Needs a PC to plug into." };
+    if (boardNow.builtin && !cardNow) return { reason: "This computer has its own screen." };
+    const [chipNow] = benchHas(counts, "cpu");
+    const source = cardNow ? cardNow.ports : chipNow?.igpu ? boardNow.ports : null;
+    if (!source) return { reason: "Needs graphics to plug into." };
+    if (!part.ports.some((p) => source.includes(p))) return { reason: `No ${part.ports.map((p) => PORT_NAMES[p]).join(" or ")} port on the ${cardNow ? cardNow.name : "board"}.` };
+    for (const x of benchHas(counts, "monitor")) takeOut(x, `replaces the ${x.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
   if (["video", "accel", "sound"].includes(part.kind)) {
     if (!boardNow) return { reason: "Needs a board to plug into." };
     const misfit = busMisfit(part, boardNow);
@@ -865,7 +919,7 @@ function fitBench(counts, part) {
     if (boardNow?.builtin) return { reason: "This computer has its own supply." };
     const plugMisfit = boardNow ? psuMisfit(part, boardNow) : null;
     if (plugMisfit) return { reason: plugMisfit };
-    if (caseNow && part.form !== caseNow.form) return { reason: `The ${caseNow.name} takes an ${caseNow.form.toUpperCase()} supply.` };
+    if (caseNow && !supplyFits(caseNow.form, part.form)) return { reason: `The ${caseNow.name} takes ${caseNow.form === "sfx" ? "only a small SFX" : `an ${caseNow.form.toUpperCase()}`} supply.` };
     if (cardNow && !part.plugs.includes(cardNow.plug)) return { reason: `The ${cardNow.name} needs ${PLUG_NAMES[cardNow.plug]}.` };
     for (const x of benchHas(counts, "psu")) takeOut(x, `replaces the ${x.name}`);
     next[part.id] = 1;
@@ -874,7 +928,7 @@ function fitBench(counts, part) {
   if (part.kind === "case") {
     if (boardNow?.builtin) return { reason: "This computer came in its own case." };
     if (boardNow && !part.boards.includes(boardNow.form)) return { reason: `The ${boardNow.name} is ${FORM_NAMES[boardNow.form]}; this case doesn't take it.` };
-    if (psuNow && psuNow.form !== part.form) return { reason: `This case takes an ${part.form.toUpperCase()} supply.` };
+    if (psuNow && !supplyFits(part.form, psuNow.form)) return { reason: `This case takes ${part.form === "sfx" ? "only a small SFX" : `an ${part.form.toUpperCase()}`} supply.` };
     if (cardNow && cardNow.length > part.maxGpu) return { reason: `The ${cardNow.name} is too long for it (${part.maxGpu} mm).` };
     const [coolNow] = benchHas(counts, "cooler");
     if (coolNow?.aio && !part.radiators.includes(coolNow.radiator)) return { reason: `It has no ${coolNow.radiator} mm radiator mount for the ${coolNow.name}.` };
@@ -886,8 +940,15 @@ function fitBench(counts, part) {
   return { counts: { ...counts, [part.id]: (counts[part.id] || 0) + 1 }, refund: 0, note: null };
 }
 
+export const PORT_NAMES = { ttl: "TTL", vga: "VGA", dvi: "DVI", hdmi: "HDMI", dp: "DisplayPort" };
 const PLUG_NAMES = { none: "no plug", molex: "a drive power plug", "6pin": "a 6-pin PCIe plug", "8pin": "an 8-pin PCIe plug", "12vhpwr": "the 16-pin 12VHPWR plug" };
-export const FORM_NAMES = { at: "AT", atx: "ATX", matx: "micro-ATX", own: "built in" };
+export const FORM_NAMES = { at: "AT", atx: "ATX", matx: "micro-ATX", itx: "mini-ITX", eatx: "E-ATX", btx: "BTX", own: "built in" };
+// An ATX case takes an ATX or (with a bracket) an SFX supply; a small case
+// only SFX; an AT case only AT.
+const SUPPLY_FITS = { at: ["at"], atx: ["atx", "sfx"], sfx: ["sfx"] };
+function supplyFits(caseForm, psuForm) {
+  return (SUPPLY_FITS[caseForm] || [caseForm]).includes(psuForm);
+}
 const BUS_NAMES = { lpt: "printer port", isa8: "8-bit ISA", isa16: "16-bit ISA", vlb: "VL-Bus", pci: "PCI", agp: "AGP", pcie: "PCI Express" };
 
 const MAIN_NAMES = { at: "AT power plugs", atx20: "a 20-pin ATX plug", atx24: "a 24-pin ATX plug" };
@@ -1004,7 +1065,9 @@ export function benchStock(counts, opts = {}) {
   const [coolerNow] = benchHas(c, "cooler");
   const mounted = coolerNow && board && coolerNow.sockets.includes(board.socket) ? coolerNow : null;
   const heatStock = chip?.watts || 0;
-  const coolCap = mounted ? mounted.cap : heatStock <= 5 ? heatStock : 0;
+  // A case moves more or less air than open air; that scales the cooler.
+  const [caseHere] = benchHas(c, "case");
+  const coolCap = mounted ? Math.round(mounted.cap * (caseHere?.airflow || 1)) : heatStock <= 5 ? heatStock : 0;
   const canOc = fits && board.oc && chip.unlocked;
   const ocOn = canOc && wantOc && coolCap >= heatStock * 1.35;
   const thermal = !fits || heatStock <= 0 ? 1 : coolCap >= heatStock ? 1 : coolCap <= 0 ? 0.5 : Math.max(0.5, coolCap / heatStock);
@@ -1023,6 +1086,8 @@ export function benchStock(counts, opts = {}) {
   let gfx = 0;
   let link = 0;
   let unplugged = false;
+  const twoCards = !!card && (c[card.id] || 0) >= 2 && !!board?.multi?.includes(MULTI_FAMILY[card.multi]);
+  let linked = false;
   if (card && board && !busMisfit(card, board)) {
     if (psuNow && !psuNow.plugs.includes(card.plug)) unplugged = true;
     else {
@@ -1031,19 +1096,35 @@ export function benchStock(counts, opts = {}) {
         link = Math.min(card.pcie, board.pcie || card.pcie, chip?.pcie || board.pcie || card.pcie);
         gfx *= 1 - 0.03 * Math.max(0, card.pcie - link);
       }
+      // Two matching cards share the work once linked: about 70% more in the
+      // early years, falling to 50% as support faded.
+      if (twoCards) {
+        const [br] = benchHas(c, "bridge");
+        linked = card.multi === "xdma" || (!!br && br.links.includes(card.multi));
+        if (linked) gfx *= 1 + (card.year < 2010 ? 0.7 : card.year < 2016 ? 0.6 : 0.5) * (card.id === "v-1080" && br?.id === "br-sli" ? 0.7 : 1);
+      }
       if (addIn && !busMisfit(addIn, board)) gfx += addIn.gfx * ((c[addIn.id] || 0) >= 2 ? 1.8 : 1);
     }
   } else if (board?.builtin) gfx = cpuPerf;
   else if (chip?.igpu) gfx = cpuPerf * 0.15;
   // The PC is as fast as its CPU, held back by weak graphics: a card faster
   // than the CPU can feed is partly idle.
+  // A monitor shows only so much; with none of its own the PC uses an old
+  // borrowed screen (90%). Built-in computers have their own.
+  const [screen] = benchHas(c, "monitor");
+  const source = card && gfx > 0 ? card.ports : chip?.igpu ? board?.ports || [] : [];
+  const screenOn = !!screen && screen.ports.some((p) => source.includes(p));
+  const ownScreen = board?.builtin && !(card && source.length);
+  const shownGfx = ownScreen || gfx <= 0 ? gfx : screenOn ? Math.min(gfx, screen.cap) : gfx * 0.9;
+  const screenCapped = screenOn && gfx > screen.cap;
+  gfx = shownGfx;
   const pcPerf = cpuPerf * 0.6 + Math.min(gfx, cpuPerf) * 0.4;
   let bottleneck = null;
   if (cpuPerf > 0 && gfx < cpuPerf * 0.9) bottleneck = "graphics";
   else if (cpuPerf > 0 && gfx > cpuPerf * 1.3) bottleneck = "cpu";
   // Power: the supply has to cover the CPU, card and the rest (20 W).
-  const draw = 20 + (chip?.watts || 0) + (unplugged ? 0 : card?.watts || 0) + (addIn?.watts || 0) + (snd?.watts || 0) + (fpuChip?.watts || 0)
-    + benchHas(c, "drive").reduce((n, x) => n + x.watts, 0) + benchHas(c, "media").reduce((n, x) => n + x.watts, 0)
+  const draw = 20 + (chip?.watts || 0) + (unplugged ? 0 : (card?.watts || 0) * (card && (c[card.id] || 0) >= 2 ? 2 : 1)) + (addIn?.watts || 0) + (snd?.watts || 0) + (fpuChip?.watts || 0)
+    + benchHas(c, "drive").reduce((n, x) => n + x.watts, 0) + benchHas(c, "media").reduce((n, x) => n + x.watts, 0) + benchHas(c, "addin").reduce((n, x) => n + x.watts, 0)
     + (coolerNow?.watts || 0) + (chip && board?.oc && chip.unlocked && wantOc ? chip.watts * 0.35 : 0);
   const supply = board?.builtin ? Math.max(draw, board.builtinWatts) : psuNow && !psuMisfit(psuNow, board) ? psuNow.supply : 0;
   const power = !board ? 0 : supply <= 0 ? 0 : Math.min(1, supply / draw);
@@ -1059,12 +1140,14 @@ export function benchStock(counts, opts = {}) {
   const diskFactor = diskLink.mbs > 0 ? 0.9 + 0.1 * Math.min(1.2, diskLink.mbs / expected) : board?.builtin && (chip?.year || 0) < 1980 ? 1 : 0.9;
   const extras = (removable && board && !portMisfit(removable, board) ? 1 + removable.bonus : 1)
     * (nic && board && !portMisfit(nic, board) ? 1 + nic.bonus : 1)
-    * (mdm ? 1 + mdm.bonus : 1);
+    * (mdm ? 1 + mdm.bonus : 1)
+    * benchHas(c, "cache").reduce((n, x) => n * (board?.coast ? 1 + x.bonus : 1), 1)
+    * benchHas(c, "addin").reduce((n, x) => n * (board && !busMisfit(x, board) ? 1 + x.bonus : 1), 1);
   const caseBonus = caseNow && board && caseNow.boards.includes(board.form) ? 1.05 : 1;
   const perf = pcPerf * power * soundBonus * caseBonus * diskFactor * extras;
   return {
     board: board || null, cpu: chip || null, ramMb, needMb: need, sticks: stickCount, memory, memSpeed, rated, speedFactor, overclock, math,
-    cpuPerf, gfx, link, unplugged, bottleneck, draw, supply, power, sound: snd || null, case: caseNow || null, card: card || null,
+    cpuPerf, gfx, link, unplugged, bottleneck, monitor: screen || null, screenOn, screenCapped, ownScreen, twoCards, linked, cardPair: !!card && (c[card.id] || 0) >= 2, draw, supply, power, sound: snd || null, case: caseNow || null, card: card || null,
     cooler: mounted, heat: heatStock * (ocOn ? 1.35 : 1), coolCap, canOc, ocOn, ocBlocked: canOc && wantOc && !ocOn, thermal,
     drive: disk || null, driveMbs: diskLink.mbs, driveText: diskLink.text, diskExpected: expected, media: removable || null, net: nic || null, modem: mdm || null,
     perf, perSecond: perf * BENCH_RD,
@@ -1124,6 +1207,15 @@ export function benchPlans(state) {
         if (box) add(box);
       }
     }
+    {
+      const st = benchStock(c);
+      if (st.gfx > 0 && !st.ownScreen && (!st.screenOn || st.screenCapped)) {
+        const fits = benchParts("monitor").filter((m) => !fitBench(c, m).reason && m.cap > (st.screenOn ? st.monitor.cap : 0));
+        const want = st.screenCapped || !st.screenOn ? (st.card?.gfx || st.gfx / 0.9) : 0;
+        const pick = fits.filter((m) => m.cap >= want).sort((a, b) => a.cost - b.cost)[0] || fits.sort((a, b) => b.cap - a.cap)[0];
+        if (pick) add(pick);
+      }
+    }
     const after = benchStock(c);
     if (after.perf <= now.perf) return null;
     return { label, steps, cost, perf: after.perf, perSecond: after.perSecond };
@@ -1160,7 +1252,7 @@ export function benchPlans(state) {
       const plan = finish(c, first, card.name);
       if (plan) plans.push({ ...plan, card });
     }
-    for (const kind of ["sound", "fpu", "accel", "drive", "media", "net", "modem", "cooler"]) {
+    for (const kind of ["sound", "fpu", "accel", "drive", "media", "net", "modem", "cooler", "monitor", "addin", "cache"]) {
       for (const part of benchParts(kind)) {
         if (benchHas(counts, kind).some((x) => x.id === part.id)) continue;
         const plan = finish(counts, [part], part.name);
@@ -1180,6 +1272,7 @@ export function benchLimit(counts, opts) {
   if (b.thermal < 0.999) return "Overheating";
   if (b.memory < 0.999) return "Needs more memory";
   if (b.unplugged) return "Card not plugged in";
+  if (b.screenCapped) return "Monitor limited";
   if (b.bottleneck === "graphics") return "Bottleneck: graphics";
   if (b.bottleneck === "cpu") return "Bottleneck: CPU";
   return "Running full";
@@ -1195,6 +1288,11 @@ export function benchHint(state) {
   if (b.unplugged) return `Next: a supply with the plug the ${b.card.name} needs.`;
   if (b.thermal < 0.999) return `Next: a cooler for ${SOCKET_NAMES[b.board.socket]} that moves ${Math.round(b.cpu.watts)} W; the CPU is slowing down from heat.`;
   if (b.ocBlocked) return `Overclock is off: the cooler moves ${b.coolCap} W and an overclocked ${b.cpu.name} makes ${Math.round(b.cpu.watts * 1.35)} W.`;
+  if (b.cardPair && !b.twoCards) return `Next: a board that runs two cards; the ${b.board.name} uses only one ${b.card.name}.`;
+  if (b.twoCards && !b.linked) return `Next: a ${b.card.multi === "nvlink" ? "NVLink" : MULTI_FAMILY[b.card.multi] === "sli" ? "SLI" : "CrossFire"} bridge to link the two ${b.card.name} cards.`;
+  if (b.monitor && !b.screenOn && !b.ownScreen) return `Next: a monitor with a port the graphics has; the ${b.monitor.name} doesn't plug in.`;
+  if (b.screenCapped) return `Next: a better monitor; the ${b.monitor.name} can't show all the ${b.card?.name || "graphics"} draws.`;
+  if (!b.monitor && !b.ownScreen && b.gfx > 0) return "Next: a monitor of your own; a borrowed old screen shows 90% of the graphics.";
   if (b.bottleneck === "graphics") return "Bottleneck: the graphics. A faster card lets the CPU do more.";
   if (b.bottleneck === "cpu") return "Bottleneck: the CPU. The card waits on it; a faster CPU uses more of it.";
   return "Next: newer parts as you reach their years and research them.";

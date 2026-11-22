@@ -13,6 +13,7 @@ import NextMove from "./NextMove";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
+import MuseumPage from "./MuseumPage";
 import CopyStats from "./CopyStats";
 import LabProjects from "./LabProjects";
 import AccountPanel from "./AccountPanel";
@@ -25,6 +26,7 @@ const TABS = [
   { id: "howto", label: "HOW TO PLAY", title: "HOW TO PLAY" },
   { id: "stats", label: "STATS", title: "STATS" },
   { id: "badges", label: "BADGES", title: "BADGES" },
+  { id: "museum", label: "MUSEUM", title: "MUSEUM" },
 ];
 
 export function MoreLinks({ active }) {
@@ -58,6 +60,7 @@ export default function MorePage() {
   const data = getSaveData();
 
   if (tab === "badges") return <BadgesPage top={<MoreLinks active="badges" />} />;
+  if (tab === "museum") return <MuseumPage top={<MoreLinks active="museum" />} />;
 
   return (
     <ScreenShell title={TABS.find((entry) => entry.id === tab)?.title || "SETTINGS"} subtitle="">

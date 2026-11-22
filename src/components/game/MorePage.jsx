@@ -161,6 +161,7 @@ const HOW_TO = [
     lines: [
       "Some businesses use what an earlier one makes. Timber Camp makes wood, and the Paper Mill uses that wood.",
       "The strip at the top shows what you have. If a material runs out, the business that needs it stops paying.",
+      "Each material's bins hold so much. When they're FULL, new output is lost. Tap a material to buy bigger bins; they stay through prestige.",
     ],
   },
   {

@@ -18,11 +18,13 @@ function state(sand = 0, owned = 1) {
 }
 
 test("the bins stop at the cap and show FULL", () => {
-  const s = state(STORAGE_BASE - 1);
-  assert.equal(supplyCap(s, "sand"), STORAGE_BASE);
+  const s = state(0);
+  const cap = supplyCap(s, "sand");
+  assert.ok(cap >= STORAGE_BASE);
+  s.supply.sand = cap - 1;
   creditCycles(s, sandRow, 1, 0);
   creditCycles(s, sandRow, 1, 0);
-  assert.equal(s.supply.sand, STORAGE_BASE);
+  assert.equal(s.supply.sand, cap);
   assert.ok(supplyFull(s, "sand"));
 });
 
@@ -45,7 +47,8 @@ test("bigger bins cost cash, multiply the cap and stay through prestige", () => 
   const cost = storageCost(s, "sand");
   assert.ok(buyStorage(s, "sand"));
   assert.equal(s.cash, 1e12 - cost);
-  assert.equal(supplyCap(s, "sand"), STORAGE_BASE * 4);
+  const floor = supplyCap(s, "sand", 0) - STORAGE_BASE;
+  assert.equal(supplyCap(s, "sand"), STORAGE_BASE * 4 + floor);
   assert.ok(storageCost(s, "sand") > cost);
   assert.deepEqual(snapshotMeta(s, { resetRunUpgrades: true }).storage, { sand: 1 });
   const poor = state(0);

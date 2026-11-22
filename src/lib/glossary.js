@@ -17,7 +17,7 @@ export const GLOSSARY = {
   },
   materials: {
     term: "MATERIALS",
-    text: "Some businesses use what an earlier one makes: the Paper Mill turns wood into card stock, glass works need sand, and so on. Each one makes 1 per cycle until you buy its x3 upgrade, which makes it 3. The strip at the top shows what you have. If a material runs out, the business that needs it stops paying until more is made.",
+    text: "Some businesses use what an earlier one makes: the Paper Mill turns wood into card stock, glass works need sand, and so on. Each one makes 1 per cycle until you buy its x3 upgrade, which makes it 3. The strip at the top shows what you have. If a material runs out, the business that needs it stops paying until more is made. Each material's bins hold so much (840 / 1,000 means 840 stored of 1,000); when FULL, new output is lost. Tap a material to buy bigger bins with cash. They stay through prestige and forks.",
   },
   manager: {
     term: "MANAGER",

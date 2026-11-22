@@ -464,7 +464,7 @@ export function supplyFactor(state, cfg, cycles = 1) {
 // lost (FULL); what is already stored is never thrown away. Bigger bins are
 // bought with cash and kept through prestige and forks. The cap never drops
 // below 100 cycles of what the rows make or use, so a full bin can't stall
-// a row mid-cycle.
+// a row mid-cycle: that much is added on top of the bins you bought.
 export const STORAGE_BASE = 1000;
 export const STORAGE_STEP = 4;
 export const STORAGE_MAX = 12;
@@ -486,8 +486,8 @@ function flowOf(state, key) {
 export function boughtCap(state, key, level = storageLevel(state, key)) {
   return STORAGE_BASE * STORAGE_STEP ** level;
 }
-export function supplyCap(state, key) {
-  return Math.min(SUPPLY_CAP, Math.max(boughtCap(state, key), 100 * flowOf(state, key)));
+export function supplyCap(state, key, level = storageLevel(state, key)) {
+  return Math.min(SUPPLY_CAP, boughtCap(state, key, level) + 100 * flowOf(state, key));
 }
 export function supplyFull(state, key) {
   return (state?.supply?.[key] || 0) >= supplyCap(state, key);

@@ -288,7 +288,7 @@ function materialRows(state, shown) {
 function materialsInfo(state, shown = SUPPLY_KEYS) {
   return {
     title: "MATERIALS",
-    text: "Some businesses use what an earlier one makes, one per cycle each. If a material runs out, the business that needs it slows or stops paying.",
+    text: "Some businesses use what an earlier one makes, one per cycle each. If a material runs out, the business that needs it slows or stops paying; if its bins are FULL, new output is lost.",
     rows: materialRows(state, shown),
   };
 }

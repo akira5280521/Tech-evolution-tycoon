@@ -1,4 +1,4 @@
-import { STORAGE_STEP, boughtCap, storageCost, storageLevel, supplyCap } from "@/lib/empire";
+import { STORAGE_STEP, storageCost, storageLevel, supplyCap } from "@/lib/empire";
 import { fmt, money } from "@/lib/gameConfig";
 
 // Whole numbers up to a million read best with commas: "840 / 1,000".
@@ -14,7 +14,7 @@ export default function StorageSheet({ state, materialKey, onUpgrade, onClose })
   const full = have >= cap;
   const level = storageLevel(state, materialKey);
   const cost = storageCost(state, materialKey);
-  const nextCap = boughtCap(state, materialKey, level + 1);
+  const nextCap = supplyCap(state, materialKey, level + 1);
   const afford = cost != null && state.cash >= cost;
   const pct = Math.min(100, cap > 0 ? (have / cap) * 100 : 0);
   return (
@@ -48,8 +48,8 @@ export default function StorageSheet({ state, materialKey, onUpgrade, onClose })
             onClick={() => onUpgrade(materialKey)}
             className="min-h-11 border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000] disabled:border-[var(--game-border)] disabled:text-[var(--game-dim)]"
           >
-            BIGGER BINS ×{STORAGE_STEP} · {money(cost)}
-            <span className="block font-term text-base leading-5">holds {amount(Math.max(nextCap, cap))}</span>
+            BINS ×{STORAGE_STEP} · {money(cost)}
+            <span className="block font-term text-base leading-5">holds {amount(nextCap)}</span>
           </button>
         ) : (
           <span className="font-pixel text-[0.45rem] text-[var(--game-muted)]">LARGEST BINS</span>

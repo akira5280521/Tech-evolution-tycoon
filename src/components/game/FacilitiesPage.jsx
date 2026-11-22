@@ -6,6 +6,7 @@ import {
   PARTS,
   facilitiesOpen,
   facilityHint,
+  facilityNeed,
   facilityReport,
   facilityUnlocked,
   nextPurchase,
@@ -64,26 +65,35 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
   const parts = PARTS.filter((part) => part.fits.includes(facility.id));
   return (
     <Panel>
-      <div data-facility={facility.id}>
+      <div data-facility={facility.id} data-locked={open ? undefined : ""}>
         <div data-help-scope className="flex items-start gap-2">
-          <div className="h-14 w-14 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]">
+          <div className={`h-14 w-14 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] ${open ? "" : "opacity-60"}`}>
             <img src={facility.icon} alt="" className="pixel-art h-full w-full scale-[1.4] object-contain" />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="break-words font-pixel text-[0.6rem] leading-4 text-[var(--game-accent)] [overflow-wrap:anywhere]">{facility.name}</h2>
+            <h2 className={`break-words font-pixel text-[0.6rem] leading-4 [overflow-wrap:anywhere] ${open ? "text-[var(--game-accent)]" : "text-[var(--game-dim)]"}`}>{facility.name}</h2>
           </div>
           <ItemHelp kind="facility" id={facility.id} state={state} name={facility.name} className="-mr-2 -mt-2.5" />
         </div>
-        <p className="mt-2 break-words font-term text-base leading-5 text-[var(--game-fg)]">{facility.blurb}</p>
+        <p className={`mt-2 break-words font-term text-base leading-5 ${open ? "text-[var(--game-fg)]" : "text-[var(--game-muted)] opacity-60"}`}>{facility.blurb}</p>
         <p data-facility-yield className="mt-2 break-words font-term text-base leading-5 text-[var(--game-success)]">
           {research ? `+${serverOutput(state).perSecond.toFixed(2)} R&D points a second` : money(row.perSecond) + "/s"}
           {!research && open && business > 0 ? ` · ${percent(row.share)} of the businesses` : ""}
         </p>
-        <p data-facility-limit className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
-          {open ? row.limit : facility.id === "servers" ? "Requires 1971" : "Locked"}
-          {row.tier ? ` · ${row.tier} model` : ""}
-        </p>
-        <p data-facility-hint className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{facilityHint(state, facility.id, business)}</p>
+        {open ? (
+          <>
+            <p data-facility-limit className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
+              {row.limit}
+              {row.tier ? ` · ${row.tier} model` : ""}
+            </p>
+            <p data-facility-hint className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{facilityHint(state, facility.id, business)}</p>
+          </>
+        ) : (
+          // Not reached this run (or reset by a prestige): greyed out, with what it needs.
+          <p data-facility-limit data-facility-needs className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-dim)]">
+            {facilityNeed(facility.id)}
+          </p>
+        )}
         {open && row.gpus > 0 && (
           <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
             {Math.round(row.watts)} W of cards · {Math.round(row.power)} W power · {Math.round(row.cool)} W cooling · {Math.round(row.vram)} GB on the cards · {Math.round(row.ram)} GB RAM

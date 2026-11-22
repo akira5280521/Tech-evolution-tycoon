@@ -65,6 +65,7 @@ import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { generationAt } from "@/lib/generations";
 import { facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews } from "@/lib/facilities";
+import { noteHubSeen } from "@/lib/hub";
 import { advanceResearch, fillResearchGaps, grantOwnedResearch, readResearchData, readTechDone, readTechJob, startResearch } from "@/lib/research";
 import { currentGoal, readGoalsDone, settleGoals } from "@/lib/goals";
 import { applyOrientation } from "@/lib/orientation";
@@ -195,6 +196,7 @@ function applySavedMeta(state, raw) {
   state.techJob = readTechJob(m.techJob);
   state.goalsDone = readGoalsDone(m.goalsDone);
   state.boughtX10 = !!m.boughtX10;
+  state.hubSeen = !!m.hubSeen;
 }
 
 function readChallenge(raw) {
@@ -247,6 +249,7 @@ function pack(s) {
     sawPit: !!s.sawPit,
     goalsDone: Array.isArray(s.goalsDone) ? s.goalsDone : [],
     boughtX10: !!s.boughtX10,
+    hubSeen: !!s.hubSeen,
     tutorial: s.tutorial || null,
     orientation: s.orientation || "auto",
     buyMode: normalizeBuyMode(s.buyMode),
@@ -328,6 +331,8 @@ function loadSave() {
     settlePlayMs(state, Date.now(), !!data.meta?.playMsChecked);
     const storedEra = state.bestEra;
     if (storedEra == null) state.bestEra = Math.max(0, eraReachedIndex(state));
+    // Saves from before HQ stayed open: open it if they ever had it.
+    noteHubSeen(state);
     settleRunRecords(state);
     ensureRunStartedAt(state);
     settleCareerEarnings(state);
@@ -603,6 +608,7 @@ export function useGame() {
       const plant = facilityReport(s, business).perSecond * (dt / 1000);
       if (plant > 0) creditAmount(s, plant, wall);
       if (noteFacilityNews(s, business)) dirty = true;
+      if (noteHubSeen(s)) dirty = true;
       const researchMoved = advanceResearch(s, dt);
       if (researchMoved === "done") dirty = true;
       if (!s.runStartedAt) s.runStartedAt = wall;

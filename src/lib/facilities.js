@@ -163,6 +163,13 @@ export function anyFacilityOpen(state) {
   return facilityUnlocked(state, "servers") || facilityUnlocked(state, "mine");
 }
 
+// What a plant still needs this run, for its greyed-out card on RIGS.
+export function facilityNeed(facilityId) {
+  const id = facilityId === "servers" ? "cpu" : "ai";
+  const name = BUSINESSES.find((cfg) => cfg.id === id)?.name || id;
+  return `Needs ${name} this run`;
+}
+
 export function facilitiesOpen(state) {
   return facilityUnlocked(state, "mine");
 }

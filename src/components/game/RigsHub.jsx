@@ -3,8 +3,9 @@ import { HUB_ITEMS, HUB_LABEL } from "@/lib/hub";
 import { useGameState } from "./GameState";
 import ScreenShell from "./chrome";
 
-// The menu behind the top button beside TECH. Each section is one big
-// button; a section that isn't reached yet stays greyed out as "???".
+// The menu behind the top button beside TECH. Every facility is listed;
+// ones not unlocked this run stay visible as locked ? cards with the era
+// they need, greyed Coming soon.
 export default function RigsHub() {
   const { state } = useGameState();
   return (
@@ -22,8 +23,9 @@ export default function RigsHub() {
                 data-locked=""
                 className="min-h-20 border-2 border-[var(--game-border)] bg-[var(--game-panel)] p-3 text-[var(--game-dim)] opacity-60 shadow-[3px_3px_0_0_#000]"
               >
-                <p className="font-pixel text-[0.6rem] leading-5">???</p>
-                <p className="break-words font-term text-base leading-5">Unlocks later in the timeline.</p>
+                <p className="font-pixel text-[0.6rem] leading-5">??? <span className="text-[var(--game-dim)]">{item.label}</span></p>
+                <p data-hub-need className="break-words font-pixel text-[0.5rem] leading-4">{item.need?.(state) || "Unlocks later in the timeline."}</p>
+                <p className="mt-1 font-pixel text-[0.5rem] leading-4">COMING SOON</p>
               </div>
             );
           }
@@ -31,6 +33,7 @@ export default function RigsHub() {
             <Link
               key={item.id}
               to={item.to}
+              hash={item.hash}
               data-hub-item={item.id}
               className="block min-h-20 border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] p-3 shadow-[3px_3px_0_0_#000] hover:border-[var(--game-accent)]"
             >

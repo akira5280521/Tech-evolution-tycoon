@@ -35,8 +35,8 @@ test("best next part is shown, highlighted, and pays", async ({ page }) => {
   expectClean(seen);
 });
 
-// The top button beside TECH opens a hub; its RIGS sub-button opens the plants.
-test("top RIGS button opens the hub, and its RIGS button opens the plants", async ({ page }) => {
+// The top button beside TECH opens a hub; RESEARCH SERVERS opens the plants.
+test("top HQ button opens the hub, and RESEARCH SERVERS opens the plants", async ({ page }) => {
   const seen = await open(page, "/", "late");
   await tipsOff(page);
   const top = page.locator("[data-open-facilities]");
@@ -44,9 +44,10 @@ test("top RIGS button opens the hub, and its RIGS button opens the plants", asyn
   await top.click();
   await expect(page).toHaveURL(/\/rigs$/);
   const items = page.locator("[data-hub-item]");
-  await expect(items.first()).toHaveAttribute("data-hub-item", "rigs");
+  await expect(items).toHaveCount(4);
+  await expect(items.first()).toHaveAttribute("data-hub-item", "servers");
   await items.first().click();
-  await expect(page).toHaveURL(/\/facilities$/);
+  await expect(page).toHaveURL(/\/facilities#servers$/);
   await expect(page.locator("[data-facility='servers']")).toBeVisible();
   // BACK returns to the hub, not the game screen.
   await page.getByRole("link", { name: "< BACK" }).click();
@@ -81,10 +82,10 @@ async function buyStarterFromGame(page, save) {
   await expect(top).not.toHaveAttribute("data-locked", "");
   await top.click();
   await expect(page).toHaveURL(/\/rigs$/);
-  const rigs = page.locator("[data-hub-item='rigs']");
+  const rigs = page.locator("[data-hub-item='servers']");
   await expect(rigs).not.toHaveAttribute("data-locked", "");
   await rigs.click();
-  await expect(page).toHaveURL(/\/facilities$/);
+  await expect(page).toHaveURL(/\/facilities(#servers)?$/);
   const room = page.locator("[data-facility='servers']");
   await expect(room).toBeVisible();
   await expect(room).not.toHaveAttribute("data-locked", "");
@@ -104,6 +105,26 @@ test("a fresh save can open HQ and buy the Inland 601", async ({ page }) => {
 test("an era-9 save can open HQ and buy the Inland 601 before Mainframes", async ({ page }) => {
   expect(BUSINESSES.findIndex((b) => b.id === "radios") + 1).toBe(9);
   await buyStarterFromGame(page, earlySave({ throughId: "radios", cash: 1e6, wood: 50 }));
+});
+
+test("an early HQ lists every facility, and locked cards say what they need", async ({ page }) => {
+  const seen = await open(page, "/rigs", earlySave({ throughId: "timber" }));
+  await tipsOff(page);
+  const items = page.locator("[data-hub-item]");
+  await expect(items).toHaveCount(4);
+  await expect(page.locator("[data-hub-item='servers']")).not.toHaveAttribute("data-locked", "");
+  await expect(page.locator("[data-hub-item='servers']")).toContainText("RESEARCH SERVERS");
+  for (const id of ["bench", "mine", "cluster"]) {
+    const card = page.locator(`[data-hub-item='${id}']`);
+    await expect(card).toHaveAttribute("data-locked", "");
+    await expect(card).toContainText("???");
+    await expect(card).toContainText("COMING SOON");
+    await expect(card.locator("[data-hub-need]")).toBeVisible();
+  }
+  await expect(page.locator("[data-hub-item='bench'] [data-hub-need]")).toContainText("Needs Home Computers this run");
+  await expect(page.locator("[data-hub-item='mine'] [data-hub-need]")).toContainText("Needs AI Accelerators this run");
+  await expect(page.locator("[data-hub-item='cluster'] [data-hub-need]")).toContainText("Needs AI Accelerators this run");
+  expectClean(seen);
 });
 
 // HQ stays open for good once reached, like research. After a prestige the
@@ -131,9 +152,14 @@ test("after a prestige HQ still opens and RIGS says what each plant needs", asyn
   await expect(top).not.toHaveAttribute("data-locked", "");
   await top.click();
   await expect(page).toHaveURL(/\/rigs$/);
-  await expect(page.locator("[data-hub-item='rigs']")).not.toHaveAttribute("data-locked", "");
-  await page.click("[data-hub-item='rigs']");
-  await expect(page).toHaveURL(/\/facilities$/);
+  await expect(page.locator("[data-hub-item]")).toHaveCount(4);
+  await expect(page.locator("[data-hub-item='servers']")).not.toHaveAttribute("data-locked", "");
+  await expect(page.locator("[data-hub-item='bench']")).toHaveAttribute("data-locked", "");
+  await expect(page.locator("[data-hub-item='bench'] [data-hub-need]")).toContainText("Needs Home Computers this run");
+  await expect(page.locator("[data-hub-item='mine'] [data-hub-need]")).toContainText("Needs AI Accelerators this run");
+  await expect(page.locator("[data-hub-item='cluster']")).toContainText("COMING SOON");
+  await page.click("[data-hub-item='servers']");
+  await expect(page).toHaveURL(/\/facilities#servers$/);
   await expect(page.locator("[data-facility='servers'] [data-facility-needs]")).toContainText("Needs Mainframes this run");
   await expect(page.locator("[data-facility='mine'] [data-facility-needs]")).toContainText("Needs AI Accelerators this run");
   const saved = await page.evaluate((k) => JSON.parse(localStorage.getItem(k)), "pc-tycoon-save-v1");

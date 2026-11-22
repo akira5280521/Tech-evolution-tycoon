@@ -226,8 +226,11 @@ export function researchItem(id) {
 // The tech timeline opens once the first project's year is reached.
 export const TECH_OPENS = Math.min(...RESEARCH.filter((entry) => !entry.soon).map((entry) => entry.year));
 
+// The TECH page is reachable from the first era so the parts tree is
+// always browsable. Individual projects still lock with researchLock
+// until their year (the earliest open at TECH_OPENS).
 export function techOpen(state) {
-  return playerYear(state) >= TECH_OPENS;
+  return !!state;
 }
 
 export function readTechDone(raw) {

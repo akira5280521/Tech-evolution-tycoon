@@ -1,10 +1,10 @@
-// The hardware hub behind the top button beside TECH: its label lives in one
-// place, and its RIGS section opens with the research servers.
+// The hardware hub behind the top button beside TECH: it lists every
+// facility, and RESEARCH SERVERS opens from the first era.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { HUB_ITEMS, HUB_LABEL, HUB_ROUTE, hubEvidence, hubOpen, noteHubSeen } from "../../src/lib/hub.js";
 import { blankMeta, snapshotMeta } from "../../src/lib/empire.js";
-import { anyFacilityOpen, facilityNeed } from "../../src/lib/facilities.js";
+import { FACILITIES, anyFacilityOpen, facilityNeed } from "../../src/lib/facilities.js";
 import { BUSINESSES } from "../../src/lib/gameConfig.js";
 
 const CPU = BUSINESSES.findIndex((b) => b.id === "mainframes"); // the first plant business
@@ -16,11 +16,16 @@ test("hub label and route are set", () => {
   assert.equal(HUB_ROUTE, "/rigs");
 });
 
-test("RIGS is the first section and opens the facilities screen", () => {
-  assert.equal(HUB_ITEMS[0].id, "rigs");
-  assert.equal(HUB_ITEMS[0].label, "RIGS");
+test("HQ lists every facility, with research servers first", () => {
+  assert.deepEqual(HUB_ITEMS.map((item) => item.id), FACILITIES.map((fac) => fac.id));
+  assert.equal(HUB_ITEMS[0].id, "servers");
+  assert.equal(HUB_ITEMS[0].label, "RESEARCH SERVERS");
   assert.equal(HUB_ITEMS[0].to, "/facilities");
-  for (const item of HUB_ITEMS) assert.ok(item.label && item.to && item.text && typeof item.open === "function");
+  assert.equal(HUB_ITEMS[0].hash, "servers");
+  for (const item of HUB_ITEMS) {
+    assert.ok(item.label && item.to && item.hash && item.text && typeof item.open === "function");
+    assert.equal(item.need(), facilityNeed(item.id));
+  }
 });
 
 test("HQ is open from the first era so the starter machine is reachable", () => {
@@ -30,6 +35,20 @@ test("HQ is open from the first era so the starter machine is reachable", () => 
   assert.equal(hubOpen(withCpu(0)), true);
   assert.equal(hubOpen(withCpu(1)), true);
   assert.equal(HUB_ITEMS[0].open(withCpu(0)), true);
+});
+
+test("research servers stay open with no Mainframes; later plants stay locked", () => {
+  const early = withCpu(0);
+  assert.equal(HUB_ITEMS.find((item) => item.id === "servers").open(early), true);
+  assert.equal(HUB_ITEMS.find((item) => item.id === "bench").open(early), false);
+  assert.equal(HUB_ITEMS.find((item) => item.id === "mine").open(early), false);
+  assert.equal(HUB_ITEMS.find((item) => item.id === "cluster").open(early), false);
+  assert.match(HUB_ITEMS.find((item) => item.id === "bench").need(), /Home Computers/);
+  assert.match(HUB_ITEMS.find((item) => item.id === "mine").need(), /AI Accelerators/);
+  const later = { biz: BUSINESSES.map((b) => ({ id: b.id, owned: 1 })) };
+  assert.equal(HUB_ITEMS.find((item) => item.id === "bench").open(later), true);
+  assert.equal(HUB_ITEMS.find((item) => item.id === "mine").open(later), true);
+  assert.equal(HUB_ITEMS.find((item) => item.id === "cluster").open(later), true);
 });
 
 test("hubSeen keeps HQ open with no Mainframes owned", () => {
@@ -48,6 +67,9 @@ test("hubSeen defaults false and survives snapshotMeta (prestige, fork, challeng
   assert.equal(next.hubSeen, true);
   assert.equal(hubOpen(next), true);
   assert.equal(anyFacilityOpen(next), false);
+  // After a prestige the servers card stays open so the starter is reachable.
+  assert.equal(HUB_ITEMS.find((item) => item.id === "servers").open(next), true);
+  assert.equal(HUB_ITEMS.find((item) => item.id === "mine").open(next), false);
 });
 
 test("old saves get hubSeen from reliable evidence only", () => {

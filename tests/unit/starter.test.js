@@ -1,5 +1,5 @@
 // 0.0.29: eras stopped making R&D points; the starter punch-card machine in
-// HQ > RIGS makes them from the first era, and old saves get one free.
+// HQ > RESEARCH SERVERS makes them from the first era, and old saves get one free.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { blankMeta, dataPerSecond, snapshotMeta } from "../../src/lib/empire.js";

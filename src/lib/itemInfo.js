@@ -325,7 +325,7 @@ function topBarInfo(state, { tech, rigs }) {
     text: "Tap the buy-amount button to change how many one BUY gets: X1, X10, X25, X50, X75, X100, then MAX.",
     rows: [
       { label: "TECH", text: tech ? "The tech timeline: timed research projects paid with R&D points. CPU and GPU projects unlock new chips." : LOCKED_TEXT },
-      { label: HUB_LABEL, text: rigs ? "Your hardware menu. Its RIGS section has the research machines that make R&D points (a punch-card machine from the start, servers from Mainframes), and later a mine and a training cluster that pay cash." : LOCKED_TEXT },
+      { label: HUB_LABEL, text: rigs ? "Your hardware menu. It lists every facility: RESEARCH SERVERS is open from the start (a punch-card machine, then servers from Mainframes). The PC build bench, Bitbark mine and AI training cluster stay listed as locked until their era." : LOCKED_TEXT },
     ],
   };
 }
@@ -358,7 +358,7 @@ function researchInfo(state, id) {
   }
   const opens = researchUnlocks(id);
   let effect;
-  const opensText = opens.length ? `It opens the ${opens.map((p) => p.name).join(" and the ")} on RIGS.` : "";
+  const opensText = opens.length ? `It opens the ${opens.map((p) => p.name).join(" and the ")} in HQ.` : "";
   if (gen && gen.index > 0) {
     effect = `Finishing it switches ${row.name} to this chip once you own ${gen.need}: pay +${Math.round(gen.index * GENERATION_BONUS * 100)}% over the first chip.`;
   } else if (opens.length) {
@@ -563,7 +563,7 @@ function milestoneInfo(state, id) {
 function rdInfo(state) {
   return {
     title: "R&D POINTS",
-    text: `The one research currency, made only by research machines in ${HUB_LABEL} > RIGS: ${rate(serverOutput(state).perSecond)} a second now, at half rate while away. Spend them on research, the TECH timeline and lab projects; they're never lost.`,
+    text: `The one research currency, made only by research machines in ${HUB_LABEL} > RESEARCH SERVERS: ${rate(serverOutput(state).perSecond)} a second now, at half rate while away. Spend them on research, the TECH timeline and lab projects; they're never lost.`,
     rows: serverOutput(state).perSecond > 0 ? [{ label: "AWAY", text: awayLine(state, "the servers") }] : [],
   };
 }

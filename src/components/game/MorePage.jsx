@@ -218,7 +218,7 @@ const HOW_TO = [
     id: "rd",
     title: "R&D POINTS",
     lines: [
-      `R&D points are the one research currency, made only by research machines in ${HUB_LABEL} (beside TECH), then RIGS: a cheap punch-card multiplier from the start, then research servers from Mainframes. They earn at half rate while the game is closed; the servers only bank what their disks hold (1 hour of output, plus another hour per TB of disk), while the punch-card machine banks all day.`,
+      `R&D points are the one research currency, made only by research machines in ${HUB_LABEL} (beside TECH), then RESEARCH SERVERS: a cheap punch-card multiplier from the start, then research servers from Mainframes. They earn at half rate while the game is closed; the servers only bank what their disks hold (1 hour of output, plus another hour per TB of disk), while the punch-card machine banks all day.`,
       "Spend them on the R&D tab (specialties and lab projects) and on the TECH timeline. They are never lost, even when you prestige.",
     ],
   },
@@ -232,7 +232,7 @@ const HOW_TO = [
   },
   {
     id: "facilities",
-    title: `FACILITIES (${HUB_LABEL} > RIGS)`,
+    title: `FACILITIES (${HUB_LABEL})`,
     lines: [
       "Research servers open with Mainframes and make R&D points. Newer machines and parts open in their real year once you research them on TECH. With AI Accelerators, the Bitbark mine and the AI training cluster add a small extra income.",
       "Buy parts for each plant. A plant runs slower when its power or cooling can't keep up with its cards or racks, and it tells you what to add next. Parts are lost when you prestige.",
@@ -397,7 +397,7 @@ export function ResearchBody({ state, onCommit, onLab }) {
         </p>
         <p className="font-term text-5xl leading-none text-[var(--game-success)]">{(state.data || 0).toFixed(1)}</p>
         <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
-          +{rate.toFixed(rate > 0 && rate < 0.1 ? 3 : 2)} a second from your research machines in {HUB_LABEL} &gt; RIGS. R&D points are never lost, even when you prestige.
+          +{rate.toFixed(rate > 0 && rate < 0.1 ? 3 : 2)} a second from your research machines in {HUB_LABEL} &gt; RESEARCH SERVERS. R&D points are never lost, even when you prestige.
         </p>
       </Panel>
       <Panel>

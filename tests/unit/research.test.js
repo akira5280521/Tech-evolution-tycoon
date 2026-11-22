@@ -1,7 +1,8 @@
 // R&D: costs, locks, and what the servers bank while you're away.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { AWAY_BANK, advanceResearch, awayBankCap, awayBankHours, researchCost, researchItem, serverOutput } from "../../src/lib/research.js";
+import { AWAY_BANK, TECH_OPENS, advanceResearch, awayBankCap, awayBankHours, playerYear, researchCost, researchItem, researchLock, researchRows, techOpen, serverOutput } from "../../src/lib/research.js";
+import { BUSINESSES } from "../../src/lib/gameConfig.js";
 import { replayAway } from "../../src/lib/empire.js";
 import { OFFLINE_RATE } from "../../src/lib/gameConfig.js";
 
@@ -53,4 +54,24 @@ test("R&D never goes below zero or turns into NaN", () => {
   advanceResearch(s, NaN);
   advanceResearch(s, -1000);
   assert.equal(s.data, 0);
+});
+
+test("TECH is reachable from the first era; projects still wait for their year", () => {
+  const early = { biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: i === 0 ? 1 : 0 })), techDone: [] };
+  assert.ok(techOpen(early), "the TECH page itself is open from era 1");
+  assert.ok(playerYear(early) < TECH_OPENS, `era 1 is before ${TECH_OPENS}`);
+  const first = researchItem("store-hdd");
+  assert.equal(first.year, TECH_OPENS);
+  assert.equal(researchLock(early, first), `Requires ${TECH_OPENS}`);
+  const cpu = researchRows("cpu").find((entry) => !entry.soon);
+  assert.ok(cpu, "the CPU tab still lists hardware to research");
+  assert.match(researchLock(early, cpu) || "", /^Requires /);
+});
+
+test("a year that has reached the first project can start it once prereqs are met", () => {
+  const late = { biz: BUSINESSES.map((b) => ({ id: b.id, owned: 50 })), techDone: [] };
+  assert.ok(playerYear(late) >= TECH_OPENS);
+  assert.equal(techOpen(late), true);
+  const first = researchItem("store-hdd");
+  assert.equal(researchLock(late, first), null);
 });

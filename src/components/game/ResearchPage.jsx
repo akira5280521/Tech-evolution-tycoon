@@ -11,6 +11,7 @@ import {
   researchUnlocks,
   secondTechSlot,
   serverOutput,
+  TECH_OPENS,
   techJobs,
   hasResearchMaterials,
   researchMaterials,
@@ -92,6 +93,11 @@ export default function ResearchPage() {
         <p data-research-slots className="mt-1 break-words font-term text-base leading-5 text-[var(--game-muted)]">
           {twoSlots ? "Two projects at once: the bench's CPU has four or more cores." : "One project at a time. A four-core CPU on the PC bench allows two."}
         </p>
+        {playerYear(state) < TECH_OPENS && (
+          <p data-tech-opens-year className="mt-2 break-words font-term text-base leading-5 text-[var(--game-accent)]">
+            Projects open in their real year. The earliest ones open in {TECH_OPENS}.
+          </p>
+        )}
       </Panel>
       <div className="flex flex-wrap gap-2 pb-1" role="tablist">
         {RESEARCH_TABS.map((entry) => (
@@ -130,7 +136,7 @@ export default function ResearchPage() {
                   <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)] [overflow-wrap:anywhere]">{entry.year} · {entry.name}</p>
                   <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{entry.spec}</p>
                   {opens.length > 0 && (
-                    <p data-research-opens className="break-words font-term text-base leading-5 text-[var(--game-accent)]">Opens on RIGS: {opens.map((p) => p.name).join(", ")}</p>
+                    <p data-research-opens className="break-words font-term text-base leading-5 text-[var(--game-accent)]">Opens in HQ: {opens.map((p) => p.name).join(", ")}</p>
                   )}
                   {entry.soon ? (
                     <p className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)]">COMING SOON</p>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { REFINED, money } from "@/lib/gameConfig";
 import { businessIncomePerSecond, incomePerSecond } from "@/lib/empire";
 import {
@@ -167,7 +167,7 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
   else if (!open) parts = [];
   return (
     <Panel>
-      <div data-facility={facility.id} data-locked={open || starterOnly ? undefined : ""}>
+      <div id={facility.id} data-facility={facility.id} data-locked={open || starterOnly ? undefined : ""} className="scroll-mt-[var(--hud-h,0px)]">
         <div data-help-scope className="flex items-start gap-2">
           <div className={`h-14 w-14 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] ${open || starterOnly ? "" : "opacity-60"}`}>
             <img src={facility.icon} alt="" className="pixel-art h-full w-full scale-[1.4] object-contain" />
@@ -352,8 +352,15 @@ export default function FacilitiesPage() {
   const open = facilitiesOpen(state);
   // The part that adds the most pay for its price (or starts a plant).
   const next = open ? nextPurchase(state, business) : null;
+  // HQ cards link to /facilities#servers (and the other plants).
+  useEffect(() => {
+    const id = decodeURIComponent((window.location.hash || "").slice(1));
+    if (!id) return;
+    const timer = setTimeout(() => document.querySelector(`[data-facility="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "start" }), 50);
+    return () => clearTimeout(timer);
+  }, []);
   return (
-    <ScreenShell title="RIGS" subtitle="A side plant. It pays cash, and it never outgrows the businesses." backTo={HUB_ROUTE}>
+    <ScreenShell title="FACILITIES" subtitle="Research machines and side plants." backTo={HUB_ROUTE}>
       {!open && (
         <Panel>
           <p data-facilities-locked className="break-words font-term text-base leading-5 text-[var(--game-fg)]">

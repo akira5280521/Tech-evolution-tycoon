@@ -10,7 +10,7 @@ import { BUSINESSES, FOREMAN_COST, investorsFor, managerNeed, shortMaterial } fr
 import { forkCost, managerPrice, singularityMult, upgradeOffer, upgradesOf } from "./empire.js";
 import { tutorialActive } from "./tutorial.js";
 import { facilitiesOpen, facilityUnlocked } from "./facilities.js";
-import { serverOutput, techOpen } from "./research.js";
+import { serverOutput } from "./research.js";
 import { HUB_LABEL } from "./hub.js";
 
 const maxOwned = (s) => Math.max(0, ...(s?.biz || []).map((b) => b?.owned || 0));
@@ -139,13 +139,13 @@ export const TIPS = [
     title: "THE TECH TIMELINE",
     text: "TECH lists real inventions to research with R&D points. One runs at a time, on a timer that keeps going while the app is closed. \"Requires 1985\" means your company hasn't reached that year yet. \"Research X first\" means finish the one before it.",
     target: "[data-open-research]",
-    when: (s) => techOpen(s),
+    when: (s) => (s.data || 0) >= 1,
   },
   {
     id: "servers",
     page: "game",
     title: "RESEARCH SERVERS",
-    text: `Tap ${HUB_LABEL} (beside TECH), then RIGS, for research servers. They make far more R&D points than the punch-card machine. Buy a machine, then give it power and cooling.`,
+    text: `Tap ${HUB_LABEL} (beside TECH), then RESEARCH SERVERS, for the punch-card machine and later research servers. Buy a machine, then give it power and cooling.`,
     target: '[data-open-facilities]',
     when: (s) => facilityUnlocked(s, "servers"),
   },
@@ -153,7 +153,7 @@ export const TIPS = [
     id: "facilities",
     page: "game",
     title: "MINE AND CLUSTER",
-    text: `Two more plants opened under ${HUB_LABEL} > RIGS: the Bitbark mine and the AI training cluster. Buy graphics cards, memory, power and cooling. They add a small extra income, and run slower if power or cooling can't keep up.`,
+    text: `Two more plants opened under ${HUB_LABEL}: the Bitbark mine and the AI training cluster. Buy graphics cards, memory, power and cooling. They add a small extra income, and run slower if power or cooling can't keep up.`,
     target: '[data-open-facilities]',
     when: (s) => facilitiesOpen(s),
   },

@@ -1,26 +1,28 @@
 // The hardware hub: the button beside TECH at the top of the game screen.
-// It opens a menu of sub-buttons; RIGS (the plants) is the first. Later
-// sections join HUB_ITEMS when they are built (no placeholders).
+// It lists every facility. Locked plants stay visible as ? cards that say
+// what era they need this run.
 //
 // Once the hub has opened it stays open for good (state.hubSeen), even after
 // a prestige, fork or challenge, like research. The plants inside still need
 // their business owned this run to work.
 import { BUSINESSES } from "./gameConfig.js";
-import { FACILITY_UNLOCK, PARTS, STARTER_PART_ID, anyFacilityOpen, partCost, readNews } from "./facilities.js";
+import { FACILITIES, FACILITY_UNLOCK, PARTS, STARTER_PART_ID, anyFacilityOpen, facilityNeed, facilityUnlocked, partCost, readNews } from "./facilities.js";
 
 // The top button's name, in one place so it can be renamed.
 export const HUB_LABEL = "HQ";
 export const HUB_ROUTE = "/rigs";
 
-export const HUB_ITEMS = [
-  {
-    id: "rigs",
-    label: "RIGS",
-    to: "/facilities",
-    text: "Research machines that make R&D points (a punch-card machine from the start, servers from Mainframes) and the PC build bench, then the Bitbark mine and the AI training cluster that pay cash.",
-    open: (state) => !!state,
-  },
-];
+export const HUB_ITEMS = FACILITIES.map((fac) => ({
+  id: fac.id,
+  label: fac.name,
+  to: "/facilities",
+  hash: fac.id,
+  text: fac.blurb,
+  // Research servers stay open from era 1 so the starter punch-card machine
+  // can be bought before Mainframes. The rest wait for their era this run.
+  open: (state) => (fac.id === "servers" ? !!state : facilityUnlocked(state, fac.id)),
+  need: () => facilityNeed(fac.id),
+}));
 
 // The starter research machine is owned, or the cash for the first one is
 // there (a few dollars in the first minutes of a new game).
@@ -72,5 +74,5 @@ export function starterHint(state) {
   if (Object.values(servers).some((n) => Number(n) > 0)) return null;
   if (!starterReady(state)) return null;
   const part = PARTS.find((p) => p.id === STARTER_PART_ID);
-  return `Buy the ${part.name} in ${HUB_LABEL} > RIGS. Research machines make the R&D points research needs.`;
+  return `Buy the ${part.name} in ${HUB_LABEL} > RESEARCH SERVERS. Research machines make the R&D points research needs.`;
 }

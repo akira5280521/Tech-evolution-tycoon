@@ -800,7 +800,7 @@ export function establishedCount(state) {
   return (state.biz || []).reduce((n, st) => n + (st && st.owned > 0 ? 1 : 0), 0);
 }
 
-// Eras no longer make R&D points (0.0.29): research machines in HQ > RIGS
+// Eras no longer make R&D points (0.0.29): research machines in HQ > RESEARCH SERVERS
 // do, starting with the starter machine. Kept so callers and old math read 0.
 // eslint-disable-next-line no-unused-vars
 export function dataPerSecond(state) {

@@ -1,5 +1,5 @@
 // 0.0.29: eras make no R&D points; the starter punch-card machine in HQ >
-// RIGS does, from the first era.
+// RESEARCH SERVERS does, from the first era.
 import { test, expect } from "@playwright/test";
 import { SAVES, expectClean, open, saved, tipsOff } from "./helpers.js";
 
@@ -14,12 +14,12 @@ const fresh = (extra = {}) => ({
   ...extra,
 });
 
-test("a fresh game buys the starter machine in HQ > RIGS and R&D points rise", async ({ page }) => {
+test("a fresh game buys the starter machine in HQ > RESEARCH SERVERS and R&D points rise", async ({ page }) => {
   const seen = await open(page, "/", fresh());
   await tipsOff(page);
   // HQ shows once the starter is affordable.
   await page.locator("a[href='/rigs']").first().click();
-  await page.locator("[data-hub-item='rigs']").click();
+  await page.locator("[data-hub-item='servers']").click();
   const room = page.locator("[data-facility='servers']");
   await expect(room.locator("[data-tabulating-room]")).toBeVisible();
   // The machine room's other computers stay hidden and marked Coming soon until Mainframes.

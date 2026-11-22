@@ -1263,7 +1263,9 @@ export const INVESTOR_MILESTONES = [
   { at: 250, id: "away-36", title: "NIGHT SHIFT", text: "Time away pays for up to 36 hours instead of 24." },
   { at: 1000, id: "auto-upgrades", title: "PURCHASING DEPARTMENT", text: "Upgrades can buy themselves when you can afford them. Turn it on in the BOOST tab." },
   { at: 5000, id: "away-48", title: "WEEKEND SHIFT", text: "Time away pays for up to 48 hours." },
-  { at: 10000, id: "start-ics", title: "INDUSTRIAL BASE", text: "Every run starts with 10 of each business before Integrated Circuits." },
+  // The id stays "start-ics" so players who have it keep it; since the era
+  // gates it covers only the first ten businesses.
+  { at: 10000, id: "start-ics", title: "INDUSTRIAL BASE", text: "Every run starts with 10 of each business from Timber Camp through Vacuum Tubes." },
 ];
 
 // The most investors this company has ever had. Saves from before 0.0.22
@@ -1297,10 +1299,10 @@ export function offlineCapMs(state) {
 // The businesses a new run (prestige or fork, not a challenge) starts with.
 // `prev` is the run being left, for managers that stay hired.
 export function startingBiz(state, biz, prev = null) {
-  const icsAt = BUSINESSES.findIndex((cfg) => cfg.id === "ics");
+  const tubesAt = BUSINESSES.findIndex((cfg) => cfg.id === "tubes");
   return biz.map((row, i) => {
     let owned = row.owned;
-    if (hasPerk(state, "start-ics") && i < icsAt) owned = Math.max(owned, ERA_GATE);
+    if (hasPerk(state, "start-ics") && i <= tubesAt) owned = Math.max(owned, ERA_GATE);
     if (hasPerk(state, "start-timber") && BUSINESSES[i].id === "timber") owned = Math.max(owned, 25);
     const keep = hasPerk(state, "keep-crews") && !!BUSINESSES[i].makes && !!prev?.[i]?.manager;
     return owned === row.owned && !keep ? row : { ...row, owned, manager: row.manager || keep };

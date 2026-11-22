@@ -11,6 +11,8 @@ function run({ prevOwned = ERA_GATE, lifetime = 0, investors = 0, singularities 
     lifetime,
     investors,
     singularities,
+    // Era materials are covered by their own test.
+    erasPaid: BUSINESSES.map((b) => b.id),
     biz: BUSINESSES.map((_, i) => ({ owned: i < gated - 1 ? 25 : i === gated - 1 ? prevOwned : 0 })),
   };
 }
@@ -22,7 +24,7 @@ test("an era needs both: enough of the one before, and earnings this run", () =>
   assert.ok(!eraOpen(run({ prevOwned: ERA_GATE - 1, lifetime: need }), gated));
   assert.ok(eraOpen(run({ lifetime: need }), gated));
   const needs = eraNeeds(run({ prevOwned: 4, lifetime: need / 2 }), gated);
-  assert.deepEqual(needs.map((n) => [n.kind, n.met]), [["own", false], ["earn", false]]);
+  assert.deepEqual(needs.filter((n) => n.kind === "own" || n.kind === "earn").map((n) => [n.kind, n.met]), [["own", false], ["earn", false]]);
   assert.match(needs[0].label, new RegExp(`Own ${ERA_GATE} `));
   assert.match(needs[1].label, /^Earn \$.* this run$/);
 });
@@ -120,4 +122,12 @@ test("the income ceiling is lower but still rises with every fork", () => {
   for (let n = 1; n <= 15; n++) assert.ok(incomeCeiling(n) > incomeCeiling(n - 1));
   // Income still approaches the ceiling and never passes it.
   assert.ok(softenMultiplier(1e9, 0) <= 42 && softenMultiplier(1e9, 0) > 41);
+});
+
+test("the first eras need only 10 of the one before, so the tutorial is unchanged", () => {
+  const ics = BUSINESSES.findIndex((b) => b.id === "ics");
+  for (let i = 1; i < ics; i++) assert.equal(eraEarnNeed(run(), i), 0, BUSINESSES[i].id);
+  const paper = BUSINESSES.findIndex((b) => b.id === "paper");
+  const s = { lifetime: 0, biz: BUSINESSES.map((_, i) => ({ owned: i === 0 ? 10 : 0 })) };
+  assert.ok(eraOpen(s, paper));
 });

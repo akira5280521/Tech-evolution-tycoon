@@ -61,10 +61,10 @@ test("the starter banks a full day away; servers keep their disk cap", () => {
   assert.ok(Math.abs(awayBankCap(s) - 0.002 * 24 * 3600) < 1e-6);
 });
 
-test("HQ opens once the starter is affordable, and NEXT MOVE points at it", () => {
+test("HQ is open from the first era, and NEXT MOVE points at the starter once it is affordable", () => {
   const poor = { biz: owning(["timber"]), cash: 1, facilities: {} };
+  assert.equal(hubOpen(poor), true);
   assert.equal(starterReady(poor), false);
-  assert.equal(hubOpen(poor), false);
   assert.equal(starterHint(poor), null);
   const ready = { ...poor, cash: 6 };
   assert.equal(starterReady(ready), true);
@@ -100,4 +100,13 @@ test("new games don't get the gift, and the flag survives prestige", () => {
   assert.equal(snapshotMeta({ ...blankMeta(), starterGranted: true }, { resetRunUpgrades: true }).starterGranted, true);
   assert.equal(snapshotMeta({ ...blankMeta(), starterGranted: false }, { resetRunUpgrades: true }).starterGranted, false);
   assert.ok(idx("mainframes") > idx("tubes"));
+});
+
+test("an era-9 save from before 0.0.29 with no machine gets one free", () => {
+  const era9 = { biz: owning(["timber", "paper", "loom", "punchcards", "relay", "sand", "copper", "glass", "filament"]), facilities: {} };
+  assert.ok(idx("filament") + 1 === 9, "filament is era 9");
+  assert.ok(idx("mainframes") > idx("filament"));
+  assert.equal(grantStarter(era9), true);
+  assert.equal(era9.facilities.servers[STARTER_PART_ID], 1);
+  assert.equal(era9.starterGranted, true);
 });

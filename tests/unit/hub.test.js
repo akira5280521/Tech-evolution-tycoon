@@ -23,12 +23,13 @@ test("RIGS is the first section and opens the facilities screen", () => {
   for (const item of HUB_ITEMS) assert.ok(item.label && item.to && item.text && typeof item.open === "function");
 });
 
-test("hub stays locked until the plants open, same as before", () => {
-  for (const state of [{}, { biz: [] }, withCpu(0), withCpu(1)]) {
-    assert.equal(hubOpen(state), anyFacilityOpen(state));
-  }
-  assert.equal(hubOpen(withCpu(0)), false);
+test("HQ is open from the first era so the starter machine is reachable", () => {
+  assert.equal(hubOpen(null), false);
+  assert.equal(hubOpen({}), true);
+  assert.equal(hubOpen({ biz: [] }), true);
+  assert.equal(hubOpen(withCpu(0)), true);
   assert.equal(hubOpen(withCpu(1)), true);
+  assert.equal(HUB_ITEMS[0].open(withCpu(0)), true);
 });
 
 test("hubSeen keeps HQ open with no Mainframes owned", () => {

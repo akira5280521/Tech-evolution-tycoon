@@ -50,6 +50,18 @@ const SELL_BACK = 0.5;
 
 export const FACILITIES = [
   {
+    id: "servers",
+    name: "RESEARCH SERVERS",
+    icon: "/icons/facilities/servers.png",
+    blurb: "Research machines make R&D points: a punch-card multiplier from the start, servers from Mainframes. Spend them on the R&D tab and the TECH timeline.",
+  },
+  {
+    id: "bench",
+    name: "PC BUILD BENCH",
+    icon: "/icons/facilities/bench.png",
+    blurb: "One PC at a time, built from parts that fit: a board, a CPU for its socket, and memory for its slots. It makes R&D points.",
+  },
+  {
     id: "mine",
     name: "BITBARK MINE",
     icon: "/icons/facilities/mine.png",
@@ -60,18 +72,6 @@ export const FACILITIES = [
     name: "TRAINING CLUSTER",
     icon: "/icons/facilities/cluster.png",
     blurb: "The cluster trains a model and bills the studio. A bigger model needs more memory.",
-  },
-  {
-    id: "bench",
-    name: "PC BUILD BENCH",
-    icon: "/icons/facilities/bench.png",
-    blurb: "One PC at a time, built from parts that fit: a board, a CPU for its socket, and memory for its slots. It makes R&D points.",
-  },
-  {
-    id: "servers",
-    name: "RESEARCH SERVERS",
-    icon: "/icons/facilities/servers.png",
-    blurb: "Research machines make R&D points: a punch-card multiplier from the start, servers from Mainframes. Spend them on the R&D tab and the TECH timeline.",
   },
 ];
 

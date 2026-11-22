@@ -18,7 +18,7 @@ export const HUB_ITEMS = [
     label: "RIGS",
     to: "/facilities",
     text: "Research machines that make R&D points (a punch-card machine from the start, servers from Mainframes) and the PC build bench, then the Bitbark mine and the AI training cluster that pay cash.",
-    open: (state) => !!state?.hubSeen || anyFacilityOpen(state) || starterReady(state),
+    open: (state) => !!state,
   },
 ];
 
@@ -32,10 +32,11 @@ export function starterReady(state) {
   return (Number(state.cash) || 0) >= partCost(part, 0);
 }
 
-// The hub opens once any of its sections does (RIGS: as soon as the starter
-// machine is affordable), and then stays open.
+// HQ is reachable from the first era so the starter machine can be bought
+// before Mainframes. It then stays open.
 export function hubOpen(state) {
-  return !!state?.hubSeen || HUB_ITEMS.some((item) => item.open(state));
+  if (!state) return false;
+  return !!state.hubSeen || HUB_ITEMS.some((item) => item.open(state));
 }
 
 // The first business that opens any plant (Mainframes, for the research servers).

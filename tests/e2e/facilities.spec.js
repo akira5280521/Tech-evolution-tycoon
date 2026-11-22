@@ -54,17 +54,56 @@ test("top RIGS button opens the hub, and its RIGS button opens the plants", asyn
   expectClean(seen);
 });
 
-test("hub button stays ??? until the starter machine is affordable", async ({ page }) => {
-  // A brand-new game (no gift: it buys its own starter) with no cash yet.
-  const seen = await open(page, "/", { ...SAVES.newgame, lastSeen: Date.now(), cash: 0, starterGranted: true, sawPit: true });
+const far = () => Date.now() + 9e9;
+const quietTutorial = { seen: [], tips: [], tipsOff: true, done: true, skipped: false, replay: false };
+function earlySave({ throughId, cash = 50, wood = 20 } = {}) {
+  const last = throughId ? BUSINESSES.findIndex((b) => b.id === throughId) : 0;
+  return {
+    version: 12, cash, lifetime: 10, investors: 0, lastSeen: Date.now(),
+    sawPit: true, starterGranted: true, hubSeen: false,
+    tutorial: quietTutorial,
+    nextWindfallAt: far(), nextDilemmaAt: far(), nextBubbleAt: far(), nextShortageAt: far(),
+    supply: { wood },
+    facilities: { servers: {}, bench: {}, mine: {}, cluster: {} },
+    biz: BUSINESSES.map((b, i) => ({
+      id: b.id,
+      owned: i <= last ? 1 : 0,
+      manager: false, running: false, progress: 0, commissionUntil: 0,
+    })),
+  };
+}
+
+async function buyStarterFromGame(page, save) {
+  const seen = await open(page, "/", save);
   await tipsOff(page);
   const top = page.locator("[data-open-facilities]");
-  await expect(top).toHaveText("???");
-  await expect(top).toHaveAttribute("data-locked", "");
-  await page.goto("/rigs");
-  await page.locator("nav[aria-label='Main navigation']").waitFor();
-  await expect(page.locator("[data-hub-item='rigs']")).toHaveAttribute("data-locked", "");
+  await expect(top).toHaveText("HQ");
+  await expect(top).not.toHaveAttribute("data-locked", "");
+  await top.click();
+  await expect(page).toHaveURL(/\/rigs$/);
+  const rigs = page.locator("[data-hub-item='rigs']");
+  await expect(rigs).not.toHaveAttribute("data-locked", "");
+  await rigs.click();
+  await expect(page).toHaveURL(/\/facilities$/);
+  const room = page.locator("[data-facility='servers']");
+  await expect(room).toBeVisible();
+  await expect(room).not.toHaveAttribute("data-locked", "");
+  await expect(page.locator("[data-tabulating-room]")).toBeVisible();
+  const part = page.locator("[data-part='tab601']");
+  await expect(part).toBeVisible();
+  await expect(page.locator('[data-action="buy-tab601"]')).toBeEnabled();
+  await page.locator('[data-action="buy-tab601"]').click();
+  await expect.poll(async () => (await saved(page))?.facilities?.servers?.tab601 || 0).toBe(1);
   expectClean(seen);
+}
+
+test("a fresh save can open HQ and buy the Inland 601", async ({ page }) => {
+  await buyStarterFromGame(page, earlySave({ throughId: "timber" }));
+});
+
+test("an era-9 save can open HQ and buy the Inland 601 before Mainframes", async ({ page }) => {
+  expect(BUSINESSES.findIndex((b) => b.id === "filament") + 1).toBe(9);
+  await buyStarterFromGame(page, earlySave({ throughId: "filament", cash: 1e6, wood: 50 }));
 });
 
 // HQ stays open for good once reached, like research. After a prestige the
@@ -95,8 +134,8 @@ test("after a prestige HQ still opens and RIGS says what each plant needs", asyn
   await expect(page.locator("[data-hub-item='rigs']")).not.toHaveAttribute("data-locked", "");
   await page.click("[data-hub-item='rigs']");
   await expect(page).toHaveURL(/\/facilities$/);
-  await expect(page.locator("[data-facility='servers'] [data-facility-needs]")).toHaveText("Needs Mainframes this run");
-  await expect(page.locator("[data-facility='mine'] [data-facility-needs]")).toHaveText("Needs AI Accelerators this run");
+  await expect(page.locator("[data-facility='servers'] [data-facility-needs]")).toContainText("Needs Mainframes this run");
+  await expect(page.locator("[data-facility='mine'] [data-facility-needs]")).toContainText("Needs AI Accelerators this run");
   const saved = await page.evaluate((k) => JSON.parse(localStorage.getItem(k)), "pc-tycoon-save-v1");
   expect(saved.hubSeen).toBe(true);
   expectClean(seen);

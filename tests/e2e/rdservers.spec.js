@@ -22,8 +22,10 @@ test("a fresh game buys the starter machine in HQ > RIGS and R&D points rise", a
   await page.locator("[data-hub-item='rigs']").click();
   const room = page.locator("[data-facility='servers']");
   await expect(room.locator("[data-tabulating-room]")).toBeVisible();
-  // The machine room's other computers stay locked until Mainframes.
-  await expect(room.locator("[data-action='buy-mark1']")).toBeDisabled();
+  // The machine room's other computers stay hidden and marked Coming soon until Mainframes.
+  await expect(room.locator("[data-part='mark1']")).toHaveCount(0);
+  await expect(room.locator("[data-facility-needs]")).toContainText("Needs Mainframes");
+  await expect(room.locator("[data-facility-needs]")).toContainText("COMING SOON");
   const buy = room.locator("[data-action='buy-tab601']");
   await expect(buy).toBeEnabled();
   const before = (await saved(page))?.data || 0;

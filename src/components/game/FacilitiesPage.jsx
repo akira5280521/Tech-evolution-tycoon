@@ -161,9 +161,13 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
     hiddenOld = reached.length - keep.length;
     parts = keep;
   }
+  // Before Mainframes, the server room only lists the starter machine.
+  // Other locked plants show the need, not a wall of greyed parts.
+  if (starterOnly) parts = parts.filter((part) => part.starter);
+  else if (!open) parts = [];
   return (
     <Panel>
-      <div data-facility={facility.id} data-locked={open ? undefined : ""}>
+      <div data-facility={facility.id} data-locked={open || starterOnly ? undefined : ""}>
         <div data-help-scope className="flex items-start gap-2">
           <div className={`h-14 w-14 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] ${open || starterOnly ? "" : "opacity-60"}`}>
             <img src={facility.icon} alt="" className="pixel-art h-full w-full scale-[1.4] object-contain" />
@@ -197,6 +201,7 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
             )}
             <p data-facility-limit data-facility-needs className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-dim)]">
               {facilityNeed(facility.id)}
+              {!open ? " · COMING SOON" : ""}
             </p>
           </>
         )}
@@ -352,7 +357,7 @@ export default function FacilitiesPage() {
       {!open && (
         <Panel>
           <p data-facilities-locked className="break-words font-term text-base leading-5 text-[var(--game-fg)]">
-            The plant opens when you own an AI Accelerator. Until then every part stays locked.
+            The punch-card machine in the tabulating room works from the start. The PC bench opens with Home Computers, and the Bitbark mine and training cluster with an AI Accelerator.
           </p>
         </Panel>
       )}

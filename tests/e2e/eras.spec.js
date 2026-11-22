@@ -42,3 +42,20 @@ test("a late era names its TECH project and GO TO TECH opens it", async ({ page 
   await expect(page.locator("[data-research-item='card-p100']")).toHaveAttribute("data-focus", "1");
   expectClean(seen);
 });
+
+test("OPEN ERA takes the material only when tapped, and opens the era", async ({ page }) => {
+  const seen = await open(page, "/", shortOf("cpu", { techDone: [], erasPaid: [], supply: { wafers: 5000 } }));
+  await tipsOff(page);
+  const row = page.locator("[data-locked-era]");
+  await row.scrollIntoViewIfNeeded();
+  await expect(row.locator("[data-era-need='material']")).toContainText(/Use [\d,]+ wafers to open it/);
+  // Waiting does not spend it.
+  await page.waitForTimeout(1500);
+  const before = await page.evaluate(() => JSON.parse(localStorage.getItem("pc-tycoon-save-v1")).supply?.wafers ?? null);
+  await row.locator("[data-open-era='cpu']").click();
+  await expect.poll(async () => page.evaluate(() => JSON.parse(localStorage.getItem("pc-tycoon-save-v1")).erasPaid || [])).toContain("cpu");
+  const after = await page.evaluate(() => JSON.parse(localStorage.getItem("pc-tycoon-save-v1")).supply.wafers);
+  expect(before == null || after < before).toBeTruthy();
+  await expect(page.locator("[data-locked-era] [data-open-era='cpu']")).toHaveCount(0);
+  expectClean(seen);
+});

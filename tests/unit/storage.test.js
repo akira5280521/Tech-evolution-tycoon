@@ -62,3 +62,10 @@ test("old saves load with no bigger bins; bad values are dropped", () => {
   const odd = migrateSave({ version: 12, cash: 5, storage: { sand: 3, glass: -2, wafers: "x", nope: 4 } });
   assert.deepEqual(odd.storage, { sand: 3 });
 });
+
+import { ERA_MATERIAL } from "../../src/lib/gameConfig.js";
+test("the bins always hold enough for the next era's material", () => {
+  const s = state(0);
+  s.erasPaid = BUSINESSES.filter((b) => ERA_MATERIAL[b.id]?.key === "wafers" && b.id !== "supercluster").map((b) => b.id);
+  assert.ok(supplyCap(s, "wafers") >= ERA_MATERIAL.supercluster.amount);
+});

@@ -1,7 +1,7 @@
 // Shared access to the game's localStorage save slot, used by the game screen
 // (read/write) and the settings screen (read-only analytics).
 
-import { BUSINESSES, blankSupply, managerNeed, normalizeBuyMode } from "./gameConfig.js";
+import { BUSINESSES, ERA_GATE, blankSupply, managerNeed, normalizeBuyMode } from "./gameConfig.js";
 
 export const SAVE_KEY = "pc-tycoon-save-v1";
 
@@ -165,6 +165,13 @@ export function migrateSave(data) {
     storage: Object.fromEntries(
       Object.keys(supply).map((key) => [key, Math.min(12, Math.floor(finiteNumber(data.storage?.[key], 0)))]).filter(([, n]) => n > 0),
     ),
+    // Eras open this run. Saves from before the earnings threshold keep every
+    // era that was open under the old rule (owning ERA_GATE of the one before).
+    erasOpened: Array.isArray(data.erasOpened)
+      ? data.erasOpened.filter((id) => BUSINESSES.some((cfg) => cfg.id === id))
+      : BUSINESSES.filter((cfg, i) => i > 0 && (biz[i]?.owned || 0) === 0 && (biz[i - 1]?.owned || 0) >= ERA_GATE).map((cfg) => cfg.id),
+    // Eras whose material is paid (once, ever). Older saves: filled in on load.
+    erasPaid: Array.isArray(data.erasPaid) ? data.erasPaid.filter((id) => BUSINESSES.some((cfg) => cfg.id === id)) : null,
     foreman: version < 4 ? progressed : !!data.foreman,
     sawPit: version < 4 ? progressed : !!data.sawPit,
     researchJob: version < 4 ? null : job(data.researchJob),

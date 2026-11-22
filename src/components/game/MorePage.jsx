@@ -152,7 +152,8 @@ const HOW_TO = [
       "Tap a business's picture to run it. The bar fills, then it pays you cash.",
       "Tap BUY to get another one. BUY spends cash, the big CASH number. What you earned this run is not cash.",
       "The buy-amount button sets how many one BUY tap gets. Tap it to cycle X1, X10, X25, X50, X75, X100, then MAX.",
-      "Own 10 of a business to open the next one.",
+      "Own 10 of a business to open the next one. Each era also needs some earnings this run, and more with more investors and forks.",
+      "The late eras need a TECH project first, and from Mainframes on, opening an era the first time uses some material when you tap OPEN ERA.",
     ],
   },
   {

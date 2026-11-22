@@ -65,7 +65,7 @@ export const GLOSSARY = {
   },
   ceiling: {
     term: "INCOME LIMIT",
-    text: "All your bonuses multiply together, but the closer they get to the limit, the less each new bonus adds, so income can't run away forever. The limit starts at x50 and rises by 6 with each fork.",
+    text: "All your bonuses multiply together, but the closer they get to the limit, the less each new bonus adds, so income can't run away forever. The limit starts at x42 and rises by 5 with each fork.",
   },
   research: {
     term: "R&D POINTS",

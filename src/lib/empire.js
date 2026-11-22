@@ -16,6 +16,7 @@ import {
   PROJECT_MS,
   RESEARCH_MS,
   SUPPLY_KEYS,
+  ERA_MATERIAL,
   UPGRADE_MS,
   blankSupply,
   blockedByGlass,
@@ -486,8 +487,15 @@ function flowOf(state, key) {
 export function boughtCap(state, key, level = storageLevel(state, key)) {
   return STORAGE_BASE * STORAGE_STEP ** level;
 }
+// The bins always hold enough for the next era that opens with this
+// material, so a small bin can never block OPEN ERA.
+function nextEraStock(state, key) {
+  const paid = state?.erasPaid || [];
+  const next = BUSINESSES.find((cfg) => ERA_MATERIAL[cfg.id]?.key === key && !paid.includes(cfg.id));
+  return next ? ERA_MATERIAL[next.id].amount : 0;
+}
 export function supplyCap(state, key, level = storageLevel(state, key)) {
-  return Math.min(SUPPLY_CAP, boughtCap(state, key, level) + 100 * flowOf(state, key));
+  return Math.min(SUPPLY_CAP, Math.max(boughtCap(state, key, level) + 100 * flowOf(state, key), nextEraStock(state, key)));
 }
 export function supplyFull(state, key) {
   return (state?.supply?.[key] || 0) >= supplyCap(state, key);
@@ -587,11 +595,14 @@ export function dataPerSecond(state) {
   return DATA_PER_ERA * establishedCount(state) + DATA_PER_ERA * masteredCount(state);
 }
 
-// Ceiling starts at 50 and rises by 6 for each singularity point (max 15
-// points → 140). Income approaches that ceiling and never passes it.
+// Ceiling starts at 42 and rises by 5 for each singularity point (max 15
+// points → 117). It was 50 + 6 per point; lowered so strong runs don't race
+// through the eras. Income approaches the ceiling and never passes it.
+export const CEILING_BASE = 42;
+export const CEILING_PER_FORK = 5;
 export function incomeCeiling(points) {
   const n = Math.max(0, Math.min(15, Math.floor(Number(points)) || 0));
-  return 50 + n * 6;
+  return CEILING_BASE + n * CEILING_PER_FORK;
 }
 
 // Soft cap: the first bonuses count almost 1:1, then returns diminish, and
@@ -1325,7 +1336,9 @@ export const INVESTOR_MILESTONES = [
   { at: 250, id: "away-36", title: "NIGHT SHIFT", text: "Time away pays for up to 36 hours instead of 24." },
   { at: 1000, id: "auto-upgrades", title: "PURCHASING DEPARTMENT", text: "Upgrades can buy themselves when you can afford them. Turn it on in the BOOST tab." },
   { at: 5000, id: "away-48", title: "WEEKEND SHIFT", text: "Time away pays for up to 48 hours." },
-  { at: 10000, id: "start-ics", title: "INDUSTRIAL BASE", text: "Every run starts with 10 of each business before Integrated Circuits." },
+  // The id stays "start-ics" so players who have it keep it; since the era
+  // gates it covers only the first ten businesses.
+  { at: 10000, id: "start-ics", title: "INDUSTRIAL BASE", text: "Every run starts with 10 of each business from Timber Camp through Vacuum Tubes." },
 ];
 
 // The most investors this company has ever had. Saves from before 0.0.22
@@ -1359,10 +1372,10 @@ export function offlineCapMs(state) {
 // The businesses a new run (prestige or fork, not a challenge) starts with.
 // `prev` is the run being left, for managers that stay hired.
 export function startingBiz(state, biz, prev = null) {
-  const icsAt = BUSINESSES.findIndex((cfg) => cfg.id === "ics");
+  const tubesAt = BUSINESSES.findIndex((cfg) => cfg.id === "tubes");
   return biz.map((row, i) => {
     let owned = row.owned;
-    if (hasPerk(state, "start-ics") && i < icsAt) owned = Math.max(owned, ERA_GATE);
+    if (hasPerk(state, "start-ics") && i <= tubesAt) owned = Math.max(owned, ERA_GATE);
     if (hasPerk(state, "start-timber") && BUSINESSES[i].id === "timber") owned = Math.max(owned, 25);
     const keep = hasPerk(state, "keep-crews") && !!BUSINESSES[i].makes && !!prev?.[i]?.manager;
     return owned === row.owned && !keep ? row : { ...row, owned, manager: row.manager || keep };
@@ -1429,6 +1442,8 @@ export function snapshotMeta(state, options = {}) {
     supply: { ...ensureSupply(state) },
     // Bigger bins are buildings: kept through prestige and forks.
     storage: { ...(state.storage || {}) },
+    // Era materials are paid once, ever.
+    erasPaid: [...(state.erasPaid || [])],
     foreman: !!state.foreman,
     sawPit: !!state.sawPit,
     goalsDone: Array.isArray(state.goalsDone) ? [...state.goalsDone] : [],

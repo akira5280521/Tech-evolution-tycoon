@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { eraNeeds, money } from "@/lib/gameConfig";
 import { ItemHelp } from "./HintSheet";
 
@@ -6,6 +7,7 @@ import { ItemHelp } from "./HintSheet";
 // progress.
 export default function LockedRow({ index, id, state }) {
   const needs = eraNeeds(state, index);
+  const navigate = useNavigate();
   return (
     <div data-locked-era data-help-scope className="flex items-center gap-3 border-2 border-dashed border-[var(--game-border)] bg-[var(--game-bg-deep)] p-3 opacity-80">
       <div className="grid h-16 w-16 shrink-0 place-items-center border-2 border-[var(--game-border)] bg-[var(--game-bg)] font-pixel text-lg text-[var(--game-border-strong)]">
@@ -18,7 +20,27 @@ export default function LockedRow({ index, id, state }) {
         </div>
         {needs.map((n) => {
           const pct = Math.max(0, Math.min(100, (n.have / n.need) * 100));
-          const progress = n.kind === "earn" ? money(Math.min(n.have, n.need)) : `${Math.min(n.have, n.need)}/${n.need}`;
+          const progress = n.kind === "earn" ? money(Math.min(n.have, n.need)) : n.kind === "research" ? (n.met ? "done" : "not done") : `${Math.min(n.have, n.need)}/${n.need}`;
+          if (n.kind === "research") {
+            return (
+              <div key={n.kind} data-era-need={n.kind} data-met={n.met ? "1" : "0"} className="mt-1">
+                <p className={`break-words font-term text-base leading-5 ${n.met ? "text-[var(--game-accent)]" : "text-[var(--game-muted)]"}`}>
+                  {n.met ? "✓ " : ""}
+                  {n.label} ({progress})
+                </p>
+                {!n.met && (
+                  <button
+                    type="button"
+                    data-era-research={n.research}
+                    onClick={() => navigate({ to: "/tech", hash: n.research })}
+                    className="mt-1 min-h-11 border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]"
+                  >
+                    GO TO TECH
+                  </button>
+                )}
+              </div>
+            );
+          }
           return (
             <div key={n.kind} data-era-need={n.kind} data-met={n.met ? "1" : "0"} className="mt-1">
               <p className={`break-words font-term text-base leading-5 ${n.met ? "text-[var(--game-accent)]" : "text-[var(--game-muted)]"}`}>

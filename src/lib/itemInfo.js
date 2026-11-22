@@ -27,6 +27,7 @@ import {
   pluralName,
   prestigeMult,
   eraEarnNeed,
+  ERA_RESEARCH,
 } from "./gameConfig.js";
 import {
   CHALLENGES,
@@ -228,9 +229,10 @@ function lockedEraInfo(state, id) {
   const prev = BUSINESSES[index - 1];
   const have = prev ? ownedOf(state, prev.id) : 0;
   const earn = eraEarnNeed(state, index);
+  const project = ERA_RESEARCH[BUSINESSES[index]?.id];
   return {
     title: "??? NEXT ERA",
-    text: `${LOCKED_TEXT} Own ${ERA_GATE} ${prev ? pluralName(prev.name) : "of the last era"} to open it (you have ${count(Math.min(have, ERA_GATE))})${earn > 0 ? `, and earn ${money(earn)} this run (you have ${money(Math.min(state?.lifetime || 0, earn))})` : ""}.`,
+    text: `${LOCKED_TEXT} Own ${ERA_GATE} ${prev ? pluralName(prev.name) : "of the last era"} to open it (you have ${count(Math.min(have, ERA_GATE))})${earn > 0 ? `, and earn ${money(earn)} this run (you have ${money(Math.min(state?.lifetime || 0, earn))})` : ""}${project ? `, and finish ${project.name} on TECH${(state?.techDone || []).includes(project.id) ? " (done)" : ""}` : ""}.`,
   };
 }
 

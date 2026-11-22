@@ -11,6 +11,7 @@ const upTo = (id, done = RESEARCH.map((e) => e.id)) => ({
   techDone: done,
   facilities: { mine: {}, cluster: {}, servers: {}, bench: {} },
   cash: 1e40,
+  supply: { wafers: 1e8, glass: 1e8, copper: 1e8, polysilicon: 1e8, ofcopper: 1e8 },
 });
 const part = (id) => PARTS.find((p) => p.id === id);
 

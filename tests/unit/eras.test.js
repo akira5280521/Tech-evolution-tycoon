@@ -112,3 +112,12 @@ test("opening an era takes its material only on the tap, and only once", () => {
   // Later eras cost more.
   assert.ok(ERA_MATERIAL.supercluster.amount > ERA_MATERIAL.minis.amount);
 });
+
+import { incomeCeiling, softenMultiplier } from "../../src/lib/empire.js";
+test("the income ceiling is lower but still rises with every fork", () => {
+  assert.equal(incomeCeiling(0), 42);
+  assert.ok(incomeCeiling(0) < 50 && incomeCeiling(15) < 140);
+  for (let n = 1; n <= 15; n++) assert.ok(incomeCeiling(n) > incomeCeiling(n - 1));
+  // Income still approaches the ceiling and never passes it.
+  assert.ok(softenMultiplier(1e9, 0) <= 42 && softenMultiplier(1e9, 0) > 41);
+});

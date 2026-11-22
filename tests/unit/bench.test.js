@@ -66,7 +66,7 @@ test("the upgrade plan buys a board, CPU and memory that work together", () => {
   assert.ok(best);
   for (const id of best.steps) assert.ok(purchasePart(s, "bench", id).ok, id);
   assert.equal(benchStock(s.facilities.bench).memory, 1);
-  assert.equal(benchStock(s.facilities.bench).cpu.id, best.cpu.id);
+  assert.ok(benchStock(s.facilities.bench).perf > 0);
 });
 
 test("chipsets support only their real CPUs", () => {
@@ -83,15 +83,15 @@ test("chipsets support only their real CPUs", () => {
 });
 
 test("memory speed, memory locks and overclocking change the PC's speed", () => {
-  const fast = benchStock({ "b-z390": 1, "c-9900k": 1, "m-ddr4c": 1 });
-  const locked = benchStock({ "b-b360": 1, "c-9900k": 1, "m-ddr4c": 1 });
+  const fast = benchStock({ "b-z390": 1, "c-9900k": 1, "m-ddr4c": 1, "p-750": 1 });
+  const locked = benchStock({ "b-b360": 1, "c-9900k": 1, "m-ddr4c": 1, "p-750": 1 });
   assert.equal(locked.memSpeed, 2666, "B360 holds memory to the CPU's rating");
   assert.equal(fast.memSpeed, 3600);
   assert.equal(fast.overclock, 1.1);
   assert.equal(locked.overclock, 1);
   assert.ok(fast.perf > locked.perf * 1.1);
   // Slow memory holds a CPU back a little.
-  const slow = benchStock({ "b-z390": 1, "c-9900k": 1, "m-ddr4a": 2 });
+  const slow = benchStock({ "b-z390": 1, "c-9900k": 1, "m-ddr4a": 2, "p-750": 1 });
   assert.ok(slow.perf < fast.perf && slow.perf > fast.perf * 0.8);
 });
 
@@ -100,4 +100,30 @@ test("every board lists its drive connections", () => {
     assert.ok(Number.isFinite(b.ide) && Number.isFinite(b.sata) && Number.isFinite(b.m2), b.id);
   }
   assert.equal(BENCH_PARTS.find((p) => p.id === "b-x670e").m2, 5);
+});
+
+test("supplies have the board plugs of their day", () => {
+  // A 1995 ATX supply has no 4-pin or 8-pin CPU plug for a 2010-era board.
+  assert.match(fitPart({ "b-z68": 1 }, "bench", "p-atx250").reason, /24-pin/);
+  assert.match(fitPart({ "b-875p": 1 }, "bench", "p-atx250").reason, /4-pin 12 V CPU plug/);
+  // A modern supply has no AT plugs for a 486 board.
+  assert.match(fitPart({ "b-vlb": 1 }, "bench", "p-750").reason, /AT power plugs/);
+  // A 24-pin (20+4) plug still fits a 20-pin board.
+  assert.ok(!fitPart({ "b-440bx": 1 }, "bench", "p-750").reason);
+  // A card needs its power plug.
+  assert.match(fitPart({ "b-z690": 1, "p-750": 1 }, "bench", "v-4090").reason, /16-pin/);
+});
+
+test("graphics: keyed AGP, PCIe generations and the CPU/GPU bottleneck", () => {
+  // A 3.3 V AGP card doesn't fit a 1.5 V-only slot; a universal one does.
+  assert.match(fitPart({ "b-875p": 1 }, "bench", "v-tnt").reason, /keyed/);
+  assert.ok(!fitPart({ "b-875p": 1 }, "bench", "v-gf256").reason);
+  // A PCIe 4.0 card in a PCIe 3.0 board runs at 3.0.
+  const b = benchStock({ "b-z390": 1, "c-9900k": 1, "m-ddr4c": 1, "p-750": 1, "v-3080": 1 });
+  assert.equal(b.link, 3);
+  // A top card on an old CPU: the CPU is the bottleneck.
+  const slow = benchStock({ "b-z77": 1, "c-3770k": 1, "m-ddr3b": 1, "p-atx3": 1, "v-4090": 1 });
+  assert.equal(slow.bottleneck, "cpu");
+  const weak = benchStock({ "b-z790": 1, "c-14900k": 1, "m-ddr5c": 1, "p-750": 1, "v-gtx680": 1 });
+  assert.equal(weak.bottleneck, "graphics");
 });

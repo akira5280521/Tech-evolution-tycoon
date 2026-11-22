@@ -719,6 +719,12 @@ function fitBench(counts, part) {
       takeOut(m, null);
     }
     if (sticks) notes.push(`takes out ${sticks} memory ${sticks === 1 ? "stick" : "sticks"} that don't fit`);
+    for (const k of ["video", "accel", "sound"]) {
+      for (const x of benchHas(counts, k)) if (busMisfit(x, part)) takeOut(x, `takes out the ${x.name} (no slot for it)`);
+    }
+    for (const f of benchHas(counts, "fpu")) if (part.fpu !== f.fpu) takeOut(f, `takes out the ${f.name}`);
+    for (const k of benchHas(counts, "case")) if (part.builtin || !k.boards.includes(part.form)) takeOut(k, `takes out the ${k.name} (the board doesn't fit it)`);
+    for (const ps of benchHas(counts, "psu")) if (psuMisfit(ps, part)) takeOut(ps, `takes out the ${ps.name} (it doesn't have the board's plugs)`);
     next[part.id] = 1;
     return { counts: next, refund, note: notes.join("; ") || null };
   }
@@ -746,7 +752,80 @@ function fitBench(counts, part) {
     }
     return { counts: next, refund, note: notes.join("; ") || null };
   }
+  if ((counts[part.id] || 0) > 0 && part.kind !== "stick") return { reason: "Already on the bench." };
+  const [caseNow] = benchHas(counts, "case");
+  const [psuNow] = benchHas(counts, "psu");
+  const [cardNow] = benchHas(counts, "video");
+  if (["video", "accel", "sound"].includes(part.kind)) {
+    if (!boardNow) return { reason: "Needs a board to plug into." };
+    const misfit = busMisfit(part, boardNow);
+    if (misfit) return { reason: misfit };
+    if (part.kind === "video" && caseNow && part.length > caseNow.maxGpu) return { reason: `At ${part.length} mm it's too long for the ${caseNow.name} (${caseNow.maxGpu} mm).` };
+    if (part.kind === "video" && psuNow && !psuNow.plugs.includes(part.plug)) return { reason: `Needs a supply with ${PLUG_NAMES[part.plug]}.` };
+    for (const x of benchHas(counts, part.kind)) takeOut(x, `replaces the ${x.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
+  if (part.kind === "fpu") {
+    if (!boardNow || boardNow.fpu !== part.fpu) return { reason: `Needs a board with a ${part.fpu} socket.` };
+    for (const x of benchHas(counts, "fpu")) takeOut(x, `replaces the ${x.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
+  if (part.kind === "psu") {
+    if (boardNow?.builtin) return { reason: "This computer has its own supply." };
+    const plugMisfit = boardNow ? psuMisfit(part, boardNow) : null;
+    if (plugMisfit) return { reason: plugMisfit };
+    if (caseNow && part.form !== caseNow.form) return { reason: `The ${caseNow.name} takes an ${caseNow.form.toUpperCase()} supply.` };
+    if (cardNow && !part.plugs.includes(cardNow.plug)) return { reason: `The ${cardNow.name} needs ${PLUG_NAMES[cardNow.plug]}.` };
+    for (const x of benchHas(counts, "psu")) takeOut(x, `replaces the ${x.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
+  if (part.kind === "case") {
+    if (boardNow?.builtin) return { reason: "This computer came in its own case." };
+    if (boardNow && !part.boards.includes(boardNow.form)) return { reason: `The ${boardNow.name} is ${FORM_NAMES[boardNow.form]}; this case doesn't take it.` };
+    if (psuNow && psuNow.form !== part.form) return { reason: `This case takes an ${part.form.toUpperCase()} supply.` };
+    if (cardNow && cardNow.length > part.maxGpu) return { reason: `The ${cardNow.name} is too long for it (${part.maxGpu} mm).` };
+    for (const x of benchHas(counts, "case")) takeOut(x, `replaces the ${x.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
   return { counts: { ...counts, [part.id]: (counts[part.id] || 0) + 1 }, refund: 0, note: null };
+}
+
+const PLUG_NAMES = { none: "no plug", molex: "a drive power plug", "6pin": "a 6-pin PCIe plug", "8pin": "an 8-pin PCIe plug", "12vhpwr": "the 16-pin 12VHPWR plug" };
+export const FORM_NAMES = { at: "AT", atx: "ATX", matx: "micro-ATX", own: "built in" };
+const BUS_NAMES = { isa8: "8-bit ISA", isa16: "16-bit ISA", vlb: "VL-Bus", pci: "PCI", agp: "AGP", pcie: "PCI Express" };
+
+const MAIN_NAMES = { at: "AT power plugs", atx20: "a 20-pin ATX plug", atx24: "a 24-pin ATX plug" };
+const CPU_PLUG_NAMES = { p4: "a 4-pin 12 V CPU plug", eps8: "an 8-pin EPS CPU plug" };
+
+// Whether a supply has the plugs a board needs.
+function psuMisfit(psu, board) {
+  if (!board) return null;
+  if (board.builtin) return "This computer has its own supply.";
+  const mainOk = board.mainPlug === psu.mainPlug || (board.mainPlug === "atx20" && psu.mainPlug === "atx24");
+  if (!mainOk) return `The board needs ${MAIN_NAMES[board.mainPlug]}; this supply has ${MAIN_NAMES[psu.mainPlug]}.`;
+  if (board.cpuPlug && !(psu.cpuPlugs || []).includes(board.cpuPlug)) return `The board needs ${CPU_PLUG_NAMES[board.cpuPlug]}, which this supply doesn't have.`;
+  return null;
+}
+
+// Whether a card fits a board's slots. AGP is keyed: old 3.3 V cards don't
+// fit a 1.5 V-only slot and 1.5 V cards don't fit a 3.3 V one; universal
+// cards fit both.
+function busMisfit(part, board) {
+  if (!board) return "Needs a board.";
+  if (board.builtin) return "This computer has no slot for it.";
+  if (part.bus === "agp") {
+    const slot = (board.buses || []).find((b) => b.startsWith("agp"));
+    if (!slot) return "Needs a board with an AGP slot.";
+    if (part.agpKey !== "universal" && slot !== `agp-${part.agpKey}`) return `This ${part.agpKey} V AGP card is keyed for the other AGP slot.`;
+    return null;
+  }
+  if (part.bus === "isa8" && (board.buses || []).includes("isa16")) return null;
+  if (!(board.buses || []).includes(part.bus)) return `Needs a ${BUS_NAMES[part.bus]} slot.`;
+  return null;
 }
 
 // The bench's PC: CPU speed, held back when memory is short or slow, and a
@@ -773,8 +852,50 @@ export function benchStock(counts) {
     speedFactor = 0.85 + 0.15 * Math.min(1.25, memSpeed / rated);
   }
   const overclock = fits && board.oc && chip.unlocked ? 1.1 : 1;
-  const perf = fits ? chip.perf * memory * speedFactor * overclock : 0;
-  return { board: board || null, cpu: chip || null, ramMb, needMb: need, sticks: stickCount, memory, memSpeed, rated, speedFactor, overclock, perf, perSecond: perf * BENCH_RD };
+  const [fpuChip] = benchHas(c, "fpu");
+  const math = fits && fpuChip && chip.noFpu && board.fpu === fpuChip.fpu ? 1.15 : 1;
+  const cpuPerf = fits ? chip.perf * memory * speedFactor * overclock * math : 0;
+  // Graphics: the card (plus a 3D add-in beside it), at the slowest PCI
+  // Express generation of card, slot and CPU (3% for each step down), or the
+  // computer's own video, or a CPU's on-chip graphics.
+  const [card] = benchHas(c, "video");
+  const [addIn] = benchHas(c, "accel");
+  const [psuNow] = benchHas(c, "psu");
+  const [caseNow] = benchHas(c, "case");
+  const [snd] = benchHas(c, "sound");
+  let gfx = 0;
+  let link = 0;
+  let unplugged = false;
+  if (card && board && !busMisfit(card, board)) {
+    if (psuNow && !psuNow.plugs.includes(card.plug)) unplugged = true;
+    else {
+      gfx = card.gfx;
+      if (card.bus === "pcie") {
+        link = Math.min(card.pcie, board.pcie || card.pcie, chip?.pcie || board.pcie || card.pcie);
+        gfx *= 1 - 0.03 * Math.max(0, card.pcie - link);
+      }
+      if (addIn && !busMisfit(addIn, board)) gfx += addIn.gfx;
+    }
+  } else if (board?.builtin) gfx = cpuPerf;
+  else if (chip?.igpu) gfx = cpuPerf * 0.15;
+  // The PC is as fast as its CPU, held back by weak graphics: a card faster
+  // than the CPU can feed is partly idle.
+  const pcPerf = cpuPerf * 0.6 + Math.min(gfx, cpuPerf) * 0.4;
+  let bottleneck = null;
+  if (cpuPerf > 0 && gfx < cpuPerf * 0.9) bottleneck = "graphics";
+  else if (cpuPerf > 0 && gfx > cpuPerf * 1.3) bottleneck = "cpu";
+  // Power: the supply has to cover the CPU, card and the rest (20 W).
+  const draw = 20 + (chip?.watts || 0) + (unplugged ? 0 : card?.watts || 0) + (addIn?.watts || 0) + (snd?.watts || 0) + (fpuChip?.watts || 0);
+  const supply = board?.builtin ? Math.max(draw, board.builtinWatts) : psuNow && !psuMisfit(psuNow, board) ? psuNow.supply : 0;
+  const power = !board ? 0 : supply <= 0 ? 0 : Math.min(1, supply / draw);
+  const soundBonus = snd && board && !busMisfit(snd, board) ? 1 + snd.bonus : 1;
+  const caseBonus = caseNow && board && caseNow.boards.includes(board.form) ? 1.05 : 1;
+  const perf = pcPerf * power * soundBonus * caseBonus;
+  return {
+    board: board || null, cpu: chip || null, ramMb, needMb: need, sticks: stickCount, memory, memSpeed, rated, speedFactor, overclock, math,
+    cpuPerf, gfx, link, unplugged, bottleneck, draw, supply, power, sound: snd || null, case: caseNow || null, card: card || null,
+    perf, perSecond: perf * BENCH_RD,
+  };
 }
 
 // The ways to put a faster CPU on the bench right now: the CPU, a board for
@@ -782,35 +903,88 @@ export function benchStock(counts) {
 // lists the parts in buying order, with the total cost after sell-backs.
 export function benchPlans(state) {
   const open = openParts(state);
-  let counts = { ...countsOf(state, "bench") };
+  const counts = { ...countsOf(state, "bench") };
   const now = benchStock(counts);
+  const benchParts = (kind) => PARTS.filter((p) => p.kind === kind && p.fits.includes("bench") && open.has(p.id));
   const plans = [];
-  for (const chip of PARTS.filter((p) => p.kind === "cpu" && p.fits.includes("bench") && open.has(p.id))) {
-    if (chip.perf <= (now.cpu?.perf || 0)) continue;
-    const boards = now.board && !cpuFitsBoard(chip, now.board)
-      ? [now.board]
-      : PARTS.filter((p) => p.kind === "board" && p.fits.includes("bench") && open.has(p.id) && !cpuFitsBoard(chip, p));
-    for (const board of boards) {
-      let c = { ...counts };
-      let cost = 0;
-      const steps = [];
-      const add = (part) => {
-        const fit = fitBench(c, part);
-        if (fit.reason) return false;
-        cost += partCost(part, c[part.id] || 0) - fit.refund;
-        c = fit.counts;
-        steps.push(part.id);
-        return true;
-      };
-      if (!(c[board.id] > 0) && !add(board)) continue;
-      if (!add(chip)) continue;
-      const sticks = PARTS.filter((p) => p.kind === "stick" && p.mem === board.mem && open.has(p.id)).sort((a, b) => (b.speed || 0) - (a.speed || 0) || b.mb - a.mb);
-      for (let i = 0; i < 8 && benchStock(c).memory < 0.999 && sticks.length; i++) {
-        const fits = sticks.find((m) => !fitBench(c, m).reason);
-        if (!fits || !add(fits)) break;
+  // Build on c: add each part, then a supply (and case) that fit and cover
+  // the draw. Returns the finished plan or null.
+  const finish = (c0, first, label) => {
+    let c = { ...c0 };
+    let cost = 0;
+    const steps = [];
+    const add = (part) => {
+      const fit = fitBench(c, part);
+      if (fit.reason) return false;
+      cost += partCost(part, c[part.id] || 0) - fit.refund;
+      c = fit.counts;
+      steps.push(part.id);
+      return true;
+    };
+    for (const part of first) if (!(c[part.id] > 0) && !add(part)) return null;
+    const [board] = benchHas(c, "board");
+    if (!board) return null;
+    const sticks = benchParts("stick").filter((m) => m.mem === board.mem).sort((a, b) => (b.speed || 0) - (a.speed || 0) || b.mb - a.mb);
+    for (let i = 0; i < 8 && benchStock(c).memory < 0.999 && sticks.length; i++) {
+      const fits = sticks.find((m) => !fitBench(c, m).reason);
+      if (!fits || !add(fits)) break;
+    }
+    if (!board.builtin) {
+      const st = benchStock(c);
+      if (st.power < 0.999 || st.unplugged || !st.supply) {
+        const [card] = benchHas(c, "video");
+        const psu = benchParts("psu").filter((p) => !psuMisfit(p, board) && p.supply >= st.draw + (st.unplugged ? card.watts : 0) && (!card || p.plugs.includes(card.plug)))
+          .sort((a, b) => a.cost - b.cost)[0];
+        if (psu) add(psu);
       }
-      const after = benchStock(c);
-      plans.push({ cpu: chip, board, steps, cost, perf: after.perf, perSecond: after.perSecond });
+      if (!benchHas(c, "case").length) {
+        const [card] = benchHas(c, "video");
+        const box = benchParts("case").filter((k) => !fitBench(c, k).reason && (!card || card.length <= k.maxGpu)).sort((a, b) => a.cost - b.cost)[0];
+        if (box) add(box);
+      }
+    }
+    const after = benchStock(c);
+    if (after.perf <= now.perf) return null;
+    return { label, steps, cost, perf: after.perf, perSecond: after.perSecond };
+  };
+  for (const chip of benchParts("cpu")) {
+    if (chip.perf <= (now.cpu?.perf || 0)) continue;
+    const boards = now.board && !cpuFitsBoard(chip, now.board) ? [now.board] : benchParts("board").filter((p) => !cpuFitsBoard(chip, p));
+    for (const board of boards) {
+      const plan = finish(counts, [board, chip], chip.name);
+      if (plan) plans.push({ ...plan, cpu: chip, board });
+    }
+  }
+  if (now.board && now.cpu) {
+    for (const card of benchParts("video")) {
+      if (card.gfx <= (now.card?.gfx || 0) || busMisfit(card, now.board)) continue;
+      const box = benchHas(counts, "case")[0];
+      let c = counts;
+      if (box && card.length > box.maxGpu) {
+        const bigger = benchParts("case").filter((k) => k.maxGpu >= card.length && k.boards.includes(now.board.form)).sort((a, b) => a.cost - b.cost)[0];
+        if (!bigger) continue;
+        const fit = fitBench(c, bigger);
+        if (fit.reason) continue;
+        c = fit.counts;
+      }
+      // A new card may need a supply with its plug first.
+      const [psuNow] = benchHas(c, "psu");
+      const first = [];
+      if (psuNow && !psuNow.plugs.includes(card.plug)) {
+        const psu = benchParts("psu").filter((p) => !psuMisfit(p, now.board) && p.plugs.includes(card.plug)).sort((a, b) => a.cost - b.cost)[0];
+        if (!psu) continue;
+        first.push(psu);
+      }
+      first.push(card);
+      const plan = finish(c, first, card.name);
+      if (plan) plans.push({ ...plan, card });
+    }
+    for (const kind of ["sound", "fpu", "accel"]) {
+      for (const part of benchParts(kind)) {
+        if (benchHas(counts, kind).some((x) => x.id === part.id)) continue;
+        const plan = finish(counts, [part], part.name);
+        if (plan) plans.push(plan);
+      }
     }
   }
   return plans.sort((a, b) => b.perf - a.perf || a.cost - b.cost);
@@ -820,7 +994,12 @@ export function benchLimit(counts) {
   const b = benchStock(counts);
   if (!b.board) return "Add a board";
   if (!b.cpu) return "Add a CPU";
+  if (!b.board.builtin && !b.supply) return "Add a power supply";
+  if (b.power < 0.999) return "Power limited";
   if (b.memory < 0.999) return "Needs more memory";
+  if (b.unplugged) return "Card not plugged in";
+  if (b.bottleneck === "graphics") return "Bottleneck: graphics";
+  if (b.bottleneck === "cpu") return "Bottleneck: CPU";
   return "Running full";
 }
 
@@ -828,8 +1007,13 @@ export function benchHint(state) {
   const b = benchStock(countsOf(state, "bench"));
   if (!b.board) return "Next: a motherboard, then a CPU for its socket and memory for its slots.";
   if (!b.cpu) return `Next: a CPU for the ${SOCKET_NAMES[b.board.socket]} socket.`;
+  if (!b.board.builtin && !b.supply) return `Next: an ${b.board.form === "at" ? "AT" : "ATX"} power supply; the PC draws about ${Math.round(b.draw)} W.`;
+  if (b.power < 0.999) return `Next: a bigger supply; the PC draws ${Math.round(b.draw)} W from a ${b.supply} W supply.`;
   if (b.memory < 0.999) return `Next: more ${MEM_NAMES[b.board.mem]} memory; the ${b.cpu.name} wants ${memSize(b.needMb)}.`;
-  return "Next: a newer board and CPU as you reach their years and research them.";
+  if (b.unplugged) return `Next: a supply with the plug the ${b.card.name} needs.`;
+  if (b.bottleneck === "graphics") return "Bottleneck: the graphics. A faster card lets the CPU do more.";
+  if (b.bottleneck === "cpu") return "Bottleneck: the CPU. The card waits on it; a faster CPU uses more of it.";
+  return "Next: newer parts as you reach their years and research them.";
 }
 
 export function memSize(mb) {

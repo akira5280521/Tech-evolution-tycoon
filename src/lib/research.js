@@ -26,6 +26,8 @@ export const RESEARCH_TABS = [
   { id: "network", label: "NETWORK" },
   { id: "servers", label: "SERVERS" },
   { id: "boards", label: "BOARDS" },
+  { id: "sound", label: "SOUND" },
+  { id: "cases", label: "CASES" },
 ];
 
 
@@ -164,7 +166,7 @@ export const RESEARCH = [
 // (each after the last chip of its maker), boards on BOARDS, sticks on MEMORY.
 {
   const have = new Set(RESEARCH.map((entry) => entry.id));
-  const tabOf = { cpu: "cpu", board: "boards", stick: "memory" };
+  const tabOf = { cpu: "cpu", board: "boards", stick: "memory", video: "gpu", accel: "gpu", sound: "sound", psu: "power", case: "cases", fpu: "cpu" };
   const brand = (name) => name.split(" ")[0];
   const added = PARTS.filter((part) => part.fits.includes("bench") && part.research && !have.has(part.research))
     .sort((a, b) => a.year - b.year);

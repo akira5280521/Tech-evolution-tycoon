@@ -138,11 +138,30 @@ test shipped in 0.0.13 (see Done).
   Maynard AlphaServer 8400, Silicon Pictures Origin 2000, Sunrise
   Enterprise 10000. Supercomputers need two or more generators and coolers
   of their own coolant: Freon, Fluorinert or chilled water.
-- **Stages to come:** 2, graphics and sound cards (slot and PCIe generation
-  rules, AGP keying, CPU/GPU bottleneck); 3, drives (IDE, SATA 1.5/3/6
-  Gbit/s, NVMe by PCIe generation); 4, air coolers and AIOs. Each stage
-  includes defunct makers (3dfx, S3, Rendition, Aureal, Gravis, Conner,
-  Quantum, Maxtor and others).
+- **PC build bench, stage 2** (graphics, sound, power, cases, coprocessors):
+  - 38 graphics cards from the 1981 CGA to the 2024 B580, plus two 3D-only
+    add-ins that need a 2D card beside them. Defunct makers: Herakles
+    (Hercules), Tsang (Tseng Labs), Ess Three (S3), Rendix (Rendition),
+    Threefold (3dfx), Artix (ATI).
+  - Slots: 8- and 16-bit ISA, VL-Bus, PCI, keyed AGP (3.3 V and 1.5 V slots;
+    universal cards fit both), PCI Express by generation; a card runs at the
+    slowest PCIe generation of card, slot and CPU, 3% less for each step.
+  - The PC's speed is its CPU's, held back by weak graphics; a card faster
+    than the CPU can feed is partly idle. The bench names the bottleneck.
+  - 12 sound cards (AdLab, Creatix, Gravitas, Ensonix, Aurora), 2-7% each.
+  - 10 power supplies with the board plugs of their day: AT; ATX 20-pin;
+    4-pin CPU plug (2000); 24-pin (2004); 8-pin EPS (2008); and card plugs
+    (drive power, 6-pin, 8-pin, 16-pin). The PC slows when it draws more
+    than the supply gives.
+  - 8 cases: board sizes they take, longest card, radiator mounts (for the
+    AIO stage), +5% airflow.
+  - Math coprocessors: 8087, 287, 387 and Cyrus FasMath, +15% for a CPU
+    without floating point.
+- **Stages to come:** 3, drives (MFM, IDE, SATA 1.5/3/6 Gbit/s, NVMe by
+  PCIe generation), optical and removable drives, network cards and
+  modems; 4, air coolers and AIOs, with radiators that must fit the case's
+  mounts. Defunct makers in each (Conner, Quantum, Micropolis, Maxtor, OCZ,
+  Iomega and others).
 - **A 1980s era:** the eras jump from 1977 to 1991, so 1980s hardware opens
   at Dial-up. Worth deciding on.
 - **Space Age plan.** How to add it, in stages: `docs/space-age-plan.md`.

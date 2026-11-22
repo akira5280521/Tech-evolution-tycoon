@@ -254,7 +254,187 @@ export const BENCH_STICKS = [
   stick("m-ddr5c", "32 GB DDR5-7200", 2023, "mem-ddr5-7200", "ddr5", 32768, 7200, "2023: a fast kit for boards that can run it."),
 ];
 
-export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS];
+// --- Stage 2: power draw, form factors, card buses -------------------------
+
+// CPU power (TDP, or the boost limit for the newest chips), in watts.
+const CPU_WATTS = {
+  "c-8080": 1, "c-6502": 1, "c-z80": 1, "c-8088": 2, "c-286": 3, "c-386": 3, "c-486": 5, "c-am386": 3, "c-cx486dlc": 3,
+  "c-am486": 5, "c-586": 15, "c-nx586": 12, "c-cx5x86": 6, "c-586pro": 35, "c-k5": 15, "c-6x86": 20, "c-586mmx": 17,
+  "c-k6": 20, "c-6x86mx": 20, "c-c6": 12, "c-p2": 43, "c-300a": 20, "c-k62": 17, "c-mii": 20, "c-mp6": 20, "c-k7": 50,
+  "c-p3": 28, "c-tbird": 54, "c-p4a": 72, "c-xp": 66, "c-p4": 82, "c-a64": 89, "c-x2": 110, "c-dual": 130, "c-e6600": 65,
+  "c-q6600": 105, "c-phenom": 125, "c-q9650": 95, "c-i7920": 130, "c-ph2": 125, "c-i7860": 95, "c-1100t": 125,
+  "c-2600k": 95, "c-fx8150": 125, "c-3770k": 77, "c-4770k": 84, "c-4790k": 88, "c-6700k": 91, "c-7700k": 91,
+  "c-1800x": 95, "c-1950x": 180, "c-8700k": 95, "c-2700x": 105, "c-2990wx": 250, "c-9900k": 95, "c-3950x": 105,
+  "c-5950x": 105, "c-12900k": 241, "c-7950x": 170, "c-13900k": 253, "c-14900k": 253, "c-9950x": 170, "c-285k": 250,
+};
+// Chipwright chips with graphics on the chip (a weak stand-in for a card).
+const ON_CHIP_GRAPHICS = ["c-2600k", "c-3770k", "c-4770k", "c-4790k", "c-6700k", "c-7700k", "c-8700k", "c-9900k", "c-12900k", "c-13900k", "c-14900k", "c-285k", "c-7950x", "c-9950x"];
+for (const c of BENCH_CPUS) {
+  c.watts = CPU_WATTS[c.id] || 10;
+  c.igpu = ON_CHIP_GRAPHICS.includes(c.id);
+  if (["c-8088", "c-286", "c-386", "c-am386"].includes(c.id)) c.noFpu = true;
+}
+
+// Board form factor, the slots for add-in cards, and the math-coprocessor
+// socket. The 1970s boards and the Inland PC came in their own case with
+// their own supply and video (builtin).
+const BUILTIN = { "b-altair": 0, "b-orchard2": 0, "b-trs80": 0, "b-5150": 64 };
+const MICRO = ["b-a320", "b-h610", "b-b150", "b-h67", "b-h87", "b-a620"];
+const AT_FORM = ["b-at", "b-deskpro", "b-vlb", "b-430lx", "b-nxvl", "b-430fx", "b-440fx", "b-430tx", "b-mvp3"];
+const FPU = { "b-5150": "8087", "b-at": "287", "b-deskpro": "387" };
+for (const b of BENCH_BOARDS) {
+  b.builtin = b.id in BUILTIN;
+  b.builtinWatts = BUILTIN[b.id] || 0;
+  b.form = b.builtin ? "own" : AT_FORM.includes(b.id) ? "at" : MICRO.includes(b.id) ? "matx" : "atx";
+  b.fpu = FPU[b.id] || null;
+  const buses = [];
+  if (b.gpuSlot === "isa8") buses.push("isa8");
+  if (["isa16", "vlb"].includes(b.gpuSlot) || (b.year <= 1999 && ["pci", "agp-3.3"].includes(b.gpuSlot))) buses.push("isa8", "isa16");
+  if (b.gpuSlot === "vlb") buses.push("vlb");
+  if (["pci", "agp-3.3", "agp-1.5"].includes(b.gpuSlot) || (b.gpuSlot === "pcie" && b.year <= 2013)) buses.push("pci");
+  if (b.gpuSlot.startsWith("agp")) buses.push(b.gpuSlot);
+  if (b.gpuSlot === "pcie") buses.push("pcie");
+  b.buses = buses;
+}
+
+// Board power plugs, as on the real boards: AT boards take the AT supply's
+// pair of 6-pin plugs; ATX boards a 20-pin plug, then (from 2004) a 24-pin
+// one; Pentium 4-era boards add a 4-pin 12 V CPU plug, later boards an 8-pin
+// EPS plug. A 24-pin supply plug (20+4) still fits a 20-pin board, and an
+// 8-pin (4+4) one a 4-pin socket, but nothing new fits an AT board.
+const CPU4 = ["b-845", "b-8rda", "b-875p", "b-ic7", "b-nf3", "b-nf4", "b-lanparty", "b-945p", "b-p965", "b-p35", "b-790fx", "b-h67", "b-h87", "b-b150", "b-a320", "b-b360", "b-h610", "b-a620"];
+for (const b of BENCH_BOARDS) {
+  if (b.builtin) continue;
+  b.mainPlug = b.form === "at" ? "at" : b.year >= 2004 ? "atx24" : "atx20";
+  b.cpuPlug = b.form === "at" || b.year < 2001 ? null : CPU4.includes(b.id) ? "p4" : b.year >= 2008 ? "eps8" : "p4";
+}
+
+const icon2 = icon;
+// Graphics card: bus (isa8, isa16, vlb, pci, agp, pcie), AGP keying (3.3,
+// 1.5 or universal), PCIe generation, gfx (game number on the CPU's perf
+// scale), board power in watts, the power plug it needs, and length in mm.
+function card(id, name, year, research, bus, key, pcie, gfx, watts, plug, length, spec) {
+  return { ...base, id, kind: "video", name, year, research, bus, agpKey: key, pcie, gfx, watts, plug, length, icon: icon2(id), cost: price(year, 0.35), spec };
+}
+export const BENCH_CARDS = [
+  card("v-cga", "Inland CGA card", 1981, "vid-cga", "isa8", null, 0, 0.6, 5, "none", 300, "1981: four colors at 320 by 200, sixteen in text."),
+  card("v-herc", "Herakles Graphics Card", 1982, "vid-herc", "isa8", null, 0, 0.65, 5, "none", 300, "1982: sharp 720 by 348 monochrome, from a maker long gone."),
+  card("v-ega", "Inland EGA card", 1984, "vid-ega", "isa8", null, 0, 0.9, 8, "none", 300, "1984: sixteen colors at 640 by 350."),
+  card("v-vga", "Inland VGA card", 1987, "vid-vga", "isa16", null, 0, 1.2, 8, "none", 250, "1987: 256 colors at 320 by 200, sixteen at 640 by 480."),
+  card("v-et4000", "Tsang ET4000", 1989, "vid-et4000", "isa16", null, 0, 1.8, 8, "none", 200, "1989: one of the fastest ISA cards, from a maker that left the market in 1997."),
+  card("v-r4000", "Rasterline 4000", 1990, "gpu-2d", "isa16", null, 0, 2, 8, "none", 200, "1990: 2D SVGA, up to 1024 by 768."),
+  card("v-928", "Ess Three 928", 1992, "vid-928", "vlb", null, 0, 2.6, 10, "none", 200, "1992: a fast 2D card for the VESA local bus."),
+  card("v-virge", "Ess Three ViRGE", 1995, "vid-virge", "pci", null, 0, 3, 8, "none", 180, "1995: one of the first cards with 3D, slower at it than doing it in software."),
+  card("v-verite", "Rendix V1000", 1996, "vid-verite", "pci", null, 0, 3.2, 15, "none", 200, "1996: a programmable 3D chip, from a maker bought out in 1998."),
+  card("v-riva128", "Raster 128", 1997, "vid-riva128", "agp", "3.3", 0, 4, 15, "none", 190, "1997: 2D and fast 3D on one chip, on AGP."),
+  card("v-ragepro", "Artix Rage Pro", 1997, "vid-ragepro", "agp", "3.3", 0, 3.8, 12, "none", 190, "1997: a card found in many PCs of its day."),
+  card("v-tnt", "Raster TNT", 1998, "vid-tnt", "agp", "3.3", 0, 4.6, 15, "none", 200, "1998: two pixels per clock, 16 MB."),
+  card("v-voodoo3", "Threefold 3000", 1999, "vid-voodoo3", "agp", "3.3", 0, 5.6, 20, "none", 200, "1999: Threefold's own 2D and 3D card."),
+  card("v-gf256", "Raster 256", 1999, "gpu-256", "agp", "universal", 0, 6, 25, "none", 210, "1999: transform and lighting on the card, sold as the first GPU."),
+  card("v-radeon", "Artix Radeon DDR", 2000, "vid-radeon", "agp", "universal", 0, 6.4, 25, "none", 210, "2000: 32 MB of DDR."),
+  card("v-voodoo5", "Threefold 5500", 2000, "vid-voodoo5", "agp", "universal", 0, 6.2, 60, "molex", 240, "2000: two chips and its own power plug; Threefold's last card."),
+  card("v-gf3", "Raster 3", 2001, "gpu-3", "agp", "1.5", 0, 7.5, 35, "none", 210, "2001: programmable shaders."),
+  card("v-9700", "Artix 9700 Pro", 2002, "vid-9700", "agp", "1.5", 0, 9, 50, "molex", 220, "2002: DirectX 9 a few months early, with a power plug on the card."),
+  card("v-6800", "Raster 6800 Ultra", 2004, "vid-6800", "pcie", null, 1, 10.5, 110, "6pin", 220, "2004: one of the first PCI Express cards."),
+  card("v-x1800", "Artix X1800 XT", 2005, "vid-x1800", "pcie", null, 1, 11.5, 115, "6pin", 230, "2005: 512 MB and a 6-pin plug."),
+  card("v-8800", "Raster 8800", 2006, "gpu-8800", "pcie", null, 1, 14, 155, "6pin", 270, "2006: unified shaders, two 6-pin plugs."),
+  card("v-gtx280", "Raster GTX 280", 2008, "vid-gtx280", "pcie", null, 2, 16, 236, "8pin", 267, "2008: PCI Express 2.0, a 6-pin and an 8-pin plug."),
+  card("v-5870", "Artix 5870", 2009, "vid-5870", "pcie", null, 2, 18, 188, "6pin", 280, "2009: the first DirectX 11 card."),
+  card("v-gtx480", "Raster GTX 480", 2010, "vid-gtx480", "pcie", null, 2, 19, 250, "8pin", 267, "2010: fast, hot and loud."),
+  card("v-7970", "Alder 7970", 2012, "vid-7970", "pcie", null, 3, 21, 250, "8pin", 275, "2012: the first PCI Express 3.0 card."),
+  card("v-gtx680", "Raster GTX 680", 2012, "vid-gtx680", "pcie", null, 3, 21, 195, "6pin", 254, "2012: two 6-pin plugs, PCI Express 3.0."),
+  card("v-290x", "Alder 290X", 2013, "vid-290x", "pcie", null, 3, 23, 290, "8pin", 275, "2013: 4 GB and a fan you could hear."),
+  card("v-gtx980", "Raster GTX 980", 2014, "vid-gtx980", "pcie", null, 3, 24, 165, "6pin", 267, "2014: far more done per watt."),
+  card("v-1080", "Raster 1080", 2016, "card-1080", "pcie", null, 3, 27, 180, "8pin", 267, "2016: 8 GB GDDR5X, one 8-pin plug."),
+  card("v-vega64", "Alder Vega 64", 2017, "vid-vega64", "pcie", null, 3, 26, 295, "8pin", 280, "2017: stacked HBM2 memory, two 8-pin plugs."),
+  card("v-2080", "Raster 2080", 2018, "gpu-2080", "pcie", null, 3, 29, 215, "8pin", 267, "2018: ray-tracing cores."),
+  card("v-5700xt", "Alder 5700 XT", 2019, "vid-5700xt", "pcie", null, 4, 28, 225, "8pin", 272, "2019: the first PCI Express 4.0 card."),
+  card("v-3080", "Raster 3080", 2020, "vid-3080", "pcie", null, 4, 33, 320, "8pin", 285, "2020: 10 GB GDDR6X, 320 W."),
+  card("v-6800xt", "Alder 6800 XT", 2020, "vid-6800xt", "pcie", null, 4, 33, 300, "8pin", 267, "2020: 16 GB and a big on-chip cache."),
+  card("v-a770", "Chipwright A770", 2022, "vid-a770", "pcie", null, 4, 28, 225, "8pin", 270, "2022: Chipwright's first desktop card in 24 years."),
+  card("v-4090", "Raster 4090", 2022, "card-4090", "pcie", null, 4, 40, 450, "12vhpwr", 304, "2022: 450 W through the new 16-pin plug, 304 mm long."),
+  card("v-7900xtx", "Alder 7900 XTX", 2022, "vid-7900xtx", "pcie", null, 4, 37, 355, "8pin", 287, "2022: a chiplet graphics card."),
+  card("v-b580", "Chipwright B580", 2024, "vid-b580", "pcie", null, 4, 30, 190, "8pin", 272, "2024: 12 GB on eight PCI Express 4.0 lanes."),
+];
+
+// 3D-only add-in cards: they sit in a PCI slot beside a 2D card and pass its
+// picture through, so they need a graphics card too.
+function accel(id, name, year, research, gfx, spec) {
+  return { ...base, id, kind: "accel", name, year, research, bus: "pci", gfx, watts: 15, icon: icon2(id), cost: price(year, 0.3), spec };
+}
+export const BENCH_ACCELS = [
+  accel("a-voodoo", "Threefold Add-in", 1996, "gpu-3d", 2.2, "1996: 3D only, on PCI, 4 MB; a cable loops the 2D card's picture through it."),
+  accel("a-voodoo2", "Threefold Add-in 2", 1998, "vid-voodoo2", 3.2, "1998: 3D only; two could share the work over a ribbon cable."),
+];
+
+function sound(id, name, year, research, bus, bonus, spec) {
+  return { ...base, id, kind: "sound", name, year, research, bus, bonus, watts: 5, icon: icon2(id), cost: price(year, 0.08), spec };
+}
+export const BENCH_SOUND = [
+  sound("s-adlib", "AdLab Music Card", 1987, "snd-adlib", "isa8", 0.02, "1987: FM music on an 8-bit card, from a maker gone by 1992."),
+  sound("s-sb", "Creatix Blaster 1.0", 1989, "snd-sb", "isa8", 0.03, "1989: FM music plus digital sound effects."),
+  sound("s-sb16", "Creatix Blaster 16", 1992, "snd-sb16", "isa16", 0.04, "1992: 16-bit CD-quality sound."),
+  sound("s-gus", "Gravitas UltraSound", 1992, "snd-gus", "isa16", 0.045, "1992: real instrument samples on the card; the company is long gone."),
+  sound("s-awe32", "Creatix AWE32", 1994, "snd-awe32", "isa16", 0.05, "1994: 32 voices of sampled instruments."),
+  sound("s-audiopci", "Ensonix AudioPCI", 1997, "snd-audiopci", "pci", 0.05, "1997: a cheap PCI card that sold in huge numbers."),
+  sound("s-vortex2", "Aurora Vortex2", 1998, "snd-vortex2", "pci", 0.06, "1998: 3D sound from two speakers; the maker went bankrupt in 2000."),
+  sound("s-live", "Creatix Live", 1998, "snd-live", "pci", 0.055, "1998: effects worked out on the card's own chip."),
+  sound("s-audigy", "Creatix Audigy", 2001, "snd-audigy", "pci", 0.06, "2001: 24-bit sound and a FireWire port."),
+  sound("s-xfi", "Creatix X-Fi", 2005, "snd-xfi", "pci", 0.065, "2005: a sound chip with more transistors than a 586."),
+  sound("s-z", "Creatix Z", 2012, "snd-z", "pcie", 0.065, "2012: PCI Express, with a red glow."),
+  sound("s-ae7", "Creatix AE-7", 2019, "snd-ae7", "pcie", 0.07, "2019: a high-end card with an outboard control box."),
+];
+
+// Power supplies: form (at or atx), watts, and the plugs graphics cards need.
+function psu(id, name, year, research, form, watts, plugs, spec) {
+  // Board plugs by era: AT; ATX 20-pin; ATX12V adds a 4-pin CPU plug (2000);
+  // 24-pin main plug (2004); 8-pin EPS CPU plug (2008).
+  const mainPlug = form === "at" ? "at" : year >= 2004 ? "atx24" : "atx20";
+  const cpuPlugs = form === "at" || year < 2000 ? [] : year >= 2008 ? ["p4", "eps8"] : ["p4"];
+  return { ...base, id, kind: "psu", name, year, research, form, supply: watts, plugs, mainPlug, cpuPlugs, icon: icon2(id), cost: price(year, 0.1), spec };
+}
+export const BENCH_PSUS = [
+  psu("p-at150", "150 W AT supply", 1984, "pwr-at", "at", 150, ["none", "molex"], "1984: two 6-pin plugs to the board and a big mains switch."),
+  psu("p-at230", "230 W AT supply", 1990, "pwr-at230", "at", 230, ["none", "molex"], "1990: enough for a 486 with a few drives."),
+  psu("p-atx250", "250 W ATX supply", 1995, "pwr-atx", "atx", 250, ["none", "molex"], "1995: one 20-pin plug, and the PC can switch itself off."),
+  psu("p-atx400", "400 W ATX supply", 2002, "pwr-atx400", "atx", 400, ["none", "molex"], "2002: adds the 4-pin 12 V plug Pentium 4-era boards need."),
+  psu("p-500", "500 W 80 Plus supply", 2004, "pwr-80", "atx", 500, ["none", "molex", "6pin"], "2004: 80% efficient, with a 6-pin plug for PCI Express cards."),
+  psu("p-750", "750 W 80 Plus Gold", 2008, "pwr-gold", "atx", 750, ["none", "molex", "6pin", "8pin"], "2008: 87-90% efficient, a 24-pin and an 8-pin CPU plug, 6- and 8-pin card plugs."),
+  psu("p-1000", "1000 W 80 Plus Platinum", 2009, "pwr-plat", "atx", 1000, ["none", "molex", "6pin", "8pin"], "2009: 90-94% efficient."),
+  psu("p-1200", "1200 W 80 Plus Titanium", 2015, "pwr-titan", "atx", 1200, ["none", "molex", "6pin", "8pin"], "2015: up to 96% efficient."),
+  psu("p-atx3", "1000 W ATX 3.0 supply", 2022, "pwr-atx3", "atx", 1000, ["none", "molex", "6pin", "8pin", "12vhpwr"], "2022: the 16-pin plug for 450 W cards, built for their power spikes."),
+  psu("p-1600", "1600 W ATX 3.1 supply", 2024, "pwr-atx31", "atx", 1600, ["none", "molex", "6pin", "8pin", "12vhpwr"], "2024: the revised 16-pin plug."),
+];
+
+// Cases: which board sizes fit, which supply, the longest graphics card, and
+// (for the cooling stage) the radiator sizes it can mount, in mm.
+function pcCase(id, name, year, research, boards, form, maxGpu, radiators, spec) {
+  return { ...base, id, kind: "case", name, year, research, boards, form, maxGpu, radiators, icon: icon2(id), cost: price(year, 0.05), spec };
+}
+export const BENCH_CASES = [
+  pcCase("k-atdesk", "AT desktop case", 1984, "case-atdesk", ["at"], "at", 340, [], "1984: a flat steel box the monitor sat on."),
+  pcCase("k-attower", "AT tower case", 1990, "case-attower", ["at"], "at", 340, [], "1990: stood on the floor, with room for more drives."),
+  pcCase("k-atxmid", "ATX mid-tower", 1996, "case-atxmid", ["atx", "matx"], "atx", 280, [], "1996: ports on the board's back panel; drive cages limit card length."),
+  pcCase("k-matx", "Micro-ATX case", 1997, "case-matx", ["matx"], "atx", 250, [], "1997: a small case for small boards."),
+  pcCase("k-atxfull", "ATX full tower", 2003, "case-atxfull", ["atx", "matx"], "atx", 330, [120], "2003: tall, with a 120 mm fan mount at the back."),
+  pcCase("k-airflow", "Airflow mid-tower", 2012, "case-airflow", ["atx", "matx"], "atx", 330, [120, 240, 280, 360], "2012: a mesh front and mounts for 360 mm radiators."),
+  pcCase("k-itx", "Mini-ITX case", 2014, "case-itx", ["matx"], "atx", 300, [120, 240], "2014: a shoebox that still takes a full-length card."),
+  pcCase("k-mesh", "Mesh full tower", 2018, "case-mesh", ["atx", "matx"], "atx", 400, [120, 240, 280, 360, 420], "2018: room for 420 mm radiators and the longest cards."),
+];
+
+// Math coprocessors for boards with their socket; they speed up a CPU that
+// has no floating point of its own.
+function fpu(id, name, year, research, socket, spec) {
+  return { ...base, id, kind: "fpu", name, year, research, fpu: socket, watts: 2, icon: icon2(id), cost: price(year, 0.2), spec };
+}
+export const BENCH_FPUS = [
+  fpu("f-8087", "Chipwright 8087", 1980, "fpu-8087", "8087", "1980: floating-point math for the 8088 and 8086, about 50 kFLOPS."),
+  fpu("f-287", "Chipwright 287", 1984, "fpu-287", "287", "1984: the math partner for the 286."),
+  fpu("f-387", "Chipwright 387", 1987, "fpu-387", "387", "1987: the math partner for the 386."),
+  fpu("f-fasmath", "Cyrus FasMath 83D87", 1989, "fpu-fasmath", "387", "1989: a faster 387 from Cyrus's first product line."),
+];
+
+export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CARDS, ...BENCH_ACCELS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS];
 
 // R&D a second for each point of CPU perf at full memory. Tuned in the
 // simulation so the bench adds about a tenth of what the research servers make.

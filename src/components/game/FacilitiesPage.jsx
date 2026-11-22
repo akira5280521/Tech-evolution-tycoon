@@ -85,7 +85,7 @@ function PartValue({ state, facilityId, part, business }) {
   const v = partValue(state, facilityId, part.id, business);
   if (!v) return null;
   const fit = fitPart(state.facilities?.[facilityId] || {}, facilityId, part.id);
-  const note = fit.note ? ` Buying it ${fit.note}, at half what they cost.` : "";
+  const note = fit.note ? ` Buying it ${fit.note}; what comes out sells back at half price.` : "";
   let text;
   let good = false;
   if (v.maxed) text = facilityId === "bench" ? "On the bench." : "At the most you can own.";
@@ -135,7 +135,8 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
   let hiddenLater = 0;
   if (bench) {
     const year = playerYear(state);
-    const all = parts.filter((part) => part.kind === benchTab).sort((a, b) => b.year - a.year || b.cost - a.cost);
+    const kinds = BENCH_TABS.find(([id]) => id === benchTab)?.[2] || [benchTab];
+    const all = parts.filter((part) => kinds.includes(part.kind)).sort((a, b) => b.year - a.year || b.cost - a.cost);
     const reached = all.filter((part) => part.year <= year);
     hiddenLater = all.length - reached.length;
     const keep = reached.filter((part, i) => showAll || i < BENCH_SHOWN || (counts[part.id] || 0) > 0);
@@ -171,6 +172,8 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
             {row.board ? `, ${row.sticks} of ${row.board.slots} slots used` : ""}
             {row.memSpeed ? ` · memory at ${row.memSpeed} MT/s (rated ${row.rated})` : ""}
             {row.overclock > 1 ? " · overclocked +10%" : ""}
+            {row.board && !row.board.builtin ? ` · Graphics: ${row.card?.name || (row.cpu?.igpu ? "on the CPU" : "none")} · Power: ${Math.round(row.draw)} W of ${row.supply || 0} W` : ""}
+            {row.link ? ` · PCIe ${row.link}.0` : ""}
           </p>
         )}
         {open && research && row.gpus > 0 && (
@@ -241,7 +244,15 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
   );
 }
 
-const BENCH_TABS = [["board", "BOARDS"], ["cpu", "CPUS"], ["stick", "MEMORY"]];
+const BENCH_TABS = [
+  ["board", "BOARDS", ["board"]],
+  ["cpu", "CPUS", ["cpu", "fpu"]],
+  ["stick", "MEMORY", ["stick"]],
+  ["video", "GRAPHICS", ["video", "accel"]],
+  ["sound", "SOUND", ["sound"]],
+  ["psu", "POWER", ["psu"]],
+  ["case", "CASES", ["case"]],
+];
 const BENCH_SHOWN = 6;
 
 // After a prestige or fork the plants start empty; this buys last run's

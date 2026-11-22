@@ -284,9 +284,11 @@ export function awayBankCap(state) {
   return serverOutput(state).perSecond * 3600 * awayBankHours(state);
 }
 
-export function researchSpeed(state) {
+export function researchSpeed(state, now = Date.now()) {
   const out = serverOutput(state);
-  return Math.min(8, 1 + out.work * out.speed * 0.08);
+  // The lab's clean room (a project that uses polysilicon) adds 25% for a while.
+  const clean = now > 0 && now < (state?.lab?.cleanUntil || 0) ? 1.25 : 1;
+  return Math.min(8, 1 + out.work * out.speed * 0.08) * clean;
 }
 
 export function researchRows(tab) {

@@ -365,14 +365,19 @@ export const SHOP = [
 export const LAB_OVERCLOCK = { cost: 4, ms: 10 * 60 * 1000, coolMs: 20 * 60 * 1000, mult: 1.5 };
 export const LAB_PATENT = { cost: 3, tokens: 1, perDay: 5 };
 export const LAB_CREW = { cost: 8 };
+// Lab projects that also use materials.
+export const LAB_FAB = { cost: 4, materials: { wafers: 400 }, tokens: 1, perDay: 3 };
+export const LAB_CLEAN = { cost: 5, materials: { polysilicon: 100 }, ms: 15 * 60 * 1000, speed: 1.25 };
 export const LAB_PROJECTS = [
   { id: "overclock", name: "OVERCLOCK", cost: LAB_OVERCLOCK.cost, blurb: "All income x1.5 for 10 minutes. Then the lab needs 20 minutes to cool down." },
   { id: "patent", name: "PATENT FILING", cost: LAB_PATENT.cost, blurb: "Trade R&D points for 1 era token. Up to 5 filings a day." },
   { id: "crew", name: "INSTALL CREW", cost: LAB_CREW.cost, blurb: "Upgrades install instantly instead of taking 12 seconds. Buy once, keep forever." },
+  { id: "fab", name: "FAB TEST RUN", cost: LAB_FAB.cost, materials: LAB_FAB.materials, blurb: "Run 400 wafers through a test line for 1 era token. Up to 3 runs a day." },
+  { id: "cleanroom", name: "CLEAN ROOM", cost: LAB_CLEAN.cost, materials: LAB_CLEAN.materials, blurb: "Line a clean room with 100 polysilicon: TECH research runs 25% faster for 15 minutes." },
 ];
 
 export function blankLab() {
-  return { overclockUntil: 0, coolUntil: 0, patentDay: null, patents: 0, crew: false };
+  return { overclockUntil: 0, coolUntil: 0, patentDay: null, patents: 0, crew: false, fabDay: null, fabs: 0, cleanUntil: 0 };
 }
 
 export function cleanLab(raw, now = Date.now()) {
@@ -382,11 +387,31 @@ export function cleanLab(raw, now = Date.now()) {
   const overclockUntil = Math.min(n(l.overclockUntil), now + LAB_OVERCLOCK.ms);
   const coolUntil = Math.min(n(l.coolUntil), now + LAB_OVERCLOCK.ms + LAB_OVERCLOCK.coolMs);
   const patentDay = typeof l.patentDay === "string" && /^\d{4}-\d{2}-\d{2}$/.test(l.patentDay) ? l.patentDay : null;
-  return { overclockUntil, coolUntil, patentDay, patents: Math.min(LAB_PATENT.perDay, Math.floor(n(l.patents))), crew: !!l.crew };
+  const fabDay = typeof l.fabDay === "string" && /^\d{4}-\d{2}-\d{2}$/.test(l.fabDay) ? l.fabDay : null;
+  return {
+    overclockUntil,
+    coolUntil,
+    patentDay,
+    patents: Math.min(LAB_PATENT.perDay, Math.floor(n(l.patents))),
+    crew: !!l.crew,
+    fabDay,
+    fabs: Math.min(LAB_FAB.perDay, Math.floor(n(l.fabs))),
+    cleanUntil: Math.min(n(l.cleanUntil), now + LAB_CLEAN.ms),
+  };
 }
 
 export function overclockOn(state, now) {
   return now > 0 && now < (state?.lab?.overclockUntil || 0);
+}
+
+function fabsToday(state, now) {
+  const lab = state.lab || blankLab();
+  return lab.fabDay === dayHelpers(now).localDayKey ? lab.fabs || 0 : 0;
+}
+
+// TECH research speed from the clean room (1 when it isn't running).
+export function cleanRoomSpeed(state, now = Date.now()) {
+  return now > 0 && now < (state?.lab?.cleanUntil || 0) ? LAB_CLEAN.speed : 1;
 }
 
 function patentsToday(state, now) {
@@ -407,7 +432,12 @@ export function labQuote(state, id, now = Date.now()) {
     return { ok: false, reason: "No filings left today. More tomorrow.", cost: item.cost };
   }
   if (id === "crew" && lab.crew) return { ok: false, reason: "Your install crew is hired.", cost: item.cost };
+  if (id === "fab" && fabsToday(state, now) >= LAB_FAB.perDay) return { ok: false, reason: "No test runs left today. More tomorrow.", cost: item.cost };
+  if (id === "cleanroom" && now < (lab.cleanUntil || 0)) return { ok: false, reason: "The clean room is running.", cost: item.cost };
   if (data < item.cost) return { ok: false, reason: `Needs ${item.cost} R&D points.`, cost: item.cost };
+  for (const [key, n] of Object.entries(item.materials || {})) {
+    if ((state.supply?.[key] || 0) < n) return { ok: false, reason: `Needs ${n} ${REFINED[key]?.short || key}.`, cost: item.cost };
+  }
   return { ok: true, cost: item.cost };
 }
 
@@ -415,6 +445,12 @@ export function buyLabProject(state, id, now = Date.now()) {
   const quote = labQuote(state, id, now);
   if (!quote.ok) return quote;
   state.data -= quote.cost;
+  const item = LAB_PROJECTS.find((entry) => entry.id === id);
+  if (item?.materials) {
+    const supply = { ...(state.supply || {}) };
+    for (const [key, n] of Object.entries(item.materials)) supply[key] = Math.max(0, (supply[key] || 0) - n);
+    state.supply = supply;
+  }
   const lab = { ...(state.lab || blankLab()) };
   let detail = "";
   if (id === "overclock") {
@@ -428,6 +464,15 @@ export function buyLabProject(state, id, now = Date.now()) {
     // Not a grant: filings don't count as tokens earned from play.
     state.tokens = (state.tokens || 0) + LAB_PATENT.tokens;
     detail = `Patent filed: +${LAB_PATENT.tokens} era token.`;
+  } else if (id === "fab") {
+    const day = dayHelpers(now).localDayKey;
+    lab.fabs = (lab.fabDay === day ? lab.fabs || 0 : 0) + 1;
+    lab.fabDay = day;
+    state.tokens = (state.tokens || 0) + LAB_FAB.tokens;
+    detail = `Test run done: +${LAB_FAB.tokens} era token.`;
+  } else if (id === "cleanroom") {
+    lab.cleanUntil = now + LAB_CLEAN.ms;
+    detail = "Clean room running: TECH research 25% faster for 15 minutes.";
   } else {
     lab.crew = true;
     const job = timedJob(state.upgradeJob);

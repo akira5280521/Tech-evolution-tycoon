@@ -43,3 +43,34 @@ test("filters: decades and makers; makers only from found exhibits", () => {
   assert.ok(fractel.length >= 4 && fractel.every((e) => e.item.name.startsWith("Fractel")));
   assert.equal(makerOf({ name: "4 MB 30-pin SIMM" }), null);
 });
+
+import { LAUNCH_DAYS, ROOMS, roomComplete, roomOf, todayInHistory } from "../../src/lib/museum.js";
+import { badgeList, collectBadges } from "../../src/lib/empire.js";
+
+test("every room has a badge, earned once every exhibit in it is found", () => {
+  const all = { biz: everyEra, techDone: RESEARCH.map((r) => r.id), facilities: {} };
+  const fresh = { biz: [], techDone: [], facilities: {} };
+  assert.ok(roomComplete(all, "keyboards"));
+  assert.ok(!roomComplete(fresh, "keyboards"));
+  const ids = badgeList(fresh).filter((b) => b.group === "MUSEUM").map((b) => b.id);
+  assert.equal(ids.length, ROOMS.length);
+  const s = { ...all, badgesEarned: [] };
+  collectBadges(s);
+  assert.ok(s.badgesEarned.includes("room-mice"));
+});
+
+test("today in history: real launch days, found pieces named, the rest by year", () => {
+  for (const x of LAUNCH_DAYS) {
+    assert.match(x.date, /^\d{4}-\d{2}-\d{2}$/);
+    assert.ok([...PARTS, ...PERIPHERALS].some((p) => p.id === x.id), x.id);
+  }
+  const fresh = { biz: [], techDone: [], facilities: {} };
+  const ibm = todayInHistory(fresh, new Date(2026, 7, 12, 12).getTime());
+  assert.ok(ibm.today);
+  assert.ok(ibm.entries.some((e) => e.id === "b-5150" && !e.found));
+  // A day with nothing shows the next one coming up.
+  const next = todayInHistory(fresh, new Date(2026, 0, 2, 12).getTime());
+  assert.equal(next.today, false);
+  assert.ok(next.entries.length > 0);
+  assert.equal(roomOf(PARTS.find((p) => p.id === "v-1080")), "graphics");
+});

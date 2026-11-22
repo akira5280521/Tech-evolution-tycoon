@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { partLock } from "@/lib/facilities";
-import { STATUS_LABEL, WINGS, roomCounts, roomExhibits, roomFilters, wingCounts } from "@/lib/museum";
+import { ROOMS, STATUS_LABEL, WINGS, roomCounts, roomExhibits, roomFilters, roomOf, todayInHistory, wingCounts } from "@/lib/museum";
 import { useGameState } from "./GameState";
 import ScreenShell from "./chrome";
 import MuseumSection from "./MuseumSection";
@@ -48,6 +48,18 @@ export default function MuseumPage({ top = null }) {
     },
     { found: 0, total: 0 },
   );
+  // Jump to an exhibit from the Today in History card.
+  const visit = (item) => {
+    const room = roomOf(item);
+    const where = ROOMS.find((r) => r.id === room);
+    if (!where) return;
+    setWingId(where.wing);
+    setRoomByWing((m) => ({ ...m, [where.wing]: room }));
+    setDecade(null);
+    setMaker(null);
+    setOpen(item.id);
+  };
+  const history = todayInHistory(state, Date.now());
   const filters = roomId ? roomFilters(state, roomId) : { decades: [], makers: [] };
   const exhibits = roomId ? roomExhibits(state, roomId, { decade, maker }) : [];
 
@@ -59,6 +71,26 @@ export default function MuseumPage({ top = null }) {
         <p className="font-term text-lg leading-6 text-[var(--game-muted)]">
           Every piece of hardware in the game, oldest first. Pieces open as you reach their years and research them. Company names are parody; models, years and specs are real.
         </p>
+        {history.entries.length > 0 && (
+          <div data-today className="border-2 border-[var(--game-violet-border)] bg-[var(--game-card)] p-2">
+            <p className="font-pixel text-[0.5rem] text-[var(--game-violet)]">{history.today ? "TODAY IN HISTORY" : "COMING UP IN HISTORY"}</p>
+            {history.entries.map((e) => (
+              <button
+                key={e.id}
+                type="button"
+                data-today-item={e.id}
+                onClick={() => visit(e.item)}
+                className="mt-1 flex w-full min-h-11 items-center gap-2 text-left"
+              >
+                <img src={e.item.icon} alt="" className={`h-10 w-10 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain ${e.found ? "" : "brightness-0 invert opacity-20"}`} />
+                <span className="min-w-0 break-words font-term text-lg leading-6 text-[var(--game-fg)]">
+                  {new Date(Date.UTC(2000, e.month - 1, e.day)).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}, {e.year}:{" "}
+                  {e.found ? e.text : "a piece you haven't found yet came out"}.
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
         <div data-museum-wings className="grid grid-cols-2 gap-2">
           {WINGS.map((w) => {
             const c = w.rooms.length ? wingCounts(state, w) : null;
@@ -78,10 +110,11 @@ export default function MuseumPage({ top = null }) {
             <div data-museum-rooms className="grid grid-cols-3 gap-2">
               {wing.rooms.map((room) => {
                 const c = roomCounts(state, room.id);
+                const done = c.total > 0 && c.found === c.total;
                 return (
-                  <button key={room.id} type="button" data-room={room.id} onClick={() => pickRoom(room.id)} className={chip(room.id === roomId)}>
+                  <button key={room.id} type="button" data-room={room.id} data-room-complete={done ? "1" : undefined} onClick={() => pickRoom(room.id)} className={chip(room.id === roomId)}>
                     {room.name}
-                    <span className="block text-[var(--game-dim)]">{c.found}/{c.total}</span>
+                    <span className={`block ${done ? "text-[var(--game-success)]" : "text-[var(--game-dim)]"}`}>{done ? `★ ${c.total}/${c.total}` : `${c.found}/${c.total}`}</span>
                   </button>
                 );
               })}

@@ -1,7 +1,7 @@
 // The Hardware Museum: wings and rooms, filters, an exhibit sheet, and
 // locked pieces as silhouettes. View-only.
 import { test, expect } from "@playwright/test";
-import { expectClean, open, saved } from "./helpers.js";
+import { expectClean, open, saved, tipsOff } from "./helpers.js";
 
 test("the museum shows rooms of hardware, filters them, and opens an exhibit", async ({ page }) => {
   const seen = await open(page, "/more#museum", "late");
@@ -35,4 +35,15 @@ test("a new game sees locked pieces as silhouettes with only their decade", asyn
   expect(await locked.count()).toBeGreaterThan(0);
   await locked.first().click();
   await expect(page.locator("[data-exhibit-sheet]")).toContainText("???");
+});
+
+test("today in history opens its exhibit", async ({ page }) => {
+  await page.clock.setFixedTime(new Date(2026, 7, 12, 12));
+  await open(page, "/more#museum", "late");
+  await tipsOff(page);
+  const card = page.locator("[data-today]");
+  await expect(card).toContainText("TODAY IN HISTORY");
+  await card.locator("[data-today-item='b-5150']").click();
+  await expect(page.locator("[data-exhibit-sheet='b-5150']")).toBeVisible();
+  await page.click("[data-exhibit-close]");
 });

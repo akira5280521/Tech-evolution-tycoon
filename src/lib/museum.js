@@ -139,3 +139,78 @@ export function roomFilters(state, roomId) {
   const makers = [...new Set(all.filter((e) => e.status !== "locked" && e.maker).map((e) => e.maker))].sort();
   return { decades, makers };
 }
+
+// Room badges: a room is complete when every exhibit in it is found.
+// Checked every tick for the badges, so cached until what it depends on
+// (research, the player's year, parts held) changes.
+const completeCache = new Map();
+export function roomComplete(state, roomId) {
+  const sig = `${(state?.techDone || []).join(",")}|${playerYear(state)}|${Object.values(state?.facilities || {})
+    .map((c) => Object.keys(c || {}).filter((k) => c[k] > 0).join(","))
+    .join(";")}`;
+  const hit = completeCache.get(roomId);
+  if (hit && hit.sig === sig) return hit.done;
+  const c = roomCounts(state, roomId);
+  const done = c.total > 0 && c.found === c.total;
+  completeCache.set(roomId, { sig, done });
+  return done;
+}
+export const ROOMS = WINGS.flatMap((w) => w.rooms.map((r) => ({ ...r, wing: w.id })));
+
+// Today in history: real launch days of pieces in the museum.
+export const LAUNCH_DAYS = [
+  { id: "ms-alto", date: "1973-03-01", text: "the first Xerux Alto worked, with its three-button mouse" },
+  { id: "b-orchard2", date: "1977-06-10", text: "the Orchard II began shipping" },
+  { id: "b-5150", date: "1981-08-12", text: "the Inland PC was announced" },
+  { id: "kb-modelf", date: "1981-08-12", text: "the Model F keyboard arrived with the Inland PC" },
+  { id: "ms-lisa", date: "1983-01-19", text: "the Orchard Lisa and its mouse were announced" },
+  { id: "ms-wooden", date: "1968-12-09", text: "the wooden mouse was shown to the public for the first time" },
+  { id: "c-586", date: "1993-03-22", text: "the Chipwright 586 launched" },
+  { id: "v-gf256", date: "1999-10-11", text: "the Raster 256 went on sale" },
+  { id: "c-a64", date: "2003-09-23", text: "the Alder 64 brought 64-bit to home PCs" },
+  { id: "c-e6600", date: "2006-07-27", text: "the Chipwright E6600 and its dual-core family launched" },
+  { id: "v-8800", date: "2006-11-08", text: "the Raster 8800 launched" },
+  { id: "c-i7920", date: "2008-11-17", text: "the Chipwright i7-920 launched" },
+  { id: "v-5870", date: "2009-09-23", text: "the Artix 5870 launched" },
+  { id: "v-gtx680", date: "2012-03-22", text: "the Raster GTX 680 launched" },
+  { id: "v-290x", date: "2013-10-24", text: "the Alder 290X launched" },
+  { id: "v-gtx980", date: "2014-09-18", text: "the Raster GTX 980 launched" },
+  { id: "c-6700k", date: "2015-08-05", text: "the Chipwright i7-6700K launched" },
+  { id: "v-1080", date: "2016-05-27", text: "the Raster 1080 went on sale" },
+  { id: "c-1800x", date: "2017-03-02", text: "the Alder 1800X went on sale" },
+  { id: "v-vega64", date: "2017-08-14", text: "the Alder Vega 64 went on sale" },
+  { id: "v-2080", date: "2018-09-20", text: "the Raster 2080 went on sale" },
+  { id: "c-9900k", date: "2018-10-19", text: "the Chipwright i9-9900K went on sale" },
+  { id: "raster3090", date: "2020-09-24", text: "the Raster 3090 went on sale" },
+  { id: "c-5950x", date: "2020-11-05", text: "the Alder 5950X went on sale" },
+  { id: "v-4090", date: "2022-10-12", text: "the Raster 4090 went on sale" },
+  { id: "c-14900k", date: "2023-10-17", text: "the Chipwright i9-14900K went on sale" },
+];
+
+// The launch days that fall on today's date, or the next ones coming up.
+// A piece the player hasn't found shows only its year.
+export function todayInHistory(state, now = Date.now()) {
+  const d = new Date(now);
+  const md = (m, day) => m * 100 + day;
+  const today = md(d.getMonth() + 1, d.getDate());
+  const days = LAUNCH_DAYS.map((x) => {
+    const [y, m, day] = x.date.split("-").map(Number);
+    const item = [...PARTS, ...PERIPHERALS].find((p) => p.id === x.id);
+    return { ...x, year: y, month: m, day, md: md(m, day), item };
+  }).filter((x) => x.item);
+  const hits = days.filter((x) => x.md === today);
+  const pick = hits.length ? hits : (() => {
+    const ahead = days.filter((x) => x.md > today).sort((a, b) => a.md - b.md);
+    const next = ahead.length ? ahead[0].md : Math.min(...days.map((x) => x.md));
+    return days.filter((x) => x.md === next);
+  })();
+  return {
+    today: hits.length > 0,
+    entries: pick.map((x) => ({ ...x, found: exhibitStatus(state, x.item) !== "locked" })),
+  };
+}
+
+// Which room an exhibit is in.
+export function roomOf(item) {
+  return ROOMS.find((r) => r.match(item))?.id || null;
+}

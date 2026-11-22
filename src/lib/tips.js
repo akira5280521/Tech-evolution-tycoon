@@ -221,7 +221,7 @@ export const TIPS = [
     id: "page-museum",
     page: "more#museum",
     title: "THE MUSEUM",
-    text: "Every piece of hardware in the game, room by room. Tap one to read about it; dark ones are still to find.",
+    text: "Every piece of hardware in the game, room by room. Tap one to read about it; dark ones are still to find. Finish a room for its badge.",
   },
   {
     id: "page-more",

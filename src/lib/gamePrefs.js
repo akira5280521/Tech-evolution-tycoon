@@ -27,6 +27,8 @@ export function normalizePrefs(raw) {
     textSize,
     contrast: src.contrast === true,
     goalsHidden: src.goalsHidden === true,
+    // The game screen section last shown: "tech" (default) or "supply".
+    gameSection: src.gameSection === "supply" ? "supply" : "tech",
   };
 }
 

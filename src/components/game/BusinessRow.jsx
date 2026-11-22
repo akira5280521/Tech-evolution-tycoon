@@ -11,7 +11,8 @@ import {
   money,
   nextMilestone,
 } from "@/lib/gameConfig";
-import { effectiveCycleMs, empireFactors, makesOf, managerPrice, supplyFactor, upgradesOf } from "@/lib/empire";
+import { effectiveCycleMs, empireFactors, makesOf, managerPrice, supplyCap, supplyFactor, supplyFull, upgradesOf } from "@/lib/empire";
+import { amount } from "./StorageSheet";
 import { generationAt, generationPayMult } from "@/lib/generations";
 import IconTile from "./IconTile";
 import ProgressTrack from "./ProgressTrack";
@@ -52,7 +53,9 @@ function MilestoneBar({ owned, next }) {
   );
 }
 
-function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, compact }) {
+function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, compact: compactPref, supplyCard = false, onNeed = null }) {
+  // SUPPLY rows always use the compact card, with their bins shown on it.
+  const compact = compactPref || supplyCard;
   const holdRef = useRef(null);
   const heldRef = useRef(false);
   useEffect(() => () => {
@@ -163,10 +166,39 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
             {cfg.makes ? `Makes ${formatFlow(makesOf(state, cfg))} each` : ""}
           </p>
         )}
+        {supplyCard && cfg.makes && (
+          <p data-supply-bins className="flex flex-wrap gap-x-3 font-term text-base leading-5 text-[var(--game-muted)] tabular-nums">
+            {Object.keys(cfg.makes).map((key) => {
+              const full = supplyFull(state, key);
+              return (
+                <span key={key} data-bin={key} className={full ? "text-[var(--game-danger)]" : ""}>
+                  {key} {amount(state?.supply?.[key] || 0)}/{amount(supplyCap(state, key))}
+                  {full && <span data-full className="ml-1 font-pixel text-[0.4rem]">FULL</span>}
+                </span>
+              );
+            })}
+            <span>{st.manager ? "Manager: on" : "Manager: none"}</span>
+          </p>
+        )}
         {shortOf.length > 0 && (
           <p data-short className="font-term text-base leading-5 text-[var(--game-danger)]">
             {fed <= 0 ? `Out of ${shortOf.join(" and ")}: making nothing` : `Short of ${shortOf.join(" and ")}: running at ${Math.round(fed * 100)}%`}
           </p>
+        )}
+        {onNeed && shortOf.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {shortOf.map((key) => (
+              <button
+                key={key}
+                type="button"
+                data-needs={key}
+                onClick={() => onNeed(key)}
+                className="min-h-[44px] border-2 border-[var(--game-danger)] bg-[var(--game-panel)] px-2 font-pixel text-[0.5rem] leading-4 text-[var(--game-danger)] shadow-[2px_2px_0_0_#000]"
+              >
+                Needs {key} &gt;
+              </button>
+            ))}
+          </div>
         )}
         <div className="flex flex-wrap justify-between gap-x-3 font-term text-base leading-5 text-[var(--game-muted)]">
           <span>
@@ -252,6 +284,8 @@ function arePropsEqual(prev, next) {
   return prev.index === next.index
     && prev.buyMode === next.buyMode
     && prev.compact === next.compact
+    && prev.supplyCard === next.supplyCard
+    && prev.onNeed === next.onNeed
     && prev.row === next.row
     && prev.cash === next.cash
     && prev.investors === next.investors

@@ -656,6 +656,49 @@ export function buyStorage(state, key) {
   return true;
 }
 
+// The material market: sell spare stock for a little cash, or swap one
+// material for another. Prices are tiny and set by the era that makes the
+// material (a twentieth of one cycle of that row's pay), and drift slowly,
+// ±15% over a six-hour swing that's the same for everyone. Swaps lose 10%.
+export const MARKET_LOT = 100;
+export const SWAP_FEE = 0.1;
+const DRIFT_MS = 6 * 60 * 60 * 1000;
+export function materialPrice(key, now = Date.now()) {
+  const made = REFINED[key]?.from || key;
+  const maker = BUSINESSES.find((cfg) => cfg.makes?.[made]);
+  if (!maker) return 0;
+  const base = (maker.revenue || 1) * 0.05 * (REFINED[key] ? REFINE_RATIO * 1.2 : 1);
+  const phase = (SUPPLY_KEYS.indexOf(key) + 1) * 1.7;
+  return base * (1 + 0.15 * Math.sin((2 * Math.PI * now) / DRIFT_MS + phase));
+}
+export function sellMaterial(state, key, amount, now = Date.now()) {
+  const have = Math.floor(state?.supply?.[key] || 0);
+  const n = Math.min(have, Math.floor(amount));
+  if (!(n > 0) || !SUPPLY_KEYS.includes(key)) return 0;
+  const cash = n * materialPrice(key, now);
+  state.supply = { ...ensureSupply(state), [key]: have - n };
+  state.cash = (state.cash || 0) + cash;
+  return cash;
+}
+// How much of `to` a swap of `amount` of `from` gives, after the fee and
+// within the bins' room.
+export function swapQuote(state, from, to, amount, now = Date.now()) {
+  if (from === to || !SUPPLY_KEYS.includes(from) || !SUPPLY_KEYS.includes(to)) return { give: 0, get: 0 };
+  const give = Math.min(Math.floor(state?.supply?.[from] || 0), Math.floor(amount));
+  const rate = (materialPrice(from, now) / Math.max(1e-12, materialPrice(to, now))) * (1 - SWAP_FEE);
+  const room = Math.max(0, Math.floor(supplyCap(state, to) - (state?.supply?.[to] || 0)));
+  const get = Math.min(room, Math.floor(give * rate));
+  return { give: get > 0 ? Math.min(give, Math.ceil(get / rate)) : 0, get };
+}
+export function swapMaterial(state, from, to, amount, now = Date.now()) {
+  const q = swapQuote(state, from, to, amount, now);
+  if (!(q.get > 0)) return false;
+  const supply = ensureSupply(state);
+  supply[from] = Math.max(0, (supply[from] || 0) - q.give);
+  supply[to] = (supply[to] || 0) + q.get;
+  return true;
+}
+
 // What one unit of a material row makes per cycle. The row's x3 upgrade
 // triples the material as well as the pay, so early on each unit makes 1.
 export const MATERIAL_UPGRADE_MULT = 3;

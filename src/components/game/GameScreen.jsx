@@ -117,7 +117,7 @@ export default function GameScreen() {
       )}
 
       <StickyHud state={state} cps={cps} />
-      {storageKey && <StorageSheet state={state} materialKey={storageKey} onUpgrade={game.upgradeStorage} onRefine={game.refine} onClose={() => setStorageKey(null)} />}
+      {storageKey && <StorageSheet state={state} materialKey={storageKey} onUpgrade={game.upgradeStorage} onRefine={game.refine} onSell={game.sellStock} onSwap={game.swapStock} shown={SUPPLY_KEYS.filter((key) => supplyShown(state, key))} onClose={() => setStorageKey(null)} />}
 
       <div className="game-frame">
         <div className="game-side">

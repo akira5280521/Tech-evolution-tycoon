@@ -245,6 +245,7 @@ function pack(s) {
     bubble: s.bubble || null,
     nextBubbleAt: s.nextBubbleAt || 0,
     supply: s.supply,
+    erasOpened: s.erasOpened || [],
     foreman: !!s.foreman,
     sawPit: !!s.sawPit,
     goalsDone: Array.isArray(s.goalsDone) ? s.goalsDone : [],
@@ -325,6 +326,7 @@ function loadSave() {
     if (closedRefund > 0) state.cash = (state.cash || 0) + closedRefund;
     state.supply = data.supply;
     ensureSupply(state);
+    state.erasOpened = Array.isArray(data.erasOpened) ? data.erasOpened : [];
     state.foreman = !!data.foreman;
     state.sawPit = !!data.sawPit;
     state.buyMode = normalizeBuyMode(data.buyMode);

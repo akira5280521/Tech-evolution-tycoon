@@ -746,15 +746,59 @@ export function pluralName(name) {
   return `${n}s`;
 }
 
+// Earnings this run an era needs, on top of owning ERA_GATE of the era
+// before it. The base is a little under what a first run has earned by the
+// time it gets there, so a new game opens eras as before. Investors and forks
+// raise it faster than they raise income (bonus^ERA_EARN_POWER), so a strong
+// run still has to work for the late eras.
+export const ERA_EARN_POWER = 1.25;
+// Set at 60% of what the pacing sim's first run had earned on reaching each
+// era (later eras, which a first run doesn't reach, from a strong run).
+export const ERA_EARN = {
+  paper: 2.2e2, loom: 3.0e3, punchcards: 4.6e3, relay: 7.8e3, sand: 1.5e4, copper: 4.4e5, glass: 9.0e5,
+  filament: 2.2e6, tubes: 2.9e6, mainframes: 2.9e6, germanium: 3.4e6, transistors: 4.3e7, silicon: 4.4e7,
+  wafers: 1.1e8, ics: 1.1e8, minis: 1.2e8, cpu: 1.4e8, homepc: 5.0e8, consoles: 3.1e9, supercomputers: 2.5e10,
+  workstations: 9.0e10, laptops: 1.3e11, dialup: 1.7e11, multimedia: 1.9e11, accel3d: 3.2e11, gpu: 4.3e11,
+  cloud: 5.8e11, phones: 1.4e12, tablets: 3.1e12, rgb: 5.7e12, ai: 9.8e12, quantum: 5.2e13, vr: 1.6e15,
+  chatbots: 6.1e16, supercluster: 5.8e18,
+};
+export function runBonus(state) {
+  const forks = Math.max(0, Math.floor(Number(state?.singularities) || 0));
+  return prestigeMult(state?.investors || 0) * Math.min(4, 1 + forks * 0.2);
+}
+export function eraEarnNeed(state, index) {
+  const base = ERA_EARN[BUSINESSES[index]?.id] || 0;
+  if (!(base > 0)) return 0;
+  return base * runBonus(state) ** ERA_EARN_POWER;
+}
+
+// What an era still needs: owning enough of the one before, and earning
+// enough this run. Each with what the player has now.
+export function eraNeeds(state, index) {
+  const prev = BUSINESSES[index - 1];
+  const needs = [];
+  if (prev) {
+    const have = state?.biz?.[index - 1]?.owned || 0;
+    needs.push({ kind: "own", have, need: ERA_GATE, met: have >= ERA_GATE, label: `Own ${ERA_GATE} ${pluralName(prev.name)}` });
+  }
+  const earn = eraEarnNeed(state, index);
+  if (earn > 0) {
+    const have = state?.lifetime || 0;
+    needs.push({ kind: "earn", have, need: earn, met: have >= earn, label: `Earn ${money(earn)} this run` });
+  }
+  return needs;
+}
+
 // Can row `index` be bought? The first row always; any row already owned
-// (old saves, Glass Ceiling's starting tubes); otherwise once the row before
-// it reaches ERA_GATE.
+// (old saves, Glass Ceiling's starting tubes) or already opened this run;
+// otherwise once every need is met.
 export function eraOpen(state, index) {
   if (index <= 0) return true;
   if (blockedByGlass(state, index)) return false;
   const biz = state?.biz || [];
   if ((biz[index]?.owned || 0) > 0) return true;
-  return (biz[index - 1]?.owned || 0) >= ERA_GATE;
+  if ((state?.erasOpened || []).includes(BUSINESSES[index]?.id)) return true;
+  return eraNeeds(state, index).every((n) => n.met);
 }
 
 export function formatFlow(flow) {
@@ -1053,8 +1097,12 @@ export function nextMove(state) {
     const prevCfg = BUSINESSES[front - 1];
     const have = biz[front - 1]?.owned || 0;
     const cost = costOf(prevCfg, have, 1);
-    if (Number.isFinite(cost) && cash >= cost) {
+    if (have < ERA_GATE && Number.isFinite(cost) && cash >= cost) {
       return `Buy another ${prevCfg.name} for ${money(cost)}. Own ${ERA_GATE} ${pluralName(prevCfg.name)} to open the next era (${have}/${ERA_GATE}).`;
+    }
+    const earn = eraEarnNeed(state, front);
+    if (have >= ERA_GATE && (state?.lifetime || 0) < earn) {
+      return `The next era opens once you've earned ${money(earn)} this run (${money(state?.lifetime || 0)} so far). Keep growing what you have.`;
     }
   }
 

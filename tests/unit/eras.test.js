@@ -53,3 +53,16 @@ test("an older save keeps every era that was open, even short of the new thresho
   // A new run (after prestige) has none recorded, so the threshold applies.
   assert.ok(!eraOpen({ ...save, erasOpened: [], lifetime: 0 }, gated));
 });
+
+import { INVESTOR_MILESTONES as PERKS, startingBiz } from "../../src/lib/empire.js";
+test("INDUSTRIAL BASE starts runs with 10 of each business through Vacuum Tubes, no further", () => {
+  const perk = PERKS.find((p) => p.id === "start-ics");
+  assert.match(perk.text, /through Vacuum Tubes/);
+  const holder = { investors: 20000, investorPeak: 20000 };
+  const blank = BUSINESSES.map((_, i) => ({ owned: i === 0 ? 1 : 0 }));
+  const biz = startingBiz(holder, blank);
+  const tubes = BUSINESSES.findIndex((b) => b.id === "tubes");
+  BUSINESSES.forEach((b, i) => assert.ok(i <= tubes ? biz[i].owned >= ERA_GATE : biz[i].owned === 0, b.id));
+  // Below the perk, nothing extra.
+  assert.equal(startingBiz({ investors: 10, investorPeak: 10 }, blank)[1].owned, 0);
+});

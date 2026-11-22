@@ -532,11 +532,14 @@ export function dataPerSecond(state) {
   return DATA_PER_ERA * establishedCount(state) + DATA_PER_ERA * masteredCount(state);
 }
 
-// Ceiling starts at 50 and rises by 6 for each singularity point (max 15
-// points → 140). Income approaches that ceiling and never passes it.
+// Ceiling starts at 42 and rises by 5 for each singularity point (max 15
+// points → 117). It was 50 + 6 per point; lowered so strong runs don't race
+// through the eras. Income approaches the ceiling and never passes it.
+export const CEILING_BASE = 42;
+export const CEILING_PER_FORK = 5;
 export function incomeCeiling(points) {
   const n = Math.max(0, Math.min(15, Math.floor(Number(points)) || 0));
-  return 50 + n * 6;
+  return CEILING_BASE + n * CEILING_PER_FORK;
 }
 
 // Soft cap: the first bonuses count almost 1:1, then returns diminish, and

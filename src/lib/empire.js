@@ -16,6 +16,10 @@ import {
   RESEARCH_MS,
   SUPPLY_KEYS,
   ERA_MATERIAL,
+  REFINED,
+  REFINE_BATCH,
+  REFINE_MS,
+  REFINE_RATIO,
   UPGRADE_MS,
   blankSupply,
   blockedByGlass,
@@ -173,8 +177,70 @@ export const DILEMMAS = [
   },
 ];
 
+// Historical shortages: real supply crunches, once a game each, in the era
+// they happened. Paying keeps the line running; waiting halves what that
+// material's rows make for a while, with a little R&D from working around it.
+// Left to expire, the shortage just hits.
+export const SHORTAGES = [
+  {
+    id: "short-dram",
+    from: "laptops",
+    to: "multimedia",
+    key: "wafers",
+    title: "1988 MEMORY CHIP SHORTAGE",
+    text: "Memory chips are scarce worldwide and prices have tripled. Your wafer suppliers want more money.",
+  },
+  {
+    id: "short-taiwan",
+    from: "gpu",
+    to: "phones",
+    key: "wafers",
+    title: "1999 TAIWAN EARTHQUAKE",
+    text: "A 7.7 earthquake has knocked out power to the chip plants of Hsinchu. Wafers are late.",
+  },
+  {
+    id: "short-thailand",
+    from: "tablets",
+    to: "rgb",
+    key: "glass",
+    title: "2011 THAILAND FLOODS",
+    text: "Floods have closed the factories that make disk drive parts, glass platters included.",
+  },
+  {
+    id: "short-crypto",
+    from: "ai",
+    to: "quantum",
+    key: "silicon",
+    title: "2017 CRYPTO MINING RUSH",
+    text: "Miners are buying every graphics card they can find, and the chips to make more.",
+  },
+  {
+    id: "short-chips",
+    from: "vr",
+    to: "supercluster",
+    key: "wafers",
+    title: "2020 CHIP SHORTAGE",
+    text: "Lockdowns, demand for home computers and a fab fire have left the world short of chips.",
+  },
+].map((x) => ({
+  ...x,
+  once: true,
+  shortage: true,
+  choices: [
+    { key: "a", label: "PAY THE SPOT PRICE", effects: { pay: 60 } },
+    { key: "b", label: "WAIT IT OUT", effects: { shortage: { key: x.key, minutes: 10 }, data: 2 } },
+  ],
+}));
+const ALL_DILEMMAS = () => [...DILEMMAS, ...SHORTAGES];
+
+// The material in a shortage right now (its rows make half), or null.
+export function shortageOn(state, now = 0) {
+  const sh = state?.shortage;
+  return sh && now > 0 && now < (sh.until || 0) ? sh.key : null;
+}
+
 export function dilemmaSpec(id) {
-  return DILEMMAS.find((d) => d.id === id) || DILEMMAS[0];
+  return ALL_DILEMMAS().find((d) => d.id === id) || DILEMMAS[0];
 }
 
 // True when the player's furthest era is between `from` and `to` (row ids).
@@ -198,6 +264,9 @@ export function markEventDone(state, id) {
 // Events that fit the player's era and haven't used up their one time.
 // The last one shown sits out a turn unless it's the only choice.
 function pickDilemma(state) {
+  // A shortage in its years comes first: it only happens once.
+  const crunch = SHORTAGES.find((d) => inEraSpan(state, d.from, d.to) && !eventDone(state, d.id));
+  if (crunch) return crunch;
   const fits = DILEMMAS.filter((d) => inEraSpan(state, d.from, d.to) && !(d.once && eventDone(state, d.id)));
   const pool = fits.length > 1 ? fits.filter((d) => d.id !== state.lastDilemma) : fits;
   return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
@@ -295,14 +364,19 @@ export const SHOP = [
 export const LAB_OVERCLOCK = { cost: 4, ms: 10 * 60 * 1000, coolMs: 20 * 60 * 1000, mult: 1.5 };
 export const LAB_PATENT = { cost: 3, tokens: 1, perDay: 5 };
 export const LAB_CREW = { cost: 8 };
+// Lab projects that also use materials.
+export const LAB_FAB = { cost: 4, materials: { wafers: 400 }, tokens: 1, perDay: 3 };
+export const LAB_CLEAN = { cost: 5, materials: { polysilicon: 100 }, ms: 15 * 60 * 1000, speed: 1.25 };
 export const LAB_PROJECTS = [
   { id: "overclock", name: "OVERCLOCK", cost: LAB_OVERCLOCK.cost, blurb: "All income x1.5 for 10 minutes. Then the lab needs 20 minutes to cool down." },
   { id: "patent", name: "PATENT FILING", cost: LAB_PATENT.cost, blurb: "Trade R&D points for 1 era token. Up to 5 filings a day." },
   { id: "crew", name: "INSTALL CREW", cost: LAB_CREW.cost, blurb: "Upgrades install instantly instead of taking 12 seconds. Buy once, keep forever." },
+  { id: "fab", name: "FAB TEST RUN", cost: LAB_FAB.cost, materials: LAB_FAB.materials, blurb: "Run 400 wafers through a test line for 1 era token. Up to 3 runs a day." },
+  { id: "cleanroom", name: "CLEAN ROOM", cost: LAB_CLEAN.cost, materials: LAB_CLEAN.materials, blurb: "Line a clean room with 100 polysilicon: TECH research runs 25% faster for 15 minutes." },
 ];
 
 export function blankLab() {
-  return { overclockUntil: 0, coolUntil: 0, patentDay: null, patents: 0, crew: false };
+  return { overclockUntil: 0, coolUntil: 0, patentDay: null, patents: 0, crew: false, fabDay: null, fabs: 0, cleanUntil: 0 };
 }
 
 export function cleanLab(raw, now = Date.now()) {
@@ -312,11 +386,31 @@ export function cleanLab(raw, now = Date.now()) {
   const overclockUntil = Math.min(n(l.overclockUntil), now + LAB_OVERCLOCK.ms);
   const coolUntil = Math.min(n(l.coolUntil), now + LAB_OVERCLOCK.ms + LAB_OVERCLOCK.coolMs);
   const patentDay = typeof l.patentDay === "string" && /^\d{4}-\d{2}-\d{2}$/.test(l.patentDay) ? l.patentDay : null;
-  return { overclockUntil, coolUntil, patentDay, patents: Math.min(LAB_PATENT.perDay, Math.floor(n(l.patents))), crew: !!l.crew };
+  const fabDay = typeof l.fabDay === "string" && /^\d{4}-\d{2}-\d{2}$/.test(l.fabDay) ? l.fabDay : null;
+  return {
+    overclockUntil,
+    coolUntil,
+    patentDay,
+    patents: Math.min(LAB_PATENT.perDay, Math.floor(n(l.patents))),
+    crew: !!l.crew,
+    fabDay,
+    fabs: Math.min(LAB_FAB.perDay, Math.floor(n(l.fabs))),
+    cleanUntil: Math.min(n(l.cleanUntil), now + LAB_CLEAN.ms),
+  };
 }
 
 export function overclockOn(state, now) {
   return now > 0 && now < (state?.lab?.overclockUntil || 0);
+}
+
+function fabsToday(state, now) {
+  const lab = state.lab || blankLab();
+  return lab.fabDay === dayHelpers(now).localDayKey ? lab.fabs || 0 : 0;
+}
+
+// TECH research speed from the clean room (1 when it isn't running).
+export function cleanRoomSpeed(state, now = Date.now()) {
+  return now > 0 && now < (state?.lab?.cleanUntil || 0) ? LAB_CLEAN.speed : 1;
 }
 
 function patentsToday(state, now) {
@@ -337,7 +431,12 @@ export function labQuote(state, id, now = Date.now()) {
     return { ok: false, reason: "No filings left today. More tomorrow.", cost: item.cost };
   }
   if (id === "crew" && lab.crew) return { ok: false, reason: "Your install crew is hired.", cost: item.cost };
+  if (id === "fab" && fabsToday(state, now) >= LAB_FAB.perDay) return { ok: false, reason: "No test runs left today. More tomorrow.", cost: item.cost };
+  if (id === "cleanroom" && now < (lab.cleanUntil || 0)) return { ok: false, reason: "The clean room is running.", cost: item.cost };
   if (data < item.cost) return { ok: false, reason: `Needs ${item.cost} R&D points.`, cost: item.cost };
+  for (const [key, n] of Object.entries(item.materials || {})) {
+    if ((state.supply?.[key] || 0) < n) return { ok: false, reason: `Needs ${n} ${REFINED[key]?.short || key}.`, cost: item.cost };
+  }
   return { ok: true, cost: item.cost };
 }
 
@@ -345,6 +444,12 @@ export function buyLabProject(state, id, now = Date.now()) {
   const quote = labQuote(state, id, now);
   if (!quote.ok) return quote;
   state.data -= quote.cost;
+  const item = LAB_PROJECTS.find((entry) => entry.id === id);
+  if (item?.materials) {
+    const supply = { ...(state.supply || {}) };
+    for (const [key, n] of Object.entries(item.materials)) supply[key] = Math.max(0, (supply[key] || 0) - n);
+    state.supply = supply;
+  }
   const lab = { ...(state.lab || blankLab()) };
   let detail = "";
   if (id === "overclock") {
@@ -358,6 +463,15 @@ export function buyLabProject(state, id, now = Date.now()) {
     // Not a grant: filings don't count as tokens earned from play.
     state.tokens = (state.tokens || 0) + LAB_PATENT.tokens;
     detail = `Patent filed: +${LAB_PATENT.tokens} era token.`;
+  } else if (id === "fab") {
+    const day = dayHelpers(now).localDayKey;
+    lab.fabs = (lab.fabDay === day ? lab.fabs || 0 : 0) + 1;
+    lab.fabDay = day;
+    state.tokens = (state.tokens || 0) + LAB_FAB.tokens;
+    detail = `Test run done: +${LAB_FAB.tokens} era token.`;
+  } else if (id === "cleanroom") {
+    lab.cleanUntil = now + LAB_CLEAN.ms;
+    detail = "Clean room running: TECH research 25% faster for 15 minutes.";
   } else {
     lab.crew = true;
     const job = timedJob(state.upgradeJob);
@@ -505,8 +619,32 @@ export function supplyFull(state, key) {
 export function storageCost(state, key) {
   const level = storageLevel(state, key);
   if (level >= STORAGE_MAX) return null;
-  const maker = BUSINESSES.find((cfg) => cfg.makes?.[key]);
+  const made = REFINED[key]?.from || key;
+  const maker = BUSINESSES.find((cfg) => cfg.makes?.[made]);
   return (maker?.baseCost || 1000) * 10 * 6 ** level;
+}
+
+// The refinery opens once you have reached Integrated Circuits, and stays open.
+export function refiningOpen(state) {
+  const ics = BUSINESSES.findIndex((cfg) => cfg.id === "ics");
+  return Math.max(state?.bestEra || 0, currentEraIndex(state)) >= ics;
+}
+// How much one tap of REFINE makes now: up to a batch, as much as the raw
+// material and the bins allow. 0 when it can't run.
+export function refineAmount(state, key) {
+  const spec = REFINED[key];
+  if (!spec || !refiningOpen(state) || timedJob(state?.refineJob)) return 0;
+  const raw = Math.floor((state?.supply?.[spec.from] || 0) / REFINE_RATIO);
+  const room = Math.floor(supplyCap(state, key) - (state?.supply?.[key] || 0));
+  return Math.max(0, Math.min(REFINE_BATCH, raw, room));
+}
+export function startRefine(state, key, now) {
+  const amount = refineAmount(state, key);
+  if (!(amount > 0)) return false;
+  const from = REFINED[key].from;
+  state.supply = { ...ensureSupply(state), [from]: Math.max(0, (state.supply[from] || 0) - amount * REFINE_RATIO) };
+  state.refineJob = { id: key, amount, startedAt: now, readyAt: now + REFINE_MS };
+  return true;
 }
 
 export function buyStorage(state, key) {
@@ -515,6 +653,57 @@ export function buyStorage(state, key) {
   if (cost == null || !(state.cash >= cost) || !Number.isFinite(state.cash)) return false;
   state.cash -= cost;
   state.storage = { ...(state.storage || {}), [key]: storageLevel(state, key) + 1 };
+  return true;
+}
+
+// Lifetime totals for the material badges: made (by rows or the refinery)
+// and sold. Kept for good.
+function countMade(state, key, n) {
+  if (!(n > 0) || !Number.isFinite(n)) return;
+  state.materialsMade = { ...(state.materialsMade || {}), [key]: (state.materialsMade?.[key] || 0) + n };
+}
+
+// The material market: sell spare stock for a little cash, or swap one
+// material for another. Prices are tiny and set by the era that makes the
+// material (a twentieth of one cycle of that row's pay), and drift slowly,
+// ±15% over a six-hour swing that's the same for everyone. Swaps lose 10%.
+export const MARKET_LOT = 100;
+export const SWAP_FEE = 0.1;
+const DRIFT_MS = 6 * 60 * 60 * 1000;
+export function materialPrice(key, now = Date.now()) {
+  const made = REFINED[key]?.from || key;
+  const maker = BUSINESSES.find((cfg) => cfg.makes?.[made]);
+  if (!maker) return 0;
+  const base = (maker.revenue || 1) * 0.05 * (REFINED[key] ? REFINE_RATIO * 1.2 : 1);
+  const phase = (SUPPLY_KEYS.indexOf(key) + 1) * 1.7;
+  return base * (1 + 0.15 * Math.sin((2 * Math.PI * now) / DRIFT_MS + phase));
+}
+export function sellMaterial(state, key, amount, now = Date.now()) {
+  const have = Math.floor(state?.supply?.[key] || 0);
+  const n = Math.min(have, Math.floor(amount));
+  if (!(n > 0) || !SUPPLY_KEYS.includes(key)) return 0;
+  const cash = n * materialPrice(key, now);
+  state.supply = { ...ensureSupply(state), [key]: have - n };
+  state.cash = (state.cash || 0) + cash;
+  state.materialsSold = (state.materialsSold || 0) + n;
+  return cash;
+}
+// How much of `to` a swap of `amount` of `from` gives, after the fee and
+// within the bins' room.
+export function swapQuote(state, from, to, amount, now = Date.now()) {
+  if (from === to || !SUPPLY_KEYS.includes(from) || !SUPPLY_KEYS.includes(to)) return { give: 0, get: 0 };
+  const give = Math.min(Math.floor(state?.supply?.[from] || 0), Math.floor(amount));
+  const rate = (materialPrice(from, now) / Math.max(1e-12, materialPrice(to, now))) * (1 - SWAP_FEE);
+  const room = Math.max(0, Math.floor(supplyCap(state, to) - (state?.supply?.[to] || 0)));
+  const get = Math.min(room, Math.floor(give * rate));
+  return { give: get > 0 ? Math.min(give, Math.ceil(get / rate)) : 0, get };
+}
+export function swapMaterial(state, from, to, amount, now = Date.now()) {
+  const q = swapQuote(state, from, to, amount, now);
+  if (!(q.get > 0)) return false;
+  const supply = ensureSupply(state);
+  supply[from] = Math.max(0, (supply[from] || 0) - q.give);
+  supply[to] = (supply[to] || 0) + q.get;
   return true;
 }
 
@@ -527,7 +716,7 @@ export function makesOf(state, cfg) {
   return Object.fromEntries(Object.entries(cfg.makes).map(([key, n]) => [key, (Number(n) || 0) * mult]));
 }
 
-function moveSupply(state, cfg, cycles, owned) {
+function moveSupply(state, cfg, cycles, owned, now = 0) {
   if (!cfg?.uses && !cfg?.makes) return;
   const supply = ensureSupply(state);
   const n = Number.isFinite(cycles) && cycles > 0 ? cycles : 0;
@@ -551,13 +740,14 @@ function moveSupply(state, cfg, cycles, owned) {
   }
   if (cfg.makes && count > 0) {
     for (const [key, make] of Object.entries(makesOf(state, cfg))) {
-      const add = (Number(make) || 0) * count * n * cover;
+      const add = (Number(make) || 0) * count * n * cover * (shortageOn(state, now) === key ? 0.5 : 1);
       const have = supply[key] || 0;
       const next = have + add;
       // A batch of cycles may overfill for a moment so the rows after it
       // can draw; the bins settle at the cap once the batch is done.
       const room = Math.max(have, supplyCap(state, key) * Math.max(1, n));
       supply[key] = Number.isFinite(next) ? Math.min(SUPPLY_CAP, room, Math.max(0, next)) : have;
+      countMade(state, key, supply[key] - have);
     }
   }
 }
@@ -707,7 +897,7 @@ export function creditCycles(state, index, cycles, now = 0, rate = 1) {
   if (!st || st.owned <= 0) return 0;
   const rev = (upgradesOf(state, cfg.id).rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone);
   const factor = supplyFactor(state, cfg, cycles);
-  moveSupply(state, cfg, cycles, st.owned);
+  moveSupply(state, cfg, cycles, st.owned, now);
   const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor * rate;
   return creditAmount(state, amount, now);
 }
@@ -951,6 +1141,17 @@ export function finishTimedWork(state, now) {
     state.researchJob = null;
     if (commitSpecialty(state, research.id)) notes.push({ type: "research", id: research.id });
   }
+  const refine = timedJob(state.refineJob);
+  state.refineJob = refine;
+  if (refine && jobDone(refine, now)) {
+    state.refineJob = null;
+    if (REFINED[refine.id]) {
+      const supply = ensureSupply(state);
+      supply[refine.id] = (supply[refine.id] || 0) + (Number(refine.amount) || 0);
+      countMade(state, refine.id, Number(refine.amount) || 0);
+      notes.push({ type: "refined", id: refine.id, amount: refine.amount });
+    }
+  }
   const upgrade = timedJob(state.upgradeJob);
   state.upgradeJob = upgrade;
   if (upgrade && jobDone(upgrade, now)) {
@@ -1102,6 +1303,9 @@ const PROJECT_BADGES = [
   { id: "orbital", legacyOwned: 25, needOwned: 120 },
 ];
 
+const MATERIAL_BADGE = 100000;
+const REFINED_BADGE = 1000;
+const MADE_NAMES = { wood: "Lumber yard", paper: "Paper trail", sand: "Sandbox", copper: "Copper wire", glass: "Glassblower", filament: "Filament spool", germanium: "Germanium crystal", silicon: "Silicon ingot", wafers: "Wafer fab" };
 const BADGE_DEFS = [
   ...BUSINESSES.map((cfg, index) => ({
     id: `era-${cfg.id}`,
@@ -1121,6 +1325,42 @@ const BADGE_DEFS = [
     era: index,
     earned: (s) => isMastered(s, index),
   })),
+  ...SUPPLY_KEYS.filter((key) => !REFINED[key]).map((key) => {
+    const maker = BUSINESSES.find((cfg) => cfg.makes?.[key]);
+    const at = BUSINESSES.indexOf(maker);
+    return {
+      id: `made-${key}`,
+      group: "MATERIALS",
+      name: `${MADE_NAMES[key] || key}`,
+      desc: `Make ${MATERIAL_BADGE.toLocaleString("en-US")} ${key}, all time`,
+      icon: maker?.icon,
+      era: at,
+      earned: (s) => (s.materialsMade?.[key] || 0) >= MATERIAL_BADGE,
+    };
+  }),
+  ...Object.keys(REFINED).map((key) => ({
+    id: `made-${key}`,
+    group: "MATERIALS",
+    name: `${REFINED[key].short} refiner`,
+    desc: `Refine ${REFINED_BADGE.toLocaleString("en-US")} ${REFINED[key].name}, all time`,
+    era: BUSINESSES.findIndex((cfg) => cfg.id === "ics"),
+    earned: (s) => (s.materialsMade?.[key] || 0) >= REFINED_BADGE,
+  })),
+  {
+    id: "materials-sold",
+    group: "MATERIALS",
+    name: "Commodities desk",
+    desc: "Sell 10,000 units of material, all time",
+    earned: (s) => (s.materialsSold || 0) >= 10000,
+  },
+  {
+    id: "shortages-all",
+    group: "MATERIALS",
+    name: "Supply chain veteran",
+    desc: "Get through all five historical shortages",
+    era: BUSINESSES.findIndex((cfg) => cfg.id === "vr"),
+    earned: (s) => SHORTAGES.every((x) => (s.eventsDone || []).includes(x.id)),
+  },
   ...LIFE_BADGES.map((row) => ({
     id: row.id,
     group: "LIFETIME",
@@ -1248,11 +1488,16 @@ export function badgeList(state) {
   });
 }
 
-export function tickDilemma(state, now) {
+// blocked: another popup is up (Welcome Back, What's New, the fresh-start
+// offer), so no new dilemma starts on top of it.
+export function tickDilemma(state, now, { blocked = false } = {}) {
   const notes = [];
   if (!state.nextDilemmaAt) state.nextDilemmaAt = now + 60 * 1000;
   if (!state.nextWindfallAt) state.nextWindfallAt = now + 45 * 1000;
   if (state.dilemma && now >= state.dilemma.expiresAt) {
+    // A shortage nobody answered still happens.
+    const spec = dilemmaSpec(state.dilemma.id);
+    if (spec.shortage) state.shortage = { key: spec.key, until: now + 10 * 60 * 1000 };
     state.dilemma = null;
     state.nextDilemmaAt = now + 6 * 60 * 1000;
     notes.push({ type: "expire" });
@@ -1262,7 +1507,7 @@ export function tickDilemma(state, now) {
   if (tutorialRunning && !state.dilemma) {
     state.nextDilemmaAt = Math.max(state.nextDilemmaAt || 0, now + 60 * 1000);
   }
-  if (!tutorialRunning && !state.dilemma && now >= (state.dilemmaDeferUntil || 0) && now >= (state.nextDilemmaAt || 0)) {
+  if (!tutorialRunning && !blocked && !state.dilemma && now >= (state.dilemmaDeferUntil || 0) && now >= (state.nextDilemmaAt || 0)) {
     const pick = pickDilemma(state);
     if (pick) {
       state.lastDilemma = pick.id;
@@ -1300,6 +1545,8 @@ export function describeEffects(effects) {
   if (effects.data) parts.push(`+${effects.data} R&D points`);
   if (effects.cash) parts.push(`${effects.cash} seconds of income`);
   if (effects.boost) parts.push(`Income x1.15 for ${effects.boost} minutes`);
+  if (effects.pay) parts.push(`Costs ${effects.pay} seconds of income`);
+  if (effects.shortage) parts.push(`${effects.shortage.key} made at half rate for ${effects.shortage.minutes} minutes`);
   return parts.join(", ");
 }
 
@@ -1318,6 +1565,9 @@ export function resolveDilemma(state, choice, now) {
     if (fx.data) state.data = (state.data || 0) + fx.data;
     if (fx.cash) creditAmount(state, Math.max(100, incomePerSecond(state, now) * fx.cash), now);
     if (fx.boost) state.boostUntil = Math.max(state.boostUntil || 0, now) + fx.boost * 60 * 1000;
+    // Paying never takes more than the cash on hand.
+    if (fx.pay) state.cash = Math.max(0, (state.cash || 0) - Math.min(state.cash || 0, Math.max(100, incomePerSecond(state, now) * fx.pay)));
+    if (fx.shortage) state.shortage = { key: fx.shortage.key, until: now + fx.shortage.minutes * 60 * 1000 };
     state.modStamp = (state.modStamp || 0) + 1;
     return { type: "choice", title: picked.label, summary };
   }
@@ -1465,6 +1715,10 @@ export function snapshotMeta(state, options = {}) {
     supply: { ...ensureSupply(state) },
     // Bigger bins are buildings: kept through prestige and forks.
     storage: { ...(state.storage || {}) },
+    // Lifetime material totals, for the MATERIALS badges.
+    materialsMade: { ...(state.materialsMade || {}) },
+    materialsSold: state.materialsSold || 0,
+    shortage: state.shortage ? { ...state.shortage } : null,
     // Era materials are paid once, ever.
     erasPaid: [...(state.erasPaid || [])],
     foreman: !!state.foreman,
@@ -1493,6 +1747,7 @@ export function snapshotMeta(state, options = {}) {
     researchJob: copyTimedJob(state.researchJob),
     upgradeJob: resetRunUpgrades ? null : copyTimedJob(state.upgradeJob),
     projectJob: copyTimedJob(state.projectJob),
+    refineJob: copyTimedJob(state.refineJob),
     modStamp: (state.modStamp || 0) + 1,
   };
 }

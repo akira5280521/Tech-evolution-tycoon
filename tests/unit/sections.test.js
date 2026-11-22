@@ -78,3 +78,18 @@ test("NEXT MOVE acts on the last business it names", () => {
   const name = BUSINESSES[idx("loom")].name;
   assert.equal(rowNamedLast(`Hire a manager for ${name}.`), "loom");
 });
+
+test("refined grades and shortage events light the SUPPLY dot", () => {
+  const ics = idx("ics");
+  const late = withOwned({ timber: 5, paper: 1, ics: 1 }, { wood: 5, polysilicon: 0 });
+  late.bestEra = ics;
+  assert.deepEqual(supplyAlerts(late).filter((a) => a.key === "polysilicon"), []); // none on hand yet
+  late.supply.polysilicon = supplyCap(late, "polysilicon");
+  assert.deepEqual(supplyAlerts(late).filter((a) => a.key === "polysilicon"), [{ key: "polysilicon", kind: "full" }]);
+  const now = 1e12;
+  const hit = withOwned({ timber: 5, paper: 1 }, { wood: 5 });
+  hit.shortage = { key: "wood", until: now + 60000 };
+  assert.deepEqual(supplyAlerts(hit, now), [{ key: "wood", kind: "shortage" }]);
+  assert.deepEqual(supplyAlerts(hit, now + 120000), []);
+  assert.equal(makerOf("polysilicon"), -1); // Needs opens its sheet instead
+});

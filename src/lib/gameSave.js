@@ -161,6 +161,9 @@ export function migrateSave(data) {
     briefingDay,
     streak: Math.max(1, Math.floor(finiteNumber(data.streak, 1))),
     supply,
+    // Lifetime material totals for the badges (none counted before them).
+    materialsMade: Object.fromEntries(Object.keys(supply).map((key) => [key, finiteNumber(data.materialsMade?.[key], 0)]).filter(([, n]) => n > 0)),
+    materialsSold: finiteNumber(data.materialsSold, 0),
     // Bigger material bins, by material (added with storage caps).
     storage: Object.fromEntries(
       Object.keys(supply).map((key) => [key, Math.min(12, Math.floor(finiteNumber(data.storage?.[key], 0)))]).filter(([, n]) => n > 0),
@@ -170,6 +173,8 @@ export function migrateSave(data) {
     erasOpened: Array.isArray(data.erasOpened)
       ? data.erasOpened.filter((id) => BUSINESSES.some((cfg) => cfg.id === id))
       : BUSINESSES.filter((cfg, i) => i > 0 && (biz[i]?.owned || 0) === 0 && (biz[i - 1]?.owned || 0) >= ERA_GATE).map((cfg) => cfg.id),
+    // A historical shortage under way: { key, until }, or none.
+    shortage: data.shortage && typeof data.shortage === "object" && typeof data.shortage.key === "string" && Number.isFinite(data.shortage.until) ? { key: data.shortage.key, until: data.shortage.until } : null,
     // Eras whose material is paid (once, ever). Older saves: filled in on load.
     erasPaid: Array.isArray(data.erasPaid) ? data.erasPaid.filter((id) => BUSINESSES.some((cfg) => cfg.id === id)) : null,
     foreman: version < 4 ? progressed : !!data.foreman,
@@ -177,6 +182,7 @@ export function migrateSave(data) {
     researchJob: version < 4 ? null : job(data.researchJob),
     upgradeJob: version < 4 ? null : upgradeJob(job(data.upgradeJob), version),
     projectJob: version < 4 ? null : job(data.projectJob),
+    refineJob: job(data.refineJob),
     orientation: data.orientation === "portrait" || data.orientation === "landscape" ? data.orientation : "auto",
     buyMode: normalizeBuyMode(data.buyMode),
     meta: data,

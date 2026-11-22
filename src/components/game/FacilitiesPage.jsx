@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { money } from "@/lib/gameConfig";
+import { REFINED, money } from "@/lib/gameConfig";
 import { businessIncomePerSecond, incomePerSecond } from "@/lib/empire";
 import {
   FACILITIES,
@@ -19,6 +19,8 @@ import {
   REBUILD_SECONDS,
   rebuildCost,
   rebuildReady,
+  partMaterials,
+  partShort,
 } from "@/lib/facilities";
 import { extrasText, partValue } from "@/lib/plantValue";
 import { toast } from "sonner";
@@ -42,7 +44,9 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, busi
   // Each part opens in its real year, once it's researched on TECH.
   const lock = open && !part.soon ? partLock(state, part, researchItem(part.research)?.name) : null;
   const dim = part.soon || !open || !!lock;
-  const affordable = open && !lock && !part.soon && !fit.reason && Number.isFinite(cost) && cash >= cost && owned < partMax(part, facilityId);
+  const short = partShort(state, part);
+  const mats = partMaterials(part);
+  const affordable = open && !lock && !part.soon && !fit.reason && !short.length && Number.isFinite(cost) && cash >= cost && owned < partMax(part, facilityId);
   return (
     <div data-part={part.id} data-best-part={best ? "" : undefined} data-help-scope className={`border-2 ${best ? "border-[var(--game-accent)]" : "border-[var(--game-border)]"} bg-[var(--game-bg)] p-2`}>
       {best && <p className="mb-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">BEST NEXT PART</p>}
@@ -71,6 +75,13 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, busi
         <div className="mt-2">
           <GoldButton dataAttr={`buy-${part.id}`} disabled={!affordable} onClick={onBuy}>
             <span className="font-pixel text-[0.55rem]">{!open || lock ? "LOCKED" : facilityId === "bench" && owned > 0 && part.kind !== "stick" ? "ON THE BENCH" : `BUY ${money(cost)}`}</span>
+            {open && !lock && !(facilityId === "bench" && owned > 0 && part.kind !== "stick") && mats && (
+              <span data-part-materials className={`block font-term text-base leading-5 ${short.length ? "text-[var(--game-danger)]" : ""}`}>
+                {short.length
+                  ? `Needs ${short.map((x) => `${x.need} ${REFINED[x.key]?.short || x.key} (have ${x.have})`).join(", ")}`
+                  : `+ ${Object.entries(mats).map(([k, n]) => `${n} ${REFINED[k]?.short || k}`).join(", ")}`}
+              </span>
+            )}
           </GoldButton>
         </div>
       )}

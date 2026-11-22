@@ -284,9 +284,11 @@ export function awayBankCap(state) {
   return serverOutput(state).perSecond * 3600 * awayBankHours(state);
 }
 
-export function researchSpeed(state) {
+export function researchSpeed(state, now = Date.now()) {
   const out = serverOutput(state);
-  return Math.min(8, 1 + out.work * out.speed * 0.08);
+  // The lab's clean room (a project that uses polysilicon) adds 25% for a while.
+  const clean = now > 0 && now < (state?.lab?.cleanUntil || 0) ? 1.25 : 1;
+  return Math.min(8, 1 + out.work * out.speed * 0.08) * clean;
 }
 
 export function researchRows(tab) {
@@ -315,6 +317,25 @@ export function techJobs(state) {
   return [state?.techJob, state?.techJob2].filter(Boolean);
 }
 
+// Late projects also need refined materials, taken when they start.
+export const RESEARCH_MATERIALS = {
+  "cpu-alder32": { polysilicon: 100 },
+  "card-b200": { polysilicon: 400 },
+  "mem-ddr5-128": { polysilicon: 200 },
+  "net-ibhdr": { ofcopper: 100 },
+  "net-nvswitch": { ofcopper: 150 },
+  "srv-crayex": { ofcopper: 300 },
+  "net-ac": { hpge: 40 },
+  "net-be": { hpge: 100 },
+};
+export function researchMaterials(entry) {
+  return RESEARCH_MATERIALS[entry?.id] || null;
+}
+export function hasResearchMaterials(state, entry) {
+  const need = researchMaterials(entry);
+  return !need || Object.entries(need).every(([key, n]) => (state?.supply?.[key] || 0) >= n);
+}
+
 export function canStartResearch(state, id) {
   const entry = byId[id];
   if (!entry || entry.soon) return false;
@@ -322,6 +343,7 @@ export function canStartResearch(state, id) {
   if (state?.techJob && (state?.techJob2 || !secondTechSlot(state))) return false;
   if ((state?.techDone || []).includes(id)) return false;
   if (researchLock(state, entry)) return false;
+  if (!hasResearchMaterials(state, entry)) return false;
   return (Number(state?.data) || 0) >= researchCost(entry);
 }
 
@@ -329,6 +351,12 @@ export function startResearch(state, id) {
   const entry = byId[id];
   if (!canStartResearch(state, id)) return { ok: false };
   state.data = Math.max(0, (Number(state.data) || 0) - researchCost(entry));
+  const need = researchMaterials(entry);
+  if (need) {
+    const supply = { ...(state.supply || {}) };
+    for (const [key, n] of Object.entries(need)) supply[key] = Math.max(0, (supply[key] || 0) - n);
+    state.supply = supply;
+  }
   const job = { id: entry.id, progressMs: 0, durationMs: entry.durationMs };
   if (!state.techJob) state.techJob = job;
   else state.techJob2 = job;

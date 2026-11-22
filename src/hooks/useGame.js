@@ -5,6 +5,7 @@ import {
   AWAY_GRACE_MS,
   AWAY_MODAL_MS,
   BUSINESSES,
+  REFINED,
   openEra,
   COMMISSION_MS,
   FOREMAN_COST,
@@ -62,6 +63,9 @@ import {
   snapshotMeta,
   tickDilemma,
   buyStorage,
+  startRefine,
+  sellMaterial,
+  swapMaterial,
 } from "@/lib/empire";
 import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/lib/tutorial";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
@@ -72,6 +76,7 @@ import { noteHubSeen } from "@/lib/hub";
 import { advanceResearch, fillResearchGaps, grantOwnedResearch, readResearchData, readTechDone, readTechJob, startResearch } from "@/lib/research";
 import { currentGoal, readGoalsDone, settleGoals } from "@/lib/goals";
 import { applyOrientation } from "@/lib/orientation";
+import { notesUnseen } from "@/lib/releaseNotes";
 import { SAVE_VERSION, clearSaveData, getSaveData, remapBestEra, writeSaveData } from "@/lib/gameSave";
 import { encodeSave } from "@/lib/saveCode";
 import { isPageHidden } from "@/lib/pageVisibility";
@@ -257,7 +262,10 @@ function pack(s) {
     nextBubbleAt: s.nextBubbleAt || 0,
     supply: s.supply,
     storage: s.storage || {},
+    materialsMade: s.materialsMade || {},
+    materialsSold: s.materialsSold || 0,
     erasOpened: s.erasOpened || [],
+    shortage: s.shortage || null,
     erasPaid: s.erasPaid || [],
     foreman: !!s.foreman,
     sawPit: !!s.sawPit,
@@ -275,6 +283,7 @@ function pack(s) {
     researchJob: s.researchJob || null,
     upgradeJob: s.upgradeJob || null,
     projectJob: s.projectJob || null,
+    refineJob: s.refineJob || null,
     challenge: s.challenge,
     dilemma: s.dilemma,
     businessesBought: Math.floor(s.businessesBought || 0),
@@ -343,7 +352,10 @@ function loadSave() {
     state.supply = data.supply;
     ensureSupply(state);
     state.storage = data.storage || {};
+    state.materialsMade = data.materialsMade || {};
+    state.materialsSold = data.materialsSold || 0;
     state.erasOpened = Array.isArray(data.erasOpened) ? data.erasOpened : [];
+    state.shortage = data.shortage && typeof data.shortage === "object" && Number.isFinite(data.shortage.until) ? data.shortage : null;
     state.foreman = !!data.foreman;
     state.sawPit = !!data.sawPit;
     state.buyMode = normalizeBuyMode(data.buyMode);
@@ -367,6 +379,7 @@ function loadSave() {
     state.researchJob = data.researchJob || null;
     state.upgradeJob = data.upgradeJob || null;
     state.projectJob = data.projectJob || null;
+    state.refineJob = data.refineJob || null;
     const prior = Number.isFinite(data.meta?.version) ? data.meta.version : 1;
     if (storedEra != null) state.bestEra = remapBestEra(storedEra, prior);
     // Era materials are paid once. A save from before them has paid for every
@@ -428,6 +441,7 @@ function announce(notes) {
     if (note.type === "upgrade") toast("Upgrade installed", { description: "The line is back up." });
     if (note.type === "projectstart") toast("Project started", { description: "Crews are on site. Give them a moment." });
     if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
+    if (note.type === "refined") toast("Refinery batch done", { description: `${note.amount} ${REFINED[note.id]?.name || note.id} added.` });
     if (note.type === "history") {
       if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum in MORE > MUSEUM." });
       else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum in MORE > MUSEUM." });
@@ -647,14 +661,17 @@ export function useGame() {
       s.playMs = (s.playMs || 0) + playStep(dt, NORMAL_TICK_MS);
       if (noteMilestones(s, wall)) dirty = true;
       if (autoBuyUpgrade(s, wall)) dirty = true;
-      const notes = tickDilemma(s, wall).concat(finishTimedWork(s, wall), tickBubble(s, wall));
+      // No dilemma starts while Welcome Back, the prestige report, What's New
+      // or the fresh-start offer is up.
+      const blocked = !!s.offlineReport || !!s.prestigeReport || (!!s.restartSuggested && !s.restartSeen) || notesUnseen();
+      const notes = tickDilemma(s, wall, { blocked }).concat(finishTimedWork(s, wall), tickBubble(s, wall));
       const cards = collectHistory(s);
       if (cards.length) notes.push({ type: "history", cards });
       if (notes.length) {
         announce(notes);
         dirty = true;
       }
-      const pending = s.researchJob || s.upgradeJob || s.projectJob || s.biz.some((row) => (row.commissionUntil || 0) > wall || (row.holdUntil || 0) > wall);
+      const pending = s.researchJob || s.upgradeJob || s.projectJob || s.refineJob || s.biz.some((row) => (row.commissionUntil || 0) > wall || (row.holdUntil || 0) > wall);
       if (pending) dirty = true;
       const passive = plant > 0 || researchMoved === "gain";
       // Payouts and finished work paint on the short cadence. A plant or
@@ -849,6 +866,37 @@ export function useGame() {
   const upgradeStorage = useCallback(
     (key) => {
       if (!buyStorage(stateRef.current, key)) return;
+      playBuy();
+      saveNow();
+      bump();
+    },
+    [bump]
+  );
+
+  const refine = useCallback(
+    (key) => {
+      if (!startRefine(stateRef.current, key, Date.now())) return;
+      playBuy();
+      saveNow();
+      bump();
+    },
+    [bump]
+  );
+
+  const sellStock = useCallback(
+    (key, amount) => {
+      const cash = sellMaterial(stateRef.current, key, amount, Date.now());
+      if (!(cash > 0)) return;
+      playBuy();
+      saveNow();
+      bump();
+    },
+    [bump]
+  );
+
+  const swapStock = useCallback(
+    (from, to, amount) => {
+      if (!swapMaterial(stateRef.current, from, to, amount, Date.now())) return;
       playBuy();
       saveNow();
       bump();
@@ -1228,6 +1276,9 @@ export function useGame() {
     purchaseUpgrade,
     upgradeStorage,
     openEraAt,
+    sellStock,
+    swapStock,
+    refine,
     purchaseShop,
     chooseSpecialty,
     runLabProject,

@@ -1,5 +1,6 @@
 import { Zap } from "lucide-react";
-import { LAB_OVERCLOCK, LAB_PATENT, LAB_PROJECTS, labQuote } from "@/lib/empire";
+import { LAB_FAB, LAB_OVERCLOCK, LAB_PATENT, LAB_PROJECTS, labQuote } from "@/lib/empire";
+import { REFINED } from "@/lib/gameConfig";
 import { timedProgress } from "@/lib/progress";
 import { HelpTip, ItemHelp } from "./HintSheet";
 import { GoldButton, Panel, ProgressBar } from "./chrome";
@@ -27,6 +28,11 @@ function status(state, id, now) {
     return { text: `${LAB_PATENT.perDay - used} of ${LAB_PATENT.perDay} filings left today`, tone: "info" };
   }
   if (id === "crew" && lab.crew) return { text: "HIRED", tone: "good" };
+  if (id === "fab") {
+    const used = lab.fabDay === localDay(now) ? lab.fabs || 0 : 0;
+    return { text: `${LAB_FAB.perDay - used} of ${LAB_FAB.perDay} test runs left today`, tone: "info" };
+  }
+  if (id === "cleanroom" && now < (lab.cleanUntil || 0)) return { text: `RUNNING · ${clock(lab.cleanUntil - now)} left`, tone: "good" };
   return null;
 }
 
@@ -51,7 +57,15 @@ export default function LabProjects({ state, onRun }) {
             <div className="flex items-start gap-2">
               <div className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-2">
                 <h3 className="font-pixel text-[0.65rem]">{item.name}</h3>
-                <span className="font-term text-lg text-[var(--game-muted)]">{item.cost} R&amp;D</span>
+                <span className="font-term text-lg text-[var(--game-muted)]">
+                  {item.cost} R&amp;D
+                  {item.materials &&
+                    Object.entries(item.materials).map(([key, n]) => (
+                      <span key={key} data-lab-material={key} className={(state.supply?.[key] || 0) >= n ? "" : "text-[var(--game-danger)]"}>
+                        {` + ${n} ${REFINED[key]?.short || key}`}
+                      </span>
+                    ))}
+                </span>
               </div>
               <ItemHelp kind="lab" id={item.id} state={state} name={item.name} className="-mr-2 -mt-2.5" />
             </div>

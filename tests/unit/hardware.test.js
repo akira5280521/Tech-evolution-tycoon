@@ -12,6 +12,7 @@ const upTo = (id, techDone = []) => ({
   techDone,
   facilities: { mine: {}, cluster: {}, servers: {} },
   cash: 1e30,
+  supply: { wafers: 1e8, glass: 1e8, copper: 1e8, polysilicon: 1e8, ofcopper: 1e8 },
 });
 
 test("every era has a year, in order, and the last is 2024", () => {

@@ -165,6 +165,11 @@ const HOW_TO = [
       "Some businesses use what an earlier one makes. Timber Camp makes wood, and the Paper Mill uses that wood.",
       "The strip at the top shows what you have. If a material runs out, the business that needs it stops paying.",
       "Each material's bins hold so much. When they're FULL, new output is lost. Tap a material to buy bigger bins; they stay through prestige.",
+      "From Integrated Circuits on, tap silicon, copper or germanium to refine it: ten make one of a refined grade (polysilicon, oxygen-free copper, high-purity germanium) after a minute. Some late research needs them.",
+      "RIGS parts take materials too: chips and boards wafers, screens and disks glass, power, cooling, cases and cables copper. From 2018 the copper parts take oxygen-free copper, and from 2020 the chip parts polysilicon. The BUY button shows what's missing.",
+      "Two lab projects use materials: FAB TEST RUN (400 wafers for an era token, three a day) and CLEAN ROOM (100 polysilicon: TECH research 25% faster for 15 minutes).",
+      "Tap a material to sell spare stock for a little cash, or swap it for another material (with a 10% fee). Prices are small, set by the era that makes it, and drift slowly.",
+      "Real shortages happen once each, in their years: the 1988 memory chip crunch, the 1999 Taiwan earthquake, the 2011 Thailand floods, the 2017 crypto rush and the 2020 chip shortage. Pay to keep going, or wait it out with that material made at half rate for ten minutes.",
     ],
   },
   {

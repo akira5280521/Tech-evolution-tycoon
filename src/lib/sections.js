@@ -1,8 +1,8 @@
 // The game screen's two sections: SUPPLY (rows that make a material: the
 // raw materials and refiners) and TECH (every other era row). Display only;
 // no game math lives here.
-import { BUSINESSES, SUPPLY_KEYS, blockedByGlass, eraOpen } from "./gameConfig.js";
-import { supplyFull } from "./empire.js";
+import { BUSINESSES, REFINED, SUPPLY_KEYS, blockedByGlass, eraOpen } from "./gameConfig.js";
+import { refiningOpen, shortageOn, supplyFull } from "./empire.js";
 
 export const SECTIONS = [
   { id: "tech", label: "TECH" },
@@ -59,13 +59,26 @@ export function rowShortOf(state, index) {
     .map(([key]) => key);
 }
 
-// A material that wants attention: empty while an owned row needs it, or FULL.
-export function supplyAlerts(state) {
+// A material that wants attention: empty while an owned row needs it, FULL,
+// or hit by a shortage event right now. Refined grades (no maker row) count
+// once the refinery is open and some are on hand.
+export function supplyAlerts(state, now = Date.now()) {
   const supply = state?.supply || {};
   const out = [];
+  const short = shortageOn(state, now);
   for (const key of SUPPLY_KEYS) {
+    if (REFINED[key]) {
+      if (!refiningOpen(state) || !((supply[key] || 0) > 0)) continue;
+      if (short === key) out.push({ key, kind: "shortage" });
+      else if (supplyFull(state, key)) out.push({ key, kind: "full" });
+      continue;
+    }
     const maker = makerOf(key);
     if (maker < 0 || !eraOpen(state, maker)) continue;
+    if (short === key) {
+      out.push({ key, kind: "shortage" });
+      continue;
+    }
     const needed = BUSINESSES.some((cfg, i) => cfg.uses?.[key] && (state?.biz?.[i]?.owned || 0) > 0);
     if (needed && !((supply[key] || 0) > 0)) out.push({ key, kind: "empty" });
     else if (supplyFull(state, key)) out.push({ key, kind: "full" });

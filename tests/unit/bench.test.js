@@ -11,6 +11,7 @@ const upTo = (id, done = RESEARCH.map((e) => e.id)) => ({
   techDone: done,
   facilities: { mine: {}, cluster: {}, servers: {}, bench: {} },
   cash: 1e40,
+  supply: { wafers: 1e8, glass: 1e8, copper: 1e8, polysilicon: 1e8, ofcopper: 1e8 },
 });
 const part = (id) => PARTS.find((p) => p.id === id);
 
@@ -191,6 +192,7 @@ import { canStartResearch, startResearch, secondTechSlot } from "../../src/lib/r
 test("a four-core CPU on the bench lets two Tech projects run at once", () => {
   const s = upTo("supercluster", []);
   s.data = 1e9;
+  s.supply = { hpge: 100 };
   s.techDone = RESEARCH.map((e) => e.id).filter((id) => !["net-be", "snd-ae7"].includes(id));
   assert.ok(startResearch(s, "net-be").ok);
   assert.equal(canStartResearch(s, "snd-ae7"), false, "one slot without a four-core CPU");

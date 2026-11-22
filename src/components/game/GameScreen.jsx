@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { BUSINESSES, ERA_GATE, SUPPLY_KEYS, blockedByGlass, eraOpen, frontierEra, money, pluralName } from "@/lib/gameConfig";
-import { activeChallengeGoal, incomePerSecond, supplyCap, supplyFull } from "@/lib/empire";
+import { BUSINESSES, ERA_GATE, REFINED, SUPPLY_KEYS, blockedByGlass, eraOpen, frontierEra, money, pluralName } from "@/lib/gameConfig";
+import { activeChallengeGoal, incomePerSecond, refiningOpen, shortageOn, supplyCap, supplyFull } from "@/lib/empire";
 import StorageSheet, { amount } from "./StorageSheet";
 import { PREFS_EVENT, readPrefs, writePrefs } from "@/lib/gamePrefs";
 import { SECTIONS, makerOf, rowSection, sectionOfId, sectionOfTarget, shownSection, supplyAlerts, pendingRowId, focusRowLater } from "@/lib/sections";
@@ -33,6 +33,8 @@ function playedAndBought(state) {
 // A material shows in the supply strip once the row that makes it is on
 // screen, so materials from undiscovered eras stay hidden.
 function supplyShown(state, key) {
+  // Refined grades show once the refinery is open and you have some (or a batch is on).
+  if (REFINED[key]) return refiningOpen(state) && ((state.supply?.[key] || 0) > 0 || state.refineJob?.id === key);
   const i = BUSINESSES.findIndex((cfg) => cfg.makes && cfg.makes[key]);
   if (i < 0) return false;
   return eraOpen(state, i);
@@ -48,6 +50,11 @@ export default function GameScreen() {
   const [compact, setCompact] = useState(false);
   const [storageKey, setStorageKey] = useState(null);
   const [savedSection, setSavedSection] = useState(() => readPrefs().gameSection);
+  // A dilemma or shortage event takes the screen: close the material sheet
+  // so the two never stack.
+  useEffect(() => {
+    if (state.dilemma) setStorageKey(null);
+  }, [state.dilemma]);
   const [scrollTo, setScrollTo] = useState(() => pendingRowId());
   const startYRef = useRef(null);
   const pullRef = useRef(0);
@@ -147,7 +154,11 @@ export default function GameScreen() {
   // "Needs wood" on a TECH row: open SUPPLY at the row that makes it.
   const showMaker = useCallback((key) => {
     const maker = makerOf(key);
-    if (maker < 0) return;
+    // A refined grade has no maker row: open its sheet (REFINE lives there).
+    if (maker < 0) {
+      setStorageKey(key);
+      return;
+    }
     setScrollTo(BUSINESSES[maker].id);
   }, []);
   const alerts = supplyAlerts(state);
@@ -158,7 +169,7 @@ export default function GameScreen() {
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
       <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} />
       <PrestigeReport report={state.offlineReport ? null : state.prestigeReport} onDismiss={dismissPrestigeReport} />
-      {!state.offlineReport && <DilemmaModal dilemma={state.dilemma} onChoose={chooseDilemma} />}
+      {!state.offlineReport && !state.prestigeReport && <DilemmaModal dilemma={state.dilemma} onChoose={chooseDilemma} />}
 
       {(pullDist > 0 || refreshing) && (
         <div className="flex items-center justify-center gap-2 py-2 font-pixel text-[0.55rem] text-[var(--game-muted)]">
@@ -168,7 +179,7 @@ export default function GameScreen() {
       )}
 
       <StickyHud state={state} cps={cps} />
-      {storageKey && <StorageSheet state={state} materialKey={storageKey} onUpgrade={game.upgradeStorage} onClose={() => setStorageKey(null)} />}
+      {storageKey && <StorageSheet state={state} materialKey={storageKey} onUpgrade={game.upgradeStorage} onRefine={game.refine} onSell={game.sellStock} onSwap={game.swapStock} shown={SUPPLY_KEYS.filter((key) => supplyShown(state, key))} onClose={() => setStorageKey(null)} />}
 
       <div className="game-frame">
         <div className="game-side">
@@ -203,8 +214,9 @@ export default function GameScreen() {
                     onClick={() => setStorageKey(key)}
                     className={`min-h-6 text-left tabular-nums ${full ? "text-[var(--game-danger)]" : ""}`}
                   >
-                    {key} {amount(supply[key])}/{amount(supplyCap(state, key))}
+                    {REFINED[key]?.short || key} {amount(supply[key])}/{amount(supplyCap(state, key))}
                     {full && <span className="ml-1 font-pixel text-[0.4rem]">FULL</span>}
+                    {shortageOn(state, Date.now()) === key && <span data-short={key} className="ml-1 font-pixel text-[0.4rem] text-[var(--game-violet)]">SHORT</span>}
                   </button>
                 );
               })}

@@ -523,7 +523,10 @@ function labInfo(state, id) {
   return {
     title: item.name,
     text: item.blurb,
-    rows: [{ label: "COST", text: `${item.cost} R&D points; you have ${rd(state?.data || 0)}.` }],
+    rows: [
+      { label: "COST", text: `${item.cost} R&D points; you have ${rd(state?.data || 0)}.` },
+      ...Object.entries(item.materials || {}).map(([key, n]) => ({ label: "MATERIAL", text: `${n} ${key}; you have ${Math.floor(state?.supply?.[key] || 0)}.` })),
+    ],
   };
 }
 

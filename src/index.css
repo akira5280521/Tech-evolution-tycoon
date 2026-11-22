@@ -141,6 +141,9 @@
 
   html {
     overscroll-behavior: none; /* no browser rubber-banding on Android */
+    /* The dark game background from the very first paint, before the theme
+       class and body styles apply (matches capacitor backgroundColor). */
+    background-color: #0d0b1e;
   }
 
   body {
@@ -568,6 +571,7 @@ html[data-text="xl"] {
   font-size: 125%;
 }
 html[data-contrast="high"] {
+  background-color: #000000;
   --game-bg: #000000;
   --game-bg-95: rgba(0, 0, 0, 0.96);
   --game-bg-deep: #000000;

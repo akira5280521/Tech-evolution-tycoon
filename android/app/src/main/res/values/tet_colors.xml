@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Same as capacitor.config.json android.backgroundColor and the game-bg CSS color. -->
+    <color name="tet_window_bg">#0d0b1e</color>
+</resources>

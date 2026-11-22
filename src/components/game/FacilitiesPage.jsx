@@ -12,6 +12,7 @@ import {
   partCost,
 } from "@/lib/facilities";
 import { serverOutput } from "@/lib/research";
+import { HUB_ROUTE } from "@/lib/hub";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { ItemHelp } from "./HintSheet";
@@ -116,7 +117,7 @@ export default function FacilitiesPage() {
   // The part that adds the most pay for its price (or starts a plant).
   const next = open ? nextPurchase(state, business) : null;
   return (
-    <ScreenShell title="FACILITIES" subtitle="A side plant. It pays cash, and it never outgrows the businesses.">
+    <ScreenShell title="FACILITIES" subtitle="A side plant. It pays cash, and it never outgrows the businesses." backTo={HUB_ROUTE}>
       {!open && (
         <Panel>
           <p data-facilities-locked className="break-words font-term text-base leading-5 text-[var(--game-fg)]">

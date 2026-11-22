@@ -9,7 +9,7 @@ export const VERSION_CODE = readFileSync(new URL("../../src/lib/appVersion.js", 
 export const SAVE_KEY = "pc-tycoon-save-v1";
 export const NOTES_KEY = "pc-tycoon-seen-notes";
 
-export const ROUTES = ["/", "/boost", "/tech", "/facilities", "/board", "/runs", "/research", "/more", "/badges"];
+export const ROUTES = ["/", "/boost", "/tech", "/rigs", "/facilities", "/board", "/runs", "/research", "/more", "/badges"];
 
 // Put a save in localStorage before the app starts. Only once per tab, so a
 // reload keeps whatever the game saved since. `save` is a fixture name from

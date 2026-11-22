@@ -19,6 +19,7 @@ import AccountPanel from "./AccountPanel";
 import { HelpTip, ItemHelp } from "./HintSheet";
 import { GLOSSARY, GLOSSARY_ORDER } from "@/lib/glossary";
 import { AchievementsButton, AwayReminder, DisplaySettings, FeedbackButton, PlayToggles, ResetProgress, WhatsNewButton } from "./SettingsControls";
+import { HUB_LABEL } from "@/lib/hub";
 
 const TABS = [
   { id: "settings", label: "SETTINGS", title: "SETTINGS" },
@@ -205,7 +206,7 @@ const HOW_TO = [
     id: "rd",
     title: "R&D POINTS",
     lines: [
-      "R&D points are the one research currency. Each era you own makes a trickle; research servers (under the RIGS button beside TECH, from Microprocessors) make most of them. Both earn at half rate while the game is closed, and the servers only bank what their disks hold: 1 hour of output, plus another hour per TB of disk.",
+      `R&D points are the one research currency. Each era you own makes a trickle; research servers (${HUB_LABEL} beside TECH, then RIGS, from Microprocessors) make most of them. Both earn at half rate while the game is closed, and the servers only bank what their disks hold: 1 hour of output, plus another hour per TB of disk.`,
       "Spend them on the R & D tab (specialties and lab projects) and on the TECH timeline. They are never lost, even when you prestige.",
     ],
   },
@@ -219,7 +220,7 @@ const HOW_TO = [
   },
   {
     id: "facilities",
-    title: "FACILITIES (RIGS)",
+    title: `FACILITIES (${HUB_LABEL} > RIGS)`,
     lines: [
       "Research servers open with Microprocessors and make R&D points. With AI Accelerators, the Bitbark mine and the AI training cluster add a small extra income.",
       "Buy parts for each plant. A plant runs slower when its power or cooling can't keep up with its cards or racks, and it tells you what to add next. Parts are lost when you prestige.",

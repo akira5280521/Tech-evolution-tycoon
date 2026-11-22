@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Play } from "lucide-react";
 import { BUSINESSES, FOREMAN_COST, buyModeLabel, money, nextBuyMode } from "@/lib/gameConfig";
-import { anyFacilityOpen } from "@/lib/facilities";
+import { HUB_LABEL, HUB_ROUTE, hubOpen } from "@/lib/hub";
 import { techOpen } from "@/lib/research";
 import { ItemHelp } from "./HintSheet";
 
@@ -97,8 +97,8 @@ export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll
             <span className="font-term text-lg leading-5">BUY AMOUNT</span>
           </button>
           <SideLink to="/tech" open={techOpen(state)} data="research" label="TECH" />
-          <SideLink to="/facilities" open={anyFacilityOpen(state)} data="facilities" label="RIGS" />
-          <ItemHelp kind="topbar" id={{ tech: techOpen(state), rigs: anyFacilityOpen(state) }} state={state} name="buy amount, TECH and RIGS" className="my-0 self-center" />
+          <SideLink to={HUB_ROUTE} open={hubOpen(state)} data="facilities" label={HUB_LABEL} />
+          <ItemHelp kind="topbar" id={{ tech: techOpen(state), rigs: hubOpen(state) }} state={state} name={`buy amount, TECH and ${HUB_LABEL}`} className="my-0 self-center" />
         </div>
       </div>
     </header>

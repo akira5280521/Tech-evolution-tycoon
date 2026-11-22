@@ -173,7 +173,7 @@ export const RESEARCH = [
 // (each after the last chip of its maker), boards on BOARDS, sticks on MEMORY.
 {
   const have = new Set(RESEARCH.map((entry) => entry.id));
-  const tabOf = { cpu: "cpu", board: "boards", stick: "memory", video: "gpu", accel: "gpu", sound: "sound", psu: "power", case: "cases", fpu: "cpu", drive: "storage", media: "storage", net: "network", modem: "network" };
+  const tabOf = { cpu: "cpu", board: "boards", stick: "memory", video: "gpu", accel: "gpu", sound: "sound", psu: "power", case: "cases", fpu: "cpu", drive: "storage", media: "storage", net: "network", modem: "network", cooler: "cooling" };
   const brand = (name) => name.split(" ")[0];
   const added = PARTS.filter((part) => part.fits.includes("bench") && part.research && !have.has(part.research))
     .sort((a, b) => a.year - b.year);
@@ -252,7 +252,7 @@ export function serverOutput(state) {
   // Each machine needs the disk of its day (part.diskGb) for full speed.
   const disk = need <= 0 ? 1 : storage >= need ? 1 : storage > 0 ? 0.5 : 0.25;
   // The PC build bench adds its own R&D.
-  const bench = benchStock(readFacilities(state?.facilities).bench).perSecond;
+  const bench = benchStock(readFacilities(state?.facilities).bench, { oc: state?.benchOc !== false }).perSecond;
   return { work, speed, storage, need, bench, perSecond: work * speed * disk * RD_PER_WORK + bench };
 }
 

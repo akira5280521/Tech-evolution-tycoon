@@ -120,7 +120,7 @@ function serverStockText(row) {
   return parts.join(" · ");
 }
 
-function Plant({ facility, state, report, business, cash, onBuy, next }) {
+function Plant({ facility, state, report, business, cash, onBuy, next, onToggleOc }) {
   const open = facilityUnlocked(state, facility.id);
   const row = report[facility.id];
   const research = facility.id === "servers";
@@ -176,6 +176,7 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
             {row.overclock > 1 ? " · overclocked +10%" : ""}
             {row.board && !row.board.builtin ? ` · Graphics: ${row.card?.name || (row.cpu?.igpu ? "on the CPU" : "none")} · Power: ${Math.round(row.draw)} W of ${row.supply || 0} W` : ""}
             {row.link ? ` · PCIe ${row.link}.0` : ""}
+            {row.cpu && row.cpu.watts > 5 ? ` · Cooling: ${row.cooler ? `${row.cooler.name}, ${row.coolCap} W for ${Math.round(row.heat)} W` : "none"}` : ""}
             {row.board && !row.board.builtin ? ` · Drive: ${row.drive ? `${row.drive.name}, ${row.driveText}, ${Number(row.driveMbs.toFixed(1))} MB/s` : "none"}` : ""}
           </p>
         )}
@@ -193,6 +194,13 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
           <p data-board className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
             Memory: {row.board.used} of {row.board.slots} slots used on the {row.board.name}.
           </p>
+        )}
+        {open && bench && row.canOc && (
+          <div className="mt-2">
+            <GoldButton dataAttr="bench-oc" onClick={onToggleOc}>
+              <span className="font-pixel text-[0.55rem]">OVERCLOCK: {state.benchOc === false ? "OFF" : row.ocOn ? "ON" : "ON (TOO HOT, AT STOCK)"}</span>
+            </GoldButton>
+          </div>
         )}
         {open && bench && (
           <div role="tablist" className="mt-2 flex flex-wrap gap-2">
@@ -257,6 +265,7 @@ const BENCH_TABS = [
   ["case", "CASES", ["case"]],
   ["drive", "DRIVES", ["drive", "media"]],
   ["net", "NETWORK", ["net", "modem"]],
+  ["cooler", "COOLING", ["cooler"]],
 ];
 const BENCH_SHOWN = 6;
 
@@ -297,7 +306,7 @@ function RebuildPanel({ state, onRebuild }) {
 }
 
 export default function FacilitiesPage() {
-  const { state, buyFacilityPart, rebuildFacilities } = useGameState();
+  const { state, buyFacilityPart, rebuildFacilities, toggleBenchOc } = useGameState();
   const business = businessIncomePerSecond(state, Date.now());
   const report = facilityReport(state, business);
   const open = facilitiesOpen(state);
@@ -328,7 +337,7 @@ export default function FacilitiesPage() {
       )}
       <RebuildPanel state={state} onRebuild={rebuildFacilities} />
       {FACILITIES.map((facility) => (
-        <Plant key={facility.id} facility={facility} state={state} report={report} business={business} cash={state.cash || 0} onBuy={buyFacilityPart} next={next} />
+        <Plant key={facility.id} facility={facility} state={state} report={report} business={business} cash={state.cash || 0} onBuy={buyFacilityPart} next={next} onToggleOc={toggleBenchOc} />
       ))}
     </ScreenShell>
   );

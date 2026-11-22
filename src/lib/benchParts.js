@@ -448,8 +448,10 @@ export const BENCH_PSUS = [
 // Cases: which board sizes fit, which supply, the longest graphics card, and
 // (for the cooling stage) the radiator sizes it can mount, in mm.
 function pcCase(id, name, year, research, boards, form, maxGpu, radiators, spec) {
-  return { ...base, id, kind: "case", name, year, research, boards, form, maxGpu, radiators, icon: icon2(id), cost: price(year, 0.05), spec };
+  return { ...base, id, kind: "case", name, year, research, boards, form, maxGpu, radiators, maxCooler: CASE_COOLER[id] || 160, icon: icon2(id), cost: price(year, 0.05), spec };
 }
+// The tallest air cooler each case takes, in mm.
+const CASE_COOLER = { "k-atdesk": 70, "k-attower": 110, "k-atxmid": 160, "k-matx": 130, "k-atxfull": 170, "k-airflow": 165, "k-itx": 70, "k-mesh": 185 };
 export const BENCH_CASES = [
   pcCase("k-atdesk", "AT desktop case", 1984, "case-atdesk", ["at"], "at", 340, [], "1984: a flat steel box the monitor sat on."),
   pcCase("k-attower", "AT tower case", 1990, "case-attower", ["at"], "at", 340, [], "1990: stood on the floor, with room for more drives."),
@@ -569,11 +571,49 @@ export const BENCH_MODEMS = [
   modem("o-56k", "US Robots 56K", 1998, "mod-56k", 0.03, "1998: V.90, the fastest a phone line carries."),
 ];
 
+// --- Stage 4: coolers -------------------------------------------------------
+
+// Air coolers and AIOs: the sockets their mounting kits fit, how much heat
+// they move (cap, watts), and their height or radiator size, which the case
+// has to take. CPUs up to the 386 needed no cooler.
+function cooler(id, name, year, research, sockets, cap, height, spec) {
+  return { ...base, id, kind: "cooler", name, year, research, sockets, cap, height, watts: 3, icon: icon2(id), cost: price(year, 0.06), spec };
+}
+function aio(id, name, year, research, sockets, cap, radiator, spec) {
+  return { ...base, id, kind: "cooler", aio: true, name, year, research, sockets, cap, radiator, height: 30, watts: 8, icon: icon2(id), cost: price(year, 0.1), spec };
+}
+const LGA_OLD = ["lga775", "lga1366", "lga1156", "lga1155", "lga1150"];
+const LGA_NEW = ["lga1151", "lga1151v2", "lga1700", "lga1851"];
+export const BENCH_COOLERS = [
+  cooler("h-clip", "Clip-on heatsink", 1989, "cool-clip", ["386", "486"], 10, 20, "1989: an aluminium block clipped to the chip, no fan."),
+  cooler("h-586fan", "586 heatsink and fan", 1993, "cool-586fan", ["486", "socket4", "nx586", "socket7", "socket8"], 35, 40, "1993: a small fan on a heatsink, which the 586 needed."),
+  cooler("h-slot", "Slot cartridge cooler", 1997, "cool-slot", ["slot1", "slota"], 60, 40, "1997: a heatsink and fans bolted to the CPU cartridge."),
+  cooler("h-orb", "Thermaltech Golden Orb", 1999, "cool-orb", ["socket7", "socketa"], 70, 45, "1999: a round gold heatsink with a fan sunk in the middle."),
+  cooler("h-pal8045", "Alpha Novatek PAL8045", 2000, "cool-pal8045", ["socketa", "s478"], 95, 60, "2000: a tall copper-based heatsink for Socket A, from a maker long gone."),
+  cooler("h-cnps7000", "Zalmon CNPS7000", 2003, "cool-cnps7000", ["socketa", "s478", "s939", "lga775"], 115, 105, "2003: a copper flower of fins, from a maker that went bankrupt in 2014."),
+  cooler("h-ninja", "Scythie Ninja", 2005, "cool-ninja", ["s939", "lga775", "am2"], 130, 155, "2005: a heatpipe tower quiet enough to run with no fan."),
+  cooler("h-212", "Cooler Mister Hyper 212", 2008, "cool-212", ["lga775", "lga1366", "lga1156", "am2", "am3"], 150, 160, "2008: a cheap heatpipe tower that sold for over a decade."),
+  cooler("h-d14", "Noctuo NH-D14", 2009, "cool-d14", [...LGA_OLD, "am2", "am3", "lga1151", "lga1151v2", "am4"], 190, 160, "2009: two towers and two fans; new mounting kits kept it going."),
+  cooler("h-d15", "Noctuo NH-D15", 2014, "cool-d15", ["lga1155", "lga1150", "lga1366", ...LGA_NEW, "am3", "am4", "am5"], 220, 165, "2014: the big twin tower many water coolers couldn't beat."),
+  cooler("h-tr4", "Noctuo NH-U14S TR4-SP3", 2017, "cool-tr4", ["tr4"], 250, 165, "2017: a cold plate as big as the Threadripper chip."),
+  cooler("h-wraith", "Alder Wraith Prism", 2018, "cool-wraith", ["am4", "am5"], 105, 90, "2018: the boxed cooler that came with the 2700X, with a lit ring."),
+  cooler("h-drp4", "Be Calm Dark Rock Pro 4", 2018, "cool-drp4", ["lga1150", "lga1151", "lga1151v2", "lga1700", "am4", "am5"], 240, 163, "2018: a black twin tower built to be quiet."),
+  cooler("h-pa120", "Thermalwrite Peerless Assassin 120", 2021, "cool-pa120", ["lga1151v2", "lga1700", "lga1851", "am4", "am5"], 245, 155, "2021: a cheap twin tower that cooled like the dear ones."),
+  cooler("h-d15g2", "Noctuo NH-D15 G2", 2024, "cool-d15g2", ["lga1700", "lga1851", "am4", "am5"], 260, 168, "2024: the twin tower redone for hotter chips."),
+  aio("a-h50", "Corsar H50", 2009, "cool-h50", ["lga775", "lga1366", "lga1156", "lga1155", "am2", "am3"], 150, 120, "2009: a sealed water loop with a 120 mm radiator, nothing to fill."),
+  aio("a-h100", "Corsar H100", 2011, "cool-h100", ["lga775", "lga1366", "lga1156", "lga1155", "lga1150", "am3"], 220, 240, "2011: a 240 mm radiator."),
+  aio("a-x61", "NZXZ Kraken X61", 2014, "cool-x61", ["lga1150", "lga1155", "lga1151", "lga1366", "am3"], 250, 280, "2014: a 280 mm radiator."),
+  aio("a-h150", "Corsar H150i Pro", 2018, "cool-h150", ["lga1150", "lga1151", "lga1151v2", "am4", "tr4"], 300, 360, "2018: a 360 mm radiator."),
+  aio("a-lf420", "Arktik Liquid Freezer II 420", 2019, "cool-lf420", ["lga1151", "lga1151v2", "lga1700", "am4", "am5", "tr4"], 350, 420, "2019: a 420 mm radiator with a fan on the pump for the board."),
+  aio("a-x73", "NZXZ Kraken X73", 2019, "cool-x73", ["lga1151v2", "lga1700", "am4", "am5", "tr4"], 300, 360, "2019: a 360 mm radiator."),
+  aio("a-lf3", "Arktik Liquid Freezer III 360", 2024, "cool-lf3", ["lga1700", "lga1851", "am4", "am5"], 330, 360, "2024: a 360 mm radiator with a contact frame for LGA1700."),
+];
+
 // Formats and networks that lost: out of production once the winner is
 // researched.
 const LOST_TO = { "r-hddvd": "med-bd", "n-tokenring": "net-100" };
 
-export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CARDS, ...BENCH_ACCELS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS];
+export const BENCH_PARTS = [...BENCH_BOARDS, ...BENCH_CPUS, ...BENCH_STICKS, ...BENCH_CARDS, ...BENCH_ACCELS, ...BENCH_SOUND, ...BENCH_PSUS, ...BENCH_CASES, ...BENCH_FPUS, ...BENCH_DRIVES, ...BENCH_MEDIA, ...BENCH_NET, ...BENCH_MODEMS, ...BENCH_COOLERS];
 for (const part of BENCH_PARTS) if (LOST_TO[part.id]) part.retiredBy = LOST_TO[part.id];
 
 // R&D a second for each point of CPU perf at full memory. Tuned in the

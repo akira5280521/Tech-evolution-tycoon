@@ -83,15 +83,15 @@ test("chipsets support only their real CPUs", () => {
 });
 
 test("memory speed, memory locks and overclocking change the PC's speed", () => {
-  const fast = benchStock({ "b-z390": 1, "c-9900k": 1, "m-ddr4c": 1, "p-750": 1 });
-  const locked = benchStock({ "b-b360": 1, "c-9900k": 1, "m-ddr4c": 1, "p-750": 1 });
+  const fast = benchStock({ "b-z390": 1, "c-9900k": 1, "m-ddr4c": 1, "p-750": 1, "h-d15": 1 });
+  const locked = benchStock({ "b-b360": 1, "c-9900k": 1, "m-ddr4c": 1, "p-750": 1, "h-d15": 1 });
   assert.equal(locked.memSpeed, 2666, "B360 holds memory to the CPU's rating");
   assert.equal(fast.memSpeed, 3600);
   assert.equal(fast.overclock, 1.1);
   assert.equal(locked.overclock, 1);
   assert.ok(fast.perf > locked.perf * 1.1);
   // Slow memory holds a CPU back a little.
-  const slow = benchStock({ "b-z390": 1, "c-9900k": 1, "m-ddr4a": 2, "p-750": 1 });
+  const slow = benchStock({ "b-z390": 1, "c-9900k": 1, "m-ddr4a": 2, "p-750": 1, "h-d15": 1 });
   assert.ok(slow.perf < fast.perf && slow.perf > fast.perf * 0.8);
 });
 
@@ -122,9 +122,9 @@ test("graphics: keyed AGP, PCIe generations and the CPU/GPU bottleneck", () => {
   const b = benchStock({ "b-z390": 1, "c-9900k": 1, "m-ddr4c": 1, "p-750": 1, "v-3080": 1 });
   assert.equal(b.link, 3);
   // A top card on an old CPU: the CPU is the bottleneck.
-  const slow = benchStock({ "b-z77": 1, "c-3770k": 1, "m-ddr3b": 1, "p-atx3": 1, "v-4090": 1 });
+  const slow = benchStock({ "b-z77": 1, "c-3770k": 1, "m-ddr3b": 1, "p-atx3": 1, "v-4090": 1, "h-d14": 1 });
   assert.equal(slow.bottleneck, "cpu");
-  const weak = benchStock({ "b-z790": 1, "c-14900k": 1, "m-ddr5c": 1, "p-750": 1, "v-gtx680": 1 });
+  const weak = benchStock({ "b-z790": 1, "c-14900k": 1, "m-ddr5c": 1, "p-750": 1, "v-gtx680": 1, "a-lf420": 1 });
   assert.equal(weak.bottleneck, "graphics");
 });
 
@@ -198,4 +198,24 @@ test("a four-core CPU on the bench lets two Tech projects run at once", () => {
   assert.ok(secondTechSlot(s));
   assert.ok(startResearch(s, "snd-ae7").ok);
   assert.equal(s.techJob2.id, "snd-ae7");
+});
+
+test("coolers: socket mounts, case fit, heat and the overclock switch", () => {
+  // No mount for LGA1700 on a 2008 cooler; a 165 mm tower won't fit a mini-ITX case.
+  assert.match(fitPart({ "b-z690": 1 }, "bench", "h-212").reason, /mounting kit/);
+  assert.match(fitPart({ "b-z690": 1, "k-itx": 1 }, "bench", "h-d15").reason, /too tall/);
+  // A 420 mm radiator needs a case with a 420 mm mount.
+  assert.match(fitPart({ "b-z690": 1, "k-airflow": 1 }, "bench", "a-lf420").reason, /420 mm/);
+  assert.ok(!fitPart({ "b-z690": 1, "k-mesh": 1 }, "bench", "a-lf420").reason);
+  const pc = { "b-z690": 1, "c-14900k": 1, "m-ddr5b": 1, "p-1600": 1 };
+  const hot = benchStock(pc);
+  assert.ok(hot.thermal < 1, "no cooler: the CPU slows down");
+  const stock = benchStock({ ...pc, "h-d15g2": 1 });
+  assert.equal(stock.thermal, 1);
+  assert.equal(stock.ocOn, false, "260 W can't take an overclocked 14900K");
+  const oc = benchStock({ ...pc, "a-lf420": 1 });
+  assert.equal(oc.ocOn, true);
+  assert.equal(benchStock({ ...pc, "a-lf420": 1 }, { oc: false }).ocOn, false, "the switch turns it off");
+  // Up to the 386, no cooler needed.
+  assert.equal(benchStock({ "b-deskpro": 1, "c-386": 1, "m-41256": 4, "p-at150": 1 }).thermal, 1);
 });

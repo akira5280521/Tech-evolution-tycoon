@@ -6,7 +6,27 @@
 import { PARTS, SHARE_CAP, facilityReport, facilityUnlocked, fitPart, partMax, supportPlan } from "./facilities.js";
 import { awayBankHours, serverOutput } from "./research.js";
 
+// The page asks for every row's value on every tick; the answer only moves
+// when the plant, the research or (roughly) the business income changes, so
+// keep recent answers.
+const cache = new Map();
+function cacheKey(state, facilityId, partId, biz) {
+  const done = state?.techDone || [];
+  const counts = JSON.stringify(state?.facilities?.[facilityId] || {});
+  const coarse = biz > 0 ? Number(biz.toPrecision(2)) : 0;
+  return `${facilityId}|${partId}|${counts}|${done.length}|${done[done.length - 1] || ""}|${coarse}|${state?.benchOc !== false}|${(state?.biz || []).filter((b) => b?.owned > 0).length}`;
+}
+
 export function partValue(state, facilityId, partId, businessPerSecond) {
+  const key = cacheKey(state, facilityId, partId, businessPerSecond);
+  if (cache.has(key)) return cache.get(key);
+  const value = computePartValue(state, facilityId, partId, businessPerSecond);
+  if (cache.size > 2000) cache.clear();
+  cache.set(key, value);
+  return value;
+}
+
+function computePartValue(state, facilityId, partId, businessPerSecond) {
   const part = PARTS.find((p) => p.id === partId);
   if (!part || part.soon || !part.fits.includes(facilityId) || !facilityUnlocked(state, facilityId)) return null;
   const owned = state?.facilities?.[facilityId]?.[partId] || 0;

@@ -199,6 +199,7 @@ function applySavedMeta(state, raw) {
   state.techJob2 = readTechJob(m.techJob2);
   state.goalsDone = readGoalsDone(m.goalsDone);
   state.boughtX10 = !!m.boughtX10;
+  state.benchOc = m.benchOc !== false;
 }
 
 function readChallenge(raw) {
@@ -247,6 +248,7 @@ function pack(s) {
     sawPit: !!s.sawPit,
     goalsDone: Array.isArray(s.goalsDone) ? s.goalsDone : [],
     boughtX10: !!s.boughtX10,
+    benchOc: s.benchOc !== false,
     tutorial: s.tutorial || null,
     orientation: s.orientation || "auto",
     buyMode: normalizeBuyMode(s.buyMode),
@@ -1113,6 +1115,12 @@ export function useGame() {
     startTech: (id) => {
       const started = startResearch(stateRef.current, id);
       if (!started.ok) return;
+      saveNow();
+      bump();
+    },
+    toggleBenchOc: () => {
+      const s = stateRef.current;
+      s.benchOc = s.benchOc === false;
       saveNow();
       bump();
     },

@@ -8,6 +8,7 @@ import { advanceResearch, awayBankCap } from "./research.js";
 import { generationPayMult } from "./generations.js";
 import { pushRun } from "./records.js";
 import { blankTutorial } from "./tutorial.js";
+import { ROOMS, roomComplete } from "./museum.js";
 import {
   BUSINESSES,
   ERA_GATE,
@@ -1360,6 +1361,13 @@ const BADGE_DEFS = [
     era: BUSINESSES.findIndex((cfg) => cfg.id === "vr"),
     earned: (s) => SHORTAGES.every((x) => (s.eventsDone || []).includes(x.id)),
   },
+  ...ROOMS.map((room) => ({
+    id: `room-${room.id}`,
+    group: "MUSEUM",
+    name: `${room.name.charAt(0)}${room.name.slice(1).toLowerCase()} room`,
+    desc: `Find every exhibit in the museum's ${room.name} room`,
+    earned: (s) => roomComplete(s, room.id),
+  })),
   ...LIFE_BADGES.map((row) => ({
     id: row.id,
     group: "LIFETIME",

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   RESEARCH_TABS,
   canStartResearch,
@@ -50,6 +50,18 @@ function formatDuration(ms) {
 export default function ResearchPage() {
   const { state, startTech } = useGameState();
   const [tab, setTab] = useState("cpu");
+  const [focus, setFocus] = useState(null);
+  // Arriving from a locked era's GO TO TECH (/tech#id): open that project's
+  // tab and scroll to it.
+  useEffect(() => {
+    const id = decodeURIComponent((window.location.hash || "").slice(1));
+    const entry = id && researchItem(id);
+    if (!entry) return;
+    setTab(entry.tab);
+    setFocus(id);
+    const timer = setTimeout(() => document.querySelector(`[data-research-item="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "center" }), 50);
+    return () => clearTimeout(timer);
+  }, []);
   const rows = researchRows(tab);
   const jobs = techJobs(state);
   const twoSlots = secondTechSlot(state);
@@ -105,7 +117,7 @@ export default function ResearchPage() {
           const opens = researchUnlocks(entry.id);
           return (
             <Panel key={entry.id}>
-              <div data-research-item={entry.id} data-help-scope className="flex items-start gap-2">
+              <div data-research-item={entry.id} data-focus={focus === entry.id ? "1" : undefined} data-help-scope className={`flex items-start gap-2 ${focus === entry.id ? "outline outline-2 outline-offset-4 outline-[var(--game-accent)]" : ""}`}>
                 <div className={lock ? "opacity-60" : ""}>
                   {opens[0]?.icon ? (
                     <div className="h-8 w-8 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]">

@@ -66,3 +66,21 @@ test("INDUSTRIAL BASE starts runs with 10 of each business through Vacuum Tubes,
   // Below the perk, nothing extra.
   assert.equal(startingBiz({ investors: 10, investorPeak: 10 }, blank)[1].owned, 0);
 });
+
+import { ERA_RESEARCH } from "../../src/lib/gameConfig.js";
+import { RESEARCH } from "../../src/lib/research.js";
+import { ERA_YEAR } from "../../src/lib/eraYear.js";
+test("late eras need a TECH project that can be done before them", () => {
+  for (const id of ["gpu", "rgb", "quantum", "vr", "chatbots", "supercluster"]) assert.ok(ERA_RESEARCH[id], `${id} has a project`);
+  for (const [era, project] of Object.entries(ERA_RESEARCH)) {
+    const entry = RESEARCH.find((r) => r.id === project.id);
+    assert.ok(entry && !entry.soon, `${project.id} exists`);
+    assert.equal(entry.name, project.name);
+    const index = BUSINESSES.findIndex((b) => b.id === era);
+    assert.ok(entry.year <= ERA_YEAR[BUSINESSES[index - 1].id], `${project.id} (${entry.year}) is researchable in the era before ${era}`);
+  }
+  const index = BUSINESSES.findIndex((b) => b.id === "quantum");
+  const ready = { lifetime: 1e300, techDone: [], biz: BUSINESSES.map((_, i) => ({ owned: i < index ? 25 : 0 })) };
+  assert.ok(!eraOpen(ready, index));
+  assert.ok(eraOpen({ ...ready, techDone: [ERA_RESEARCH.quantum.id] }, index));
+});

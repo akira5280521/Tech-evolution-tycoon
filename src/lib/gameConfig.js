@@ -772,8 +772,21 @@ export function eraEarnNeed(state, index) {
   return base * runBonus(state) ** ERA_EARN_POWER;
 }
 
-// What an era still needs: owning enough of the one before, and earning
-// enough this run. Each with what the player has now.
+// The late eras each need one TECH project done first. Research is kept
+// through prestige, so this is a one-time gate. Each project's year is no
+// later than the era before, so it can always be researched in time.
+export const ERA_RESEARCH = {
+  gpu: { id: "gpu-3d", name: "Threefold Add-in" },
+  rgb: { id: "store-ssd", name: "SSD" },
+  quantum: { id: "card-p100", name: "Tensor P100" },
+  vr: { id: "net-ax", name: "Wi-Fi 6" },
+  chatbots: { id: "card-a100", name: "Tensor A100" },
+  supercluster: { id: "card-h100", name: "Tensor H100" },
+};
+
+// What an era still needs: owning enough of the one before, earning enough
+// this run, and for late eras a TECH project. Each with what the player has
+// now.
 export function eraNeeds(state, index) {
   const prev = BUSINESSES[index - 1];
   const needs = [];
@@ -785,6 +798,11 @@ export function eraNeeds(state, index) {
   if (earn > 0) {
     const have = state?.lifetime || 0;
     needs.push({ kind: "earn", have, need: earn, met: have >= earn, label: `Earn ${money(earn)} this run` });
+  }
+  const project = ERA_RESEARCH[BUSINESSES[index]?.id];
+  if (project) {
+    const done = (state?.techDone || []).includes(project.id);
+    needs.push({ kind: "research", have: done ? 1 : 0, need: 1, met: done, research: project.id, label: `Research ${project.name} on TECH` });
   }
   return needs;
 }

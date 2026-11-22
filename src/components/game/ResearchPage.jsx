@@ -8,6 +8,7 @@ import {
   researchLock,
   researchRows,
   researchSpeed,
+  researchUnlocks,
   serverOutput,
 } from "@/lib/research";
 import { dataPerSecond } from "@/lib/empire";
@@ -92,13 +93,25 @@ export default function ResearchPage() {
           const lock = researchLock(state, entry);
           const done = (state.techDone || []).includes(entry.id);
           const running = job?.id === entry.id;
+          const opens = researchUnlocks(entry.id);
           return (
             <Panel key={entry.id}>
               <div data-research-item={entry.id} data-help-scope className="flex items-start gap-2">
-                <div className={lock ? "opacity-60" : ""}><PixelMark id={entry.id} /></div>
+                <div className={lock ? "opacity-60" : ""}>
+                  {opens[0]?.icon ? (
+                    <div className="h-8 w-8 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]">
+                      <img src={opens[0].icon} alt="" className="pixel-art h-full w-full scale-[1.4] object-contain" />
+                    </div>
+                  ) : (
+                    <PixelMark id={entry.id} />
+                  )}
+                </div>
                 <div className={`min-w-0 flex-1 ${lock ? "opacity-60" : ""}`}>
                   <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)] [overflow-wrap:anywhere]">{entry.year} · {entry.name}</p>
                   <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{entry.spec}</p>
+                  {opens.length > 0 && (
+                    <p data-research-opens className="break-words font-term text-base leading-5 text-[var(--game-accent)]">Opens on RIGS: {opens.map((p) => p.name).join(", ")}</p>
+                  )}
                   {entry.soon ? (
                     <p className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)]">COMING SOON</p>
                   ) : done ? (

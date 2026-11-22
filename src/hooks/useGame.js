@@ -63,7 +63,7 @@ import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { generationAt } from "@/lib/generations";
-import { REBUILD_SECONDS, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants } from "@/lib/facilities";
+import { REBUILD_SECONDS, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants, settleClosedParts } from "@/lib/facilities";
 import { advanceResearch, fillResearchGaps, grantOwnedResearch, readResearchData, readTechDone, readTechJob, startResearch } from "@/lib/research";
 import { currentGoal, readGoalsDone, settleGoals } from "@/lib/goals";
 import { applyOrientation } from "@/lib/orientation";
@@ -313,6 +313,10 @@ function loadSave() {
       // edited code would otherwise lock the row).
       state.biz[i].commissionUntil = Number.isFinite(b.commissionUntil) ? Math.min(b.commissionUntil, Date.now() + COMMISSION_MS) : 0;
     });
+    // Parts now open by year and research: keep what was bought fairly, refund
+    // the rest (see settleClosedParts).
+    const closedRefund = settleClosedParts(state);
+    if (closedRefund > 0) state.cash = (state.cash || 0) + closedRefund;
     state.supply = data.supply;
     ensureSupply(state);
     state.foreman = !!data.foreman;

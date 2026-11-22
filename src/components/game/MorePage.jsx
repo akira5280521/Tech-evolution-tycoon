@@ -205,7 +205,7 @@ const HOW_TO = [
     id: "rd",
     title: "R&D POINTS",
     lines: [
-      "R&D points are the one research currency. Each era you own makes a trickle; research servers (under the RIGS button beside TECH, from Microprocessors) make most of them. Both earn at half rate while the game is closed, and the servers only bank what their disks hold: 1 hour of output, plus another hour per TB of disk.",
+      "R&D points are the one research currency. Each era you own makes a trickle; research servers (under the RIGS button beside TECH, from Mainframes) make most of them. Both earn at half rate while the game is closed, and the servers only bank what their disks hold: 1 hour of output, plus another hour per TB of disk.",
       "Spend them on the RESEARCH tab (specialties and lab projects) and on the TECH timeline. They are never lost, even when you prestige.",
     ],
   },
@@ -221,7 +221,7 @@ const HOW_TO = [
     id: "facilities",
     title: "FACILITIES (RIGS)",
     lines: [
-      "Research servers open with Microprocessors and make R&D points. With AI Accelerators, the Bitbark mine and the AI training cluster add a small extra income.",
+      "Research servers open with Mainframes and make R&D points. Newer machines and parts open in their real year once you research them on TECH. With AI Accelerators, the Bitbark mine and the AI training cluster add a small extra income.",
       "Buy parts for each plant. A plant runs slower when its power or cooling can't keep up with its cards or racks, and it tells you what to add next. Parts are lost when you prestige.",
     ],
   },

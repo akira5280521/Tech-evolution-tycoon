@@ -1437,6 +1437,9 @@ export const HEADLINES = [
   { era: "ai", text: "TENSOR FOUNDRY T1 TAKES THE INFERENCE SHIFT" },
   { era: "quantum", text: "QUANTUM CHANDELIER OBSERVED PAYING DIVIDENDS" },
   { era: "quantum", text: "QUANTUM SERVER BOTH ON AND OFF, ANALYSTS SAY" },
+  { era: "vr", text: "VISOR Q2 SHIPS WITHOUT A CABLE" },
+  { era: "chatbots", text: "PARLANCE HITS A MILLION SIGN-UPS IN FIVE DAYS" },
+  { era: "supercluster", text: "SUPERCLUSTER BOOKS THE WHOLE POWER STATION" },
   { era: "prestige", text: "INVESTORS ASK IF THE TIMELINE CAN BE FORKED" },
 ];
 

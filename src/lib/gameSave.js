@@ -179,6 +179,7 @@ export function migrateSave(data) {
     researchJob: version < 4 ? null : job(data.researchJob),
     upgradeJob: version < 4 ? null : upgradeJob(job(data.upgradeJob), version),
     projectJob: version < 4 ? null : job(data.projectJob),
+    refineJob: job(data.refineJob),
     orientation: data.orientation === "portrait" || data.orientation === "landscape" ? data.orientation : "auto",
     buyMode: normalizeBuyMode(data.buyMode),
     meta: data,

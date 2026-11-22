@@ -701,7 +701,18 @@ export const BUSINESSES = [
 // Ordered by owned count. The product tops out at ×96 (2^5 × 3) once a
 // business reaches 200 — there is no milestone past that, so this multiplier
 // cannot grow forever.
-export const SUPPLY_KEYS = ["wood", "paper", "sand", "copper", "glass", "filament", "germanium", "silicon", "wafers"];
+export const SUPPLY_KEYS = ["wood", "paper", "sand", "copper", "glass", "filament", "germanium", "silicon", "wafers", "polysilicon", "ofcopper", "hpge"];
+
+// Refined grades: no row makes them. The refinery turns ten of the raw
+// material into one, a batch at a time on a timer. Late research needs them.
+export const REFINED = {
+  polysilicon: { from: "silicon", name: "electronic-grade polysilicon", short: "polysilicon" },
+  ofcopper: { from: "copper", name: "oxygen-free copper", short: "OF copper" },
+  hpge: { from: "germanium", name: "high-purity germanium", short: "HP germanium" },
+};
+export const REFINE_RATIO = 10;
+export const REFINE_BATCH = 100;
+export const REFINE_MS = 60 * 1000;
 export const FOREMAN_COST = 25000;
 export const RESEARCH_MS = 20000;
 export const UPGRADE_MS = 12000;

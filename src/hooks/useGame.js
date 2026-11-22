@@ -5,6 +5,7 @@ import {
   AWAY_GRACE_MS,
   AWAY_MODAL_MS,
   BUSINESSES,
+  REFINED,
   openEra,
   COMMISSION_MS,
   FOREMAN_COST,
@@ -60,6 +61,7 @@ import {
   snapshotMeta,
   tickDilemma,
   buyStorage,
+  startRefine,
 } from "@/lib/empire";
 import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/lib/tutorial";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
@@ -267,6 +269,7 @@ function pack(s) {
     researchJob: s.researchJob || null,
     upgradeJob: s.upgradeJob || null,
     projectJob: s.projectJob || null,
+    refineJob: s.refineJob || null,
     challenge: s.challenge,
     dilemma: s.dilemma,
     businessesBought: Math.floor(s.businessesBought || 0),
@@ -355,6 +358,7 @@ function loadSave() {
     state.researchJob = data.researchJob || null;
     state.upgradeJob = data.upgradeJob || null;
     state.projectJob = data.projectJob || null;
+    state.refineJob = data.refineJob || null;
     const prior = Number.isFinite(data.meta?.version) ? data.meta.version : 1;
     if (storedEra != null) state.bestEra = remapBestEra(storedEra, prior);
     // Era materials are paid once. A save from before them has paid for every
@@ -416,6 +420,7 @@ function announce(notes) {
     if (note.type === "upgrade") toast("Upgrade installed", { description: "The line is back up." });
     if (note.type === "projectstart") toast("Project started", { description: "Crews are on site. Give them a moment." });
     if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
+    if (note.type === "refined") toast("Refinery batch done", { description: `${note.amount} ${REFINED[note.id]?.name || note.id} added.` });
     if (note.type === "history") {
       if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum in MORE > MUSEUM." });
       else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum in MORE > MUSEUM." });
@@ -644,7 +649,7 @@ export function useGame() {
         announce(notes);
         dirty = true;
       }
-      const pending = s.researchJob || s.upgradeJob || s.projectJob || s.biz.some((row) => (row.commissionUntil || 0) > wall || (row.holdUntil || 0) > wall);
+      const pending = s.researchJob || s.upgradeJob || s.projectJob || s.refineJob || s.biz.some((row) => (row.commissionUntil || 0) > wall || (row.holdUntil || 0) > wall);
       if (pending) dirty = true;
       const passive = plant > 0 || researchMoved === "gain";
       // Payouts and finished work paint on the short cadence. A plant or
@@ -838,6 +843,16 @@ export function useGame() {
   const upgradeStorage = useCallback(
     (key) => {
       if (!buyStorage(stateRef.current, key)) return;
+      playBuy();
+      saveNow();
+      bump();
+    },
+    [bump]
+  );
+
+  const refine = useCallback(
+    (key) => {
+      if (!startRefine(stateRef.current, key, Date.now())) return;
       playBuy();
       saveNow();
       bump();
@@ -1211,6 +1226,7 @@ export function useGame() {
     purchaseUpgrade,
     upgradeStorage,
     openEraAt,
+    refine,
     purchaseShop,
     chooseSpecialty,
     runLabProject,

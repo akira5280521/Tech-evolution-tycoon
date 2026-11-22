@@ -163,6 +163,7 @@ const HOW_TO = [
       "Some businesses use what an earlier one makes. Timber Camp makes wood, and the Paper Mill uses that wood.",
       "The strip at the top shows what you have. If a material runs out, the business that needs it stops paying.",
       "Each material's bins hold so much. When they're FULL, new output is lost. Tap a material to buy bigger bins; they stay through prestige.",
+      "From Integrated Circuits on, tap silicon, copper or germanium to refine it: ten make one of a refined grade (polysilicon, oxygen-free copper, high-purity germanium) after a minute. Some late research needs them.",
       "Real shortages happen once each, in their years: the 1988 memory chip crunch, the 1999 Taiwan earthquake, the 2011 Thailand floods, the 2017 crypto rush and the 2020 chip shortage. Pay to keep going, or wait it out with that material made at half rate for ten minutes.",
     ],
   },

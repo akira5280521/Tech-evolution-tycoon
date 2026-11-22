@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from "react";
+import { Fragment, memo, useEffect, useRef, useState } from "react";
 import {
   BUSINESSES,
   COMMISSION_MS,
@@ -13,7 +13,7 @@ import {
   money,
   nextMilestone,
 } from "@/lib/gameConfig";
-import { effectiveCycleMs, empireFactors, makesOf, managerPrice, supplyCap, supplyFactor, supplyFull, upgradesOf } from "@/lib/empire";
+import { effectiveCycleMs, empireFactors, makesOf, managerPrice, runYield, supplyCap, supplyFactor, supplyFull, upgradesOf } from "@/lib/empire";
 import { amount } from "./StorageSheet";
 import { generationAt, generationPayMult } from "@/lib/generations";
 import IconTile from "./IconTile";
@@ -52,6 +52,28 @@ function MilestoneBar({ owned, next }) {
     <div data-milestone-bar aria-hidden="true" className="h-1.5 w-full border border-[var(--game-border)] bg-[var(--game-bg)]">
       <div className="h-full bg-[var(--game-accent)]" style={{ width: `${pct}%` }} />
     </div>
+  );
+}
+
+// How much one run of this material row adds to the bins. The line is always
+// reserved, so a bigger number or a brief highlight never changes the card height.
+function YieldLine({ material, made }) {
+  const prev = useRef(made);
+  const [flash, setFlash] = useState(false);
+  useEffect(() => {
+    if (prev.current === made) return undefined;
+    prev.current = made;
+    setFlash(true);
+    const t = setTimeout(() => setFlash(false), 700);
+    return () => clearTimeout(t);
+  }, [made]);
+  return (
+    <p
+      data-run-yield={material}
+      className={`truncate whitespace-nowrap tabular-nums ${flash ? "yield-flash" : ""}`}
+    >
+      +{amount(made)} {material} / run
+    </p>
   );
 }
 
@@ -181,17 +203,21 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
           </p>
         )}
         {supplyCard && cfg.makes && (
-          // Fixed layout: one line per bin with room kept for FULL, and the
-          // manager on its own line, so FULL or the manager switch never
-          // changes the card's height.
+          // Fixed layout: one line per bin with room kept for FULL, a yield
+          // line per material, and the manager on its own line, so FULL, a
+          // bigger yield, or the manager switch never changes the card's height.
           <div data-supply-bins className="font-term text-base leading-5 text-[var(--game-muted)] tabular-nums">
             {Object.keys(cfg.makes).map((key) => {
               const full = supplyFull(state, key);
+              const made = (runYield(state, cfg, st.owned) || {})[key] || 0;
               return (
-                <p key={key} data-bin={key} className={`truncate whitespace-nowrap ${full ? "text-[var(--game-danger)]" : ""}`}>
+                <Fragment key={key}>
+                <p data-bin={key} className={`truncate whitespace-nowrap ${full ? "text-[var(--game-danger)]" : ""}`}>
                   {key} {amount(state?.supply?.[key] || 0)}/{amount(supplyCap(state, key))}
                   <span data-full={full ? "" : undefined} aria-hidden={!full} className={`ml-1 font-pixel text-[0.4rem] ${full ? "" : "invisible"}`}>FULL</span>
                 </p>
+                <YieldLine material={key} made={made} />
+                </Fragment>
               );
             })}
             <p data-manager-status className={`truncate whitespace-nowrap ${st.manager && st.managerOff ? "text-[var(--game-dim)]" : ""}`}>

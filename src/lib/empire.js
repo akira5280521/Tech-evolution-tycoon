@@ -719,6 +719,22 @@ export function makesOf(state, cfg) {
   return Object.fromEntries(Object.entries(cfg.makes).map(([key, n]) => [key, (Number(n) || 0) * mult]));
 }
 
+// How much one completed cycle of this row adds to the bins, when it has
+// the materials it needs and no shortage is cutting the output. Copies
+// stack. The x3 revenue upgrade triples the material too. Milestones and
+// research raise cash, not the material count.
+export function runYield(state, cfg, owned) {
+  const per = makesOf(state, cfg);
+  if (!per) return null;
+  let count = owned;
+  if (!Number.isFinite(count)) {
+    const i = BUSINESSES.findIndex((row) => row.id === cfg?.id);
+    count = state?.biz?.[i]?.owned || 0;
+  }
+  const n = count > 0 ? count : 0;
+  return Object.fromEntries(Object.entries(per).map(([key, make]) => [key, (Number(make) || 0) * n]));
+}
+
 function moveSupply(state, cfg, cycles, owned, now = 0) {
   if (!cfg?.uses && !cfg?.makes) return;
   const supply = ensureSupply(state);

@@ -238,6 +238,15 @@
   animation: tile-shake 0.18s linear;
 }
 
+@keyframes yield-flash {
+  0% { color: var(--game-accent); }
+  100% { color: var(--game-muted); }
+}
+
+.yield-flash {
+  animation: yield-flash 0.7s ease-out;
+}
+
 /* --- Mobile safe areas: notch / home-indicator insets --- */
 /* max() keeps the headers' normal 12px spacing when no inset exists. */
 .safe-top {

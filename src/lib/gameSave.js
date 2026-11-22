@@ -128,6 +128,7 @@ export function migrateSave(data) {
       id: cfg.id,
       owned: Math.max(fallback, Math.floor(finiteNumber(row.owned, 0))),
       manager: !!row.manager,
+      managerOff: !!row.manager && !!row.managerOff,
       running: !!row.running,
       progress: Math.min(finiteNumber(row.progress, 0), cfg.cycleMs),
       activeMs: finiteNumber(row.activeMs, 0),

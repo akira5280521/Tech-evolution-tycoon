@@ -71,7 +71,7 @@ export const FACILITIES = [
     id: "servers",
     name: "RESEARCH SERVERS",
     icon: "/icons/facilities/servers.png",
-    blurb: "These racks make R&D points, the same points your eras make. Spend them on the Research tab and the tech timeline.",
+    blurb: "Research machines make R&D points: a punch-card multiplier from the start, servers from Mainframes. Spend them on the R&D tab and the TECH timeline.",
   },
 ];
 
@@ -107,6 +107,11 @@ export const PARTS = [
   { id: "psu750", kind: "power", name: "750 W supply", icon: "/icons/parts/psu750.png", fits: ["mine", "cluster"], year: 2008, research: "pwr-gold", cost: 800_000_000, coef: 1.35, power: 750, spec: "750 W ATX supply, 80 Plus Gold." },
   { id: "psu1200", kind: "power", name: "1200 W supply", icon: "/icons/parts/psu1200.png", fits: ["mine", "cluster"], year: 2009, research: "pwr-plat", cost: 3_500_000_000, coef: 1.35, power: 1200, spec: "1,200 W ATX supply, 80 Plus Platinum." },
   { id: "psu1600", kind: "power", name: "1600 W supply", icon: "/icons/parts/psu1600.png", fits: ["mine", "cluster"], year: 2015, research: "pwr-titan", cost: 12_000_000_000, coef: 1.35, power: 1600, spec: "1,600 W, 80 Plus Titanium, for a rack of data-center cards." },
+
+  // --- Research servers: the starter machine. Open from the first era (the
+  // only server part that is), cheap, plugs into the wall (no generator or
+  // air conditioner), and makes a small flat R&D rate.
+  { id: "tab601", kind: "tabulator", group: "room", starter: true, name: "Inland 601 Multiplying Punch", icon: "/icons/parts/tab601.png", fits: ["servers"], year: 1931, research: null, cost: 5, coef: 2.5, max: 6, watts: 0, rd: 0.001, spec: "1931: reads two 8-digit numbers from a punched card, multiplies them with relays and punches the product onto the same card. Plugs into the wall: no generator or air conditioner." },
 
   // --- Research servers: machine room (one generator and one air conditioner each)
   { id: "mark1", kind: "server", group: "room", name: "Irwell Mark 1", icon: "/icons/parts/mark1.png", fits: ["servers"], year: 1951, research: null, cost: 30_000, coef: 5, watts: 1, work: 2, diskGb: 0.001, spec: "1951: about 4,000 valves, the first commercial computer to be installed." },
@@ -239,6 +244,7 @@ export function blankFacilities() {
 // The most of one part a plant can hold: a memory stick is limited by the
 // board's slots (32 on a server board), anything else by MAX_PART.
 export function partMax(part, facilityId) {
+  if (part?.starter) return part.max || 1;
   if (part?.kind === "ram") return facilityId === "mine" ? 2 : 32;
   // One generator and one air conditioner per machine-room computer, and
   // there can be more machines than 24.
@@ -322,6 +328,41 @@ export const FACILITY_UNLOCK = { servers: "mainframes", bench: "homepc", mine: "
 
 export function facilityUnlocked(state, facilityId) {
   return ownedId(state, FACILITY_UNLOCK[facilityId] || "ai") >= 1;
+}
+
+// The starter research machine: the one server part open before Mainframes.
+export const STARTER_PART_ID = "tab601";
+
+// Can this part be bought in this plant now? The plant must be open, except
+// the starter machine, which the server room takes from the first era.
+export function partPlantOpen(state, facilityId, part) {
+  if (part?.starter && facilityId === "servers") return true;
+  return facilityUnlocked(state, facilityId);
+}
+
+// One-time gift for saves from before 0.0.29 (when eras still made R&D
+// points): before Mainframes, with no research machine, one free starter
+// machine. Sets state.starterGranted either way. True when it gave one.
+export function grantStarter(state) {
+  if (!state || state.starterGranted) return false;
+  state.starterGranted = true;
+  if (facilityUnlocked(state, "servers")) return false;
+  const facilities = readFacilities(state.facilities);
+  const servers = facilities.servers || {};
+  if (Object.values(servers).some((n) => Number(n) > 0)) return false;
+  facilities.servers = { ...servers, [STARTER_PART_ID]: 1 };
+  state.facilities = facilities;
+  return true;
+}
+
+// R&D a second from the starter machines (flat: no power, cooling or disk).
+export function starterRate(counts) {
+  let rate = 0;
+  for (const part of PARTS) {
+    if (!part.starter) continue;
+    rate += (counts?.[part.id] || 0) * (part.rd || 0);
+  }
+  return rate;
 }
 
 // The Facilities screen opens with its first plant (the research servers).
@@ -647,6 +688,8 @@ export function partRetired(state, part) {
 
 export function partOpen(state, part) {
   if (!part || part.soon) return false;
+  // The starter machine is there from the first era.
+  if (part.starter) return true;
   if (playerYear(state) < (part.year || 0)) return false;
   return !part.research || (state?.techDone || []).includes(part.research);
 }
@@ -654,6 +697,7 @@ export function partOpen(state, part) {
 // Why a part is still closed, or null when it's open.
 export function partLock(state, part, researchName) {
   if (!part) return "Locked";
+  if (part.starter) return null;
   if (playerYear(state) < (part.year || 0)) return `Requires ${part.year}`;
   if (part.research && !(state?.techDone || []).includes(part.research)) return `Research ${researchName || part.name} on the Tech page`;
   if (partRetired(state, part)) return part.kind === "accel" ? "Out of production: combined 2D and 3D cards replaced it" : ["b-915btx", "k-btx"].includes(part.id) ? "Out of production: makers went back to ATX" : part.kind === "cache" ? "Out of production: the cache moved onto the CPU" : part.id === "x-physx" ? "Out of production: graphics cards took over physics" : "Out of production: it lost to its rival";
@@ -1672,6 +1716,8 @@ export const PART_GROUPS = {
   chips: { key: "wafers", refined: "polysilicon", from: 2020, kinds: ["gpu", "ram", "server", "board", "cpu", "stick", "cache", "video", "accel", "addin", "sound", "fpu", "net", "modem"] },
   glass: { key: "glass", kinds: ["disk", "monitor", "drive", "media"] },
   metal: { key: "copper", refined: "ofcopper", from: 2018, kinds: ["cool", "power", "link", "bridge", "psu", "case", "cooler"] },
+  // The starter punch-card machine: an oak-and-iron cabinet, a little wood.
+  wood: { key: "wood", kinds: ["tabulator"] },
 };
 export function partMaterials(part) {
   const group = Object.values(PART_GROUPS).find((g) => g.kinds.includes(part?.kind));
@@ -1689,8 +1735,8 @@ export function partShort(state, part) {
 }
 
 export function purchasePart(state, facilityId, partId) {
-  if (!state || !facilityUnlocked(state, facilityId)) return { ok: false };
   const part = byId[partId];
+  if (!state || !partPlantOpen(state, facilityId, part)) return { ok: false };
   if (!part || part.soon || !part.fits.includes(facilityId)) return { ok: false };
   if (!partOpen(state, part) || partRetired(state, part)) return { ok: false, reason: partLock(state, part) };
   const facilities = readFacilities(state.facilities);

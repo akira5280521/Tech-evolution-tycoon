@@ -37,7 +37,7 @@ export const WINGS = [
     id: "computers",
     name: "COMPUTERS & SERVERS",
     rooms: [
-      { id: "rooms", name: "MACHINE ROOMS", match: (p) => p.kind === "server" && p.group === "room" },
+      { id: "rooms", name: "MACHINE ROOMS", match: (p) => (p.kind === "server" || p.kind === "tabulator") && p.group === "room" },
       { id: "racks", name: "RACK SERVERS", match: (p) => p.kind === "server" && p.group === "rack" },
       { id: "compute", name: "COMPUTE CARDS", match: (p) => p.kind === "gpu" },
       { id: "store", name: "SERVER STORAGE", match: (p) => p.kind === "disk" },

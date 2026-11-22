@@ -900,6 +900,19 @@ export function milestoneMult(owned) {
   return MILESTONES.reduce((m, ms) => (ms.mult && owned >= ms.owned ? m * ms.mult : m), 1);
 }
 
+// A hired manager that is switched on runs the row by itself. A paused
+// manager (managerOff) leaves the row manual: tap to run, nothing while away.
+export function isManaged(st) {
+  return !!st?.manager && !st.managerOff;
+}
+
+// A cycle as the row shows it ("2.6", "0.65"): within 5 ms under a second
+// and 50 ms above, so the label always matches the real clock.
+export function cycleLabel(ms) {
+  const s = (Number(ms) || 0) / 1000;
+  return String(Number(s.toFixed(s < 1 ? 2 : 1)));
+}
+
 export function milestoneSpeed(owned) {
   if (!Number.isFinite(owned) || owned < 0) return 1;
   let speed = 1;
@@ -1187,7 +1200,7 @@ export function nextMove(state) {
 
   for (let i = 0; i < BUSINESSES.length; i++) {
     const st = biz[i];
-    if (st && st.owned > 0 && !st.manager && !st.running && !commissioning(st)) {
+    if (st && st.owned > 0 && !isManaged(st) && !st.running && !commissioning(st)) {
       return `Run ${BUSINESSES[i].name} to fire the next batch.`;
     }
   }

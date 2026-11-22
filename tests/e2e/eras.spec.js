@@ -9,7 +9,9 @@ test("the locked era shows owning enough and earning enough, each with progress"
   const row = page.locator("[data-locked-era]");
   await row.scrollIntoViewIfNeeded();
   await expect(row.locator("[data-era-need='own']")).toContainText(/Own 10 .*\(\d+\/10\)/);
-  await expect(row.locator("[data-era-need='earn']")).toContainText(/Earn \$.* this run \(\$/);
+  await expect(row.locator("[data-era-need='earn']")).toContainText(/Earn \$.* this run/);
+  // The run's earnings show here now, not in the CASH box.
+  await expect(row.locator("[data-era-earned]")).toHaveText(/^\$[\d.]+[A-Za-z]* of \$[\d.]+[A-Za-z]* earned this run$/);
   await expect(row.locator("[data-era-need='earn']")).toHaveAttribute("data-met", "0");
   expectClean(seen);
 });

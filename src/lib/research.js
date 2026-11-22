@@ -1,5 +1,6 @@
 // Timed research, paid in R&D points: the one research currency (state.data),
-// made mostly by the research server plant, plus a trickle from each era. Projects keep
+// made only by research machines (the starter punch-card machine, the server
+// plant and the PC bench); eras stopped making them in 0.0.29. Projects keep
 // running while the app is closed; earnings while away are at the away rate. A project can start only after the
 // company's newest era is at least as new as the project's real year, and
 // after its prerequisite is done. Locked rows say "Requires 2020", never an
@@ -11,7 +12,7 @@
 
 import { BUSINESSES } from "./gameConfig.js";
 import { GENERATIONS } from "./generations.js";
-import { PARTS, benchStock, pushHeadline, readFacilities, serverStock } from "./facilities.js";
+import { PARTS, benchStock, pushHeadline, readFacilities, serverStock, starterRate } from "./facilities.js";
 import { playerYear } from "./eraYear.js";
 
 export { playerYear };
@@ -32,9 +33,9 @@ export const RESEARCH_TABS = [
 
 
 
-// R&D points a second per unit of server work. Eras make 0.001 a second
-// each (owned, and again when mastered); one starter rack (work 8) makes
-// 0.04, so the servers are the main source.
+// R&D points a second per unit of server work. The starter punch-card
+// machine makes a flat 0.001 a second each (up to 6); one Irwell Mark 1
+// (work 2) makes 0.01, so the servers soon outclass it.
 const RD_PER_WORK = 0.005;
 const RD_CAP = 1e9;
 // Project price in R&D points: the table's rd x RD_COST_SCALE, doubling every
@@ -264,14 +265,17 @@ export function serverOutput(state) {
   const disk = need <= 0 ? 1 : storage >= need ? 1 : storage > 0 ? 0.5 : 0.25;
   // The PC build bench adds its own R&D.
   const bench = benchStock(readFacilities(state?.facilities).bench, { oc: state?.benchOc !== false }).perSecond;
-  return { work, speed, storage, need, bench, perSecond: work * speed * disk * RD_PER_WORK + bench };
+  // The starter machine adds a flat rate: no power, cooling or disk needed.
+  const starter = starterRate(counts);
+  return { work, speed, storage, need, bench, starter, perSecond: work * speed * disk * RD_PER_WORK + bench + starter };
 }
 
 // While you're away the servers can only bank what their disks can hold:
 // AWAY_BANK.baseHours of full output, plus AWAY_BANK.hoursPerSet for each
 // full set of disk the newest machine needs (1 TB for a 2012 rack, 5 MB for a
-// 1959 mainframe), up to AWAY_BANK.maxHours. Your eras' trickle and the
-// project timer aren't capped. Live play isn't capped either.
+// 1959 mainframe), up to AWAY_BANK.maxHours. The starter machine's punched
+// cards just stack up (it banks all day, like the project timer); live play
+// isn't capped either.
 export const AWAY_BANK = { baseHours: 1, hoursPerSet: 1, maxHours: 8 };
 
 export function awayBankHours(state) {
@@ -281,7 +285,8 @@ export function awayBankHours(state) {
 }
 
 export function awayBankCap(state) {
-  return serverOutput(state).perSecond * 3600 * awayBankHours(state);
+  const out = serverOutput(state);
+  return (out.perSecond - out.starter) * 3600 * awayBankHours(state) + out.starter * 24 * 3600;
 }
 
 export function researchSpeed(state, now = Date.now()) {

@@ -43,7 +43,7 @@ export const GLOSSARY = {
   },
   mastery: {
     term: "ERA MASTERY",
-    text: "Own enough of one business and buy both of its upgrades: +5% to all income for the rest of that run. Mastered eras also make extra R&D points.",
+    text: "Own enough of one business and buy both of its upgrades: +5% to all income for the rest of that run.",
   },
   prestige: {
     term: "PRESTIGE",
@@ -71,7 +71,7 @@ export const GLOSSARY = {
   },
   research: {
     term: "R&D POINTS",
-    text: `The one research currency. Each era you own makes a trickle, and research servers (${HUB_LABEL} beside TECH, then RIGS, from Mainframes) make most of them. Earned at half rate while the game is closed, and the servers only bank what their disks hold then (1 hour of output, plus 1 per TB). Never lost, even when you prestige. Spend them on the R&D tab and the TECH timeline.`
+    text: `The one research currency, made only by research machines in ${HUB_LABEL} (beside TECH), then RIGS: a punch-card multiplier from the start, then research servers from Mainframes. Earned at half rate while the game is closed; the servers only bank what their disks hold then (1 hour of output, plus 1 per TB), while the punch-card machine banks all day. Never lost, even when you prestige. Spend them on the R&D tab and the TECH timeline.`
   },
   lab: {
     term: "LAB PROJECTS",

@@ -73,9 +73,15 @@ function useTargetRect(selector) {
 
 // The one-time tip for the current page, if any.
 export function TipCard() {
-  const { state, tipSeen, setTipsOff } = useGameState();
+  const { state, tipSeen, tipShown, setTipsOff } = useGameState();
   const location = useLocation();
   const tip = currentTip(state, pageKey(location.pathname, location.hash));
+  const blockedByNotes = notesUnseen();
+  const tipId = tip && !blockedByNotes ? tip.id : null;
+  // Once on screen, a tip stays until GOT IT (one time per save).
+  useEffect(() => {
+    if (tipId) tipShown?.(tipId);
+  }, [tipId, tipShown]);
   const rect = useTargetRect(tip?.target || null);
   const host = usePortal();
   const sheetRef = useRef(null);

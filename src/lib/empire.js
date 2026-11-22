@@ -26,6 +26,7 @@ import {
   blockedByGlass,
   eraOpen,
   indexOfBusiness,
+  isManaged,
   managerNeed,
   milestoneMult,
   milestoneSpeed,
@@ -35,12 +36,11 @@ import {
 } from "./gameConfig.js";
 
 export const SINGULARITY_MAX = 4;
-// R&D points a second for each era owned (and again when mastered). Eras are
-// a trickle; the research servers are the main source. Every R&D price and
-// grant below (specialties, lab projects, samples, dilemmas) is on this
-// scale: it was cut 8x along with the era rate, so the early game feels
-// the same.
-export const DATA_PER_ERA = 0.001;
+// Every R&D price and grant below (specialties, lab projects, samples,
+// dilemmas) is on the scale of the old era rate (0.001 a second per era),
+// which the starter punch-card machine now stands in for (0.0.29).
+// Eras made 0.001 R&D a second each until 0.0.29; now research machines do.
+export const DATA_PER_ERA = 0;
 export const SPECIALTY_COST = 10;
 // Speed gate, mastery bar and badge count live on each era in BUSINESSES, so
 // the order of the rows can change without shifting these numbers.
@@ -522,6 +522,8 @@ export function blankMeta() {
     goalsDone: [],
     boughtX10: false,
     hubSeen: false,
+    // A new game buys its own starter machine; old saves get one once (0.0.29).
+    starterGranted: true,
     tutorial: blankTutorial(),
     orientation: "auto",
     businessesBought: 0,
@@ -782,8 +784,11 @@ export function establishedCount(state) {
   return (state.biz || []).reduce((n, st) => n + (st && st.owned > 0 ? 1 : 0), 0);
 }
 
+// Eras no longer make R&D points (0.0.29): research machines in HQ > RIGS
+// do, starting with the starter machine. Kept so callers and old math read 0.
+// eslint-disable-next-line no-unused-vars
 export function dataPerSecond(state) {
-  return DATA_PER_ERA * establishedCount(state) + DATA_PER_ERA * masteredCount(state);
+  return 0;
 }
 
 // Ceiling starts at 42 and rises by 5 for each singularity point (max 15
@@ -874,7 +879,7 @@ export function businessIncomePerSecond(state, now = 0) {
   let sum = 0;
   (state.biz || []).forEach((st, i) => {
     if (!st || st.owned <= 0) return;
-    if (!st.manager && !st.running) return;
+    if (!isManaged(st) && !st.running) return;
     const cfg = BUSINESSES[i];
     const up = upgradesOf(state, cfg.id);
     const rev = (up.rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone);
@@ -908,7 +913,10 @@ export function creditCycles(state, index, cycles, now = 0, rate = 1) {
 // that use it; rows that use the same material split what's in the bin in
 // proportion to what each needs, instead of the first row taking it all.
 // Returns each row's earnings.
-export function creditBatch(state, due, now, rate = 1) {
+// `stats`, if given, collects what held the slice back: stats.short[key]
+// when the users of a material wanted more than the bin had, stats.full[key]
+// when new output was lost to a FULL bin.
+export function creditBatch(state, due, now, rate = 1, stats = null) {
   const gains = new Array(due.length).fill(0);
   // Note: ensureSupply replaces state.supply, so always read it fresh.
   const bin = () => ensureSupply(state);
@@ -934,7 +942,10 @@ export function creditBatch(state, due, now, rate = 1) {
     const held = {};
     const supply = bin();
     for (const [key, need] of Object.entries(cfg.uses)) {
-      if (!(key in left)) left[key] = demand[key] || 0;
+      if (!(key in left)) {
+        left[key] = demand[key] || 0;
+        if (stats && (supply[key] || 0) < left[key] - 1e-9) stats.short[key] = true;
+      }
       const want = (Number(need) || 0) * cycles * owned;
       const have = supply[key] || 0;
       const share = left[key] > 0 ? Math.min(have, (have * want) / left[key]) : 0;
@@ -953,6 +964,13 @@ export function creditBatch(state, due, now, rate = 1) {
     const cap = Math.max(before[key] || 0, supplyCap(state, key));
     if ((end[key] || 0) > cap) end[key] = cap;
   }
+  // A bin at its cap after a slice its makers ran in: their output was lost.
+  if (stats) {
+    BUSINESSES.forEach((cfg, i) => {
+      if (!(due[i] > 0) || !cfg.makes) return;
+      for (const key of Object.keys(cfg.makes)) if ((end[key] || 0) >= supplyCap(state, key) - 1e-9) stats.full[key] = true;
+    });
+  }
   return gains;
 }
 
@@ -968,11 +986,16 @@ export function replayAway(state, elapsed, end, rate = 1) {
   if (!(elapsed > 0)) return { gain: 0, rows: [] };
   const start = end - elapsed;
   const step = elapsed / AWAY_SLICES;
+  // How long each material ran short (rows using it paid less) or sat FULL
+  // (new output lost), for the Welcome Back report.
+  const shortMs = {};
+  const fullMs = {};
+  const shortRows = {};
   for (let k = 0; k < AWAY_SLICES; k++) {
     const mid = start + step * (k + 0.5);
     finishTimedWork(state, mid);
     const due = state.biz.map((st, i) => {
-      if (!st.manager || st.owned <= 0) return 0;
+      if (!isManaged(st) || st.owned <= 0) return 0;
       const cycle = effectiveCycleMs(BUSINESSES[i], state);
       if (!(cycle > 0)) return 0;
       st.activeMs = (st.activeMs || 0) + step;
@@ -982,9 +1005,18 @@ export function replayAway(state, elapsed, end, rate = 1) {
       st.progress = Math.max(0, st.progress - cycles * cycle);
       return cycles;
     });
-    creditBatch(state, due, mid, rate).forEach((amount, i) => {
+    const stats = { short: {}, full: {} };
+    creditBatch(state, due, mid, rate, stats).forEach((amount, i) => {
       gains[i] += amount;
     });
+    for (const key of Object.keys(stats.short)) {
+      shortMs[key] = (shortMs[key] || 0) + step;
+      const users = shortRows[key] || (shortRows[key] = new Set());
+      due.forEach((n, i) => {
+        if (n > 0 && BUSINESSES[i].uses?.[key]) users.add(BUSINESSES[i].name);
+      });
+    }
+    for (const key of Object.keys(stats.full)) fullMs[key] = (fullMs[key] || 0) + step;
     // Plants earn at the same away rate as the business rows.
     const plant = facilityReport(state, businessIncomePerSecond(state, mid)).perSecond * (step / 1000) * rate;
     if (plant > 0) {
@@ -1007,7 +1039,16 @@ export function replayAway(state, elapsed, end, rate = 1) {
     gain += facilityGain;
     rows.push({ name: "Facilities", amount: facilityGain });
   }
-  return { gain, rows };
+  // Only what lasted at least a minute is worth a line.
+  const short = Object.entries(shortMs)
+    .filter(([, ms]) => ms >= 60_000)
+    .sort((a, b) => b[1] - a[1])
+    .map(([key, ms]) => ({ key, ms, rows: [...(shortRows[key] || [])] }));
+  const full = Object.entries(fullMs)
+    .filter(([, ms]) => ms >= 60_000)
+    .sort((a, b) => b[1] - a[1])
+    .map(([key, ms]) => ({ key, ms }));
+  return { gain, rows, short, full };
 }
 
 export function creditAmount(state, amount, now = 0) {
@@ -1659,7 +1700,9 @@ export function startingBiz(state, biz, prev = null) {
     if (hasPerk(state, "start-ics") && i <= tubesAt) owned = Math.max(owned, ERA_GATE);
     if (hasPerk(state, "start-timber") && BUSINESSES[i].id === "timber") owned = Math.max(owned, 25);
     const keep = hasPerk(state, "keep-crews") && !!BUSINESSES[i].makes && !!prev?.[i]?.manager;
-    return owned === row.owned && !keep ? row : { ...row, owned, manager: row.manager || keep };
+    // A kept crew keeps its on/off switch too.
+    if (owned === row.owned && !keep) return row;
+    return { ...row, owned, manager: row.manager || keep, managerOff: keep ? !!prev[i].managerOff : !!row.managerOff };
   });
 }
 
@@ -1734,6 +1777,7 @@ export function snapshotMeta(state, options = {}) {
     goalsDone: Array.isArray(state.goalsDone) ? [...state.goalsDone] : [],
     boughtX10: !!state.boughtX10,
     hubSeen: !!state.hubSeen,
+    starterGranted: !!state.starterGranted,
     tutorial: { ...(state.tutorial || blankTutorial()), seen: [...(state.tutorial?.seen || [])], tips: [...(state.tutorial?.tips || [])] },
     orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
     buyMode: normalizeBuyMode(state.buyMode),

@@ -30,8 +30,10 @@ export function CashTicker({ state, cps }) {
         <ItemHelp kind="money" state={state} name="the money panel" className="absolute right-0 top-0 my-0" />
         <div data-cash-label className="font-pixel text-[8px] leading-[10px] text-[var(--game-muted)]">CASH</div>
         <div data-cash className="break-all font-term text-3xl leading-none text-[var(--game-success)]">{money(state.cash)}</div>
-        <div data-cash-rate className="break-words font-term text-[clamp(12px,4.2vw,16px)] leading-[1.15] text-[var(--game-success)]">
-          {money(cps)}/s income · {money(state.lifetime)} earned this run
+        {/* One fixed line: cash and income only. What this run earned shows on
+            the locked next-era row and in MORE > STATS. */}
+        <div data-cash-rate className="h-[1.15em] truncate whitespace-nowrap font-term text-[clamp(12px,4.2vw,16px)] leading-[1.15] tabular-nums text-[var(--game-success)]">
+          {money(cps)}/s income
         </div>
         {overclockOn(state, Date.now()) && (
           <div data-overclock className="font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">

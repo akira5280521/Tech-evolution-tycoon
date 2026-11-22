@@ -108,7 +108,7 @@ export const TUTORIAL_STEPS = [
   {
     id: "later",
     title: "WHAT'S AHEAD",
-    text: `The ??? buttons open later. TECH is research: timed projects paid with R&D points. ${HUB_LABEL} holds research servers and other plants. A tip explains each one when it opens.`,
+    text: `The ??? buttons open later. TECH is research: timed projects paid with R&D points. ${HUB_LABEL} holds the research machines that make R&D points, and other plants. A tip explains each one when it opens.`,
     target: "[data-open-research]",
     manual: true,
     button: "DONE",
@@ -128,7 +128,7 @@ export function stepText(step, state) {
 
 // tips / tipsOff belong to the one-time feature tips (src/lib/tips.js).
 export function blankTutorial() {
-  return { seen: [], done: false, skipped: false, replay: false, tips: [], tipsOff: false };
+  return { seen: [], done: false, skipped: false, replay: false, tips: [], tipsOff: false, tipsShown: [] };
 }
 
 // Read a saved tutorial record. A save from before the tutorial existed counts
@@ -145,6 +145,7 @@ export function readTutorial(raw, hasProgress) {
     replay: !!raw.replay,
     tips: Array.isArray(raw.tips) ? raw.tips.filter((id) => typeof id === "string").slice(0, 100) : [],
     tipsOff: !!raw.tipsOff,
+    tipsShown: Array.isArray(raw.tipsShown) ? raw.tipsShown.filter((id) => typeof id === "string").slice(0, 100) : [],
   };
 }
 

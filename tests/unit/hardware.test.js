@@ -59,7 +59,7 @@ test("machine-room computers each need a generator and an air conditioner; racks
   const s = upTo(BUSINESSES.at(-1).id, RESEARCH.map((e) => e.id));
   s.facilities.servers = { mark1: 2, mgset: 1, roomac: 2, tape: 1 };
   assert.ok(Math.abs(serverOutput(s).speed - 0.5) < 1e-9, "one of two machines powered");
-  s.facilities.servers = { mark1: 2, mgset: 2, roomac: 2, tape: 1, towerT4: 1, psuAT: 2, labfan: 1, disk3380: 1 };
+  s.facilities.servers = { mark1: 2, mgset: 2, roomac: 2, tape: 1, towerT4: 1, psuAT: 2, labfan: 1, disk3380: 1, "l-synoptix": 1 };
   assert.ok(Math.abs(serverOutput(s).speed - 1) < 1e-9, "both rooms running");
 });
 
@@ -84,4 +84,12 @@ test("old saves keep parts bought fairly and refund the rest", () => {
   assert.equal(s.facilities.servers.rack1, 1);
   assert.ok(s.techDone.includes("card-1080") && s.techDone.includes("srv-r1") && s.techDone.includes("srv-1120"));
   assert.ok(r1);
+});
+
+test("racks need a network fast enough for their work, or run at half speed", () => {
+  const s = { biz: BUSINESSES.map((b) => ({ id: b.id, owned: 1 })), techDone: RESEARCH.map((e) => e.id), facilities: { mine: {}, cluster: {}, servers: { rack1: 1, psu400: 1, labfan: 2, hdd1t: 1 } } };
+  const alone = serverOutput(s).perSecond;
+  s.facilities.servers["l-cat5000"] = 1; // 200 of the rack's 160 work
+  const linked = serverOutput(s).perSecond;
+  assert.ok(Math.abs(linked / alone - 2) < 1e-9, `${linked} vs ${alone}`);
 });

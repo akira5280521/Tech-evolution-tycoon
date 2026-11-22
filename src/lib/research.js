@@ -90,8 +90,8 @@ export const RESEARCH = [
   item({ id: "mem-simm", tab: "memory", year: 1988, name: "30-pin SIMM", spec: "8-bit module, typically 1–4 MB", rd: 16, durationMs: 40_000, prereq: "mem-dram" }),
   item({ id: "mem-sdram", tab: "memory", year: 1993, name: "SDRAM", spec: "Synchronous DRAM, 66–133 MHz", rd: 20, durationMs: 50_000, prereq: "mem-simm" }),
   item({ id: "mem-ddr", tab: "memory", year: 2000, name: "DDR-266", spec: "DDR SDRAM, PC2100, 2.1 GB/s", rd: 24, durationMs: 55_000, prereq: "mem-sdram" }),
-  item({ id: "mem-ddr2", tab: "memory", year: 2003, name: "DDR2-800", spec: "DDR2, PC2-6400, 6.4 GB/s", rd: 28, durationMs: 60_000, prereq: "mem-ddr" }),
-  item({ id: "mem-ddr3", tab: "memory", year: 2007, name: "DDR3-1600", spec: "DDR3, PC3-12800, 12.8 GB/s", rd: 32, durationMs: 70_000, prereq: "mem-ddr2" }),
+  item({ id: "mem-ddr2", tab: "memory", year: 2003, name: "DDR2-533", spec: "DDR2, PC2-4200, the launch speed", rd: 28, durationMs: 60_000, prereq: "mem-ddr" }),
+  item({ id: "mem-ddr3", tab: "memory", year: 2007, name: "DDR3-1066", spec: "DDR3, PC3-8500, the launch speed", rd: 32, durationMs: 70_000, prereq: "mem-ddr2" }),
   item({ id: "mem-ddr4", tab: "memory", year: 2014, name: "DDR4-2133", spec: "DDR4, PC4-17000, 17 GB/s at launch", rd: 40, durationMs: 80_000, prereq: "mem-ddr3" }),
   item({ id: "mem-ddr5", tab: "memory", year: 2020, name: "DDR5-4800", spec: "DDR5, PC5-38400, 38.4 GB/s", rd: 64, durationMs: 120_000, prereq: "mem-ddr4" }),
   item({ id: "mem-ddr5-64", tab: "memory", year: 2022, name: "64 GB DDR5 RDIMM", spec: "Registered DDR5 for the first DDR5 servers", rd: 64, durationMs: 120_000, prereq: "mem-ddr5" }),
@@ -122,14 +122,21 @@ export const RESEARCH = [
   item({ id: "pwr-80", tab: "power", year: 2004, name: "80 Plus", spec: "80% efficient at 20, 50 and 100% load", rd: 20, durationMs: 45_000, prereq: "pwr-atx" }),
   item({ id: "pwr-gold", tab: "power", year: 2008, name: "80 Plus Gold", spec: "87–90% efficient", rd: 28, durationMs: 55_000, prereq: "pwr-80" }),
   item({ id: "pwr-plat", tab: "power", year: 2009, name: "80 Plus Platinum", spec: "90–94% efficient", rd: 36, durationMs: 65_000, prereq: "pwr-gold" }),
-  item({ id: "pwr-titan", tab: "power", year: 2015, name: "80 Plus Titanium", spec: "Up to 96% efficient; 1,600 W supplies", rd: 44, durationMs: 75_000, prereq: "pwr-plat" }),
+  item({ id: "pwr-titan", tab: "power", year: 2015, name: "80 Plus Titanium", spec: "Up to 96% efficient, a rating set in 2012", rd: 44, durationMs: 75_000, prereq: "pwr-plat" }),
 
   item({ id: "net-eth", tab: "network", year: 1980, name: "10BASE5", spec: "10 Mbit/s over thick coaxial", rd: 8, durationMs: 25_000, prereq: null }),
+  item({ id: "net-10baset", tab: "network", year: 1990, name: "10BASE-T", spec: "10 Mbit/s Ethernet over twisted pair", rd: 10, durationMs: 30_000, prereq: "net-eth" }),
   item({ id: "net-100", tab: "network", year: 1995, name: "100BASE-TX", spec: "100 Mbit/s over twisted pair", rd: 14, durationMs: 35_000, prereq: "net-eth" }),
   item({ id: "net-wifi", tab: "network", year: 1997, name: "802.11", spec: "First Wi-Fi, 1–2 Mbit/s", rd: 18, durationMs: 40_000, prereq: "net-100" }),
   item({ id: "net-gige", tab: "network", year: 1999, name: "1000BASE-T", spec: "Gigabit Ethernet over copper", rd: 22, durationMs: 50_000, prereq: "net-wifi" }),
+  item({ id: "net-10g", tab: "network", year: 2008, name: "10 GbE switching", spec: "10 Gbit/s Ethernet at every port", rd: 28, durationMs: 60_000, prereq: "net-gige" }),
+  item({ id: "net-ibqdr", tab: "network", year: 2008, name: "InfiniBand QDR", spec: "40 Gbit/s, microseconds of delay", rd: 30, durationMs: 60_000, prereq: "net-gige" }),
   item({ id: "net-n", tab: "network", year: 2009, name: "Wi-Fi 4", spec: "802.11n, up to 600 Mbit/s", rd: 30, durationMs: 60_000, prereq: "net-gige" }),
   item({ id: "net-ac", tab: "network", year: 2013, name: "Wi-Fi 5", spec: "802.11ac, gigabit wireless", rd: 36, durationMs: 70_000, prereq: "net-n" }),
+  item({ id: "net-ibedr", tab: "network", year: 2014, name: "InfiniBand EDR", spec: "100 Gbit/s", rd: 38, durationMs: 75_000, prereq: "net-ibqdr" }),
+  item({ id: "net-nvlink", tab: "network", year: 2016, name: "NVLink", spec: "Cards linked directly, 160 GB/s", rd: 40, durationMs: 80_000, prereq: "net-ibedr" }),
+  item({ id: "net-ibhdr", tab: "network", year: 2018, name: "InfiniBand HDR", spec: "200 Gbit/s", rd: 42, durationMs: 80_000, prereq: "net-ibedr" }),
+  item({ id: "net-nvswitch", tab: "network", year: 2018, name: "NVSwitch", spec: "Every card linked to every other", rd: 44, durationMs: 85_000, prereq: "net-nvlink" }),
   item({ id: "net-ax", tab: "network", year: 2019, name: "Wi-Fi 6", spec: "802.11ax, OFDMA", rd: 44, durationMs: 80_000, prereq: "net-ac" }),
   item({ id: "net-be", tab: "network", year: 2024, name: "Wi-Fi 7", spec: "802.11be", rd: 48, durationMs: 90_000, prereq: "net-ax" }),
 
@@ -286,10 +293,22 @@ export function researchLock(state, entry) {
   return null;
 }
 
+// A second project can run beside the first once the PC build bench has a
+// CPU with four or more cores (and it's running).
+export function secondTechSlot(state) {
+  const b = benchStock(readFacilities(state?.facilities).bench);
+  return b.perf > 0 && (b.cpu?.cores || 1) >= 4;
+}
+
+export function techJobs(state) {
+  return [state?.techJob, state?.techJob2].filter(Boolean);
+}
+
 export function canStartResearch(state, id) {
   const entry = byId[id];
   if (!entry || entry.soon) return false;
-  if (state?.techJob) return false;
+  if (techJobs(state).some((job) => job.id === id)) return false;
+  if (state?.techJob && (state?.techJob2 || !secondTechSlot(state))) return false;
   if ((state?.techDone || []).includes(id)) return false;
   if (researchLock(state, entry)) return false;
   return (Number(state?.data) || 0) >= researchCost(entry);
@@ -299,7 +318,9 @@ export function startResearch(state, id) {
   const entry = byId[id];
   if (!canStartResearch(state, id)) return { ok: false };
   state.data = Math.max(0, (Number(state.data) || 0) - researchCost(entry));
-  state.techJob = { id: entry.id, progressMs: 0, durationMs: entry.durationMs };
+  const job = { id: entry.id, progressMs: 0, durationMs: entry.durationMs };
+  if (!state.techJob) state.techJob = job;
+  else state.techJob2 = job;
   pushHeadline(state, `rd-start-${entry.id}`, `R&D: ${entry.name.toUpperCase()} RESEARCH STARTS`);
   return { ok: true };
 }
@@ -310,7 +331,8 @@ function finishResearch(state, id) {
   const done = readTechDone(state.techDone);
   if (!done.includes(id)) done.push(id);
   state.techDone = done;
-  state.techJob = null;
+  if (state.techJob?.id === id) state.techJob = null;
+  if (state.techJob2?.id === id) state.techJob2 = null;
   pushHeadline(state, `rd-done-${id}`, `R&D: ${entry.name.toUpperCase()} RESEARCH COMPLETE`);
 }
 
@@ -323,17 +345,23 @@ export function advanceResearch(state, ms, rate = 1, cap = Infinity) {
   const made = serverOutput(state).perSecond * (ms / 1000) * (rate > 0 ? rate : 0);
   const gain = Math.min(made, cap >= 0 ? cap : 0);
   if (gain > 0) state.data = Math.min(RD_CAP, (Number(state.data) || 0) + gain);
-  const job = readTechJob(state.techJob);
-  if (!job) {
-    state.techJob = null;
-    return gain > 0 ? "gain" : false;
+  let finished = false;
+  for (const slot of ["techJob", "techJob2"]) {
+    const job = readTechJob(state[slot]);
+    state[slot] = job;
+    if (!job) continue;
+    job.progressMs = Math.min(job.durationMs, job.progressMs + ms * researchSpeed(state));
+    if (job.progressMs >= job.durationMs - 0.001) {
+      finishResearch(state, job.id);
+      finished = true;
+    }
   }
-  state.techJob = job;
-  job.progressMs = Math.min(job.durationMs, job.progressMs + ms * researchSpeed(state));
-  if (job.progressMs >= job.durationMs - 0.001) {
-    finishResearch(state, job.id);
-    return "done";
+  // A second project only finishes into the first slot's place.
+  if (!state.techJob && state.techJob2) {
+    state.techJob = state.techJob2;
+    state.techJob2 = null;
   }
+  if (finished) return "done";
   return gain > 0 ? "gain" : false;
 }
 

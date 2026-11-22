@@ -31,7 +31,7 @@ function eraCostAt(year) {
   return Math.exp(Math.log(lo[1]) + t * (Math.log(hi[1]) - Math.log(lo[1])));
 }
 
-const price = (year, share) => {
+export const price = (year, share) => {
   const raw = eraCostAt(year) * share;
   const digits = Math.pow(10, Math.max(0, Math.floor(Math.log10(raw)) - 1));
   return Math.round(raw / digits) * digits;
@@ -211,7 +211,7 @@ export const BENCH_CPUS = [
   cpu("c-6700k", "Chipwright i7-6700K", 2015, "cpu-6700k", "lga1151", "skl", 20.5, 16384, { ddr4: 2133 }, true, 3, "2015: DDR4, 4 GHz."),
   cpu("c-7700k", "Chipwright i7-7700K", 2017, "cpu-7700k", "lga1151", "kbl", 21.5, 16384, { ddr4: 2400 }, true, 3, "2017: 4.2 GHz, the last four-core top chip."),
   cpu("c-1800x", "Alder 1800X", 2017, "cpu-1800x", "am4", "zen1", 23, 16384, { ddr4: 2667 }, true, 3, "2017: eight cores, sixteen threads, back in the race."),
-  cpu("c-1950x", "Alder 1950X", 2017, "cpu-alder32", "tr4", "zen1-tr", 28, 32768, { ddr4: 2667 }, true, 3, "2017: sixteen cores on a desktop."),
+  cpu("c-1950x", "Alder 1950X", 2017, "cpu-1950x", "tr4", "zen1-tr", 28, 32768, { ddr4: 2667 }, true, 3, "2017: sixteen cores on a desktop."),
   cpu("c-8700k", "Chipwright i7-8700K", 2017, "cpu-8700k", "lga1151v2", "cfl", 23, 16384, { ddr4: 2666 }, true, 3, "2017: six cores, the first six-core chip of its line."),
   cpu("c-2700x", "Alder 2700X", 2018, "cpu-2700x", "am4", "zen+", 24, 16384, { ddr4: 2933 }, true, 3, "2018: eight cores at 12 nm, clocked higher."),
   cpu("c-2990wx", "Alder 2990WX", 2018, "cpu-2990wx", "tr4", "zen+-tr", 31, 65536, { ddr4: 2933 }, true, 3, "2018: 32 cores on a desktop board."),
@@ -267,10 +267,18 @@ const CPU_WATTS = {
   "c-1800x": 95, "c-1950x": 180, "c-8700k": 95, "c-2700x": 105, "c-2990wx": 250, "c-9900k": 95, "c-3950x": 105,
   "c-5950x": 105, "c-12900k": 241, "c-7950x": 170, "c-13900k": 253, "c-14900k": 253, "c-9950x": 170, "c-285k": 250,
 };
+// Cores (the real count; 1 for every chip before 2005).
+const CORES = {
+  "c-x2": 2, "c-dual": 2, "c-e6600": 2, "c-q6600": 4, "c-phenom": 4, "c-q9650": 4, "c-i7920": 4, "c-ph2": 4, "c-i7860": 4,
+  "c-1100t": 6, "c-2600k": 4, "c-fx8150": 8, "c-3770k": 4, "c-4770k": 4, "c-4790k": 4, "c-6700k": 4, "c-7700k": 4,
+  "c-1800x": 8, "c-1950x": 16, "c-8700k": 6, "c-2700x": 8, "c-2990wx": 32, "c-9900k": 8, "c-3950x": 16, "c-5950x": 16,
+  "c-12900k": 16, "c-7950x": 16, "c-13900k": 24, "c-14900k": 24, "c-9950x": 16, "c-285k": 24,
+};
 // Chipwright chips with graphics on the chip (a weak stand-in for a card).
 const ON_CHIP_GRAPHICS = ["c-2600k", "c-3770k", "c-4770k", "c-4790k", "c-6700k", "c-7700k", "c-8700k", "c-9900k", "c-12900k", "c-13900k", "c-14900k", "c-285k", "c-7950x", "c-9950x"];
 for (const c of BENCH_CPUS) {
   c.watts = CPU_WATTS[c.id] || 10;
+  c.cores = CORES[c.id] || 1;
   c.igpu = ON_CHIP_GRAPHICS.includes(c.id);
   if (["c-8088", "c-286", "c-386", "c-am386"].includes(c.id)) c.noFpu = true;
 }

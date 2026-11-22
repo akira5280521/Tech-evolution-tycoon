@@ -17,6 +17,10 @@ import {
   RESEARCH_MS,
   SUPPLY_KEYS,
   ERA_MATERIAL,
+  REFINED,
+  REFINE_BATCH,
+  REFINE_MS,
+  REFINE_RATIO,
   UPGRADE_MS,
   blankSupply,
   blockedByGlass,
@@ -570,8 +574,32 @@ export function supplyFull(state, key) {
 export function storageCost(state, key) {
   const level = storageLevel(state, key);
   if (level >= STORAGE_MAX) return null;
-  const maker = BUSINESSES.find((cfg) => cfg.makes?.[key]);
+  const made = REFINED[key]?.from || key;
+  const maker = BUSINESSES.find((cfg) => cfg.makes?.[made]);
   return (maker?.baseCost || 1000) * 10 * 6 ** level;
+}
+
+// The refinery opens once you have reached Integrated Circuits, and stays open.
+export function refiningOpen(state) {
+  const ics = BUSINESSES.findIndex((cfg) => cfg.id === "ics");
+  return Math.max(state?.bestEra || 0, currentEraIndex(state)) >= ics;
+}
+// How much one tap of REFINE makes now: up to a batch, as much as the raw
+// material and the bins allow. 0 when it can't run.
+export function refineAmount(state, key) {
+  const spec = REFINED[key];
+  if (!spec || !refiningOpen(state) || timedJob(state?.refineJob)) return 0;
+  const raw = Math.floor((state?.supply?.[spec.from] || 0) / REFINE_RATIO);
+  const room = Math.floor(supplyCap(state, key) - (state?.supply?.[key] || 0));
+  return Math.max(0, Math.min(REFINE_BATCH, raw, room));
+}
+export function startRefine(state, key, now) {
+  const amount = refineAmount(state, key);
+  if (!(amount > 0)) return false;
+  const from = REFINED[key].from;
+  state.supply = { ...ensureSupply(state), [from]: Math.max(0, (state.supply[from] || 0) - amount * REFINE_RATIO) };
+  state.refineJob = { id: key, amount, startedAt: now, readyAt: now + REFINE_MS };
+  return true;
 }
 
 export function buyStorage(state, key) {
@@ -1014,6 +1042,16 @@ export function finishTimedWork(state, now) {
   if (research && jobDone(research, now)) {
     state.researchJob = null;
     if (commitSpecialty(state, research.id)) notes.push({ type: "research", id: research.id });
+  }
+  const refine = timedJob(state.refineJob);
+  state.refineJob = refine;
+  if (refine && jobDone(refine, now)) {
+    state.refineJob = null;
+    if (REFINED[refine.id]) {
+      const supply = ensureSupply(state);
+      supply[refine.id] = (supply[refine.id] || 0) + (Number(refine.amount) || 0);
+      notes.push({ type: "refined", id: refine.id, amount: refine.amount });
+    }
   }
   const upgrade = timedJob(state.upgradeJob);
   state.upgradeJob = upgrade;
@@ -1545,6 +1583,7 @@ export function snapshotMeta(state, options = {}) {
     researchJob: copyTimedJob(state.researchJob),
     upgradeJob: resetRunUpgrades ? null : copyTimedJob(state.upgradeJob),
     projectJob: copyTimedJob(state.projectJob),
+    refineJob: copyTimedJob(state.refineJob),
     modStamp: (state.modStamp || 0) + 1,
   };
 }

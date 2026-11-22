@@ -12,7 +12,10 @@ import {
   secondTechSlot,
   serverOutput,
   techJobs,
+  hasResearchMaterials,
+  researchMaterials,
 } from "@/lib/research";
+import { REFINED } from "@/lib/gameConfig";
 import { dataPerSecond } from "@/lib/empire";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
@@ -143,7 +146,19 @@ export default function ResearchPage() {
                     <p data-research-lock className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)]">{lock}</p>
                   ) : (
                     <div className="mt-2">
-                      <p className="font-term text-base leading-5 text-[var(--game-muted)]">{researchCost(entry).toLocaleString("en-US")} R&amp;D · {formatDuration(entry.durationMs / researchSpeed(state))}</p>
+                      <p className="font-term text-base leading-5 text-[var(--game-muted)]">
+                        {researchCost(entry).toLocaleString("en-US")} R&amp;D
+                        {researchMaterials(entry) && (
+                          <span data-research-materials className={hasResearchMaterials(state, entry) ? "" : "text-[var(--game-danger)]"}>
+                            {" + "}
+                            {Object.entries(researchMaterials(entry))
+                              .map(([key, n]) => `${n} ${REFINED[key]?.short || key} (have ${Math.floor(state.supply?.[key] || 0)})`)
+                              .join(", ")}
+                          </span>
+                        )}
+                        {" · "}
+                        {formatDuration(entry.durationMs / researchSpeed(state))}
+                      </p>
                       <GoldButton dataAttr={`research-${entry.id}`} disabled={!canStartResearch(state, entry.id)} onClick={() => startTech(entry.id)}>
                         <span className="font-pixel text-[0.55rem]">START</span>
                       </GoldButton>

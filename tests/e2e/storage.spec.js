@@ -22,3 +22,17 @@ test("a full material shows FULL, and bigger bins raise the cap", async ({ page 
   await expect(sheet).toHaveCount(0);
   expectClean(seen);
 });
+
+test("the refinery turns silicon into polysilicon from the material sheet", async ({ page }) => {
+  const base = SAVES.mid;
+  const save = { ...base, lastSeen: Date.now(), bestEra: 30, supply: { ...(base.supply || {}), silicon: 2000 } };
+  const seen = await open(page, "/", save);
+  await tipsOff(page);
+  await page.locator("[data-material='silicon']").click();
+  const start = page.locator("[data-refine-start='polysilicon']");
+  await expect(start).toBeEnabled();
+  await start.click();
+  await expect(page.locator("[data-refine-running]")).toContainText("Refining 100 polysilicon");
+  await expect.poll(async () => (await saved(page))?.refineJob?.amount || 0).toBe(100);
+  expectClean(seen);
+});

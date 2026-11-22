@@ -207,7 +207,7 @@ const HOW_TO = [
     title: "R&D POINTS",
     lines: [
       `R&D points are the one research currency. Each era you own makes a trickle; research servers (${HUB_LABEL} beside TECH, then RIGS, from Microprocessors) make most of them. Both earn at half rate while the game is closed, and the servers only bank what their disks hold: 1 hour of output, plus another hour per TB of disk.`,
-      "Spend them on the R & D tab (specialties and lab projects) and on the TECH timeline. They are never lost, even when you prestige.",
+      "Spend them on the R&D tab (specialties and lab projects) and on the TECH timeline. They are never lost, even when you prestige.",
     ],
   },
   {
@@ -367,7 +367,7 @@ function Stats({ state, data }) {
 export function ResearchPage() {
   const { state, chooseSpecialty, runLabProject } = useGameState();
   return (
-    <ScreenShell title={"RESEARCH\nLAB"} subtitle="">
+    <ScreenShell title="RESEARCH" subtitle="">
       <ResearchBody state={state} onCommit={chooseSpecialty} onLab={runLabProject} />
     </ScreenShell>
   );

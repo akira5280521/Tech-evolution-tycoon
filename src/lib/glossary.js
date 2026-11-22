@@ -59,7 +59,7 @@ export const GLOSSARY = {
   },
   research: {
     term: "R&D POINTS",
-    text: `The one research currency. Each era you own makes a trickle, and research servers (${HUB_LABEL} beside TECH, then RIGS, from Microprocessors) make most of them. Earned at half rate while the game is closed, and the servers only bank what their disks hold then (1 hour of output, plus 1 per TB). Never lost, even when you prestige. Spend them on the R & D tab and the TECH timeline.`
+    text: `The one research currency. Each era you own makes a trickle, and research servers (${HUB_LABEL} beside TECH, then RIGS, from Microprocessors) make most of them. Earned at half rate while the game is closed, and the servers only bank what their disks hold then (1 hour of output, plus 1 per TB). Never lost, even when you prestige. Spend them on the R&D tab and the TECH timeline.`
   },
   lab: {
     term: "LAB PROJECTS",

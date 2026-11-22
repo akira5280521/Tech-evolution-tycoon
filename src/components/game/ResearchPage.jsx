@@ -56,7 +56,7 @@ export default function ResearchPage() {
   const perSecond = dataPerSecond(state) + serverOutput(state).perSecond;
 
   return (
-    <ScreenShell title="RESEARCH" subtitle="One project at a time. It keeps going while the app is closed.">
+    <ScreenShell title="TECH" subtitle="One project at a time. It keeps going while the app is closed.">
       <Panel>
         <div className="flex items-start justify-between gap-1">
           <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">R&amp;D points {rd.toLocaleString("en-US")} · +{perSecond.toFixed(2)} a second · year {playerYear(state) || "—"}</p>

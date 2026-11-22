@@ -28,7 +28,7 @@ test("top RIGS button opens the hub, and its RIGS button opens the plants", asyn
   const seen = await open(page, "/", "late");
   await tipsOff(page);
   const top = page.locator("[data-open-facilities]");
-  await expect(top).toHaveText("RIGS");
+  await expect(top).toHaveText("HQ");
   await top.click();
   await expect(page).toHaveURL(/\/rigs$/);
   const items = page.locator("[data-hub-item]");

@@ -129,7 +129,7 @@ export const TIPS = [
     id: "research",
     page: "game",
     title: "R&D POINTS",
-    text: "Your eras make a trickle of R&D points. Tap R & D and spend them on a bonus you keep. Research servers make far more later.",
+    text: "Your eras make a trickle of R&D points. Tap R&D and spend them on a bonus you keep. Research servers make far more later.",
     target: '[data-tab="research"]',
     when: (s) => (s.data || 0) >= 1 && dataPerSecond(s) > 0,
   },
@@ -196,7 +196,7 @@ export const TIPS = [
   {
     id: "page-research",
     page: "research",
-    title: "THE RESEARCH LAB",
+    title: "RESEARCH",
     text: "Spend R&D points on one bonus you keep. You start with one slot. Spare points go to the lab projects below.",
   },
   {

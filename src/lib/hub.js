@@ -4,7 +4,7 @@
 import { anyFacilityOpen } from "./facilities.js";
 
 // The top button's name, in one place so it can be renamed.
-export const HUB_LABEL = "RIGS";
+export const HUB_LABEL = "HQ";
 export const HUB_ROUTE = "/rigs";
 
 export const HUB_ITEMS = [

@@ -117,7 +117,7 @@ export default function FacilitiesPage() {
   // The part that adds the most pay for its price (or starts a plant).
   const next = open ? nextPurchase(state, business) : null;
   return (
-    <ScreenShell title="FACILITIES" subtitle="A side plant. It pays cash, and it never outgrows the businesses." backTo={HUB_ROUTE}>
+    <ScreenShell title="RIGS" subtitle="A side plant. It pays cash, and it never outgrows the businesses." backTo={HUB_ROUTE}>
       {!open && (
         <Panel>
           <p data-facilities-locked className="break-words font-term text-base leading-5 text-[var(--game-fg)]">

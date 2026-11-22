@@ -12,6 +12,7 @@
 
 import { BUSINESSES } from "./gameConfig.js";
 import { playerYear } from "./eraYear.js";
+import { BENCH_PARTS, BENCH_RD } from "./benchParts.js";
 
 export const SHARE_CAP = 0.05;
 export const STARTER_SHARE = 0.0009;
@@ -60,6 +61,12 @@ export const FACILITIES = [
     blurb: "The cluster trains a model and bills the studio. A bigger model needs more memory.",
   },
   {
+    id: "bench",
+    name: "PC BUILD BENCH",
+    icon: "/icons/facilities/bench.png",
+    blurb: "One PC at a time, built from parts that fit: a board, a CPU for its socket, and memory for its slots. It makes R&D points.",
+  },
+  {
     id: "servers",
     name: "RESEARCH SERVERS",
     icon: "/icons/facilities/servers.png",
@@ -106,6 +113,29 @@ export const PARTS = [
   { id: "s360", kind: "server", group: "room", name: "Inland 360/50", icon: "/icons/parts/s360.png", fits: ["servers"], year: 1965, research: "srv-360", cost: 3_000_000, coef: 5, watts: 1, work: 6, diskGb: 0.00725, spec: "1965: one of a family of machines that all ran the same programs." },
   { id: "pdp1120", kind: "server", group: "room", name: "Maynard 11/20", icon: "/icons/parts/pdp1120.png", fits: ["servers"], year: 1970, research: "srv-1120", cost: 10_000_000, coef: 5, watts: 1, work: 8, diskGb: 0.1, spec: "1970: a 16-bit minicomputer in one cabinet." },
   { id: "vax780", kind: "server", group: "room", name: "Maynard 11/780", icon: "/icons/parts/vax780.png", fits: ["servers"], year: 1977, research: "srv-780", cost: 400_000_000, coef: 5, watts: 1, work: 24, diskGb: 0.1, spec: "1977: 32-bit; its speed became the yardstick called 1 MIPS." },
+  // Supercomputers: machine-room computers with their own coolant. Each needs
+  // two or more generators (watts here count generators) and coolers of its
+  // kind: Freon, Fluorinert, or a chilled-water loop.
+  { id: "cray1", kind: "server", group: "room", coolant: "freon", name: "Chippewa 1", icon: "/icons/parts/cray1.png", fits: ["servers"], year: 1976, research: "srv-cray1", cost: 1_000_000_000, coef: 5, watts: 2, work: 30, diskGb: 0.1, spec: "1976: 80 MHz, 160 MFLOPS, Freon-cooled, about 115 kW; the benches round it hide the power supplies." },
+  { id: "xmp", kind: "server", group: "room", coolant: "freon", name: "Chippewa X-MP/48", icon: "/icons/parts/xmp.png", fits: ["servers"], year: 1982, research: "srv-xmp", cost: 5_000_000_000, coef: 5, watts: 2, work: 60, diskGb: 1, spec: "1982: up to four processors at 105 MHz, 200 MFLOPS each; about $15 million." },
+  { id: "cray2", kind: "server", group: "room", coolant: "fluorinert", name: "Chippewa 2", icon: "/icons/parts/cray2.png", fits: ["servers"], year: 1985, research: "srv-cray2", cost: 20_000_000_000, coef: 5, watts: 2, work: 120, diskGb: 1, spec: "1985: four processors, 1.9 GFLOPS, its boards bathed in Fluorinert." },
+  { id: "ymp", kind: "server", group: "room", coolant: "water", name: "Chippewa Y-MP", icon: "/icons/parts/ymp.png", fits: ["servers"], year: 1988, research: "srv-ymp", cost: 60_000_000_000, coef: 5, watts: 2, work: 200, diskGb: 2.52, spec: "1988: eight processors, 333 MFLOPS each, liquid-cooled." },
+  { id: "c90", kind: "server", group: "room", coolant: "water", name: "Chippewa C90", icon: "/icons/parts/c90.png", fits: ["servers"], year: 1991, research: "srv-c90", cost: 200_000_000_000, coef: 5, watts: 3, work: 400, diskGb: 2.52, spec: "1991: sixteen processors, 16 GFLOPS at peak." },
+  { id: "t3d", kind: "server", group: "room", coolant: "water", name: "Chippewa T3D", icon: "/icons/parts/t3d.png", fits: ["servers"], year: 1993, research: "srv-t3d", cost: 500_000_000_000, coef: 5, watts: 3, work: 600, diskGb: 2.52, spec: "1993: up to 2,048 small processors working together." },
+  { id: "t90", kind: "server", group: "room", coolant: "water", name: "Chippewa T90", icon: "/icons/parts/t90.png", fits: ["servers"], year: 1995, research: "srv-t90", cost: 1_200_000_000_000, coef: 5, watts: 3, work: 900, diskGb: 2.52, spec: "1995: 32 vector processors, 58 GFLOPS at peak." },
+  { id: "t3e", kind: "server", group: "room", coolant: "water", name: "Chippewa T3E", icon: "/icons/parts/t3e.png", fits: ["servers"], year: 1996, research: "srv-t3e", cost: 3_000_000_000_000, coef: 5, watts: 3, work: 1400, diskGb: 9, spec: "1996: up to 2,048 processors and 1.2 TFLOPS at peak." },
+  { id: "xt3", kind: "server", group: "room", coolant: "water", name: "Chippewa XT3", icon: "/icons/parts/xt3.png", fits: ["servers"], year: 2004, research: "srv-xt3", cost: 15_000_000_000_000, coef: 5, watts: 4, work: 2500, diskGb: 9, spec: "2004: cabinets of Alder 64 chips on a custom network." },
+  { id: "xt5", kind: "server", group: "room", coolant: "water", name: "Chippewa XT5", icon: "/icons/parts/xt5.png", fits: ["servers"], year: 2008, research: "srv-xt5", cost: 60_000_000_000_000, coef: 5, watts: 4, work: 5000, diskGb: 1000, spec: "2008: the line behind the first petaflop systems." },
+  { id: "xc30", kind: "server", group: "room", coolant: "water", name: "Chippewa XC30", icon: "/icons/parts/xc30.png", fits: ["servers"], year: 2012, research: "srv-xc30", cost: 200_000_000_000_000, coef: 5, watts: 4, work: 9000, diskGb: 1000, spec: "2012: water-cooled cabinets on a new network." },
+  { id: "crayex", kind: "server", group: "room", coolant: "water", name: "Chippewa EX", icon: "/icons/parts/crayex.png", fits: ["servers"], year: 2021, research: "srv-crayex", cost: 10_000_000_000_000_000, coef: 5, watts: 5, work: 20000, diskGb: 2000, spec: "2021: the line that ran the first exascale machine." },
+  { id: "freon", kind: "cool", group: "room", coolant: "freon", name: "Freon cooling unit", icon: "/icons/parts/freon.png", fits: ["servers"], year: 1976, research: "srv-cray1", cost: 50_000_000, coef: 1.35, cool: 1, spec: "Liquid Freon through steel pipes in the frame, chilled below the machine." },
+  { id: "fluorinert", kind: "cool", group: "room", coolant: "fluorinert", name: "Fluorinert exchanger", icon: "/icons/parts/fluorinert.png", fits: ["servers"], year: 1985, research: "srv-cray2", cost: 500_000_000, coef: 1.35, cool: 1, spec: "Pumps the inert liquid through the boards and chills it outside the box." },
+  { id: "chiller", kind: "cool", group: "room", coolant: "water", name: "Chilled-water loop", icon: "/icons/parts/chiller.png", fits: ["servers"], year: 1988, research: "srv-ymp", cost: 2_000_000_000, coef: 1.35, cool: 1, spec: "Chilled water from the building plant, piped to the cabinets." },
+  // Defunct makers' big machines, all air-cooled machine-room computers.
+  { id: "cm5", kind: "server", group: "room", name: "Thinking Engines CM-5", icon: "/icons/parts/cm5.png", fits: ["servers"], year: 1991, research: "srv-cm5", cost: 150_000_000_000, coef: 5, watts: 2, work: 300, diskGb: 2.52, spec: "1991: black cabinets with walls of red lights, up to 1,024 processors." },
+  { id: "alpha8400", kind: "server", group: "room", name: "Maynard AlphaServer 8400", icon: "/icons/parts/alpha8400.png", fits: ["servers"], year: 1995, research: "srv-alpha", cost: 800_000_000_000, coef: 5, watts: 2, work: 700, diskGb: 2.52, spec: "1995: up to twelve 64-bit Alpha chips, the fastest chips of their day." },
+  { id: "origin2000", kind: "server", group: "room", name: "Silicon Pictures Origin 2000", icon: "/icons/parts/origin2000.png", fits: ["servers"], year: 1996, research: "srv-origin", cost: 2_000_000_000_000, coef: 5, watts: 2, work: 1100, diskGb: 9, spec: "1996: modules joined into one big shared-memory machine." },
+  { id: "e10k", kind: "server", group: "room", name: "Sunrise Enterprise 10000", icon: "/icons/parts/e10k.png", fits: ["servers"], year: 1997, research: "srv-e10k", cost: 4_000_000_000_000, coef: 5, watts: 2, work: 1600, diskGb: 9, spec: "1997: up to 64 processors in one cabinet, the 'Starfire'." },
   { id: "mgset", kind: "power", group: "room", name: "Motor-generator set", icon: "/icons/parts/mgset.png", fits: ["servers"], year: 1951, research: null, cost: 10_000, coef: 1.35, power: 1, spec: "A motor turning a generator: steady power for one machine-room computer." },
   { id: "roomac", kind: "cool", group: "room", name: "Room air conditioner", icon: "/icons/parts/roomac.png", fits: ["servers"], year: 1951, research: null, cost: 10_000, coef: 1.35, cool: 1, spec: "Chilled air under the raised floor, enough for one machine-room computer." },
 
@@ -128,9 +158,11 @@ export const PARTS = [
   { id: "disk10k", kind: "disk", name: "9 GB SCSI disk", icon: "/icons/parts/disk10k.png", fits: ["servers"], year: 1996, research: "store-10k", cost: 1_000_000_000, coef: 2, gb: 9, spec: "1996: 9 GB at 10,000 rpm, the first drive to spin that fast." },
   { id: "hdd1t", kind: "disk", name: "1 TB disk", icon: "/icons/parts/hdd1t.png", fits: ["servers"], year: 2007, research: "store-1tb", cost: 10_000_000_000, coef: 2, gb: 1000, spec: "2007: 1 TB on five platters, 7200 rpm." },
   { id: "ssd2t", kind: "disk", name: "2 TB SSD", icon: "/icons/parts/ssd2t.png", fits: ["servers"], year: 2015, research: "store-ssd2t", cost: 100_000_000_000, coef: 2, gb: 2000, spec: "2015: 2 TB of NAND flash on SATA." },
+  ...BENCH_PARTS,
 ];
 
 const STARTER = {
+  bench: [],
   mine: ["raster1080", "psu750", "fans", "ddr4_16"],
   cluster: ["raster1080", "psu750", "fans", "ddr4_32"],
   servers: ["mark1", "mgset", "roomac", "tape"],
@@ -178,7 +210,7 @@ const PART_NEWS = {
 const byId = Object.fromEntries(PARTS.map((part) => [part.id, part]));
 
 export function blankFacilities() {
-  return { mine: {}, cluster: {}, servers: {} };
+  return { mine: {}, cluster: {}, servers: {}, bench: {} };
 }
 
 // (Saves are read with up to 32 of a stick anywhere, so migrateFacilities can
@@ -190,6 +222,9 @@ export function partMax(part, facilityId) {
   // One generator and one air conditioner per machine-room computer, and
   // there can be more machines than 24.
   if (part?.group === "room" && (part.kind === "power" || part.kind === "cool")) return ROOM_UNITS;
+  // One board and one CPU on the bench; sticks are limited by the board.
+  if (part?.kind === "board" || part?.kind === "cpu") return 1;
+  if (part?.kind === "stick") return 8;
   return MAX_PART;
 }
 
@@ -260,12 +295,13 @@ function ownedId(state, id) {
 
 export function facilityUnlocked(state, facilityId) {
   if (facilityId === "servers") return ownedId(state, "mainframes") >= 1;
+  if (facilityId === "bench") return ownedId(state, "homepc") >= 1;
   return ownedId(state, "ai") >= 1;
 }
 
 // The Facilities screen opens with its first plant (the research servers).
 export function anyFacilityOpen(state) {
-  return facilityUnlocked(state, "servers") || facilityUnlocked(state, "mine");
+  return facilityUnlocked(state, "servers") || facilityUnlocked(state, "bench") || facilityUnlocked(state, "mine");
 }
 
 export function facilitiesOpen(state) {
@@ -292,12 +328,13 @@ function stock(counts, facilityId) {
   let gpus = 0;
   let storage = 0;
   let need = 0;
-  const groups = { room: { watts: 0, power: 0, cool: 0, work: 0 }, rack: { watts: 0, power: 0, cool: 0, work: 0 } };
+  const groups = { room: { watts: 0, power: 0, cool: 0, work: 0, by: {} }, rack: { watts: 0, power: 0, cool: 0, work: 0, by: {} } };
   for (const part of PARTS) {
     if (!part.fits.includes(facilityId)) continue;
     const n = counts?.[part.id] || 0;
     if (n <= 0) continue;
     const g = groups[part.group] || null;
+    const coolant = part.coolant || "air";
     if (part.kind === "gpu" || part.kind === "server") {
       watts += part.watts * n;
       vram += (part.vram || 0) * n;
@@ -306,6 +343,9 @@ function stock(counts, facilityId) {
       if (g) {
         g.watts += part.watts * n;
         g.work += part.work * n;
+        g.by[coolant] = g.by[coolant] || { watts: 0, cool: 0, work: 0 };
+        g.by[coolant].watts += part.watts * n;
+        g.by[coolant].work += part.work * n;
       }
       if (part.diskGb) need = Math.max(need, part.diskGb);
     } else if (part.kind === "power") {
@@ -313,7 +353,11 @@ function stock(counts, facilityId) {
       if (g) g.power += part.power * n;
     } else if (part.kind === "cool") {
       cool += part.cool * n;
-      if (g) g.cool += part.cool * n;
+      if (g) {
+        g.cool += part.cool * n;
+        g.by[coolant] = g.by[coolant] || { watts: 0, cool: 0, work: 0 };
+        g.by[coolant].cool += part.cool * n;
+      }
     } else if (part.kind === "ram") ram += part.gb * n;
     else if (part.kind === "disk") storage += part.gb * n;
   }
@@ -321,9 +365,16 @@ function stock(counts, facilityId) {
   if (facilityId === "servers") {
     // Each kind of room runs on its own power and cooling.
     let running = 0;
+    // Power is shared within a room; each coolant cools only its own machines.
     for (const g of Object.values(groups)) {
-      g.speed = g.watts <= 0 ? 0 : Math.min(1, Math.min(g.power, g.cool) / g.watts);
-      running += g.work * g.speed;
+      const powered = g.watts <= 0 ? 0 : Math.min(1, g.power / g.watts);
+      let groupRunning = 0;
+      for (const c of Object.values(g.by)) {
+        if (c.watts <= 0) continue;
+        groupRunning += c.work * Math.min(powered, Math.min(1, c.cool / c.watts));
+      }
+      g.speed = g.work > 0 ? groupRunning / g.work : 0;
+      running += groupRunning;
     }
     speed = work > 0 ? running / work : 0;
   }
@@ -333,11 +384,14 @@ function stock(counts, facilityId) {
 // What the plant is short of first: power or cooling (for the servers, per
 // kind of room), then memory, then disk. { kind, group } or null.
 function shortOf(facilityId, stocked) {
+  if (facilityId === "bench") return null;
   if (facilityId === "servers") {
     for (const [group, g] of Object.entries(stocked.groups)) {
       if (g.watts <= 0) continue;
       if (g.power < g.watts) return { kind: "power", group };
-      if (g.cool < g.watts) return { kind: "cool", group };
+      for (const [coolant, c] of Object.entries(g.by)) {
+        if (c.watts > 0 && c.cool < c.watts) return { kind: "cool", group, coolant };
+      }
     }
     if (stocked.need > 0 && stocked.storage < stocked.need) return { kind: "disk", group: null };
     return null;
@@ -354,7 +408,7 @@ export function plantShort(state, facilityId) {
   const counts = countsOf(state, facilityId);
   const short = shortOf(facilityId, stock(counts, facilityId));
   if (!short) return null;
-  const pick = cheapest(facilityId, short.kind, counts, openParts(state), short.group);
+  const pick = cheapest(facilityId, short.kind, counts, openParts(state), short.group, short.coolant);
   return { ...short, part: pick?.part || null, cost: pick?.cost ?? null };
 }
 
@@ -443,16 +497,18 @@ export function facilityReport(state, businessPerSecond) {
     mine: dress(mine),
     cluster: dress(cluster),
     servers: { ...servers, share: 0, perSecond: 0 },
+    bench: { ...benchStock(countsOf(state, "bench")), limit: benchLimit(countsOf(state, "bench")), share: 0 },
   };
 }
 
-function cheapest(facilityId, kind, counts, open = null, group = null) {
+function cheapest(facilityId, kind, counts, open = null, group = null, coolant = null) {
   if (kind === "disk") return diskFor(facilityId, counts, open);
   let best = null;
   for (const part of PARTS) {
     if (part.soon || part.kind !== kind || !part.fits.includes(facilityId)) continue;
     if (open && !open.has(part.id)) continue;
     if (group && part.group !== group) continue;
+    if (coolant && (part.coolant || "air") !== coolant) continue;
     const owned = counts[part.id] || 0;
     if (owned >= partMax(part, facilityId)) continue;
     if (fitPart(counts, facilityId, part.id).reason) continue;
@@ -484,7 +540,7 @@ function diskFor(facilityId, counts, open) {
 function hintFor(facilityId, counts, limit, open) {
   const short = shortOf(facilityId, stock(counts, facilityId));
   if (short && (limit === "Power limited" || limit === "Cooling limited" || limit === "Needs more RAM" || short.kind === "disk")) {
-    return cheapest(facilityId, short.kind, counts, open, short.group);
+    return cheapest(facilityId, short.kind, counts, open, short.group, short.coolant);
   }
   const kind = limit === "Needs more VRAM" || limit === "Add a GPU" || limit === "Running full" ? (facilityId === "servers" ? "server" : "gpu") : null;
   if (!kind) return null;
@@ -567,6 +623,7 @@ export function fitPart(counts, facilityId, partId) {
   const part = byId[partId];
   const owned = counts?.[partId] || 0;
   if (!part) return { reason: "Unknown part." };
+  if (facilityId === "bench") return fitBench(counts || {}, part);
   if (part.kind !== "ram" && owned >= partMax(part, facilityId)) return { reason: "At the most you can own." };
   const next = { ...counts, [partId]: owned + 1 };
   const board = BOARDS[facilityId];
@@ -596,6 +653,190 @@ export function fitPart(counts, facilityId, partId) {
   const gb = RAM_PARTS.reduce((sum, p) => sum + (next[p.id] || 0) * p.gb, 0);
   if (gb > board.maxGb) return { reason: `The board takes ${board.maxGb} GB at most.` };
   return { counts: next, refund, note: notes.join("; ") || null };
+}
+
+// --- The PC build bench ----------------------------------------------------
+
+export const SOCKET_NAMES = {
+  8080: "8080", 6502: "6502", z80: "Z80", 8088: "8088", 286: "286", 386: "386", 486: "486",
+  socket4: "Socket 4", nx586: "Nx586", socket7: "Socket 7", socket8: "Socket 8", slot1: "Slot 1", slota: "Slot A",
+  socketa: "Socket A", s478: "Socket 478", s939: "Socket 939", lga775: "LGA775", am2: "AM2+",
+  lga1366: "LGA1366", lga1155: "LGA1155", am3: "AM3+", lga1150: "LGA1150", lga1151: "LGA1151",
+  am4: "AM4", tr4: "TR4", lga1156: "LGA1156", lga1151v2: "LGA1151 (300-series)", lga1700: "LGA1700", am5: "AM5", lga1851: "LGA1851",
+};
+export const MEM_NAMES = {
+  dip: "memory-chip", simm30: "30-pin SIMM", simm72: "72-pin SIMM", sdram: "SDRAM DIMM",
+  ddr: "DDR", ddr2: "DDR2", ddr3: "DDR3", ddr4: "DDR4", ddr5: "DDR5",
+};
+
+// Whether a CPU works in a board: the socket, the chipset's CPU list, and,
+// for a CPU with its own memory controller, the board's memory type.
+export function cpuFitsBoard(chip, board) {
+  if (!chip || !board) return "none";
+  if (!(chip.sockets || [chip.socket]).includes(board.socket)) return "socket";
+  if (!(board.supports || []).includes(chip.gen)) return "chipset";
+  if (chip.memSpeed && chip.memSpeed[board.mem] == null) return "memory";
+  return null;
+}
+
+function cpuMisfit(chip, board) {
+  const why = cpuFitsBoard(chip, board);
+  if (!why) return null;
+  if (why === "socket") return `Needs a board with a ${SOCKET_NAMES[chip.socket]} socket; this board has ${SOCKET_NAMES[board.socket]}.`;
+  if (why === "chipset") return `The ${board.name}'s chipset doesn't support this CPU.`;
+  return `This CPU can't use the ${MEM_NAMES[board.mem]} memory on this board.`;
+}
+
+function benchHas(counts, kind) {
+  return PARTS.filter((p) => p.kind === kind && p.fits.includes("bench") && (counts[p.id] || 0) > 0);
+}
+
+// The bench's rules, as on real PCs: a CPU goes only in a board with its
+// socket, memory only in a board with its kind of slot. A new board takes out
+// the CPU and memory that don't fit it, and a new CPU replaces the old one;
+// whatever comes out is sold back at half what it cost. When every memory
+// slot is full, a bigger stick replaces the smallest.
+function fitBench(counts, part) {
+  const next = { ...counts };
+  let refund = 0;
+  const notes = [];
+  const takeOut = (p, why) => {
+    const n = next[p.id] || 0;
+    if (!n) return;
+    refund += soldBack(p, n, 0);
+    delete next[p.id];
+    if (why) notes.push(why);
+  };
+  const [boardNow] = benchHas(counts, "board");
+  if (part.kind === "board") {
+    if ((counts[part.id] || 0) > 0) return { reason: "Already on the bench." };
+    if (boardNow) takeOut(boardNow, `replaces the ${boardNow.name}`);
+    for (const c of benchHas(counts, "cpu")) if (cpuFitsBoard(c, part)) takeOut(c, `takes out the ${c.name} (it doesn't fit)`);
+    let sticks = 0;
+    for (const m of benchHas(counts, "stick")) {
+      if (m.mem === part.mem) continue;
+      sticks += counts[m.id];
+      takeOut(m, null);
+    }
+    if (sticks) notes.push(`takes out ${sticks} memory ${sticks === 1 ? "stick" : "sticks"} that don't fit`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
+  if (part.kind === "cpu") {
+    if ((counts[part.id] || 0) > 0) return { reason: "Already on the bench." };
+    if (!boardNow) return { reason: `Needs a board with a ${SOCKET_NAMES[part.socket]} socket.` };
+    const misfit = cpuMisfit(part, boardNow);
+    if (misfit) return { reason: misfit };
+    for (const c of benchHas(counts, "cpu")) takeOut(c, `replaces the ${c.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
+  if (part.kind === "stick") {
+    if (!boardNow) return { reason: `Needs a board with ${MEM_NAMES[part.mem]} slots.` };
+    if (boardNow.mem !== part.mem) return { reason: `Needs a board with ${MEM_NAMES[part.mem]} slots; this board takes ${MEM_NAMES[boardNow.mem]}.` };
+    next[part.id] = (next[part.id] || 0) + 1;
+    const used = benchHas(next, "stick").reduce((n, m) => n + next[m.id], 0);
+    if (used > boardNow.slots) {
+      const smallest = benchHas(next, "stick").filter((m) => next[m.id] > (m.id === part.id ? 1 : 0)).sort((a, b) => a.mb - b.mb)[0];
+      if (!smallest || smallest.mb >= part.mb) return { reason: `All ${boardNow.slots} memory slots are full.` };
+      refund += soldBack(smallest, next[smallest.id], next[smallest.id] - 1);
+      next[smallest.id] -= 1;
+      if (!next[smallest.id]) delete next[smallest.id];
+      notes.push(`replaces a ${smallest.name}`);
+    }
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
+  return { counts: { ...counts, [part.id]: (counts[part.id] || 0) + 1 }, refund: 0, note: null };
+}
+
+// The bench's PC: CPU speed, held back when memory is short or slow, and a
+// little faster with fast memory, or with an unlocked CPU on a board that
+// overclocks.
+export function benchStock(counts) {
+  const c = counts || {};
+  const [board] = benchHas(c, "board");
+  const [chip] = benchHas(c, "cpu");
+  const sticks = benchHas(c, "stick");
+  const ramMb = sticks.reduce((n, m) => n + m.mb * c[m.id], 0);
+  const stickCount = sticks.reduce((n, m) => n + c[m.id], 0);
+  const need = chip?.ramMb || 0;
+  const memory = !chip ? 0 : ramMb <= 0 ? 0 : Math.min(1, ramMb / need);
+  const fits = chip && board && !cpuFitsBoard(chip, board);
+  // Memory runs at the slowest of the sticks, the board's limit and, on a
+  // board that holds memory to rated speed, the CPU's rating.
+  const rated = chip?.memSpeed?.[board?.mem] || board?.memMax || 0;
+  const stickSpeed = sticks.length ? Math.min(...sticks.map((m) => m.speed || 0)) : 0;
+  let memSpeed = 0;
+  let speedFactor = 1;
+  if (rated > 0 && stickSpeed > 0) {
+    memSpeed = Math.min(stickSpeed, board?.memMax || stickSpeed, board?.memLock ? rated : Infinity);
+    speedFactor = 0.85 + 0.15 * Math.min(1.25, memSpeed / rated);
+  }
+  const overclock = fits && board.oc && chip.unlocked ? 1.1 : 1;
+  const perf = fits ? chip.perf * memory * speedFactor * overclock : 0;
+  return { board: board || null, cpu: chip || null, ramMb, needMb: need, sticks: stickCount, memory, memSpeed, rated, speedFactor, overclock, perf, perSecond: perf * BENCH_RD };
+}
+
+// The ways to put a faster CPU on the bench right now: the CPU, a board for
+// its socket if the bench doesn't have one, and the memory it wants. Each plan
+// lists the parts in buying order, with the total cost after sell-backs.
+export function benchPlans(state) {
+  const open = openParts(state);
+  let counts = { ...countsOf(state, "bench") };
+  const now = benchStock(counts);
+  const plans = [];
+  for (const chip of PARTS.filter((p) => p.kind === "cpu" && p.fits.includes("bench") && open.has(p.id))) {
+    if (chip.perf <= (now.cpu?.perf || 0)) continue;
+    const boards = now.board && !cpuFitsBoard(chip, now.board)
+      ? [now.board]
+      : PARTS.filter((p) => p.kind === "board" && p.fits.includes("bench") && open.has(p.id) && !cpuFitsBoard(chip, p));
+    for (const board of boards) {
+      let c = { ...counts };
+      let cost = 0;
+      const steps = [];
+      const add = (part) => {
+        const fit = fitBench(c, part);
+        if (fit.reason) return false;
+        cost += partCost(part, c[part.id] || 0) - fit.refund;
+        c = fit.counts;
+        steps.push(part.id);
+        return true;
+      };
+      if (!(c[board.id] > 0) && !add(board)) continue;
+      if (!add(chip)) continue;
+      const sticks = PARTS.filter((p) => p.kind === "stick" && p.mem === board.mem && open.has(p.id)).sort((a, b) => (b.speed || 0) - (a.speed || 0) || b.mb - a.mb);
+      for (let i = 0; i < 8 && benchStock(c).memory < 0.999 && sticks.length; i++) {
+        const fits = sticks.find((m) => !fitBench(c, m).reason);
+        if (!fits || !add(fits)) break;
+      }
+      const after = benchStock(c);
+      plans.push({ cpu: chip, board, steps, cost, perf: after.perf, perSecond: after.perSecond });
+    }
+  }
+  return plans.sort((a, b) => b.perf - a.perf || a.cost - b.cost);
+}
+
+export function benchLimit(counts) {
+  const b = benchStock(counts);
+  if (!b.board) return "Add a board";
+  if (!b.cpu) return "Add a CPU";
+  if (b.memory < 0.999) return "Needs more memory";
+  return "Running full";
+}
+
+export function benchHint(state) {
+  const b = benchStock(countsOf(state, "bench"));
+  if (!b.board) return "Next: a motherboard, then a CPU for its socket and memory for its slots.";
+  if (!b.cpu) return `Next: a CPU for the ${SOCKET_NAMES[b.board.socket]} socket.`;
+  if (b.memory < 0.999) return `Next: more ${MEM_NAMES[b.board.mem]} memory; the ${b.cpu.name} wants ${memSize(b.needMb)}.`;
+  return "Next: a newer board and CPU as you reach their years and research them.";
+}
+
+export function memSize(mb) {
+  if (!(mb > 0)) return "0 KB";
+  if (mb >= 1024) return `${Number((mb / 1024).toFixed(2))} GB`;
+  if (mb >= 1) return `${Number(mb.toFixed(2))} MB`;
+  return `${Math.round(mb * 1000)} KB`;
 }
 
 // Old saves: drop parts that no longer fit their plant, DDR4 sticks sharing a
@@ -745,7 +986,7 @@ function withSupport(state, facilityId, partId, open = openParts(state)) {
     const stocked = stock(counts, facilityId);
     const short = shortOf(facilityId, stocked);
     if (!short) return { state: next, cost, extras, notes };
-    const pick = cheapest(facilityId, short.kind, counts, open, short.group);
+    const pick = cheapest(facilityId, short.kind, counts, open, short.group, short.coolant);
     if (!pick || !add(pick.part.id)) return null;
   }
   return null;
@@ -761,8 +1002,9 @@ function marginal(state, offer, businessPerSecond) {
 
 export function facilityHint(state, facilityId, businessPerSecond) {
   if (!facilityUnlocked(state, facilityId)) {
-    return facilityId === "servers" ? "Requires 1951" : "Own an AI Accelerator to open the plant.";
+    return facilityId === "servers" ? "Requires 1951" : facilityId === "bench" ? "Requires 1977" : "Own an AI Accelerator to open the plant.";
   }
+  if (facilityId === "bench") return benchHint(state);
   const counts = countsOf(state, facilityId);
   const row = facilityReport(state, businessPerSecond)[facilityId];
   const open = openParts(state);

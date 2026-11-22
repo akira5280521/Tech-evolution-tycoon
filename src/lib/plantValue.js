@@ -18,7 +18,7 @@ export function partValue(state, facilityId, partId, businessPerSecond) {
   }
   const plan = supportPlan(state, facilityId, partId);
   if (!plan) return { added: 0, why: "There are no more parts to power or cool it." };
-  if (facilityId === "servers") {
+  if (facilityId === "servers" || facilityId === "bench") {
     const added = serverOutput(plan.state).perSecond - serverOutput(state).perSecond;
     const awayHours = awayBankHours(plan.state) - awayBankHours(state);
     return {
@@ -60,5 +60,8 @@ function notNeeded(part, facilityId) {
   if (part.kind === "cool") return "Not needed now: there's cooling to spare.";
   if (part.kind === "ram") return facilityId === "mine" ? "Not needed now: the mine has the memory it needs." : "Not needed now: there's enough memory for the model.";
   if (part.kind === "disk") return "Adds nothing now: the away bank is at its 8-hour limit.";
+  if (part.kind === "stick") return "Adds nothing now: the CPU has the memory it needs.";
+  if (part.kind === "board") return "Adds nothing by itself: it's the CPU in it that counts.";
+  if (part.kind === "cpu") return "Adds nothing over the CPU on the bench now.";
   return "Adds nothing right now.";
 }

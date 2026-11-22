@@ -11,7 +11,7 @@
 
 import { BUSINESSES } from "./gameConfig.js";
 import { GENERATIONS } from "./generations.js";
-import { PARTS, pushHeadline, readFacilities, serverStock } from "./facilities.js";
+import { PARTS, benchStock, pushHeadline, readFacilities, serverStock } from "./facilities.js";
 import { playerYear } from "./eraYear.js";
 
 export { playerYear };
@@ -25,6 +25,7 @@ export const RESEARCH_TABS = [
   { id: "power", label: "POWER" },
   { id: "network", label: "NETWORK" },
   { id: "servers", label: "SERVERS" },
+  { id: "boards", label: "BOARDS" },
 ];
 
 
@@ -89,7 +90,7 @@ export const RESEARCH = [
   item({ id: "mem-ddr", tab: "memory", year: 2000, name: "DDR-266", spec: "DDR SDRAM, PC2100, 2.1 GB/s", rd: 24, durationMs: 55_000, prereq: "mem-sdram" }),
   item({ id: "mem-ddr2", tab: "memory", year: 2003, name: "DDR2-800", spec: "DDR2, PC2-6400, 6.4 GB/s", rd: 28, durationMs: 60_000, prereq: "mem-ddr" }),
   item({ id: "mem-ddr3", tab: "memory", year: 2007, name: "DDR3-1600", spec: "DDR3, PC3-12800, 12.8 GB/s", rd: 32, durationMs: 70_000, prereq: "mem-ddr2" }),
-  item({ id: "mem-ddr4", tab: "memory", year: 2014, name: "DDR4-3200", spec: "DDR4, PC4-25600, 25.6 GB/s", rd: 40, durationMs: 80_000, prereq: "mem-ddr3" }),
+  item({ id: "mem-ddr4", tab: "memory", year: 2014, name: "DDR4-2133", spec: "DDR4, PC4-17000, 17 GB/s at launch", rd: 40, durationMs: 80_000, prereq: "mem-ddr3" }),
   item({ id: "mem-ddr5", tab: "memory", year: 2020, name: "DDR5-4800", spec: "DDR5, PC5-38400, 38.4 GB/s", rd: 64, durationMs: 120_000, prereq: "mem-ddr4" }),
   item({ id: "mem-ddr5-64", tab: "memory", year: 2022, name: "64 GB DDR5 RDIMM", spec: "Registered DDR5 for the first DDR5 servers", rd: 64, durationMs: 120_000, prereq: "mem-ddr5" }),
   item({ id: "mem-ddr5-128", tab: "memory", year: 2024, name: "128 GB DDR5-6400", spec: "Registered DDR5 at 6400 MT/s", rd: 72, durationMs: 130_000, prereq: "mem-ddr5-64" }),
@@ -136,12 +137,58 @@ export const RESEARCH = [
   item({ id: "srv-360", tab: "servers", year: 1965, name: "Inland 360/50", spec: "One family of compatible machines, from small to large", rd: 5, durationMs: 30_000, prereq: "srv-7090" }),
   item({ id: "srv-1120", tab: "servers", year: 1970, name: "Maynard 11/20", spec: "A 16-bit minicomputer that fits in one cabinet", rd: 6, durationMs: 35_000, prereq: "srv-360" }),
   item({ id: "srv-780", tab: "servers", year: 1977, name: "Maynard 11/780", spec: "32-bit, the yardstick for '1 MIPS'", rd: 8, durationMs: 40_000, prereq: "srv-1120" }),
+  item({ id: "srv-cray1", tab: "servers", year: 1976, name: "Chippewa 1", spec: "A Freon-cooled supercomputer, 160 MFLOPS", rd: 10, durationMs: 45_000, prereq: "srv-1120" }),
+  item({ id: "srv-xmp", tab: "servers", year: 1982, name: "Chippewa X-MP/48", spec: "Up to four processors sharing one memory", rd: 12, durationMs: 50_000, prereq: "srv-cray1" }),
+  item({ id: "srv-cray2", tab: "servers", year: 1985, name: "Chippewa 2", spec: "1.9 GFLOPS, boards bathed in Fluorinert", rd: 14, durationMs: 55_000, prereq: "srv-xmp" }),
+  item({ id: "srv-ymp", tab: "servers", year: 1988, name: "Chippewa Y-MP", spec: "Eight processors, liquid-cooled", rd: 16, durationMs: 60_000, prereq: "srv-cray2" }),
+  item({ id: "srv-c90", tab: "servers", year: 1991, name: "Chippewa C90", spec: "Sixteen processors, 16 GFLOPS", rd: 18, durationMs: 65_000, prereq: "srv-ymp" }),
+  item({ id: "srv-t3d", tab: "servers", year: 1993, name: "Chippewa T3D", spec: "Thousands of small processors in one machine", rd: 20, durationMs: 70_000, prereq: "srv-c90" }),
+  item({ id: "srv-t90", tab: "servers", year: 1995, name: "Chippewa T90", spec: "32 vector processors, 58 GFLOPS", rd: 22, durationMs: 75_000, prereq: "srv-t3d" }),
+  item({ id: "srv-t3e", tab: "servers", year: 1996, name: "Chippewa T3E", spec: "Up to 2,048 processors, 1.2 TFLOPS", rd: 24, durationMs: 80_000, prereq: "srv-t90" }),
+  item({ id: "srv-xt3", tab: "servers", year: 2004, name: "Chippewa XT3", spec: "Cabinets of 64-bit PC chips on a custom network", rd: 30, durationMs: 85_000, prereq: "srv-t3e" }),
+  item({ id: "srv-xt5", tab: "servers", year: 2008, name: "Chippewa XT5", spec: "The line behind the first petaflop systems", rd: 36, durationMs: 90_000, prereq: "srv-xt3" }),
+  item({ id: "srv-xc30", tab: "servers", year: 2012, name: "Chippewa XC30", spec: "Water-cooled cabinets on a new network", rd: 40, durationMs: 95_000, prereq: "srv-xt5" }),
+  item({ id: "srv-crayex", tab: "servers", year: 2021, name: "Chippewa EX", spec: "The line behind the first exascale machine", rd: 48, durationMs: 100_000, prereq: "srv-xc30" }),
+  item({ id: "srv-cm5", tab: "servers", year: 1991, name: "Thinking Engines CM-5", spec: "Up to 1,024 processors on a fat-tree network", rd: 18, durationMs: 65_000, prereq: "srv-780" }),
+  item({ id: "srv-alpha", tab: "servers", year: 1995, name: "Maynard AlphaServer 8400", spec: "64-bit Alpha chips, up to twelve", rd: 22, durationMs: 75_000, prereq: "srv-780" }),
+  item({ id: "srv-origin", tab: "servers", year: 1996, name: "Silicon Pictures Origin 2000", spec: "Modules joined into one shared memory", rd: 24, durationMs: 80_000, prereq: "srv-780" }),
+  item({ id: "srv-e10k", tab: "servers", year: 1997, name: "Sunrise Enterprise 10000", spec: "64 processors in one cabinet", rd: 24, durationMs: 80_000, prereq: "srv-780" }),
   item({ id: "srv-tower", tab: "servers", year: 1989, name: "Foundry Tower T4", spec: "A tower server with a 486 chip", rd: 18, durationMs: 50_000, prereq: "srv-780" }),
   item({ id: "srv-2u", tab: "servers", year: 1999, name: "Foundry 2U", spec: "Two 500 MHz chips in a 2U rack box", rd: 24, durationMs: 60_000, prereq: "srv-tower" }),
   item({ id: "srv-blade", tab: "servers", year: 2006, name: "Foundry Blade B2", spec: "Two dual-core chips on a blade", rd: 30, durationMs: 70_000, prereq: "srv-2u" }),
   item({ id: "srv-r1", tab: "servers", year: 2012, name: "Foundry Rack R1", spec: "1U, two 8-core chips", rd: 36, durationMs: 80_000, prereq: "srv-blade" }),
   item({ id: "srv-r4", tab: "servers", year: 2012, name: "Foundry Rack R4", spec: "4U, four 8-core chips", rd: 44, durationMs: 90_000, prereq: "srv-r1" }),
 ];
+
+// Bench parts that need a project of their own get one: CPUs on the CPU tab
+// (each after the last chip of its maker), boards on BOARDS, sticks on MEMORY.
+{
+  const have = new Set(RESEARCH.map((entry) => entry.id));
+  const tabOf = { cpu: "cpu", board: "boards", stick: "memory" };
+  const brand = (name) => name.split(" ")[0];
+  const added = PARTS.filter((part) => part.fits.includes("bench") && part.research && !have.has(part.research))
+    .sort((a, b) => a.year - b.year);
+  for (const part of added) {
+    if (have.has(part.research)) continue;
+    const tab = tabOf[part.kind];
+    let prereq = null;
+    if (tab === "cpu") {
+      const earlier = RESEARCH.filter((e) => e.tab === "cpu" && e.year <= part.year && brand(e.name) === brand(part.name));
+      prereq = earlier.sort((a, b) => b.year - a.year)[0]?.id || null;
+    }
+    RESEARCH.push(item({
+      id: part.research,
+      tab,
+      year: part.year,
+      name: part.name,
+      spec: part.spec.replace(/^\d{4}: /, "").replace(/\.$/, ""),
+      rd: 6,
+      durationMs: 40_000,
+      prereq,
+    }));
+    have.add(part.research);
+  }
+}
 
 const byId = Object.fromEntries(RESEARCH.map((entry) => [entry.id, entry]));
 
@@ -195,7 +242,9 @@ export function serverOutput(state) {
   const { work, speed, storage, need } = serverStock(counts);
   // Each machine needs the disk of its day (part.diskGb) for full speed.
   const disk = need <= 0 ? 1 : storage >= need ? 1 : storage > 0 ? 0.5 : 0.25;
-  return { work, speed, storage, need, perSecond: work * speed * disk * RD_PER_WORK };
+  // The PC build bench adds its own R&D.
+  const bench = benchStock(readFacilities(state?.facilities).bench).perSecond;
+  return { work, speed, storage, need, bench, perSecond: work * speed * disk * RD_PER_WORK + bench };
 }
 
 // While you're away the servers can only bank what their disks can hold:

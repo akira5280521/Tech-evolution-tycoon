@@ -9,6 +9,8 @@ function awayLabel(ms) {
   return "a moment";
 }
 
+const cap = (s) => `${s[0].toUpperCase()}${s.slice(1)}`;
+
 export default function WelcomeBack({ report, onDismiss }) {
   if (!report) return null;
   return (
@@ -32,6 +34,22 @@ export default function WelcomeBack({ report, onDismiss }) {
               <li key={row.name} className="flex items-baseline justify-between gap-2">
                 <span>{row.name}</span>
                 <span className="text-[var(--game-success)]">+{money(row.amount)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {(report.short?.length > 0 || report.full?.length > 0) && (
+          // Why the total is less than income x time: a material ran short
+          // (its users paid only for what they got) or a bin was FULL.
+          <ul data-offline-why className="mt-3 space-y-1 font-term text-base leading-5 text-[var(--game-muted)]">
+            {(report.short || []).map((s) => (
+              <li key={`short-${s.key}`} data-offline-short={s.key} className="text-[var(--game-danger)]">
+                {cap(s.key)} ran short for {awayLabel(s.ms)}{s.rows?.length ? `: ${s.rows.join(" and ")} paid less` : ""}.
+              </li>
+            ))}
+            {(report.full || []).map((f) => (
+              <li key={`full-${f.key}`} data-offline-full={f.key}>
+                {cap(f.key)} bins were FULL for {awayLabel(f.ms)}: extra {f.key} was lost.
               </li>
             ))}
           </ul>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { BUSINESSES, ERA_GATE, REFINED, SUPPLY_KEYS, blockedByGlass, eraOpen, frontierEra, money, pluralName } from "@/lib/gameConfig";
+import { BUSINESSES, ERA_GATE, REFINED, SUPPLY_KEYS, blockedByGlass, eraOpen, frontierEra, isManaged, money, pluralName } from "@/lib/gameConfig";
 import { activeChallengeGoal, incomePerSecond, refiningOpen, shortageOn, supplyCap, supplyFull } from "@/lib/empire";
 import StorageSheet, { amount } from "./StorageSheet";
 import { PREFS_EVENT, readPrefs, writePrefs } from "@/lib/gamePrefs";
@@ -42,7 +42,7 @@ function supplyShown(state, key) {
 
 export default function GameScreen() {
   const game = useGameState();
-  const { state, buyMode, setBuyMode, buy, hire, run, runAll, buyForeman, prestige, dismissOffline,
+  const { state, buyMode, setBuyMode, buy, hire, run, runAll, toggleManager, buyForeman, prestige, dismissOffline,
     dismissPrestigeReport, chooseDilemma, cashOut, tutorialNext, tutorialSkip } = game;
   const [, bumpTick] = useState(0);
   const [pullDist, setPullDist] = useState(0);
@@ -108,7 +108,7 @@ export default function GameScreen() {
 
   const cps = incomePerSecond(state, Date.now());
   const glass = state.challenge?.id === "glass";
-  const canRunAll = !!state.foreman && state.biz.some((st, i) => st.owned > 0 && !st.manager && !st.running && !blockedByGlass(state, i) && !((st.commissionUntil || 0) > Date.now()));
+  const canRunAll = !!state.foreman && state.biz.some((st, i) => st.owned > 0 && !isManaged(st) && !st.running && !blockedByGlass(state, i) && !((st.commissionUntil || 0) > Date.now()));
   const firstLocked = glass ? -1 : frontierEra(state);
   const supply = state.supply || {};
 
@@ -301,6 +301,7 @@ export default function GameScreen() {
                 onBuy={buy}
                 onHire={hire}
                 onRun={run}
+                onToggleManager={toggleManager}
               />
             );
           })}

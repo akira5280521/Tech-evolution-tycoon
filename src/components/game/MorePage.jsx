@@ -366,7 +366,7 @@ function Stats({ state, data }) {
           const minutes = Math.floor((st?.activeMs || 0) / 60000);
           return (
             <p key={cfg.id} className="font-term text-lg leading-6">
-              {cfg.name}: {count(st?.owned || 0)} owned · {st?.manager ? "manager" : "manual"} · {minutes}m active
+              {cfg.name}: {count(st?.owned || 0)} owned · {st?.manager ? (st.managerOff ? "manager off" : "manager") : "manual"} · {minutes}m active
             </p>
           );
         })}

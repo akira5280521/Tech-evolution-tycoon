@@ -20,6 +20,7 @@ import {
   count,
   formatFlow,
   investorsFor,
+  isManaged,
   managerNeed,
   milestoneMult,
   money,
@@ -136,7 +137,7 @@ const ownedOf = (state, id) => state?.biz?.[indexOf(id)]?.owned || 0;
 function secs(ms) {
   const s = ms / 1000;
   if (s >= 120) return `${Math.round(s / 60)} min`;
-  return `${s >= 10 ? Math.round(s) : Number(s.toFixed(1))}s`;
+  return `${s >= 10 ? Math.round(s) : Number(s.toFixed(s < 1 ? 2 : 1))}s`;
 }
 
 function duration(ms) {
@@ -208,9 +209,11 @@ function eraInfo(state, id) {
   let does = `Each one pays ${money(payOne(state, cfg, owned))}${flow.length ? ` and ${flow.join(" and ")}` : ""} every ${secs(cycle)}`;
   if (owned > 0) {
     const perSec = (payOne(state, cfg, owned) * owned * 1000) / cycle;
-    does += row.manager || row.running
+    does += isManaged(row) || row.running
       ? `; your ${count(owned)} make ${money(perSec)} a second.`
-      : `; tap the picture to run your ${count(owned)}, or hire its manager.`;
+      : row.manager
+        ? `; its manager is switched off, so tap the picture to run your ${count(owned)}.`
+        : `; tap the picture to run your ${count(owned)}, or hire its manager.`;
   } else {
     does += ".";
   }
@@ -248,7 +251,8 @@ function managerInfo(state, id) {
   const need = managerNeed(index);
   const what = `The ${cfg.managerName} runs ${cfg.name} for you, every cycle, without a tap.`;
   let does;
-  if (row.manager) does = "Hired: it keeps running while you're away, at half speed, and a prestige lets the manager go.";
+  if (row.manager && row.managerOff) does = "Hired but switched off: the row runs only when you tap it and earns nothing while you're away, until you switch it back on.";
+  else if (row.manager) does = "Hired: it keeps running while you're away, at half speed, until its ON/OFF switch pauses it or a prestige lets it go.";
   else if (state?.challenge?.id === "noboss") does = "This challenge run allows no managers.";
   else if (owned < need) does = `Hire one once you own ${need}; you have ${count(owned)}.`;
   else {
@@ -295,7 +299,7 @@ function materialRows(state, shown) {
 function materialsInfo(state, shown = SUPPLY_KEYS) {
   return {
     title: "MATERIALS",
-    text: "Some businesses use what an earlier one makes, one per cycle each. If a material runs out, the business that needs it slows or stops paying; if its bins are FULL, new output is lost.",
+    text: "Some businesses use what an earlier one makes, one per cycle each. If a material runs short, the business that needs it still runs its full cycle but pays only for the share it got, and nothing when empty; if its bins are FULL, new output is lost.",
     rows: materialRows(state, shown),
   };
 }
@@ -308,10 +312,10 @@ function moneyInfo(state) {
   const rows = [
     { label: "CASH", text: `Money on hand: ${money(state?.cash || 0)}. BUY, Hire and upgrades spend it.` },
     { label: "INCOME", text: `What your businesses${incomePerSecond(state, now) > businessIncomePerSecond(state, now) ? " and plants" : ""} make each second right now: ${money(cps)}. Only rows that are running count.` },
-    { label: "EARNED THIS RUN", text: `Everything earned since your last prestige: ${money(state?.lifetime || 0)}. It decides how many investors a prestige brings; the next comes at ${money(nextAt)}.` },
+    { label: "EARNED THIS RUN", text: `Not shown in this box: ${money(state?.lifetime || 0)} since your last prestige, on the locked next era and in MORE > STATS. It opens eras and decides how many investors a prestige brings; the next comes at ${money(nextAt)}.` },
   ];
   if (overclockOn(state, now)) rows.push({ label: "OVERCLOCKED", text: "A lab project: all income ×1.5 until the timer runs out." });
-  return { title: "MONEY PANEL", text: "Your cash, your income and this run's earnings.", rows };
+  return { title: "MONEY PANEL", text: "Your cash and your income each second.", rows };
 }
 
 function topBarInfo(state, { tech, rigs }) {

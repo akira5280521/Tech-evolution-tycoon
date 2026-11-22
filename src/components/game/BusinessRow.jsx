@@ -5,6 +5,8 @@ import {
   MILESTONES,
   buyCount,
   costOf,
+  cycleLabel,
+  isManaged,
   formatFlow,
   managerNeed,
   milestoneMult,
@@ -53,7 +55,7 @@ function MilestoneBar({ owned, next }) {
   );
 }
 
-function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, compact: compactPref, supplyCard = false, onNeed = null, tapHint = false }) {
+function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, onToggleManager = null, compact: compactPref, supplyCard = false, onNeed = null, tapHint = false }) {
   // SUPPLY rows always use the compact card, with their bins shown on it.
   const compact = compactPref || supplyCard;
   const holdRef = useRef(null);
@@ -93,13 +95,14 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
   };
   const cfg = BUSINESSES[index];
   const st = row;
+  const managed = isManaged(st);
   const count = buyCount(buyMode, cfg, st.owned, cash);
   const cost = costOf(cfg, st.owned, count);
   const canBuy = cash >= cost;
   const mult = milestoneMult(st.owned);
   const next = nextMilestone(st.owned);
   const cycle = effectiveCycleMs(cfg, state);
-  const cycleSeconds = (cycle / 1000).toFixed(cycle % 1000 ? 1 : 0);
+  const cycleSeconds = cycleLabel(cycle);
   const rev = upgradesOf(state, cfg.id).rev ? 3 : 1;
   const fed = supplyFactor(state, cfg);
   const face = generationAt(cfg.id, st.owned, state?.techDone);
@@ -122,7 +125,18 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
   const hireCostLine = hirePrice > 0 ? `${money(hirePrice)} cash · runs it automatically` : "Free · runs it automatically";
 
   return (
-    <div data-row={cfg.id} data-help-scope className={`era-row ${(st.milestoneAt || 0) > Date.now() - 1500 ? "milestone-flash" : ""} grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
+    <div
+      data-row={cfg.id}
+      // Cycle clock read-outs for the timing tests (no visible effect).
+      data-cycle-ms={Math.round(cycle)}
+      data-running={managed || st.running ? "1" : "0"}
+      data-manager-off={st.manager && st.managerOff ? "1" : undefined}
+      data-gain={st.lastGain?.id || 0}
+      data-gain-at={st.lastGain?.at || 0}
+      data-cycle-start={st.cycleStart || 0}
+      data-laps={st.paidLaps || 0}
+      data-help-scope
+      className={`era-row ${(st.milestoneAt || 0) > Date.now() - 1500 ? "milestone-flash" : ""} grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
       <IconTile cfg={cfg} st={st} onRun={() => onRun(index)} tapHint={tapHint} />
 
       <div className="min-w-0 space-y-2">
@@ -154,8 +168,8 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
             cycleMs={cycle}
             progress={st.progress}
             cycleStart={st.cycleStart || 0}
-            active={!!(st.manager || st.running)}
-            loop={!!st.manager}
+            active={!!(managed || st.running)}
+            loop={managed}
             holdUntil={st.holdUntil || 0}
           />
         )}
@@ -167,18 +181,23 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
           </p>
         )}
         {supplyCard && cfg.makes && (
-          <p data-supply-bins className="flex flex-wrap gap-x-3 font-term text-base leading-5 text-[var(--game-muted)] tabular-nums">
+          // Fixed layout: one line per bin with room kept for FULL, and the
+          // manager on its own line, so FULL or the manager switch never
+          // changes the card's height.
+          <div data-supply-bins className="font-term text-base leading-5 text-[var(--game-muted)] tabular-nums">
             {Object.keys(cfg.makes).map((key) => {
               const full = supplyFull(state, key);
               return (
-                <span key={key} data-bin={key} className={full ? "text-[var(--game-danger)]" : ""}>
+                <p key={key} data-bin={key} className={`truncate whitespace-nowrap ${full ? "text-[var(--game-danger)]" : ""}`}>
                   {key} {amount(state?.supply?.[key] || 0)}/{amount(supplyCap(state, key))}
-                  {full && <span data-full className="ml-1 font-pixel text-[0.4rem]">FULL</span>}
-                </span>
+                  <span data-full={full ? "" : undefined} aria-hidden={!full} className={`ml-1 font-pixel text-[0.4rem] ${full ? "" : "invisible"}`}>FULL</span>
+                </p>
               );
             })}
-            <span>{st.manager ? "Manager: on" : "Manager: none"}</span>
-          </p>
+            <p data-manager-status className={`truncate whitespace-nowrap ${st.manager && st.managerOff ? "text-[var(--game-dim)]" : ""}`}>
+              {!st.manager ? "Manager: none" : st.managerOff ? "Manager: off" : "Manager: on"}
+            </p>
+          </div>
         )}
         {shortOf.length > 0 && (
           <p data-short className="font-term text-base leading-5 text-[var(--game-danger)]">
@@ -243,10 +262,24 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
         </button>
 
         {st.manager ? (
-          <span className="flex-1 border-2 border-[var(--game-success-border)] bg-[var(--game-success-bg)] px-2 py-2 text-center font-term text-base leading-5 text-[var(--game-success)] shadow-[3px_3px_0_0_#000] sm:w-full">
-            Auto ✓
-            <span className="block text-sm leading-4 text-[var(--game-muted)]">{cfg.managerName}</span>
-          </span>
+          // The manager's ON/OFF switch. Both states have the same two lines,
+          // so switching never changes the row's height.
+          <button
+            type="button"
+            onClick={() => onToggleManager?.(index)}
+            aria-pressed={managed}
+            aria-label={`${cfg.managerName}: ${managed ? "on, tap to pause" : "off, tap to switch on"}`}
+            data-manager-toggle={cfg.id}
+            data-on={managed ? "1" : "0"}
+            className={`min-h-[44px] min-w-0 flex-1 select-none border-2 px-2 py-2 text-center font-term text-base leading-5 shadow-[3px_3px_0_0_#000] sm:w-full ${
+              managed
+                ? "border-[var(--game-success-border)] bg-[var(--game-success-bg)] text-[var(--game-success)]"
+                : "border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-dim)]"
+            }`}
+          >
+            <span className="block truncate">{managed ? "Auto ✓ ON" : "Auto OFF"}</span>
+            <span className="block truncate text-sm leading-4 text-[var(--game-muted)]">{cfg.managerName}</span>
+          </button>
         ) : (
           <button
             type="button"
@@ -297,7 +330,8 @@ function arePropsEqual(prev, next) {
     && prev.state?.challenge?.id === next.state?.challenge?.id
     && prev.onBuy === next.onBuy
     && prev.onHire === next.onHire
-    && prev.onRun === next.onRun;
+    && prev.onRun === next.onRun
+    && prev.onToggleManager === next.onToggleManager;
 }
 
 export default memo(BusinessRow, arePropsEqual);

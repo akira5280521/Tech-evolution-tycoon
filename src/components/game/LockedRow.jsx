@@ -37,7 +37,7 @@ export default function LockedRow({ index, id, state, onOpen }) {
               </div>
             );
           }
-          const progress = n.kind === "earn" ? money(Math.min(n.have, n.need)) : n.kind === "research" ? (n.met ? "done" : "not done") : `${Math.min(n.have, n.need)}/${n.need}`;
+          const progress = n.kind === "research" ? (n.met ? "done" : "not done") : `${Math.min(n.have, n.need)}/${n.need}`;
           if (n.kind === "research") {
             return (
               <div key={n.kind} data-era-need={n.kind} data-met={n.met ? "1" : "0"} className="mt-1">
@@ -55,6 +55,24 @@ export default function LockedRow({ index, id, state, onOpen }) {
                     GO TO TECH
                   </button>
                 )}
+              </div>
+            );
+          }
+          if (n.kind === "earn") {
+            // The run's earnings live here now (the CASH box shows only cash
+            // and income): one fixed-height line with tabular figures.
+            return (
+              <div key={n.kind} data-era-need={n.kind} data-met={n.met ? "1" : "0"} className="mt-1">
+                <p className={`truncate whitespace-nowrap font-term text-base leading-5 ${n.met ? "text-[var(--game-accent)]" : "text-[var(--game-muted)]"}`}>
+                  {n.met ? "✓ " : ""}
+                  {n.label}
+                </p>
+                <p data-era-earned className="h-5 truncate whitespace-nowrap font-term text-base leading-5 tabular-nums text-[var(--game-muted)]">
+                  {money(Math.min(n.have, n.need))} of {money(n.need)} earned this run
+                </p>
+                <div className="mt-0.5 h-3 border-2 border-[var(--game-border)] bg-[var(--game-bg)]" aria-hidden="true">
+                  <div className={`h-full ${n.met ? "bg-[var(--game-accent)]" : "bg-[var(--game-dim)]"}`} style={{ width: `${pct}%` }} />
+                </div>
               </div>
             );
           }

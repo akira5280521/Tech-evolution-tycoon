@@ -19,6 +19,7 @@ import {
   costOf,
   normalizeBuyMode,
   investorsFor,
+  isManaged,
   money,
 } from "@/lib/gameConfig";
 import {
@@ -311,6 +312,7 @@ function pack(s) {
       id: BUSINESSES[i].id,
       owned: b.owned,
       manager: b.manager,
+      managerOff: !!b.managerOff,
       running: b.running,
       progress: b.progress,
       activeMs: b.activeMs,
@@ -340,9 +342,11 @@ function loadSave() {
       const owned = Number.isFinite(b.owned) && b.owned > 0 ? Math.floor(b.owned) : 0;
       state.biz[i].owned = owned;
       state.biz[i].manager = !!b.manager;
+      // Old saves have no switch: their managers load on.
+      state.biz[i].managerOff = !!b.manager && !!b.managerOff;
       const progress = Number.isFinite(b.progress) && b.progress > 0 ? b.progress : 0;
       state.biz[i].progress = Math.min(progress, cfg.cycleMs);
-      state.biz[i].running = !!b.running && !state.biz[i].manager && owned > 0;
+      state.biz[i].running = !!b.running && !isManaged(state.biz[i]) && owned > 0;
       state.biz[i].activeMs = Number.isFinite(b.activeMs) && b.activeMs > 0 ? b.activeMs : 0;
       // A start-up timer can't be longer than a real one (a bad clock or an
       // edited code would otherwise lock the row).
@@ -413,14 +417,16 @@ function loadSave() {
     const elapsed = Math.min(Math.max(Date.now() - (data.lastSeen || Date.now()), 0), offlineCapMs(state));
     let offlineGain = 0;
     let rows = [];
+    let short = [];
+    let full = [];
     if (elapsed > 0) {
       // Managers, plants and R&D earn at OFFLINE_RATE while the app is closed.
       const rate = elapsed < AWAY_GRACE_MS ? 1 : OFFLINE_RATE;
       state.data = (state.data || 0) + dataPerSecond(state) * (elapsed / 1000) * rate;
-      ({ gain: offlineGain, rows } = replayAway(state, elapsed, Date.now(), rate));
+      ({ gain: offlineGain, rows, short, full } = replayAway(state, elapsed, Date.now(), rate));
     }
     if (offlineGain > 0 && elapsed >= AWAY_MODAL_MS) {
-      state.offlineReport = { amount: offlineGain, awayMs: elapsed, rows };
+      state.offlineReport = { amount: offlineGain, awayMs: elapsed, rows, short, full };
     }
     applyBriefing(state);
     finishTimedWork(state, Date.now());
@@ -515,7 +521,7 @@ export function useGame() {
       const wall = Date.now();
       const cycle = effectiveCycleMs(BUSINESSES[i], s);
       if (!(cycle > 0)) return false;
-      if (!st.manager && !st.running) {
+      if (!isManaged(st) && !st.running) {
         if (st.holdUntil && wall >= st.holdUntil) {
           s.biz[i] = { ...st, holdUntil: 0 };
           return true;
@@ -535,14 +541,14 @@ export function useGame() {
       const elapsed = Math.max(0, wall - next.cycleStart);
       next = { ...next, activeMs: next.activeMs + (dt || 0) };
       let paint = !st.cycleStart;
-      if (next.manager) {
+      if (isManaged(next)) {
         const laps = Math.floor(elapsed / cycle);
         const already = next.paidLaps || 0;
         next.progress = elapsed % cycle;
         if (laps > already) {
           const gain = creditCycles(s, i, laps - already, wall);
           next.paidLaps = laps;
-          if (gain > 0) next.lastGain = { id: ++s.gainSeq, amount: gain };
+          if (gain > 0) next.lastGain = { id: ++s.gainSeq, amount: gain, at: wall };
           paint = true;
         }
       } else if (elapsed >= cycle) {
@@ -556,7 +562,7 @@ export function useGame() {
           paidLaps: 0,
           holdUntil: wall + 120,
         };
-        if (gain > 0) next.lastGain = { id: ++s.gainSeq, amount: gain };
+        if (gain > 0) next.lastGain = { id: ++s.gainSeq, amount: gain, at: wall };
         paint = true;
       } else {
         next.progress = elapsed;
@@ -568,7 +574,7 @@ export function useGame() {
 
     const armDue = (i) => {
       const st = stateRef.current.biz[i];
-      if (!st?.cycleStart || !(st.manager || st.running)) {
+      if (!st?.cycleStart || !(isManaged(st) || st.running)) {
         clearDue(i);
         return;
       }
@@ -579,7 +585,7 @@ export function useGame() {
       if (existing?.key === key) return;
       clearDue(i);
       const elapsed = Math.max(0, Date.now() - st.cycleStart);
-      const into = st.manager ? elapsed % cycle : elapsed;
+      const into = isManaged(st) ? elapsed % cycle : elapsed;
       const remain = Math.max(0, cycle - into);
       const token = st.cycleStart;
       const id = setTimeout(() => {
@@ -611,7 +617,7 @@ export function useGame() {
       s.hiddenAt = 0;
       // Start every row's clock from where the replay leaves it.
       s.biz = s.biz.map((st) => {
-        if (!st.manager || !st.cycleStart) return st;
+        if (!isManaged(st) || !st.cycleStart) return st;
         const cycle = st.cycleAt || effectiveCycleMs(BUSINESSES[s.biz.indexOf(st)], s);
         const into = cycle > 0 ? Math.max(0, now - away - st.cycleStart) % cycle : 0;
         return { ...st, progress: into, cycleStart: 0, paidLaps: 0 };
@@ -619,8 +625,8 @@ export function useGame() {
       if (away > 0) {
         const rate = away < AWAY_GRACE_MS ? 1 : OFFLINE_RATE;
         s.data = (s.data || 0) + dataPerSecond(s) * (away / 1000) * rate;
-        const { gain, rows } = replayAway(s, away, now, rate);
-        if (gain > 0 && away >= AWAY_MODAL_MS) s.offlineReport = { amount: gain, awayMs: away, rows };
+        const { gain, rows, short, full } = replayAway(s, away, now, rate);
+        if (gain > 0 && away >= AWAY_MODAL_MS) s.offlineReport = { amount: gain, awayMs: away, rows, short, full };
       }
       lastWall = now;
       awayBudget = OFFLINE_CAP_MS;
@@ -648,7 +654,7 @@ export function useGame() {
       let dirty = false;
       s.biz.forEach((st, i) => {
         if (st.owned <= 0) return;
-        if ((st.commissionUntil || 0) > wall && !st.manager && !st.running) {
+        if ((st.commissionUntil || 0) > wall && !isManaged(st) && !st.running) {
           dirty = true;
           return;
         }
@@ -801,7 +807,7 @@ export function useGame() {
       if (s.shop?.freeManager) s.shop = { ...s.shop, freeManager: false };
       const started = Date.now();
       const cycle = effectiveCycleMs(BUSINESSES[i], s);
-      s.biz = s.biz.map((b, j) => (j === i ? { ...b, manager: true, running: true, progress: 0, cycleStart: started, cycleAt: cycle, paidLaps: 0, holdUntil: 0 } : b));
+      s.biz = s.biz.map((b, j) => (j === i ? { ...b, manager: true, managerOff: false, running: true, progress: 0, cycleStart: started, cycleAt: cycle, paidLaps: 0, holdUntil: 0 } : b));
       s.managersHired = (s.managersHired || 0) + 1;
       ensureManagersHired(s);
       const goalPay = settleGoals(s, { pay: true });
@@ -813,17 +819,41 @@ export function useGame() {
     [bump]
   );
 
+  // Pause or resume a hired manager. Off: the row stops where it is (the
+  // part-done cycle is dropped) and runs by tap. On: a clean cycle from now.
+  const toggleManager = useCallback(
+    (i) => {
+      const s = stateRef.current;
+      const st = s.biz[i];
+      if (!st?.manager) return;
+      const off = !st.managerOff;
+      const now = Date.now();
+      const cycle = effectiveCycleMs(BUSINESSES[i], s);
+      s.biz = s.biz.map((b, j) =>
+        j === i
+          ? off
+            ? { ...b, managerOff: true, running: false, progress: 0, cycleStart: 0, paidLaps: 0, holdUntil: 0 }
+            : { ...b, managerOff: false, running: true, progress: 0, cycleStart: now, cycleAt: cycle, paidLaps: 0, holdUntil: 0 }
+          : b,
+      );
+      buzzLight();
+      saveNow();
+      bump();
+    },
+    [bump, saveNow]
+  );
+
   const run = useCallback(
     (i) => {
       const s = stateRef.current;
       const st = s.biz[i];
       if ((st.commissionUntil || 0) > Date.now()) return;
-      if (st.owned > 0 && !st.manager && st.running) {
+      if (st.owned > 0 && !isManaged(st) && st.running) {
         s.biz = s.biz.map((b, j) => (j === i ? { ...b, shake: (b.shake || 0) + 1 } : b));
         bump();
         return;
       }
-      if (st.owned > 0 && !st.manager && !st.running) {
+      if (st.owned > 0 && !isManaged(st) && !st.running) {
         s.sawPit = true;
         const goalPay = settleGoals(s, { pay: true });
         if (goalPay.reward > 0) toast("Goal complete", { description: `+${money(goalPay.reward)} cash` });
@@ -843,7 +873,7 @@ export function useGame() {
     const now = Date.now();
     let any = false;
     s.biz = s.biz.map((b, j) => {
-      if (b.owned > 0 && !b.manager && !b.running && !((b.commissionUntil || 0) > now)) {
+      if (b.owned > 0 && !isManaged(b) && !b.running && !((b.commissionUntil || 0) > now)) {
         any = true;
         return { ...b, running: true, progress: 0, cycleStart: now, cycleAt: effectiveCycleMs(BUSINESSES[j], s), paidLaps: 0, holdUntil: 0 };
       }
@@ -1071,10 +1101,19 @@ export function useGame() {
     const s = stateRef.current;
     const t = s.tutorial || blankTutorial();
     if ((t.tips || []).includes(id)) return;
-    s.tutorial = { ...t, tips: [...(t.tips || []), id] };
+    s.tutorial = { ...t, tips: [...(t.tips || []), id], tipsShown: (t.tipsShown || []).filter((x) => x !== id) };
     saveNow();
     bump();
   }, [bump, saveNow]);
+
+  // A tip went on screen: keep it up until GOT IT (see currentTip).
+  const tipShown = useCallback((id) => {
+    const s = stateRef.current;
+    const t = s.tutorial || blankTutorial();
+    if ((t.tipsShown || []).includes(id) || (t.tips || []).includes(id)) return;
+    s.tutorial = { ...t, tipsShown: [...(t.tipsShown || []), id] };
+    saveNow();
+  }, [saveNow]);
 
   const setAutoUpgrades = useCallback((on) => {
     const s = stateRef.current;
@@ -1087,7 +1126,7 @@ export function useGame() {
     const s = stateRef.current;
     const t = s.tutorial || blankTutorial();
     // Turning tips back on shows them all again from the start.
-    s.tutorial = { ...t, tipsOff: !!off, tips: off ? [...(t.tips || [])] : [] };
+    s.tutorial = { ...t, tipsOff: !!off, tips: off ? [...(t.tips || [])] : [], tipsShown: [] };
     saveNow();
     bump();
   }, [bump, saveNow]);
@@ -1225,6 +1264,7 @@ export function useGame() {
     hire,
     run,
     runAll,
+    toggleManager,
     buyForeman,
     startTech: (id) => {
       const started = startResearch(stateRef.current, id);
@@ -1298,6 +1338,7 @@ export function useGame() {
     exportSave,
     importSave,
     tutorialNext,
+    tipShown,
     tutorialSkip,
     tutorialReplay,
     tipSeen,

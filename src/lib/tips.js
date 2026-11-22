@@ -240,6 +240,16 @@ export function currentTip(state, page) {
   if (!state || !tipsOn(state) || tutorialActive(state)) return null;
   if (state.offlineReport || state.dilemma || state.prestigeReport) return null;
   const seen = state.tutorial?.tips || [];
+  // A tip that has been on screen stays up until GOT IT, even if what
+  // raised it has passed (paper flowing again, a bin no longer FULL). So it
+  // can't vanish unread and come back on the next shortage: each tip shows
+  // once per save.
+  const shown = state.tutorial?.tipsShown || [];
+  for (const id of shown) {
+    if (seen.includes(id)) continue;
+    const tip = TIPS.find((t) => t.id === id);
+    if (tip && tip.page === page) return tip;
+  }
   for (const tip of TIPS) {
     if (tip.page !== page || seen.includes(tip.id)) continue;
     if (tip.when && !tip.when(state)) continue;

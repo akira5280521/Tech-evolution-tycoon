@@ -308,3 +308,13 @@ test("SLI and CrossFire: matching pair, a board that supports it, the right brid
   assert.match(fitPart(xdma, "bench", "br-cf").reason, /no bridge needed/);
   assert.match(fitPart({ "b-z390": 1, "v-2080": 2 }, "bench", "br-sli").reason, /Doesn't fit/);
 });
+
+test("the upgrade plan can pair a second card with its bridge", () => {
+  // Before NVLink, while the plain SLI bridge is still made.
+  const s = upTo("supercluster", RESEARCH.map((e) => e.id).filter((id) => id !== "bridge-nvlink"));
+  s.facilities.bench = { "b-z97": 1, "c-4790k": 1, "m-ddr3b": 2, "p-1000": 1, "k-atxfull": 1, "y-pg32": 1, "v-gtx480": 1, "h-d15": 1 };
+  const plan = benchPlans(s).find((p) => p.pair);
+  assert.ok(plan, "a pair plan is offered");
+  assert.deepEqual(plan.steps.slice(0, 2), ["v-gtx480", "br-sli"]);
+  assert.ok(plan.perf > benchStock(s.facilities.bench).perf);
+});

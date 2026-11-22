@@ -1252,6 +1252,30 @@ export function benchPlans(state) {
       const plan = finish(c, first, card.name);
       if (plan) plans.push({ ...plan, card });
     }
+    // SLI or CrossFire: a second matching card and the bridge it needs, on
+    // a board that runs two.
+    const card = now.card;
+    if (card?.multi && (counts[card.id] || 0) === 1 && now.board.multi?.includes(MULTI_FAMILY[card.multi])) {
+      const pair = fitBench(counts, card);
+      if (!pair.reason) {
+        let c = pair.counts;
+        let extra = partCost(card, 1);
+        if (card.multi !== "xdma" && !benchStock(c).linked) {
+          const bridges = benchParts("bridge").filter((b) => b.links.includes(card.multi) && !fitBench(c, b).reason);
+          // The best link: the HB bridge for a 1080, otherwise the cheapest.
+          const pick = bridges.sort((a, b) => benchStock({ ...c, [b.id]: 1 }).gfx - benchStock({ ...c, [a.id]: 1 }).gfx || a.cost - b.cost)[0];
+          if (pick) {
+            const fit = fitBench(c, pick);
+            extra += partCost(pick, 0) - fit.refund;
+            c = fit.counts;
+          }
+        }
+        if (benchStock(c).linked) {
+          const plan = finish(c, [], `${card.name} pair`);
+          if (plan) plans.push({ ...plan, cost: plan.cost + extra, steps: [card.id, ...benchHas(c, "bridge").map((b) => b.id), ...plan.steps], pair: true });
+        }
+      }
+    }
     for (const kind of ["sound", "fpu", "accel", "drive", "media", "net", "modem", "cooler", "monitor", "addin", "cache"]) {
       for (const part of benchParts(kind)) {
         if (benchHas(counts, kind).some((x) => x.id === part.id)) continue;

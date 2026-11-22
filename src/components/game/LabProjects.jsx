@@ -1,7 +1,8 @@
 import { Zap } from "lucide-react";
-import { LAB_PATENT, LAB_PROJECTS, labQuote } from "@/lib/empire";
+import { LAB_OVERCLOCK, LAB_PATENT, LAB_PROJECTS, labQuote } from "@/lib/empire";
+import { timedProgress } from "@/lib/progress";
 import { HelpTip, ItemHelp } from "./HintSheet";
-import { GoldButton, Panel } from "./chrome";
+import { GoldButton, Panel, ProgressBar } from "./chrome";
 
 const clock = (ms) => {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -64,6 +65,13 @@ export default function LabProjects({ state, onRun }) {
               >
                 {st.text}
               </p>
+            )}
+            {item.id === "overclock" && now < (state.lab?.overclockUntil || 0) && (
+              <ProgressBar
+                progress={timedProgress(state.lab.overclockUntil - LAB_OVERCLOCK.ms, LAB_OVERCLOCK.ms, now)}
+                label="Overclock"
+                dataAttr="overclock"
+              />
             )}
             {!done && (
               <div className="mt-2">

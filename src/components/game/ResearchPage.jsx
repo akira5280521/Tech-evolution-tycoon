@@ -12,7 +12,8 @@ import {
 } from "@/lib/research";
 import { dataPerSecond } from "@/lib/empire";
 import { useGameState } from "./GameState";
-import ScreenShell, { GoldButton, Panel } from "./chrome";
+import ScreenShell, { GoldButton, Panel, ProgressBar } from "./chrome";
+import { techProgress } from "@/lib/progress";
 import { ItemHelp } from "./HintSheet";
 
 function PixelMark({ id }) {
@@ -50,8 +51,7 @@ export default function ResearchPage() {
   const rows = researchRows(tab);
   const job = state.techJob;
   const activeName = job ? researchItem(job.id) : null;
-  const progress = job && job.durationMs > 0 ? Math.min(100, (job.progressMs / job.durationMs) * 100) : 0;
-  const remaining = job ? Math.max(0, (job.durationMs - job.progressMs) / Math.max(0.25, researchSpeed(state))) : 0;
+  const live = techProgress(job, researchSpeed(state));
   const rd = Math.floor(state.data || 0);
   const perSecond = dataPerSecond(state) + serverOutput(state).perSecond;
 
@@ -65,10 +65,7 @@ export default function ResearchPage() {
         {job && activeName && (
           <div data-research-active className="mt-2">
             <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">Researching {activeName.name}</p>
-            <p className="font-term text-base leading-5 text-[var(--game-muted)]">{formatDuration(remaining)} left</p>
-            <div className="mt-1 h-2 border border-[var(--game-border)] bg-[var(--game-bg)]" aria-hidden="true">
-              <div className="h-full bg-[var(--game-accent)]" style={{ width: `${progress}%` }} />
-            </div>
+            <ProgressBar progress={live} label={`${activeName.name} research`} dataAttr="tech-summary" />
           </div>
         )}
       </Panel>
@@ -104,7 +101,10 @@ export default function ResearchPage() {
                   ) : done ? (
                     <p className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-success)]">DONE</p>
                   ) : running ? (
-                    <p className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">IN PROGRESS</p>
+                    <div data-research-running>
+                      <p className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">IN PROGRESS</p>
+                      <ProgressBar progress={live} label={`${entry.name} research`} dataAttr="tech" />
+                    </div>
                   ) : lock ? (
                     <p data-research-lock className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)]">{lock}</p>
                   ) : (

@@ -10,7 +10,8 @@ import BadgesPage from "./BadgesPage";
 import AppVersionFooter from "./AppVersion";
 import DailyBriefing from "./DailyBriefing";
 import NextMove from "./NextMove";
-import ScreenShell, { GoldButton, Panel } from "./chrome";
+import ScreenShell, { GoldButton, Panel, ProgressBar } from "./chrome";
+import { timedProgress } from "@/lib/progress";
 import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
 import CopyStats from "./CopyStats";
@@ -400,8 +401,7 @@ export function ResearchBody({ state, onCommit, onLab }) {
           const owned = picked.includes(spec.id);
           const job = state.researchJob && state.researchJob.id === spec.id ? state.researchJob : null;
           const open = canCommit(state, spec.id);
-          const elapsed = job ? Date.now() - job.startedAt : 0;
-          const pct = job ? Math.max(0, Math.min(100, (elapsed / RESEARCH_MS) * 100)) : 0;
+          const live = job ? timedProgress(job.startedAt, RESEARCH_MS) : null;
           return (
             <div key={spec.id} data-help-scope className="mt-3 border-2 border-[var(--game-border)] p-3">
               <div className="flex items-start gap-2">
@@ -417,9 +417,7 @@ export function ResearchBody({ state, onCommit, onLab }) {
               ) : job ? (
                 <div className="mt-2">
                   <p className="font-pixel text-[0.55rem] text-[var(--game-accent)]">RESEARCHING</p>
-                  <div className="mt-2 h-5 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]">
-                    <div className="h-full bg-[var(--game-accent)]" style={{ width: `${pct}%` }} />
-                  </div>
+                  <ProgressBar progress={live} label={`${spec.name} research`} dataAttr="specialty" />
                 </div>
               ) : (
                 <div className="mt-2">

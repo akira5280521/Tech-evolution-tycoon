@@ -127,3 +127,61 @@ test("graphics: keyed AGP, PCIe generations and the CPU/GPU bottleneck", () => {
   const weak = benchStock({ "b-z790": 1, "c-14900k": 1, "m-ddr5c": 1, "p-750": 1, "v-gtx680": 1 });
   assert.equal(weak.bottleneck, "graphics");
 });
+
+import { driveLink } from "../../src/lib/facilities.js";
+
+test("drives run at the slowest of drive and port, by SATA and PCIe generation", () => {
+  const p = (id) => BENCH_PARTS.find((x) => x.id === id);
+  // A 6 Gbit/s SATA SSD on a 3 Gbit/s port runs at 300 MB/s.
+  assert.equal(driveLink(p("d-840pro"), p("b-x58")).mbs, 300);
+  assert.equal(driveLink(p("d-840pro"), p("b-z77")).mbs, 540);
+  // A PCIe 4.0 NVMe drive in a PCIe 3.0 M.2 slot runs at 3.0 speed.
+  assert.equal(driveLink(p("d-980pro"), p("b-z390")).mbs, 3500);
+  // Z97's M.2 slot is PCIe 2.0 x2.
+  assert.equal(driveLink(p("d-950pro"), p("b-z97")).mbs, 800);
+  // No IDE on a 2011 board; no M.2 on a 2008 one; MFM needs an ISA slot.
+  assert.match(fitPart({ "b-z68": 1 }, "bench", "d-dm9").reason, /IDE/);
+  assert.match(fitPart({ "b-x58": 1 }, "bench", "d-980pro").reason, /M\.2/);
+  assert.match(fitPart({ "b-z690": 1 }, "bench", "d-st225").reason, /ISA/);
+  // Before boards had IDE ports, an IDE drive used a paddle card.
+  assert.equal(driveLink(p("d-cp3044"), p("b-deskpro")).text, "IDE on a paddle card");
+});
+
+test("3D-only add-ins need a 2D card, and two Add-in 2s split the work", () => {
+  const base = { "b-440bx": 1, "c-p2": 1, "m-pc100": 1, "p-atx250": 1 };
+  const alone = benchStock({ ...base, "a-voodoo2": 1 });
+  const with2d = benchStock({ ...base, "v-riva128": 1, "a-voodoo2": 1 });
+  assert.equal(alone.gfx, 0);
+  assert.ok(with2d.gfx > 4);
+  const sli = fitPart({ ...base, "v-riva128": 1, "a-voodoo2": 1 }, "bench", "a-voodoo2");
+  assert.equal(sli.counts["a-voodoo2"], 2);
+  assert.ok(benchStock(sli.counts).gfx > with2d.gfx);
+});
+
+test("3D-only add-ins go out of production once combined cards arrive", () => {
+  const s = upTo("gpu", RESEARCH.map((e) => e.id).filter((id) => id !== "vid-voodoo3" && id !== "gpu-256"));
+  assert.ok(purchasePart(s, "bench", "b-440bx").ok);
+  assert.ok(purchasePart(s, "bench", "a-monster").ok, "on sale before the 2D/3D cards");
+  s.techDone = [...s.techDone, "vid-voodoo3"];
+  assert.equal(purchasePart(s, "bench", "a-blaster2").ok, false, "out of production after the Threefold 3000");
+  assert.equal(s.facilities.bench["a-monster"], 1, "the one on the bench keeps working");
+});
+
+test("sound: printer-port devices, onboard sound from 1999, cards beat onboard", () => {
+  const p = (id) => BENCH_PARTS.find((x) => x.id === id);
+  assert.ok(!fitPart({ "b-deskpro": 1 }, "bench", "s-covox").reason, "the Covox plugs into the printer port");
+  assert.equal(p("b-440bx").onboardSound, 0);
+  assert.equal(p("b-z690").onboardSound, 0.02);
+  const base = { "b-z690": 1, "c-12900k": 1, "m-ddr5b": 1, "p-750": 1, "v-3080": 1 };
+  assert.ok(benchStock({ ...base, "s-ae5": 1 }).perf > benchStock(base).perf);
+});
+
+test("losing formats go out of production; a PCIe-card SSD runs at the slot's generation", () => {
+  const p = (id) => BENCH_PARTS.find((x) => x.id === id);
+  const s = upTo("supercluster", RESEARCH.map((e) => e.id));
+  assert.ok(purchasePart(s, "bench", "b-z390").ok);
+  assert.equal(purchasePart(s, "bench", "r-hddvd").ok, false, "HD DVD lost to Blu-ray");
+  assert.ok(purchasePart(s, "bench", "r-bd").ok);
+  assert.equal(driveLink(p("d-900p"), p("b-z77")).text, "on a PCIe 3.0 card");
+  assert.equal(driveLink(p("d-900p"), p("b-p67")).mbs, 800, "PCIe 2.0 slot");
+});

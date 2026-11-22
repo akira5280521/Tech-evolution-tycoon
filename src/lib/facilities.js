@@ -17,6 +17,7 @@ import { BENCH_PARTS, BENCH_RD } from "./benchParts.js";
 export const SHARE_CAP = 0.05;
 export const STARTER_SHARE = 0.0009;
 export const MAX_PART = 24;
+const TWIN_ADDINS = ["a-voodoo2", "a-blaster2"];
 const ROOM_UNITS = 60;
 const REFERENCE_WORK = 13;
 const MINE_RAM_GB = 16;
@@ -223,6 +224,7 @@ export function partMax(part, facilityId) {
   // there can be more machines than 24.
   if (part?.group === "room" && (part.kind === "power" || part.kind === "cool")) return ROOM_UNITS;
   // One board and one CPU on the bench; sticks are limited by the board.
+  if (TWIN_ADDINS.includes(part?.id)) return 2;
   if (part?.kind === "board" || part?.kind === "cpu") return 1;
   if (part?.kind === "stick") return 8;
   return MAX_PART;
@@ -569,6 +571,12 @@ export function diskSize(gb) {
   return `${Number((gb * 1000).toFixed(2))} MB`;
 }
 
+// A part out of production: its successor has been researched. One already
+// owned keeps working; it just can't be bought any more.
+export function partRetired(state, part) {
+  return !!part?.retiredBy && (state?.techDone || []).includes(part.retiredBy);
+}
+
 export function partOpen(state, part) {
   if (!part || part.soon) return false;
   if (playerYear(state) < (part.year || 0)) return false;
@@ -580,11 +588,12 @@ export function partLock(state, part, researchName) {
   if (!part) return "Locked";
   if (playerYear(state) < (part.year || 0)) return `Requires ${part.year}`;
   if (part.research && !(state?.techDone || []).includes(part.research)) return `Research ${researchName || part.name} on the Tech page`;
+  if (partRetired(state, part)) return part.kind === "accel" ? "Out of production: combined 2D and 3D cards replaced it" : "Out of production: it lost to its rival";
   return null;
 }
 
 export function openParts(state) {
-  return new Set(PARTS.filter((part) => partOpen(state, part)).map((part) => part.id));
+  return new Set(PARTS.filter((part) => partOpen(state, part) && !partRetired(state, part)).map((part) => part.id));
 }
 
 // --- Memory boards ---------------------------------------------------------
@@ -752,6 +761,11 @@ function fitBench(counts, part) {
     }
     return { counts: next, refund, note: notes.join("; ") || null };
   }
+  // Two of the same 1998 add-in could split the work over a ribbon cable.
+  if (TWIN_ADDINS.includes(part.id) && (counts[part.id] || 0) === 1) {
+    if (!boardNow || busMisfit(part, boardNow)) return { reason: "Needs a PCI slot." };
+    return { counts: { ...counts, [part.id]: 2 }, refund: 0, note: "joins the first over a ribbon cable to split the work (SLI)" };
+  }
   if ((counts[part.id] || 0) > 0 && part.kind !== "stick") return { reason: "Already on the bench." };
   const [caseNow] = benchHas(counts, "case");
   const [psuNow] = benchHas(counts, "psu");
@@ -762,6 +776,14 @@ function fitBench(counts, part) {
     if (misfit) return { reason: misfit };
     if (part.kind === "video" && caseNow && part.length > caseNow.maxGpu) return { reason: `At ${part.length} mm it's too long for the ${caseNow.name} (${caseNow.maxGpu} mm).` };
     if (part.kind === "video" && psuNow && !psuNow.plugs.includes(part.plug)) return { reason: `Needs a supply with ${PLUG_NAMES[part.plug]}.` };
+    for (const x of benchHas(counts, part.kind)) takeOut(x, `replaces the ${x.name}`);
+    next[part.id] = 1;
+    return { counts: next, refund, note: notes.join("; ") || null };
+  }
+  if (["drive", "media", "net", "modem"].includes(part.kind)) {
+    if (!boardNow) return { reason: "Needs a board to connect to." };
+    const misfit = portMisfit(part, boardNow);
+    if (misfit) return { reason: misfit };
     for (const x of benchHas(counts, part.kind)) takeOut(x, `replaces the ${x.name}`);
     next[part.id] = 1;
     return { counts: next, refund, note: notes.join("; ") || null };
@@ -796,7 +818,7 @@ function fitBench(counts, part) {
 
 const PLUG_NAMES = { none: "no plug", molex: "a drive power plug", "6pin": "a 6-pin PCIe plug", "8pin": "an 8-pin PCIe plug", "12vhpwr": "the 16-pin 12VHPWR plug" };
 export const FORM_NAMES = { at: "AT", atx: "ATX", matx: "micro-ATX", own: "built in" };
-const BUS_NAMES = { isa8: "8-bit ISA", isa16: "16-bit ISA", vlb: "VL-Bus", pci: "PCI", agp: "AGP", pcie: "PCI Express" };
+const BUS_NAMES = { lpt: "printer port", isa8: "8-bit ISA", isa16: "16-bit ISA", vlb: "VL-Bus", pci: "PCI", agp: "AGP", pcie: "PCI Express" };
 
 const MAIN_NAMES = { at: "AT power plugs", atx20: "a 20-pin ATX plug", atx24: "a 24-pin ATX plug" };
 const CPU_PLUG_NAMES = { p4: "a 4-pin 12 V CPU plug", eps8: "an 8-pin EPS CPU plug" };
@@ -811,6 +833,59 @@ function psuMisfit(psu, board) {
   return null;
 }
 
+// Whether a drive, removable drive, network card or modem can connect.
+// Before IDE ports were on boards, an IDE drive used a paddle card in a
+// 16-bit ISA slot; MFM drives always used a controller card.
+function portMisfit(part, board) {
+  const buses = board.buses || [];
+  if (part.kind === "modem") return null;
+  if (part.kind === "net") return busMisfit(part, board);
+  const iface = part.iface;
+  if (iface === "floppy" || iface === "lpt") return null;
+  if (iface === "pcie") return busMisfit(part, board);
+  if (board.builtin) return "This computer has nowhere to connect it.";
+  if (iface === "mfm") return buses.includes("isa8") || buses.includes("isa16") ? null : "Needs an ISA slot for its controller card.";
+  if (iface === "isa") return buses.includes("isa16") ? null : "Needs a 16-bit ISA slot.";
+  if (iface === "ide") return board.ide > 0 || buses.includes("isa16") ? null : "This board has no IDE port.";
+  if (iface === "sata") return board.sata > 0 ? null : "This board has no SATA port.";
+  if (iface === "nvme") return board.m2 > 0 ? null : "This board has no M.2 slot.";
+  return null;
+}
+
+const SATA_MBS = [0, 150, 300, 600];
+const NVME_MBS = { 2: 800, 3: 3500, 4: 7500, 5: 14000 };
+// What a drive actually gives on this board, in MB/s, and how it's linked.
+export function driveLink(d, board) {
+  if (!d || !board) return { mbs: 0, text: "" };
+  if (d.iface === "mfm") return { mbs: d.mbs, text: "MFM" };
+  if (d.iface === "ide") {
+    const port = board.ide > 0 ? board.ide : 3;
+    return { mbs: Math.min(d.mbs, port, d.link || port), text: board.ide > 0 ? `IDE at ${Math.min(port, d.link)} MB/s` : "IDE on a paddle card" };
+  }
+  if (d.iface === "sata") {
+    const gen = Math.min(d.link, board.sata);
+    return { mbs: Math.min(d.mbs, SATA_MBS[gen] || 0), text: `SATA ${[0, 1.5, 3, 6][gen]} Gbit/s` };
+  }
+  if (d.iface === "pcie") {
+    const g = Math.min(d.link, board.pcie || 0);
+    return { mbs: Math.min(d.mbs, NVME_MBS[g] || 0), text: `on a PCIe ${g}.0 card` };
+  }
+  const gen = Math.min(d.link, board.m2);
+  return { mbs: Math.min(d.mbs, NVME_MBS[gen] || 0), text: `NVMe on PCIe ${gen}.0` };
+}
+
+// A drive of its day, in MB/s, by year: what the PC's CPU expects.
+function driveExpected(year) {
+  const pts = [[1977, 0.05], [1980, 0.3], [1984, 0.6], [1990, 2], [1995, 8], [2000, 35], [2005, 70], [2010, 150], [2015, 500], [2020, 3500], [2024, 7000]];
+  if (year <= pts[0][0]) return pts[0][1];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [y0, v0] = pts[i];
+    const [y1, v1] = pts[i + 1];
+    if (year <= y1) return Math.exp(Math.log(v0) + ((year - y0) / (y1 - y0)) * (Math.log(v1) - Math.log(v0)));
+  }
+  return pts[pts.length - 1][1];
+}
+
 // Whether a card fits a board's slots. AGP is keyed: old 3.3 V cards don't
 // fit a 1.5 V-only slot and 1.5 V cards don't fit a 3.3 V one; universal
 // cards fit both.
@@ -823,6 +898,7 @@ function busMisfit(part, board) {
     if (part.agpKey !== "universal" && slot !== `agp-${part.agpKey}`) return `This ${part.agpKey} V AGP card is keyed for the other AGP slot.`;
     return null;
   }
+  if (part.bus === "lpt") return null;
   if (part.bus === "isa8" && (board.buses || []).includes("isa16")) return null;
   if (!(board.buses || []).includes(part.bus)) return `Needs a ${BUS_NAMES[part.bus]} slot.`;
   return null;
@@ -874,7 +950,7 @@ export function benchStock(counts) {
         link = Math.min(card.pcie, board.pcie || card.pcie, chip?.pcie || board.pcie || card.pcie);
         gfx *= 1 - 0.03 * Math.max(0, card.pcie - link);
       }
-      if (addIn && !busMisfit(addIn, board)) gfx += addIn.gfx;
+      if (addIn && !busMisfit(addIn, board)) gfx += addIn.gfx * ((c[addIn.id] || 0) >= 2 ? 1.8 : 1);
     }
   } else if (board?.builtin) gfx = cpuPerf;
   else if (chip?.igpu) gfx = cpuPerf * 0.15;
@@ -885,15 +961,29 @@ export function benchStock(counts) {
   if (cpuPerf > 0 && gfx < cpuPerf * 0.9) bottleneck = "graphics";
   else if (cpuPerf > 0 && gfx > cpuPerf * 1.3) bottleneck = "cpu";
   // Power: the supply has to cover the CPU, card and the rest (20 W).
-  const draw = 20 + (chip?.watts || 0) + (unplugged ? 0 : card?.watts || 0) + (addIn?.watts || 0) + (snd?.watts || 0) + (fpuChip?.watts || 0);
+  const draw = 20 + (chip?.watts || 0) + (unplugged ? 0 : card?.watts || 0) + (addIn?.watts || 0) + (snd?.watts || 0) + (fpuChip?.watts || 0)
+    + benchHas(c, "drive").reduce((n, x) => n + x.watts, 0) + benchHas(c, "media").reduce((n, x) => n + x.watts, 0);
   const supply = board?.builtin ? Math.max(draw, board.builtinWatts) : psuNow && !psuMisfit(psuNow, board) ? psuNow.supply : 0;
   const power = !board ? 0 : supply <= 0 ? 0 : Math.min(1, supply / draw);
-  const soundBonus = snd && board && !busMisfit(snd, board) ? 1 + snd.bonus : 1;
+  const soundBonus = 1 + Math.max(snd && board && !busMisfit(snd, board) ? snd.bonus : 0, board?.onboardSound || 0);
+  // Storage: a slow disk, or none, holds the PC back a little; removable
+  // drives, a network card and a modem each add a little.
+  const [disk] = benchHas(c, "drive");
+  const [removable] = benchHas(c, "media");
+  const [nic] = benchHas(c, "net");
+  const [mdm] = benchHas(c, "modem");
+  const diskLink = disk && board && !portMisfit(disk, board) ? driveLink(disk, board) : { mbs: 0, text: "" };
+  const expected = driveExpected(chip?.year || 1977);
+  const diskFactor = diskLink.mbs > 0 ? 0.9 + 0.1 * Math.min(1.2, diskLink.mbs / expected) : board?.builtin && (chip?.year || 0) < 1980 ? 1 : 0.9;
+  const extras = (removable && board && !portMisfit(removable, board) ? 1 + removable.bonus : 1)
+    * (nic && board && !portMisfit(nic, board) ? 1 + nic.bonus : 1)
+    * (mdm ? 1 + mdm.bonus : 1);
   const caseBonus = caseNow && board && caseNow.boards.includes(board.form) ? 1.05 : 1;
-  const perf = pcPerf * power * soundBonus * caseBonus;
+  const perf = pcPerf * power * soundBonus * caseBonus * diskFactor * extras;
   return {
     board: board || null, cpu: chip || null, ramMb, needMb: need, sticks: stickCount, memory, memSpeed, rated, speedFactor, overclock, math,
     cpuPerf, gfx, link, unplugged, bottleneck, draw, supply, power, sound: snd || null, case: caseNow || null, card: card || null,
+    drive: disk || null, driveMbs: diskLink.mbs, driveText: diskLink.text, diskExpected: expected, media: removable || null, net: nic || null, modem: mdm || null,
     perf, perSecond: perf * BENCH_RD,
   };
 }
@@ -979,7 +1069,7 @@ export function benchPlans(state) {
       const plan = finish(c, first, card.name);
       if (plan) plans.push({ ...plan, card });
     }
-    for (const kind of ["sound", "fpu", "accel"]) {
+    for (const kind of ["sound", "fpu", "accel", "drive", "media", "net", "modem"]) {
       for (const part of benchParts(kind)) {
         if (benchHas(counts, kind).some((x) => x.id === part.id)) continue;
         const plan = finish(counts, [part], part.name);
@@ -1342,7 +1432,7 @@ export function purchasePart(state, facilityId, partId) {
   if (!state || !facilityUnlocked(state, facilityId)) return { ok: false };
   const part = byId[partId];
   if (!part || part.soon || !part.fits.includes(facilityId)) return { ok: false };
-  if (!partOpen(state, part)) return { ok: false, reason: partLock(state, part) };
+  if (!partOpen(state, part) || partRetired(state, part)) return { ok: false, reason: partLock(state, part) };
   const facilities = readFacilities(state.facilities);
   const owned = facilities[facilityId][partId] || 0;
   const fit = fitPart(facilities[facilityId], facilityId, partId);

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { BUSINESSES, ERA_GATE, SUPPLY_KEYS, blockedByGlass, eraOpen, frontierEra, money, pluralName } from "@/lib/gameConfig";
-import { activeChallengeGoal, incomePerSecond } from "@/lib/empire";
+import { activeChallengeGoal, incomePerSecond, supplyCap, supplyFull } from "@/lib/empire";
+import StorageSheet, { amount } from "./StorageSheet";
 import { PREFS_EVENT, readPrefs } from "@/lib/gamePrefs";
 import { applyAudioPrefs } from "@/lib/sfx";
 import { useGameState } from "./GameState";
@@ -43,6 +44,7 @@ export default function GameScreen() {
   const [pullDist, setPullDist] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [compact, setCompact] = useState(false);
+  const [storageKey, setStorageKey] = useState(null);
   const startYRef = useRef(null);
   const pullRef = useRef(0);
   const refreshingRef = useRef(false);
@@ -113,6 +115,7 @@ export default function GameScreen() {
       )}
 
       <StickyHud state={state} cps={cps} />
+      {storageKey && <StorageSheet state={state} materialKey={storageKey} onUpgrade={game.upgradeStorage} onClose={() => setStorageKey(null)} />}
 
       <div className="game-frame">
         <div className="game-side">
@@ -137,9 +140,21 @@ export default function GameScreen() {
               }}
               className="flex flex-wrap gap-x-3 gap-y-1 border-2 border-[var(--game-border)] bg-[var(--game-card)] px-2 py-1 font-term text-base leading-5 text-[var(--game-muted)]"
             >
-              {SUPPLY_KEYS.filter((key) => supplyShown(state, key)).map((key) => (
-                <span key={key}>{key} {Math.floor(supply[key] || 0)}</span>
-              ))}
+              {SUPPLY_KEYS.filter((key) => supplyShown(state, key)).map((key) => {
+                const full = supplyFull(state, key);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    data-material={key}
+                    onClick={() => setStorageKey(key)}
+                    className={`min-h-6 text-left ${full ? "text-[var(--game-danger)]" : ""}`}
+                  >
+                    {key} {amount(supply[key])}/{amount(supplyCap(state, key))}
+                    {full && <span className="ml-1 font-pixel text-[0.4rem]">FULL</span>}
+                  </button>
+                );
+              })}
               <ItemHelp kind="materials" id={SUPPLY_KEYS.filter((key) => supplyShown(state, key))} state={state} name="materials" className="ml-auto" />
             </p>
             {!playedAndBought(state) && !tutorialActive(state) && (

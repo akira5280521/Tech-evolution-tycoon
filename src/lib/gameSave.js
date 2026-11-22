@@ -161,6 +161,10 @@ export function migrateSave(data) {
     briefingDay,
     streak: Math.max(1, Math.floor(finiteNumber(data.streak, 1))),
     supply,
+    // Bigger material bins, by material (added with storage caps).
+    storage: Object.fromEntries(
+      Object.keys(supply).map((key) => [key, Math.min(12, Math.floor(finiteNumber(data.storage?.[key], 0)))]).filter(([, n]) => n > 0),
+    ),
     foreman: version < 4 ? progressed : !!data.foreman,
     sawPit: version < 4 ? progressed : !!data.sawPit,
     researchJob: version < 4 ? null : job(data.researchJob),

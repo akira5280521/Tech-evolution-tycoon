@@ -161,6 +161,10 @@ export function migrateSave(data) {
     briefingDay,
     streak: Math.max(1, Math.floor(finiteNumber(data.streak, 1))),
     supply,
+    // Bigger material bins, by material (added with storage caps).
+    storage: Object.fromEntries(
+      Object.keys(supply).map((key) => [key, Math.min(12, Math.floor(finiteNumber(data.storage?.[key], 0)))]).filter(([, n]) => n > 0),
+    ),
     // Eras open this run. Saves from before the earnings threshold keep every
     // era that was open under the old rule (owning ERA_GATE of the one before).
     erasOpened: Array.isArray(data.erasOpened)

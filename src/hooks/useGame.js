@@ -59,6 +59,7 @@ import {
   singularityMult,
   snapshotMeta,
   tickDilemma,
+  buyStorage,
 } from "@/lib/empire";
 import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/lib/tutorial";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
@@ -246,6 +247,7 @@ function pack(s) {
     bubble: s.bubble || null,
     nextBubbleAt: s.nextBubbleAt || 0,
     supply: s.supply,
+    storage: s.storage || {},
     erasOpened: s.erasOpened || [],
     erasPaid: s.erasPaid || [],
     foreman: !!s.foreman,
@@ -328,6 +330,7 @@ function loadSave() {
     if (closedRefund > 0) state.cash = (state.cash || 0) + closedRefund;
     state.supply = data.supply;
     ensureSupply(state);
+    state.storage = data.storage || {};
     state.erasOpened = Array.isArray(data.erasOpened) ? data.erasOpened : [];
     state.foreman = !!data.foreman;
     state.sawPit = !!data.sawPit;
@@ -826,6 +829,16 @@ export function useGame() {
     bump();
   }, [bump]);
 
+  const upgradeStorage = useCallback(
+    (key) => {
+      if (!buyStorage(stateRef.current, key)) return;
+      playBuy();
+      saveNow();
+      bump();
+    },
+    [bump]
+  );
+
   const openEraAt = useCallback(
     (index) => {
       if (!openEra(stateRef.current, index)) return;
@@ -1190,6 +1203,7 @@ export function useGame() {
     reset,
     dismissOffline,
     purchaseUpgrade,
+    upgradeStorage,
     openEraAt,
     purchaseShop,
     chooseSpecialty,

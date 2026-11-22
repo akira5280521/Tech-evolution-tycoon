@@ -16,6 +16,7 @@ import {
   PROJECT_MS,
   RESEARCH_MS,
   SUPPLY_KEYS,
+  ERA_MATERIAL,
   UPGRADE_MS,
   blankSupply,
   blockedByGlass,
@@ -396,6 +397,7 @@ export function blankMeta() {
     nextWindfallAt: 0,
     prestiged: false,
     supply: blankSupply(),
+    storage: {},
     foreman: false,
     sawPit: false,
     facilities: blankFacilities(),
@@ -459,6 +461,63 @@ export function supplyFactor(state, cfg, cycles = 1) {
   return Math.min(1, cover);
 }
 
+// Storage: each material's bins hold so much. Above the cap, new output is
+// lost (FULL); what is already stored is never thrown away. Bigger bins are
+// bought with cash and kept through prestige and forks. The cap never drops
+// below 100 cycles of what the rows make or use, so a full bin can't stall
+// a row mid-cycle: that much is added on top of the bins you bought.
+export const STORAGE_BASE = 1000;
+export const STORAGE_STEP = 4;
+export const STORAGE_MAX = 12;
+export function storageLevel(state, key) {
+  const n = state?.storage?.[key];
+  return Number.isFinite(n) && n > 0 ? Math.min(STORAGE_MAX, Math.floor(n)) : 0;
+}
+function flowOf(state, key) {
+  let make = 0;
+  let use = 0;
+  BUSINESSES.forEach((cfg, i) => {
+    const owned = state?.biz?.[i]?.owned || 0;
+    if (!owned) return;
+    if (cfg.makes?.[key]) make += (makesOf(state, cfg)[key] || 0) * owned;
+    if (cfg.uses?.[key]) use += (Number(cfg.uses[key]) || 0) * owned;
+  });
+  return Math.max(make, use);
+}
+export function boughtCap(state, key, level = storageLevel(state, key)) {
+  return STORAGE_BASE * STORAGE_STEP ** level;
+}
+// The bins always hold enough for the next era that opens with this
+// material, so a small bin can never block OPEN ERA.
+function nextEraStock(state, key) {
+  const paid = state?.erasPaid || [];
+  const next = BUSINESSES.find((cfg) => ERA_MATERIAL[cfg.id]?.key === key && !paid.includes(cfg.id));
+  return next ? ERA_MATERIAL[next.id].amount : 0;
+}
+export function supplyCap(state, key, level = storageLevel(state, key)) {
+  return Math.min(SUPPLY_CAP, Math.max(boughtCap(state, key, level) + 100 * flowOf(state, key), nextEraStock(state, key)));
+}
+export function supplyFull(state, key) {
+  return (state?.supply?.[key] || 0) >= supplyCap(state, key);
+}
+// The next bigger bins cost ten times the row that makes the material, and
+// six times more each step.
+export function storageCost(state, key) {
+  const level = storageLevel(state, key);
+  if (level >= STORAGE_MAX) return null;
+  const maker = BUSINESSES.find((cfg) => cfg.makes?.[key]);
+  return (maker?.baseCost || 1000) * 10 * 6 ** level;
+}
+
+export function buyStorage(state, key) {
+  if (!SUPPLY_KEYS.includes(key)) return false;
+  const cost = storageCost(state, key);
+  if (cost == null || !(state.cash >= cost) || !Number.isFinite(state.cash)) return false;
+  state.cash -= cost;
+  state.storage = { ...(state.storage || {}), [key]: storageLevel(state, key) + 1 };
+  return true;
+}
+
 // What one unit of a material row makes per cycle. The row's x3 upgrade
 // triples the material as well as the pay, so early on each unit makes 1.
 export const MATERIAL_UPGRADE_MULT = 3;
@@ -493,8 +552,12 @@ function moveSupply(state, cfg, cycles, owned) {
   if (cfg.makes && count > 0) {
     for (const [key, make] of Object.entries(makesOf(state, cfg))) {
       const add = (Number(make) || 0) * count * n * cover;
-      const next = (supply[key] || 0) + add;
-      supply[key] = Number.isFinite(next) ? Math.min(SUPPLY_CAP, Math.max(0, next)) : supply[key] || 0;
+      const have = supply[key] || 0;
+      const next = have + add;
+      // A batch of cycles may overfill for a moment so the rows after it
+      // can draw; the bins settle at the cap once the batch is done.
+      const room = Math.max(have, supplyCap(state, key) * Math.max(1, n));
+      supply[key] = Number.isFinite(next) ? Math.min(SUPPLY_CAP, room, Math.max(0, next)) : have;
     }
   }
 }
@@ -665,6 +728,7 @@ export function creditBatch(state, due, now, rate = 1) {
     for (const [key, need] of Object.entries(cfg.uses)) demand[key] = (demand[key] || 0) + (Number(need) || 0) * due[i] * owned;
   });
   const left = {};
+  const before = { ...bin() };
   BUSINESSES.forEach((cfg, i) => {
     const cycles = due[i];
     if (!(cycles > 0)) return;
@@ -692,6 +756,12 @@ export function creditBatch(state, due, now, rate = 1) {
     const after = bin();
     for (const key of Object.keys(held)) after[key] = held[key] + (after[key] || 0);
   });
+  // Settle the bins: anything over the cap made in this batch is lost.
+  const end = bin();
+  for (const key of SUPPLY_KEYS) {
+    const cap = Math.max(before[key] || 0, supplyCap(state, key));
+    if ((end[key] || 0) > cap) end[key] = cap;
+  }
   return gains;
 }
 
@@ -1370,6 +1440,8 @@ export function snapshotMeta(state, options = {}) {
     eventsDone: [...(state.eventsDone || [])],
     nextBubbleAt: state.nextBubbleAt || 0,
     supply: { ...ensureSupply(state) },
+    // Bigger bins are buildings: kept through prestige and forks.
+    storage: { ...(state.storage || {}) },
     // Era materials are paid once, ever.
     erasPaid: [...(state.erasPaid || [])],
     foreman: !!state.foreman,

@@ -297,6 +297,7 @@ export default function GameScreen() {
                 compact={compact}
                 supplyCard={section === "supply"}
                 onNeed={showMaker}
+                tapHint={tutorialActive(state)}
                 onBuy={buy}
                 onHire={hire}
                 onRun={run}

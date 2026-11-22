@@ -2,7 +2,8 @@ import { useEffect, useRef } from "react";
 import { Image } from "@/components/ui/image";
 import { money } from "@/lib/gameConfig";
 
-export default function IconTile({ cfg, st, onRun }) {
+// tapHint: the TAP TO RUN label, shown only while the tutorial runs.
+export default function IconTile({ cfg, st, onRun, tapHint = false }) {
   const ref = useRef(null);
   const commissioning = (st.commissionUntil || 0) > Date.now();
   const ready = st.owned > 0 && !st.manager && !st.running && !commissioning;
@@ -27,7 +28,7 @@ export default function IconTile({ cfg, st, onRun }) {
       }`}
     >
       <Image src={cfg.icon} alt="" fittingType="fit" className="pointer-events-none h-full w-full pixel-art" />
-      {ready && (
+      {ready && tapHint && (
         <span
           data-tap-run
           className="pointer-events-none absolute inset-x-0 top-0 z-[1] bg-black/80 py-px text-center font-pixel text-[8px] leading-[10px] text-[var(--game-accent)]"

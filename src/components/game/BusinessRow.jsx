@@ -53,7 +53,7 @@ function MilestoneBar({ owned, next }) {
   );
 }
 
-function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, compact: compactPref, supplyCard = false, onNeed = null }) {
+function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, compact: compactPref, supplyCard = false, onNeed = null, tapHint = false }) {
   // SUPPLY rows always use the compact card, with their bins shown on it.
   const compact = compactPref || supplyCard;
   const holdRef = useRef(null);
@@ -123,7 +123,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, c
 
   return (
     <div data-row={cfg.id} data-help-scope className={`era-row ${(st.milestoneAt || 0) > Date.now() - 1500 ? "milestone-flash" : ""} grid grid-cols-[auto_minmax(0,1fr)] items-start border-2 border-[var(--game-border)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] ${compact ? "gap-2 p-2" : "gap-3 p-3"}`}>
-      <IconTile cfg={cfg} st={st} onRun={() => onRun(index)} />
+      <IconTile cfg={cfg} st={st} onRun={() => onRun(index)} tapHint={tapHint} />
 
       <div className="min-w-0 space-y-2">
         <div className="flex items-start gap-1">
@@ -285,6 +285,7 @@ function arePropsEqual(prev, next) {
     && prev.buyMode === next.buyMode
     && prev.compact === next.compact
     && prev.supplyCard === next.supplyCard
+    && prev.tapHint === next.tapHint
     && prev.onNeed === next.onNeed
     && prev.row === next.row
     && prev.cash === next.cash

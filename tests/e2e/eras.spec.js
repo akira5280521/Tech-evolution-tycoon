@@ -61,3 +61,26 @@ test("OPEN ERA takes the material only when tapped, and opens the era", async ({
   await expect(page.locator("[data-locked-era] [data-open-era='cpu']")).toHaveCount(0);
   expectClean(seen);
 });
+
+test("the top bar shows the decade of the newest era owned, not ERA n/36", async ({ page }) => {
+  const far = () => Date.now() + 9e9;
+  const glass = BUSINESSES.findIndex((b) => b.id === "glass");
+  const save = {
+    version: 12, cash: 1e6, lifetime: 10, investors: 0, lastSeen: Date.now(),
+    sawPit: true, starterGranted: true, hubSeen: true,
+    tutorial: { seen: [], tips: [], tipsOff: true, done: true, skipped: false, replay: false },
+    nextWindfallAt: far(), nextDilemmaAt: far(), nextBubbleAt: far(), nextShortageAt: far(),
+    biz: BUSINESSES.map((b, i) => ({
+      id: b.id,
+      owned: i <= glass ? 1 : 0,
+      manager: false, running: false, progress: 0, commissionUntil: 0,
+    })),
+  };
+  const seen = await open(page, "/", save, { extra: { "pc-tycoon-prefs-v1": JSON.stringify({ gameSection: "supply" }) } });
+  await tipsOff(page);
+  const header = page.locator("[data-era-progress]");
+  await expect(header).toHaveText("1940s");
+  await expect(header).not.toContainText("ERA");
+  await expect(header).not.toContainText("/36");
+  expectClean(seen);
+});

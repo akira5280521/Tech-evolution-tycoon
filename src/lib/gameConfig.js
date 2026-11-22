@@ -698,6 +698,44 @@ export const BUSINESSES = [
 
 ];
 
+// The year an era is set in, from its era label ("c. 1946" or "1982").
+// Material rows have no year of their own.
+export function eraYear(cfg) {
+  const m = String(cfg?.era || "").match(/(\d{4})/);
+  return m ? Number(m[1]) : null;
+}
+
+// Compact decade for the header, e.g. "1940s". An undated material row
+// uses the next dated era (sand, copper, glass and filament → 1940s).
+export function eraDecadeLabel(index) {
+  if (!Number.isInteger(index) || index < 0 || index >= BUSINESSES.length) return "";
+  let year = eraYear(BUSINESSES[index]);
+  if (year == null) {
+    for (let i = index + 1; i < BUSINESSES.length; i++) {
+      year = eraYear(BUSINESSES[i]);
+      if (year != null) break;
+    }
+  }
+  if (year == null) {
+    for (let i = index - 1; i >= 0; i--) {
+      year = eraYear(BUSINESSES[i]);
+      if (year != null) break;
+    }
+  }
+  if (year == null) return "";
+  return `${Math.floor(year / 10) * 10}s`;
+}
+
+// The newest era the player owns, as a decade label. An empty run uses
+// the first row's decade.
+export function reachedEraLabel(state) {
+  let at = 0;
+  (state?.biz || []).forEach((st, i) => {
+    if ((st?.owned || 0) > 0) at = i;
+  });
+  return eraDecadeLabel(at);
+}
+
 // Ordered by owned count. The product tops out at ×96 (2^5 × 3) once a
 // business reaches 200 — there is no milestone past that, so this multiplier
 // cannot grow forever.

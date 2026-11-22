@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Play } from "lucide-react";
-import { BUSINESSES, FOREMAN_COST, buyModeLabel, money, nextBuyMode } from "@/lib/gameConfig";
+import { FOREMAN_COST, buyModeLabel, money, nextBuyMode, reachedEraLabel } from "@/lib/gameConfig";
 import { HUB_LABEL, HUB_ROUTE, hubOpen } from "@/lib/hub";
 import { researchSpeed, techOpen } from "@/lib/research";
 import { techProgress } from "@/lib/progress";
@@ -38,20 +38,17 @@ function SideLink({ to, open, data, label, progress = null }) {
 const on = "border-[var(--game-accent)] bg-[var(--game-accent)] text-black";
 const off = "border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-muted)]";
 
-// How far along history the player is: the newest era they own, of all of
-// them. The game's goal is to reach the last one.
+// How far along history the player is: the decade of the newest era they
+// own, derived from that era's date (material rows use the next dated era).
 function EraProgress({ state }) {
-  let at = 0;
-  (state.biz || []).forEach((st, i) => {
-    if ((st?.owned || 0) > 0) at = i + 1;
-  });
+  const label = reachedEraLabel(state);
   return (
     <span
       data-era-progress
-      aria-label={`Era ${at} of ${BUSINESSES.length}`}
+      aria-label={label ? `Current era: ${label}` : "Current era"}
       className="shrink-0 font-pixel text-[0.5rem] leading-none text-[var(--game-muted)]"
     >
-      ERA {at}/{BUSINESSES.length}
+      {label}
     </span>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { BUSINESSES, ERA_GATE, SUPPLY_KEYS, blockedByGlass, eraOpen, frontierEra, money, pluralName } from "@/lib/gameConfig";
+import { BUSINESSES, ERA_GATE, SUPPLY_KEYS, blockedByGlass, eraOpen, frontierEra, money, count, pluralName } from "@/lib/gameConfig";
 import { activeChallengeGoal, incomePerSecond } from "@/lib/empire";
 import { PREFS_EVENT, readPrefs } from "@/lib/gamePrefs";
 import { applyAudioPrefs } from "@/lib/sfx";
@@ -138,7 +138,7 @@ export default function GameScreen() {
               className="flex flex-wrap gap-x-3 gap-y-1 border-2 border-[var(--game-border)] bg-[var(--game-card)] px-2 py-1 font-term text-base leading-5 text-[var(--game-muted)]"
             >
               {SUPPLY_KEYS.filter((key) => supplyShown(state, key)).map((key) => (
-                <span key={key}>{key} {Math.floor(supply[key] || 0)}</span>
+                <span key={key} className="tabular-nums">{key} {count(Math.floor(supply[key] || 0))}</span>
               ))}
               <ItemHelp kind="materials" id={SUPPLY_KEYS.filter((key) => supplyShown(state, key))} state={state} name="materials" className="ml-auto" />
             </p>

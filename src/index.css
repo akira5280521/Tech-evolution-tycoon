@@ -662,3 +662,33 @@ html[data-contrast="high"] {
     display: none;
   }
 }
+
+
+/* Hardware Museum: scrolling chip rows, silhouettes of the real icon, a New
+   gold square on unviewed found exhibits. */
+.museum-chip-row {
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 20px), transparent 100%);
+  scrollbar-width: none;
+}
+.museum-chip-row::-webkit-scrollbar {
+  display: none;
+}
+.museum-sil {
+  filter: grayscale(1) invert(1) contrast(1.15);
+  opacity: 0.38;
+}
+.museum-new-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 6px;
+  height: 6px;
+  background: #e6c15a;
+  box-shadow: 1px 1px 0 0 #000;
+  z-index: 1;
+  pointer-events: none;
+}
+.museum-progress {
+  image-rendering: pixelated;
+}

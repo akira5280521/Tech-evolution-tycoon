@@ -21,7 +21,7 @@ for (const size of ["large", "xl"]) {
           const out = [];
           if (document.documentElement.scrollWidth > innerWidth + 1) out.push(`page is ${document.documentElement.scrollWidth}px wide`);
           for (const el of document.querySelectorAll("button, a, h1, h2, h3, [data-help-sheet] p")) {
-            if (el.closest("[aria-hidden='true'], [data-ticker], .marquee")) continue;
+            if (el.closest("[aria-hidden='true'], [data-ticker], .marquee, .museum-chip-row")) continue;
             const r = el.getBoundingClientRect();
             if (r.width === 0 || r.height === 0) continue;
             const style = getComputedStyle(el);

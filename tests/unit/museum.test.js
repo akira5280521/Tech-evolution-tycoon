@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { PARTS } from "../../src/lib/facilities.js";
-import { PERIPHERALS, WINGS, exhibitStatus, makerOf, roomExhibits, roomFilters } from "../../src/lib/museum.js";
+import { PERIPHERALS, WINGS, exhibitStatus, makerOf, museumDecades, decadeCounts, roomCounts, roomExhibits, roomFilters, sortExhibits } from "../../src/lib/museum.js";
 import { RESEARCH } from "../../src/lib/research.js";
 import { BUSINESSES } from "../../src/lib/gameConfig.js";
 
@@ -73,4 +73,43 @@ test("today in history: real launch days, found pieces named, the rest by year",
   assert.equal(next.today, false);
   assert.ok(next.entries.length > 0);
   assert.equal(roomOf(PARTS.find((p) => p.id === "v-1080")), "graphics");
+});
+
+test("parts rooms are renamed and drives are split from storage media", () => {
+  const byId = Object.fromEntries(WINGS.find((w) => w.id === "parts").rooms.map((r) => [r.id, r.name]));
+  assert.equal(byId.boards, "MOTHERBOARDS");
+  assert.equal(byId.power, "POWER SUPPLIES");
+  assert.equal(byId.cards, "EXPANSION CARDS");
+  assert.equal(byId.drives, "DRIVES");
+  assert.equal(byId.media, "STORAGE MEDIA");
+  const drive = PARTS.find((p) => p.kind === "drive");
+  const disc = PARTS.find((p) => p.kind === "media");
+  assert.ok(drive && disc, "drive and media parts exist");
+  const rooms = WINGS.flatMap((w) => w.rooms);
+  assert.equal(rooms.filter((r) => r.match(drive)).map((r) => r.id).join(), "drives");
+  assert.equal(rooms.filter((r) => r.match(disc)).map((r) => r.id).join(), "media");
+});
+
+test("decade chips run from the earliest exhibit through the latest, with empty 1940s", () => {
+  const decades = museumDecades();
+  assert.equal(decades[0], 1930);
+  assert.ok(decades.includes(1940) && decades.includes(1990) && decades.at(-1) >= 2020);
+  const fresh = { biz: [], techDone: [], facilities: {} };
+  assert.equal(decadeCounts(fresh, 1940).total, 0);
+  assert.ok(decadeCounts(fresh, 1980).total > 0);
+  const all = { biz: everyEra, techDone: RESEARCH.map((r) => r.id), facilities: {} };
+  const nineties = roomExhibits(all, "boards", { decade: 1990 });
+  const counts = roomCounts(all, "boards", { decade: 1990 });
+  assert.equal(counts.total, nineties.length);
+  assert.ok(nineties.length > 0 && nineties.every((e) => Math.floor(e.item.year / 10) * 10 === 1990));
+  const ownedFirst = sortExhibits([
+    { item: { name: "B", year: 1980 }, status: "locked" },
+    { item: { name: "A", year: 1990 }, status: "owned" },
+  ], "owned");
+  assert.equal(ownedFirst[0].item.name, "A");
+  const byYear = sortExhibits([
+    { item: { name: "B", year: 1990 }, status: "owned" },
+    { item: { name: "A", year: 1980 }, status: "locked" },
+  ], "year");
+  assert.equal(byYear[0].item.name, "A");
 });

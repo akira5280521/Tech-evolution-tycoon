@@ -29,6 +29,11 @@ export function normalizePrefs(raw) {
     goalsHidden: src.goalsHidden === true,
     // The game screen section last shown: "tech" (default) or "supply".
     gameSection: src.gameSection === "supply" ? "supply" : "tech",
+    // Museum exhibits the player has opened. Stored in prefs so viewing
+    // never rewrites the empire save.
+    museumViewed: Array.isArray(src.museumViewed)
+      ? [...new Set(src.museumViewed.map((id) => String(id)).filter(Boolean))].slice(0, 2500)
+      : [],
   };
 }
 

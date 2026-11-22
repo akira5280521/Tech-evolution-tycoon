@@ -103,9 +103,9 @@ test("new games don't get the gift, and the flag survives prestige", () => {
 });
 
 test("an era-9 save from before 0.0.29 with no machine gets one free", () => {
-  const era9 = { biz: owning(["timber", "paper", "loom", "punchcards", "relay", "sand", "copper", "glass", "filament"]), facilities: {} };
-  assert.ok(idx("filament") + 1 === 9, "filament is era 9");
-  assert.ok(idx("mainframes") > idx("filament"));
+  const era9 = { biz: owning(["timber", "paper", "loom", "punchcards", "sand", "copper", "glass", "filament", "radios"]), facilities: {} };
+  assert.ok(idx("radios") + 1 === 9, "Radio Valves is era 9");
+  assert.ok(idx("mainframes") > idx("radios"));
   assert.equal(grantStarter(era9), true);
   assert.equal(era9.facilities.servers[STARTER_PART_ID], 1);
   assert.equal(era9.starterGranted, true);

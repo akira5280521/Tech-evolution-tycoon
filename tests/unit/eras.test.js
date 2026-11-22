@@ -134,14 +134,22 @@ test("the first eras need only 10 of the one before, so the tutorial is unchange
 
 test("dated eras become a compact decade, and material rows use the next dated era", () => {
   const glass = BUSINESSES.findIndex((b) => b.id === "glass");
+  const radios = BUSINESSES.findIndex((b) => b.id === "radios");
   const tubes = BUSINESSES.findIndex((b) => b.id === "tubes");
+  const relay = BUSINESSES.findIndex((b) => b.id === "relay");
   const timber = BUSINESSES.findIndex((b) => b.id === "timber");
   const loom = BUSINESSES.findIndex((b) => b.id === "loom");
   const phones = BUSINESSES.findIndex((b) => b.id === "phones");
-  assert.equal(glass + 1, 8, "Glassworks is era 8");
+  assert.equal(glass + 1, 7, "Glassworks is era 7, feeding Radio Valves");
+  assert.equal(radios + 1, 9, "Radio Valves is era 9");
+  assert.ok(radios > BUSINESSES.findIndex((b) => b.id === "punchcards"));
+  assert.ok(radios < relay && relay < tubes);
+  assert.equal(eraYear(BUSINESSES[radios]), 1920);
   assert.equal(eraYear(BUSINESSES[tubes]), 1946);
   assert.equal(eraYear(BUSINESSES[glass]), null);
-  assert.equal(eraDecadeLabel(glass), "1940s");
+  assert.equal(eraDecadeLabel(glass), "1920s");
+  assert.equal(eraDecadeLabel(radios), "1920s");
+  assert.equal(eraDecadeLabel(relay), "1940s");
   assert.equal(eraDecadeLabel(tubes), "1940s");
   assert.equal(eraDecadeLabel(timber), "1800s");
   assert.equal(eraDecadeLabel(loom), "1800s");
@@ -154,7 +162,7 @@ test("the header label follows the newest era the player owns", () => {
   const empty = { biz: BUSINESSES.map((b) => ({ id: b.id, owned: 0 })) };
   assert.equal(reachedEraLabel(empty), "1800s");
   const atGlass = { biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: i <= glass ? 1 : 0 })) };
-  assert.equal(reachedEraLabel(atGlass), "1940s");
+  assert.equal(reachedEraLabel(atGlass), "1920s");
   const atPhones = { biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: i === phones ? 1 : 0 })) };
   assert.equal(reachedEraLabel(atPhones), "2000s");
 });

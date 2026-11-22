@@ -76,6 +76,7 @@ export const ERA_FACTS = {
   paper: "A paper mill grinds logs to pulp and presses it into sheets; the stiff card stock is what punch cards were cut from.",
   loom: "The Jacquard loom of 1804 read a chain of punched cards to pick which threads to lift: the first machine run by stored instructions.",
   punchcards: "Punched cards and electric tabulators counted the 1890 US census in a fraction of the time the 1880 count took.",
+  radios: "Home radios of the 1920s used bright-emitter triodes such as the UX-201A; Arcea's Radiola and Stillwater Kett's Model 20 put a parlour set in reach of ordinary families.",
   relay: "Relay computers of the early 1940s did arithmetic by clicking thousands of telephone relays, a few operations a second.",
   sand: "Silica sand is mostly silicon dioxide: the raw stuff of glass, and much later of silicon chips.",
   copper: "Copper carries current better than any common metal, so it became the wire inside almost every machine.",

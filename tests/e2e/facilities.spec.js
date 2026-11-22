@@ -102,8 +102,8 @@ test("a fresh save can open HQ and buy the Inland 601", async ({ page }) => {
 });
 
 test("an era-9 save can open HQ and buy the Inland 601 before Mainframes", async ({ page }) => {
-  expect(BUSINESSES.findIndex((b) => b.id === "filament") + 1).toBe(9);
-  await buyStarterFromGame(page, earlySave({ throughId: "filament", cash: 1e6, wood: 50 }));
+  expect(BUSINESSES.findIndex((b) => b.id === "radios") + 1).toBe(9);
+  await buyStarterFromGame(page, earlySave({ throughId: "radios", cash: 1e6, wood: 50 }));
 });
 
 // HQ stays open for good once reached, like research. After a prestige the

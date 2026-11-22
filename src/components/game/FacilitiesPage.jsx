@@ -1,16 +1,22 @@
 import { money } from "@/lib/gameConfig";
-import { businessIncomePerSecond } from "@/lib/empire";
+import { businessIncomePerSecond, incomePerSecond } from "@/lib/empire";
 import {
   FACILITIES,
-  MAX_PART,
   PARTS,
   facilitiesOpen,
   facilityHint,
   facilityReport,
   facilityUnlocked,
+  fitPart,
   nextPurchase,
   partCost,
+  partMax,
+  REBUILD_SECONDS,
+  rebuildCost,
+  rebuildReady,
 } from "@/lib/facilities";
+import { extrasText, partValue } from "@/lib/plantValue";
+import { toast } from "sonner";
 import { serverOutput } from "@/lib/research";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
@@ -22,9 +28,12 @@ function percent(share) {
   return pct >= 10 ? `${Math.round(pct)}%` : `${pct.toFixed(1)}%`;
 }
 
-function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best }) {
+function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, business }) {
   const cost = partCost(part, owned);
-  const affordable = open && !part.soon && Number.isFinite(cost) && cash >= cost && owned < MAX_PART;
+  // Memory goes in the board's slots: the board can refuse a stick (full, or
+  // the wrong DDR generation), or a stick can replace others.
+  const fit = fitPart(state.facilities?.[facilityId] || {}, facilityId, part.id);
+  const affordable = open && !part.soon && !fit.reason && Number.isFinite(cost) && cash >= cost && owned < partMax(part, facilityId);
   return (
     <div data-part={part.id} data-best-part={best ? "" : undefined} data-help-scope className={`border-2 ${best ? "border-[var(--game-accent)]" : "border-[var(--game-border)]"} bg-[var(--game-bg)] p-2`}>
       {best && <p className="mb-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">BEST NEXT PART</p>}
@@ -38,6 +47,7 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best }) {
         <div className={`min-w-0 flex-1 ${part.soon || !open ? "opacity-60" : ""}`}>
           <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)] [overflow-wrap:anywhere]">{part.name}</p>
           <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{part.spec}</p>
+          <PartValue state={state} facilityId={facilityId} part={part} business={business} />
         </div>
         <span className="shrink-0 font-term text-base leading-5 text-[var(--game-accent)]">×{owned}</span>
         <ItemHelp kind="part" id={`${facilityId}:${part.id}`} state={state} name={part.name} className="-mr-1 -mt-2.5" />
@@ -52,6 +62,37 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best }) {
         </div>
       )}
     </div>
+  );
+}
+
+function rate(n) {
+  return n >= 10 ? n.toFixed(1) : n >= 0.1 ? n.toFixed(2) : n.toFixed(3);
+}
+
+// What this part would add right now, with what it needs to run.
+function PartValue({ state, facilityId, part, business }) {
+  const v = partValue(state, facilityId, part.id, business);
+  if (!v) return null;
+  const fit = fitPart(state.facilities?.[facilityId] || {}, facilityId, part.id);
+  const note = fit.note ? ` Buying it ${fit.note}, at half what they cost.` : "";
+  let text;
+  let good = false;
+  if (v.maxed) text = "At the most you can own.";
+  else if (v.why) text = v.why;
+  else {
+    good = true;
+    const gain = v.kind === "rd"
+      ? [v.added > 0 ? `+${rate(v.added)} R&D/s` : null, v.awayHours > 0 ? `+${Number(v.awayHours.toFixed(1))} h away bank` : null].filter(Boolean).join(", ")
+      : `+${money(v.added)}/s (+${(v.share * 100).toFixed(2)}%)`;
+    const extras = v.extras?.length ? ` with ${extrasText(v.extras)} (${money(v.cost)} in all)` : "";
+    const payback = v.payback ? ` · pays back in ${Math.max(1, Math.round(v.payback / 60)).toLocaleString("en-US")} min` : "";
+    text = `${gain}${extras}${payback}`;
+  }
+  if (!v.maxed && note) text += note;
+  return (
+    <p data-part-value className={`break-words font-term text-base leading-5 ${good ? "text-[var(--game-success)]" : "text-[var(--game-muted)]"}`}>
+      {text}
+    </p>
   );
 }
 
@@ -88,6 +129,11 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
             {Math.round(row.watts)} W of cards · {Math.round(row.power)} W power · {Math.round(row.cool)} W cooling · {Math.round(row.vram)} GB on the cards · {Math.round(row.ram)} GB RAM
           </p>
         )}
+        {open && row.board && (
+          <p data-board className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
+            Memory: {row.board.used} of {row.board.slots} slots used on the {row.board.name}.
+          </p>
+        )}
         <div className="mt-2 space-y-2">
           {parts.map((part) => (
             <PartRow
@@ -96,10 +142,14 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
               owned={counts[part.id] || 0}
               open={open}
               cash={cash}
-              onBuy={() => onBuy(facility.id, part.id)}
+              onBuy={() => {
+                const done = onBuy(facility.id, part.id);
+                if (done?.ok && done.refund > 0) toast(`${part.name} installed`, { description: `It ${done.note}. ${money(done.refund)} back for the old sticks.` });
+              }}
               facilityId={facility.id}
               state={state}
               best={next?.facilityId === facility.id && next?.partId === part.id}
+              business={business}
             />
           ))}
         </div>
@@ -108,8 +158,44 @@ function Plant({ facility, state, report, business, cash, onBuy, next }) {
   );
 }
 
+// After a prestige or fork the plants start empty; this buys last run's
+// layout back, cheapest parts first, as far as cash allows.
+function RebuildPanel({ state, onRebuild }) {
+  const left = rebuildCost(state);
+  if (left.parts <= 0) return null;
+  const cash = state.cash || 0;
+  const now = Date.now();
+  const ready = rebuildReady(state, { maxCost: Math.max(0, incomePerSecond(state, now)) * REBUILD_SECONDS, businessPerSecond: businessIncomePerSecond(state, now) });
+  const first = ready.cheapestCost;
+  const can = first != null && cash >= first;
+  const later = left.parts - ready.parts;
+  const press = () => {
+    const done = onRebuild();
+    if (done?.bought > 0) {
+      const rest = rebuildCost(state).parts;
+      toast(`Rebuilt ${done.bought} part${done.bought === 1 ? "" : "s"}`, { description: `${money(done.spent)} spent.${rest > 0 ? ` ${rest} more when cash and income allow.` : " Last run's plants are back."}` });
+    }
+  };
+  return (
+    <Panel>
+      <div data-rebuild data-help-scope>
+        <h2 className="font-pixel text-[0.6rem] text-[var(--game-accent)]">REBUILD LAST RUN'S PLANTS</h2>
+        <p className="mt-1 break-words font-term text-base leading-5 text-[var(--game-fg)]">
+          {left.parts} part{left.parts === 1 ? "" : "s"} to go. {ready.parts > 0 ? `${ready.parts} ready now` : "None ready yet"}
+          {later > 0 ? `; ${later} wait until each pays for itself within 15 minutes` : ""}. Mine and cluster only, cheapest first, so power and cooling come with the cards.
+        </p>
+        <div className="mt-2">
+          <GoldButton disabled={!can} onClick={press} dataAttr="rebuild">
+            <span className="font-pixel text-[0.6rem]">{can ? "REBUILD" : first != null ? `NEED ${money(first)}` : "NOT YET"}</span>
+          </GoldButton>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
 export default function FacilitiesPage() {
-  const { state, buyFacilityPart } = useGameState();
+  const { state, buyFacilityPart, rebuildFacilities } = useGameState();
   const business = businessIncomePerSecond(state, Date.now());
   const report = facilityReport(state, business);
   const open = facilitiesOpen(state);
@@ -132,12 +218,13 @@ export default function FacilitiesPage() {
       {open && (
         <p data-next-part className="break-words px-1 font-term text-base leading-5 text-[var(--game-accent)]">
           {next
-            ? `Best next part: ${next.name} for the ${next.facilityId === "mine" ? "mine" : "cluster"}${next.extras?.length ? `, with ${next.extras.join(" and ")} to run it` : ""}, ${money(next.bundleCost || next.cost)}${next.payback ? `; pays for itself in about ${Math.max(1, Math.round(next.payback / 60))} min` : " to get it running"}.`
+            ? `Best next part: ${next.name} for the ${next.facilityId === "mine" ? "mine" : "cluster"}${next.extras?.length ? `, with ${extrasText(next.extras)} to run it` : ""}, ${money(next.bundleCost || next.cost)}${next.payback ? `; pays for itself in about ${Math.max(1, Math.round(next.payback / 60))} min` : " to get it running"}.`
             : report.capped
               ? "Both plants are at the income cap; more parts won't add pay."
               : "No part pays for itself within 15 minutes right now."}
         </p>
       )}
+      <RebuildPanel state={state} onRebuild={rebuildFacilities} />
       {FACILITIES.map((facility) => (
         <Plant key={facility.id} facility={facility} state={state} report={report} business={business} cash={state.cash || 0} onBuy={buyFacilityPart} next={next} />
       ))}

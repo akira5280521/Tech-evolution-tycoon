@@ -43,6 +43,7 @@ import {
   startingBiz,
   autoBuyUpgrade,
   businessIncomePerSecond,
+  incomePerSecond,
   creditAmount,
   creditCycles,
   dataPerSecond,
@@ -62,7 +63,7 @@ import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { generationAt } from "@/lib/generations";
-import { facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews } from "@/lib/facilities";
+import { REBUILD_SECONDS, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants } from "@/lib/facilities";
 import { advanceResearch, fillResearchGaps, grantOwnedResearch, readResearchData, readTechDone, readTechJob, startResearch } from "@/lib/research";
 import { currentGoal, readGoalsDone, settleGoals } from "@/lib/goals";
 import { applyOrientation } from "@/lib/orientation";
@@ -182,9 +183,14 @@ function applySavedMeta(state, raw) {
   state.bestEra = m.bestEra == null ? null : Math.floor(num(m.bestEra));
   state.runs = readRuns(m.runs);
   state.milestones = readMilestones(m.milestones);
+  state.lastPlants = migrateFacilities(m.lastPlants).facilities;
   state.trackedSince = m.trackedSince == null ? 0 : num(m.trackedSince);
   state.trackedFromStart = !!m.trackedFromStart;
-  state.facilities = readFacilities(m.facilities);
+  // Parts that no longer fit their plant or its memory board are refunded
+  // (see migrateFacilities).
+  const { facilities, refund } = migrateFacilities(m.facilities);
+  state.facilities = facilities;
+  if (refund > 0) state.cash = (state.cash || 0) + refund;
   state.news = readNews(m.news);
   // Older saves kept server output separately; it joins the one R&D pool.
   state.data = (Number.isFinite(state.data) ? state.data : 0) + readResearchData(m.researchData);
@@ -259,6 +265,7 @@ function pack(s) {
     bestEra: Math.max(0, Math.floor(s.bestEra || 0)),
     runs: Array.isArray(s.runs) ? s.runs.slice(-40) : [],
     milestones: s.milestones || {},
+    lastPlants: s.lastPlants || undefined,
     trackedSince: s.trackedSince || 0,
     trackedFromStart: !!s.trackedFromStart,
     facilities: readFacilities(s.facilities),
@@ -1103,14 +1110,28 @@ export function useGame() {
       saveNow();
       bump();
     },
+    rebuildFacilities: () => {
+      const s = stateRef.current;
+      const now = Date.now();
+      const done = rebuildPlants(s, { maxCost: Math.max(0, incomePerSecond(s, now)) * REBUILD_SECONDS, businessPerSecond: businessIncomePerSecond(s, now) });
+      if (done.bought > 0) {
+        noteFacilityNews(stateRef.current, businessIncomePerSecond(stateRef.current, Date.now()));
+        buzzLight();
+        playBuy();
+        saveNow();
+        bump();
+      }
+      return done;
+    },
     buyFacilityPart: (facilityId, partId) => {
       const bought = purchasePart(stateRef.current, facilityId, partId);
-      if (!bought.ok) return;
+      if (!bought.ok) return bought;
       noteFacilityNews(stateRef.current, businessIncomePerSecond(stateRef.current, Date.now()));
       buzzLight();
       playBuy();
       saveNow();
       bump();
+      return bought;
     },
     setOrientation: (orientation) => {
       const s = stateRef.current;

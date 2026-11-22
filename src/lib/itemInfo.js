@@ -398,12 +398,23 @@ function partInfo(state, facilityId, partId) {
   else if (part.kind === "power") effect = `Each supplies ${part.power} W; ${who} slow down when they draw more than the supplies give.`;
   else if (part.kind === "cool") effect = `Each removes ${part.cool} W of heat; ${who} slow down when they make more than the fans remove.`;
   else if (part.kind === "disk") effect = `Each adds ${part.gb.toLocaleString("en-US")} GB; racks need 1 TB for full speed, and each TB lets them bank another hour of R&D while you're away.`;
-  else if (part.kind === "ram") effect = `Each adds ${part.gb} GB of RAM; the cluster needs enough memory for its model.`;
+  else if (part.kind === "ram") effect = `Each adds ${part.gb} GB of RAM; ${facilityId === "mine" ? "the mine needs 16 GB" : "the cluster needs enough memory for its model"}.`;
   else effect = "";
   const status = plantOpen
     ? `You have ${owned}; the next costs ${money(partCost(part, owned))}.`
     : servers ? "Opens with your first Microprocessor." : LOCKED_TEXT;
-  return { title, text: `${firstSentence(part.spec)} ${effect}`, rows: [{ label: "NOW", text: status }] };
+  const rows = [{ label: "NOW", text: status }];
+  if (part.kind === "ram") rows.push({ label: "BOARD", text: boardText(facilityId, part) });
+  return { title, text: `${firstSentence(part.spec)} ${effect}`, rows };
+}
+
+// The memory board's rules, as on the real hardware: a 2017 mining board took
+// two desktop DDR4 sticks; A100-era servers had 32 DDR4 slots, H100-era
+// servers 32 DDR5 slots, and the two kinds don't fit the same slots.
+function boardText(facilityId, part) {
+  if (facilityId === "mine") return "The mining board has 2 DDR4 slots and takes 32 GB at most.";
+  if (part.gen === "DDR5") return "32 slots. The first DDR5 stick swaps in a DDR5 board and sells the DDR4 sticks back at half price; when the slots are full, a bigger stick replaces the smallest.";
+  return "The DDR4 server board has 32 slots, so DDR4 tops out at 1 TB; the 2 TB Foundation model needs DDR5.";
 }
 
 function prestigeInfo(state) {

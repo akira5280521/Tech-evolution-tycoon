@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { BUSINESSES, ERA_GATE, SUPPLY_KEYS, blockedByGlass, eraOpen, frontierEra, money, pluralName } from "@/lib/gameConfig";
-import { activeChallengeGoal, incomePerSecond, supplyCap, supplyFull } from "@/lib/empire";
+import { activeChallengeGoal, incomePerSecond, shortageOn, supplyCap, supplyFull } from "@/lib/empire";
 import StorageSheet, { amount } from "./StorageSheet";
 import { PREFS_EVENT, readPrefs } from "@/lib/gamePrefs";
 import { applyAudioPrefs } from "@/lib/sfx";
@@ -152,6 +152,7 @@ export default function GameScreen() {
                   >
                     {key} {amount(supply[key])}/{amount(supplyCap(state, key))}
                     {full && <span className="ml-1 font-pixel text-[0.4rem]">FULL</span>}
+                    {shortageOn(state, Date.now()) === key && <span data-short={key} className="ml-1 font-pixel text-[0.4rem] text-[var(--game-violet)]">SHORT</span>}
                   </button>
                 );
               })}

@@ -69,6 +69,7 @@ import { REBUILD_SECONDS, facilityReport, noteFacilityNews, purchasePart, readFa
 import { advanceResearch, fillResearchGaps, grantOwnedResearch, readResearchData, readTechDone, readTechJob, startResearch } from "@/lib/research";
 import { currentGoal, readGoalsDone, settleGoals } from "@/lib/goals";
 import { applyOrientation } from "@/lib/orientation";
+import { notesUnseen } from "@/lib/releaseNotes";
 import { SAVE_VERSION, clearSaveData, getSaveData, remapBestEra, writeSaveData } from "@/lib/gameSave";
 import { encodeSave } from "@/lib/saveCode";
 import { isPageHidden } from "@/lib/pageVisibility";
@@ -249,6 +250,7 @@ function pack(s) {
     supply: s.supply,
     storage: s.storage || {},
     erasOpened: s.erasOpened || [],
+    shortage: s.shortage || null,
     erasPaid: s.erasPaid || [],
     foreman: !!s.foreman,
     sawPit: !!s.sawPit,
@@ -332,6 +334,7 @@ function loadSave() {
     ensureSupply(state);
     state.storage = data.storage || {};
     state.erasOpened = Array.isArray(data.erasOpened) ? data.erasOpened : [];
+    state.shortage = data.shortage && typeof data.shortage === "object" && Number.isFinite(data.shortage.until) ? data.shortage : null;
     state.foreman = !!data.foreman;
     state.sawPit = !!data.sawPit;
     state.buyMode = normalizeBuyMode(data.buyMode);
@@ -631,7 +634,10 @@ export function useGame() {
       s.playMs = (s.playMs || 0) + dt;
       if (noteMilestones(s, wall)) dirty = true;
       if (autoBuyUpgrade(s, wall)) dirty = true;
-      const notes = tickDilemma(s, wall).concat(finishTimedWork(s, wall), tickBubble(s, wall));
+      // No dilemma starts while Welcome Back, What's New or the fresh-start
+      // offer is up.
+      const blocked = !!s.offlineReport || (!!s.restartSuggested && !s.restartSeen) || notesUnseen();
+      const notes = tickDilemma(s, wall, { blocked }).concat(finishTimedWork(s, wall), tickBubble(s, wall));
       const cards = collectHistory(s);
       if (cards.length) notes.push({ type: "history", cards });
       if (notes.length) {

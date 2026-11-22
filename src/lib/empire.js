@@ -174,8 +174,70 @@ export const DILEMMAS = [
   },
 ];
 
+// Historical shortages: real supply crunches, once a game each, in the era
+// they happened. Paying keeps the line running; waiting halves what that
+// material's rows make for a while, with a little R&D from working around it.
+// Left to expire, the shortage just hits.
+export const SHORTAGES = [
+  {
+    id: "short-dram",
+    from: "laptops",
+    to: "multimedia",
+    key: "wafers",
+    title: "1988 MEMORY CHIP SHORTAGE",
+    text: "Memory chips are scarce worldwide and prices have tripled. Your wafer suppliers want more money.",
+  },
+  {
+    id: "short-taiwan",
+    from: "gpu",
+    to: "phones",
+    key: "wafers",
+    title: "1999 TAIWAN EARTHQUAKE",
+    text: "A 7.7 earthquake has knocked out power to the chip plants of Hsinchu. Wafers are late.",
+  },
+  {
+    id: "short-thailand",
+    from: "tablets",
+    to: "rgb",
+    key: "glass",
+    title: "2011 THAILAND FLOODS",
+    text: "Floods have closed the factories that make disk drive parts, glass platters included.",
+  },
+  {
+    id: "short-crypto",
+    from: "ai",
+    to: "quantum",
+    key: "silicon",
+    title: "2017 CRYPTO MINING RUSH",
+    text: "Miners are buying every graphics card they can find, and the chips to make more.",
+  },
+  {
+    id: "short-chips",
+    from: "vr",
+    to: "supercluster",
+    key: "wafers",
+    title: "2020 CHIP SHORTAGE",
+    text: "Lockdowns, demand for home computers and a fab fire have left the world short of chips.",
+  },
+].map((x) => ({
+  ...x,
+  once: true,
+  shortage: true,
+  choices: [
+    { key: "a", label: "PAY THE SPOT PRICE", effects: { pay: 60 } },
+    { key: "b", label: "WAIT IT OUT", effects: { shortage: { key: x.key, minutes: 10 }, data: 2 } },
+  ],
+}));
+const ALL_DILEMMAS = () => [...DILEMMAS, ...SHORTAGES];
+
+// The material in a shortage right now (its rows make half), or null.
+export function shortageOn(state, now = 0) {
+  const sh = state?.shortage;
+  return sh && now > 0 && now < (sh.until || 0) ? sh.key : null;
+}
+
 export function dilemmaSpec(id) {
-  return DILEMMAS.find((d) => d.id === id) || DILEMMAS[0];
+  return ALL_DILEMMAS().find((d) => d.id === id) || DILEMMAS[0];
 }
 
 // True when the player's furthest era is between `from` and `to` (row ids).
@@ -199,6 +261,9 @@ export function markEventDone(state, id) {
 // Events that fit the player's era and haven't used up their one time.
 // The last one shown sits out a turn unless it's the only choice.
 function pickDilemma(state) {
+  // A shortage in its years comes first: it only happens once.
+  const crunch = SHORTAGES.find((d) => inEraSpan(state, d.from, d.to) && !eventDone(state, d.id));
+  if (crunch) return crunch;
   const fits = DILEMMAS.filter((d) => inEraSpan(state, d.from, d.to) && !(d.once && eventDone(state, d.id)));
   const pool = fits.length > 1 ? fits.filter((d) => d.id !== state.lastDilemma) : fits;
   return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
@@ -527,7 +592,7 @@ export function makesOf(state, cfg) {
   return Object.fromEntries(Object.entries(cfg.makes).map(([key, n]) => [key, (Number(n) || 0) * mult]));
 }
 
-function moveSupply(state, cfg, cycles, owned) {
+function moveSupply(state, cfg, cycles, owned, now = 0) {
   if (!cfg?.uses && !cfg?.makes) return;
   const supply = ensureSupply(state);
   const n = Number.isFinite(cycles) && cycles > 0 ? cycles : 0;
@@ -551,7 +616,7 @@ function moveSupply(state, cfg, cycles, owned) {
   }
   if (cfg.makes && count > 0) {
     for (const [key, make] of Object.entries(makesOf(state, cfg))) {
-      const add = (Number(make) || 0) * count * n * cover;
+      const add = (Number(make) || 0) * count * n * cover * (shortageOn(state, now) === key ? 0.5 : 1);
       const have = supply[key] || 0;
       const next = have + add;
       // A batch of cycles may overfill for a moment so the rows after it
@@ -707,7 +772,7 @@ export function creditCycles(state, index, cycles, now = 0, rate = 1) {
   if (!st || st.owned <= 0) return 0;
   const rev = (upgradesOf(state, cfg.id).rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone);
   const factor = supplyFactor(state, cfg, cycles);
-  moveSupply(state, cfg, cycles, st.owned);
+  moveSupply(state, cfg, cycles, st.owned, now);
   const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor * rate;
   return creditAmount(state, amount, now);
 }
@@ -1247,11 +1312,16 @@ export function badgeList(state) {
   });
 }
 
-export function tickDilemma(state, now) {
+// blocked: another popup is up (Welcome Back, What's New, the fresh-start
+// offer), so no new dilemma starts on top of it.
+export function tickDilemma(state, now, { blocked = false } = {}) {
   const notes = [];
   if (!state.nextDilemmaAt) state.nextDilemmaAt = now + 60 * 1000;
   if (!state.nextWindfallAt) state.nextWindfallAt = now + 45 * 1000;
   if (state.dilemma && now >= state.dilemma.expiresAt) {
+    // A shortage nobody answered still happens.
+    const spec = dilemmaSpec(state.dilemma.id);
+    if (spec.shortage) state.shortage = { key: spec.key, until: now + 10 * 60 * 1000 };
     state.dilemma = null;
     state.nextDilemmaAt = now + 6 * 60 * 1000;
     notes.push({ type: "expire" });
@@ -1261,7 +1331,7 @@ export function tickDilemma(state, now) {
   if (tutorialRunning && !state.dilemma) {
     state.nextDilemmaAt = Math.max(state.nextDilemmaAt || 0, now + 60 * 1000);
   }
-  if (!tutorialRunning && !state.dilemma && now >= (state.dilemmaDeferUntil || 0) && now >= (state.nextDilemmaAt || 0)) {
+  if (!tutorialRunning && !blocked && !state.dilemma && now >= (state.dilemmaDeferUntil || 0) && now >= (state.nextDilemmaAt || 0)) {
     const pick = pickDilemma(state);
     if (pick) {
       state.lastDilemma = pick.id;
@@ -1299,6 +1369,8 @@ export function describeEffects(effects) {
   if (effects.data) parts.push(`+${effects.data} R&D points`);
   if (effects.cash) parts.push(`${effects.cash} seconds of income`);
   if (effects.boost) parts.push(`Income x1.15 for ${effects.boost} minutes`);
+  if (effects.pay) parts.push(`Costs ${effects.pay} seconds of income`);
+  if (effects.shortage) parts.push(`${effects.shortage.key} made at half rate for ${effects.shortage.minutes} minutes`);
   return parts.join(", ");
 }
 
@@ -1317,6 +1389,9 @@ export function resolveDilemma(state, choice, now) {
     if (fx.data) state.data = (state.data || 0) + fx.data;
     if (fx.cash) creditAmount(state, Math.max(100, incomePerSecond(state, now) * fx.cash), now);
     if (fx.boost) state.boostUntil = Math.max(state.boostUntil || 0, now) + fx.boost * 60 * 1000;
+    // Paying never takes more than the cash on hand.
+    if (fx.pay) state.cash = Math.max(0, (state.cash || 0) - Math.min(state.cash || 0, Math.max(100, incomePerSecond(state, now) * fx.pay)));
+    if (fx.shortage) state.shortage = { key: fx.shortage.key, until: now + fx.shortage.minutes * 60 * 1000 };
     state.modStamp = (state.modStamp || 0) + 1;
     return { type: "choice", title: picked.label, summary };
   }
@@ -1442,6 +1517,7 @@ export function snapshotMeta(state, options = {}) {
     supply: { ...ensureSupply(state) },
     // Bigger bins are buildings: kept through prestige and forks.
     storage: { ...(state.storage || {}) },
+    shortage: state.shortage ? { ...state.shortage } : null,
     // Era materials are paid once, ever.
     erasPaid: [...(state.erasPaid || [])],
     foreman: !!state.foreman,

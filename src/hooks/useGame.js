@@ -62,6 +62,8 @@ import {
   tickDilemma,
   buyStorage,
   startRefine,
+  sellMaterial,
+  swapMaterial,
 } from "@/lib/empire";
 import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/lib/tutorial";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
@@ -860,6 +862,27 @@ export function useGame() {
     [bump]
   );
 
+  const sellStock = useCallback(
+    (key, amount) => {
+      const cash = sellMaterial(stateRef.current, key, amount, Date.now());
+      if (!(cash > 0)) return;
+      playBuy();
+      saveNow();
+      bump();
+    },
+    [bump]
+  );
+
+  const swapStock = useCallback(
+    (from, to, amount) => {
+      if (!swapMaterial(stateRef.current, from, to, amount, Date.now())) return;
+      playBuy();
+      saveNow();
+      bump();
+    },
+    [bump]
+  );
+
   const openEraAt = useCallback(
     (index) => {
       if (!openEra(stateRef.current, index)) return;
@@ -1226,6 +1249,8 @@ export function useGame() {
     purchaseUpgrade,
     upgradeStorage,
     openEraAt,
+    sellStock,
+    swapStock,
     refine,
     purchaseShop,
     chooseSpecialty,

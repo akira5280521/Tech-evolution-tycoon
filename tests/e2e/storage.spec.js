@@ -36,3 +36,19 @@ test("the refinery turns silicon into polysilicon from the material sheet", asyn
   await expect.poll(async () => (await saved(page))?.refineJob?.amount || 0).toBe(100);
   expectClean(seen);
 });
+
+test("selling and swapping from the material sheet", async ({ page }) => {
+  const base = SAVES.mid;
+  // No managers, so nothing is made while the test runs.
+  const biz = base.biz.map((row) => ({ ...row, manager: false, running: false }));
+  const save = { ...base, biz, lastSeen: Date.now(), cash: 0, supply: { ...(base.supply || {}), copper: 500, sand: 0 } };
+  const seen = await open(page, "/", save);
+  await tipsOff(page);
+  await page.locator("[data-material='copper']").click();
+  await page.locator("[data-sell='copper']").click();
+  await expect.poll(async () => (await saved(page))?.supply?.copper ?? 999).toBe(400);
+  await page.locator("[data-swap-target]").selectOption("sand");
+  await page.locator("[data-swap='copper']").click();
+  await expect.poll(async () => (await saved(page))?.supply?.sand || 0).toBeGreaterThan(0);
+  expectClean(seen);
+});

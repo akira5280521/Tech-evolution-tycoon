@@ -32,7 +32,7 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
-## Next build (after 0.0.27)
+## Ships in 0.0.28
 
 - **Part value on every row.** Each Facilities part shows what it would add
   right now (cash a second and share for the mine and cluster, R&D a second

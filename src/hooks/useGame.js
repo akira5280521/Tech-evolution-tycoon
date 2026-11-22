@@ -253,6 +253,8 @@ function pack(s) {
     nextBubbleAt: s.nextBubbleAt || 0,
     supply: s.supply,
     storage: s.storage || {},
+    materialsMade: s.materialsMade || {},
+    materialsSold: s.materialsSold || 0,
     erasOpened: s.erasOpened || [],
     shortage: s.shortage || null,
     erasPaid: s.erasPaid || [],
@@ -338,6 +340,8 @@ function loadSave() {
     state.supply = data.supply;
     ensureSupply(state);
     state.storage = data.storage || {};
+    state.materialsMade = data.materialsMade || {};
+    state.materialsSold = data.materialsSold || 0;
     state.erasOpened = Array.isArray(data.erasOpened) ? data.erasOpened : [];
     state.shortage = data.shortage && typeof data.shortage === "object" && Number.isFinite(data.shortage.until) ? data.shortage : null;
     state.foreman = !!data.foreman;

@@ -656,6 +656,13 @@ export function buyStorage(state, key) {
   return true;
 }
 
+// Lifetime totals for the material badges: made (by rows or the refinery)
+// and sold. Kept for good.
+function countMade(state, key, n) {
+  if (!(n > 0) || !Number.isFinite(n)) return;
+  state.materialsMade = { ...(state.materialsMade || {}), [key]: (state.materialsMade?.[key] || 0) + n };
+}
+
 // The material market: sell spare stock for a little cash, or swap one
 // material for another. Prices are tiny and set by the era that makes the
 // material (a twentieth of one cycle of that row's pay), and drift slowly,
@@ -678,6 +685,7 @@ export function sellMaterial(state, key, amount, now = Date.now()) {
   const cash = n * materialPrice(key, now);
   state.supply = { ...ensureSupply(state), [key]: have - n };
   state.cash = (state.cash || 0) + cash;
+  state.materialsSold = (state.materialsSold || 0) + n;
   return cash;
 }
 // How much of `to` a swap of `amount` of `from` gives, after the fee and
@@ -739,6 +747,7 @@ function moveSupply(state, cfg, cycles, owned, now = 0) {
       // can draw; the bins settle at the cap once the batch is done.
       const room = Math.max(have, supplyCap(state, key) * Math.max(1, n));
       supply[key] = Number.isFinite(next) ? Math.min(SUPPLY_CAP, room, Math.max(0, next)) : have;
+      countMade(state, key, supply[key] - have);
     }
   }
 }
@@ -1138,6 +1147,7 @@ export function finishTimedWork(state, now) {
     if (REFINED[refine.id]) {
       const supply = ensureSupply(state);
       supply[refine.id] = (supply[refine.id] || 0) + (Number(refine.amount) || 0);
+      countMade(state, refine.id, Number(refine.amount) || 0);
       notes.push({ type: "refined", id: refine.id, amount: refine.amount });
     }
   }
@@ -1292,6 +1302,9 @@ const PROJECT_BADGES = [
   { id: "orbital", legacyOwned: 25, needOwned: 120 },
 ];
 
+const MATERIAL_BADGE = 100000;
+const REFINED_BADGE = 1000;
+const MADE_NAMES = { wood: "Lumber yard", paper: "Paper trail", sand: "Sandbox", copper: "Copper wire", glass: "Glassblower", filament: "Filament spool", germanium: "Germanium crystal", silicon: "Silicon ingot", wafers: "Wafer fab" };
 const BADGE_DEFS = [
   ...BUSINESSES.map((cfg, index) => ({
     id: `era-${cfg.id}`,
@@ -1311,6 +1324,42 @@ const BADGE_DEFS = [
     era: index,
     earned: (s) => isMastered(s, index),
   })),
+  ...SUPPLY_KEYS.filter((key) => !REFINED[key]).map((key) => {
+    const maker = BUSINESSES.find((cfg) => cfg.makes?.[key]);
+    const at = BUSINESSES.indexOf(maker);
+    return {
+      id: `made-${key}`,
+      group: "MATERIALS",
+      name: `${MADE_NAMES[key] || key}`,
+      desc: `Make ${MATERIAL_BADGE.toLocaleString("en-US")} ${key}, all time`,
+      icon: maker?.icon,
+      era: at,
+      earned: (s) => (s.materialsMade?.[key] || 0) >= MATERIAL_BADGE,
+    };
+  }),
+  ...Object.keys(REFINED).map((key) => ({
+    id: `made-${key}`,
+    group: "MATERIALS",
+    name: `${REFINED[key].short} refiner`,
+    desc: `Refine ${REFINED_BADGE.toLocaleString("en-US")} ${REFINED[key].name}, all time`,
+    era: BUSINESSES.findIndex((cfg) => cfg.id === "ics"),
+    earned: (s) => (s.materialsMade?.[key] || 0) >= REFINED_BADGE,
+  })),
+  {
+    id: "materials-sold",
+    group: "MATERIALS",
+    name: "Commodities desk",
+    desc: "Sell 10,000 units of material, all time",
+    earned: (s) => (s.materialsSold || 0) >= 10000,
+  },
+  {
+    id: "shortages-all",
+    group: "MATERIALS",
+    name: "Supply chain veteran",
+    desc: "Get through all five historical shortages",
+    era: BUSINESSES.findIndex((cfg) => cfg.id === "vr"),
+    earned: (s) => SHORTAGES.every((x) => (s.eventsDone || []).includes(x.id)),
+  },
   ...LIFE_BADGES.map((row) => ({
     id: row.id,
     group: "LIFETIME",
@@ -1643,6 +1692,9 @@ export function snapshotMeta(state, options = {}) {
     supply: { ...ensureSupply(state) },
     // Bigger bins are buildings: kept through prestige and forks.
     storage: { ...(state.storage || {}) },
+    // Lifetime material totals, for the MATERIALS badges.
+    materialsMade: { ...(state.materialsMade || {}) },
+    materialsSold: state.materialsSold || 0,
     shortage: state.shortage ? { ...state.shortage } : null,
     // Era materials are paid once, ever.
     erasPaid: [...(state.erasPaid || [])],

@@ -784,8 +784,27 @@ export const ERA_RESEARCH = {
   supercluster: { id: "card-h100", name: "Tensor H100" },
 };
 
+// Opening an era the first time also takes a stock of material, paid only
+// when the player taps OPEN ERA, and only once: it stays paid through
+// prestige and forks. Mainframes need copper wiring, Integrated Circuits
+// silicon, and every era after them wafers, a little more each time.
+const sig2 = (n) => {
+  const e = 10 ** Math.max(0, Math.floor(Math.log10(n)) - 1);
+  return Math.round(n / e) * e;
+};
+export const ERA_MATERIAL = { mainframes: { key: "copper", amount: 200 }, ics: { key: "silicon", amount: 200 } };
+{
+  const from = BUSINESSES.findIndex((cfg) => cfg.id === "minis");
+  BUSINESSES.forEach((cfg, i) => {
+    if (i >= from) ERA_MATERIAL[cfg.id] = { key: "wafers", amount: sig2(200 * 1.4 ** (i - from)) };
+  });
+}
+export function eraPaid(state, index) {
+  return (state?.erasPaid || []).includes(BUSINESSES[index]?.id);
+}
+
 // What an era still needs: owning enough of the one before, earning enough
-// this run, and for late eras a TECH project. Each with what the player has
+// this run, for late eras a TECH project, and the first time a material. Each with what the player has
 // now.
 export function eraNeeds(state, index) {
   const prev = BUSINESSES[index - 1];
@@ -804,6 +823,12 @@ export function eraNeeds(state, index) {
     const done = (state?.techDone || []).includes(project.id);
     needs.push({ kind: "research", have: done ? 1 : 0, need: 1, met: done, research: project.id, label: `Research ${project.name} on TECH` });
   }
+  const material = ERA_MATERIAL[BUSINESSES[index]?.id];
+  if (material) {
+    const paid = eraPaid(state, index);
+    const have = state?.supply?.[material.key] || 0;
+    needs.push({ kind: "material", key: material.key, have: paid ? material.amount : have, need: material.amount, met: paid || have >= material.amount, paid, label: paid ? `${material.amount.toLocaleString("en-US")} ${material.key}: paid` : `Use ${material.amount.toLocaleString("en-US")} ${material.key} to open it` });
+  }
   return needs;
 }
 
@@ -816,7 +841,28 @@ export function eraOpen(state, index) {
   const biz = state?.biz || [];
   if ((biz[index]?.owned || 0) > 0) return true;
   if ((state?.erasOpened || []).includes(BUSINESSES[index]?.id)) return true;
+  // An unpaid material is never taken on its own: it waits for OPEN ERA.
+  if (ERA_MATERIAL[BUSINESSES[index]?.id] && !eraPaid(state, index)) return false;
   return eraNeeds(state, index).every((n) => n.met);
+}
+
+// Every need met and the material on hand, so OPEN ERA can be tapped.
+export function eraCanOpen(state, index) {
+  if (index <= 0 || eraOpen(state, index) || blockedByGlass(state, index)) return false;
+  return eraNeeds(state, index).every((n) => n.met);
+}
+
+// The player tapped OPEN ERA: take the material, once, and open the era.
+export function openEra(state, index) {
+  if (!eraCanOpen(state, index)) return false;
+  const id = BUSINESSES[index].id;
+  const material = ERA_MATERIAL[id];
+  if (material && !eraPaid(state, index)) {
+    state.supply = { ...(state.supply || {}), [material.key]: Math.max(0, (state.supply?.[material.key] || 0) - material.amount) };
+    state.erasPaid = [...(state.erasPaid || []), id];
+  }
+  state.erasOpened = [...(state.erasOpened || []), id];
+  return true;
 }
 
 export function formatFlow(flow) {
@@ -1117,6 +1163,10 @@ export function nextMove(state) {
     const cost = costOf(prevCfg, have, 1);
     if (have < ERA_GATE && Number.isFinite(cost) && cash >= cost) {
       return `Buy another ${prevCfg.name} for ${money(cost)}. Own ${ERA_GATE} ${pluralName(prevCfg.name)} to open the next era (${have}/${ERA_GATE}).`;
+    }
+    if (eraCanOpen(state, front)) {
+      const m = ERA_MATERIAL[BUSINESSES[front].id];
+      return `Tap OPEN ERA on the locked row${m ? ` to use ${m.amount.toLocaleString("en-US")} ${m.key} and open the next era` : ""}.`;
     }
     const earn = eraEarnNeed(state, front);
     if (have >= ERA_GATE && (state?.lifetime || 0) < earn) {

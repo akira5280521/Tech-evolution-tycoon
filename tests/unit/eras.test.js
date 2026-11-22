@@ -82,5 +82,33 @@ test("late eras need a TECH project that can be done before them", () => {
   const index = BUSINESSES.findIndex((b) => b.id === "quantum");
   const ready = { lifetime: 1e300, techDone: [], biz: BUSINESSES.map((_, i) => ({ owned: i < index ? 25 : 0 })) };
   assert.ok(!eraOpen(ready, index));
-  assert.ok(eraOpen({ ...ready, techDone: [ERA_RESEARCH.quantum.id] }, index));
+  assert.ok(eraOpen({ ...ready, techDone: [ERA_RESEARCH.quantum.id], erasPaid: ["quantum"] }, index));
+});
+
+import { ERA_MATERIAL, eraCanOpen, openEra } from "../../src/lib/gameConfig.js";
+test("opening an era takes its material only on the tap, and only once", () => {
+  const index = BUSINESSES.findIndex((b) => b.id === "cpu");
+  const cost = ERA_MATERIAL.cpu;
+  assert.equal(cost.key, "wafers");
+  const s = { lifetime: 1e300, techDone: [], supply: { wafers: cost.amount - 1 }, biz: BUSINESSES.map((_, i) => ({ owned: i < index ? 25 : 0 })) };
+  // Every other need met, but the material is short: no OPEN, nothing taken.
+  assert.ok(!eraOpen(s, index));
+  assert.ok(!eraCanOpen(s, index));
+  assert.ok(!openEra(s, index));
+  assert.equal(s.supply.wafers, cost.amount - 1);
+  // Enough on hand: still not open and nothing taken until the tap.
+  s.supply.wafers = cost.amount + 5;
+  assert.ok(!eraOpen(s, index));
+  assert.equal(s.supply.wafers, cost.amount + 5);
+  assert.ok(eraCanOpen(s, index));
+  assert.ok(openEra(s, index));
+  assert.equal(s.supply.wafers, 5);
+  assert.ok(eraOpen(s, index));
+  // Next run: paid already, so it opens by itself once the other needs are met.
+  const next = { ...s, erasOpened: [], supply: { wafers: 0 } };
+  assert.ok(eraOpen(next, index));
+  const needs = eraNeeds(next, index);
+  assert.ok(needs.find((n) => n.kind === "material").paid);
+  // Later eras cost more.
+  assert.ok(ERA_MATERIAL.supercluster.amount > ERA_MATERIAL.minis.amount);
 });

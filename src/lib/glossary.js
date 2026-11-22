@@ -5,9 +5,21 @@
 import { HUB_LABEL } from "./hub.js";
 
 export const GLOSSARY = {
+  bench: {
+    term: "PC BUILD BENCH",
+    text: "A plant on RIGS from Home Computers: the lab builds one PC from real parts. The CPU must match the board's socket and chipset, memory its slots, cards its slots (ISA, PCI, AGP, PCI Express), and the supply its plugs. The PC makes R&D points; a four-core CPU lets two Tech projects run at once.",
+  },
+  bottleneck: {
+    term: "BOTTLENECK",
+    text: "The slowest part holds the rest back. On the bench, a graphics card faster than the CPU can feed sits partly idle, and a slow card holds a fast CPU back. Memory, drives, power supplies and networks work the same way: the report names the part to upgrade.",
+  },
+  network: {
+    term: "NETWORK",
+    text: "Racks of research servers, and the training cluster's cards, share their work over a network: a hub or switch, later InfiniBand or NVLink. Without one, or with one too slow for the work, the plant shows Network-limited.",
+  },
   materials: {
     term: "MATERIALS",
-    text: "Some businesses use what an earlier one makes: the Paper Mill turns wood into card stock, glass works need sand, and so on. Each one makes 1 per cycle until you buy its x3 upgrade, which makes it 3. The strip at the top shows what you have. If a material runs out, the business that needs it stops paying until more is made.",
+    text: "Some businesses use what an earlier one makes: the Paper Mill turns wood into card stock, glass works need sand, and so on. Each one makes 1 per cycle until you buy its x3 upgrade, which makes it 3. The strip at the top shows what you have. If a material runs out, the business that needs it stops paying until more is made. Each material's bins hold so much (840 / 1,000 means 840 stored of 1,000); when FULL, new output is lost. Tap a material to buy bigger bins with cash. They stay through prestige and forks.",
   },
   manager: {
     term: "MANAGER",
@@ -55,11 +67,11 @@ export const GLOSSARY = {
   },
   ceiling: {
     term: "INCOME LIMIT",
-    text: "All your bonuses multiply together, but the closer they get to the limit, the less each new bonus adds, so income can't run away forever. The limit starts at x50 and rises by 6 with each fork.",
+    text: "All your bonuses multiply together, but the closer they get to the limit, the less each new bonus adds, so income can't run away forever. The limit starts at x42 and rises by 5 with each fork.",
   },
   research: {
     term: "R&D POINTS",
-    text: `The one research currency. Each era you own makes a trickle, and research servers (${HUB_LABEL} beside TECH, then RIGS, from Microprocessors) make most of them. Earned at half rate while the game is closed, and the servers only bank what their disks hold then (1 hour of output, plus 1 per TB). Never lost, even when you prestige. Spend them on the R&D tab and the TECH timeline.`
+    text: `The one research currency. Each era you own makes a trickle, and research servers (${HUB_LABEL} beside TECH, then RIGS, from Mainframes) make most of them. Earned at half rate while the game is closed, and the servers only bank what their disks hold then (1 hour of output, plus 1 per TB). Never lost, even when you prestige. Spend them on the R&D tab and the TECH timeline.`
   },
   lab: {
     term: "LAB PROJECTS",

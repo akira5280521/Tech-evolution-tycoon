@@ -5,6 +5,7 @@ import {
   AWAY_GRACE_MS,
   AWAY_MODAL_MS,
   BUSINESSES,
+  openEra,
   COMMISSION_MS,
   FOREMAN_COST,
   MAX_BUY,
@@ -45,6 +46,7 @@ import {
   ensureManagersHired,
   autoBuyUpgrade,
   businessIncomePerSecond,
+  incomePerSecond,
   creditAmount,
   creditCycles,
   dataPerSecond,
@@ -59,12 +61,13 @@ import {
   singularityMult,
   snapshotMeta,
   tickDilemma,
+  buyStorage,
 } from "@/lib/empire";
 import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/lib/tutorial";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { generationAt } from "@/lib/generations";
-import { facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews } from "@/lib/facilities";
+import { REBUILD_SECONDS, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants, settleClosedParts } from "@/lib/facilities";
 import { noteHubSeen } from "@/lib/hub";
 import { advanceResearch, fillResearchGaps, grantOwnedResearch, readResearchData, readTechDone, readTechJob, startResearch } from "@/lib/research";
 import { currentGoal, readGoalsDone, settleGoals } from "@/lib/goals";
@@ -186,17 +189,25 @@ function applySavedMeta(state, raw) {
   state.bestEra = m.bestEra == null ? null : Math.floor(num(m.bestEra));
   state.runs = readRuns(m.runs);
   state.milestones = readMilestones(m.milestones);
+  state.lastPlants = migrateFacilities(m.lastPlants).facilities;
   state.trackedSince = m.trackedSince == null ? 0 : num(m.trackedSince);
   state.trackedFromStart = !!m.trackedFromStart;
-  state.facilities = readFacilities(m.facilities);
+  // Parts that no longer fit their plant or its memory board are refunded
+  // (see migrateFacilities).
+  const { facilities, refund } = migrateFacilities(m.facilities);
+  state.facilities = facilities;
+  if (refund > 0) state.cash = (state.cash || 0) + refund;
   state.news = readNews(m.news);
   // Older saves kept server output separately; it joins the one R&D pool.
   state.data = (Number.isFinite(state.data) ? state.data : 0) + readResearchData(m.researchData);
   state.techDone = readTechDone(m.techDone);
   state.techJob = readTechJob(m.techJob);
+  state.techJob2 = readTechJob(m.techJob2);
   state.goalsDone = readGoalsDone(m.goalsDone);
   state.boughtX10 = !!m.boughtX10;
   state.hubSeen = !!m.hubSeen;
+  state.benchOc = m.benchOc !== false;
+  state.restartSeen = !!m.restartSeen;
 }
 
 function readChallenge(raw) {
@@ -245,11 +256,16 @@ function pack(s) {
     bubble: s.bubble || null,
     nextBubbleAt: s.nextBubbleAt || 0,
     supply: s.supply,
+    storage: s.storage || {},
+    erasOpened: s.erasOpened || [],
+    erasPaid: s.erasPaid || [],
     foreman: !!s.foreman,
     sawPit: !!s.sawPit,
     goalsDone: Array.isArray(s.goalsDone) ? s.goalsDone : [],
     boughtX10: !!s.boughtX10,
     hubSeen: !!s.hubSeen,
+    benchOc: s.benchOc !== false,
+    restartSeen: !!s.restartSeen,
     tutorial: s.tutorial || null,
     orientation: s.orientation || "auto",
     buyMode: normalizeBuyMode(s.buyMode),
@@ -271,12 +287,14 @@ function pack(s) {
     bestEra: Math.max(0, Math.floor(s.bestEra || 0)),
     runs: Array.isArray(s.runs) ? s.runs.slice(-40) : [],
     milestones: s.milestones || {},
+    lastPlants: s.lastPlants || undefined,
     trackedSince: s.trackedSince || 0,
     trackedFromStart: !!s.trackedFromStart,
     facilities: readFacilities(s.facilities),
     news: readNews(s.news),
     techDone: readTechDone(s.techDone),
     techJob: readTechJob(s.techJob),
+    techJob2: readTechJob(s.techJob2),
     biz: s.biz.map((b, i) => ({
       id: BUSINESSES[i].id,
       owned: b.owned,
@@ -318,8 +336,14 @@ function loadSave() {
       // edited code would otherwise lock the row).
       state.biz[i].commissionUntil = Number.isFinite(b.commissionUntil) ? Math.min(b.commissionUntil, Date.now() + COMMISSION_MS) : 0;
     });
+    // Parts now open by year and research: keep what was bought fairly, refund
+    // the rest (see settleClosedParts).
+    const closedRefund = settleClosedParts(state);
+    if (closedRefund > 0) state.cash = (state.cash || 0) + closedRefund;
     state.supply = data.supply;
     ensureSupply(state);
+    state.storage = data.storage || {};
+    state.erasOpened = Array.isArray(data.erasOpened) ? data.erasOpened : [];
     state.foreman = !!data.foreman;
     state.sawPit = !!data.sawPit;
     state.buyMode = normalizeBuyMode(data.buyMode);
@@ -345,6 +369,14 @@ function loadSave() {
     state.projectJob = data.projectJob || null;
     const prior = Number.isFinite(data.meta?.version) ? data.meta.version : 1;
     if (storedEra != null) state.bestEra = remapBestEra(storedEra, prior);
+    // Era materials are paid once. A save from before them has paid for every
+    // era it ever reached.
+    state.erasPaid = Array.isArray(data.erasPaid)
+      ? data.erasPaid.filter((id) => BUSINESSES.some((cfg) => cfg.id === id))
+      : BUSINESSES.filter((cfg, i) => i > 0 && (i <= (state.bestEra || 0) || (state.biz[i]?.owned || 0) > 0 || (state.erasOpened || []).includes(cfg.id))).map((cfg) => cfg.id);
+    // A save from before the hardware and era rework (v12): offer a fresh
+    // start once. The save keeps working either way.
+    state.restartSuggested = prior < 12 && ((state.lifetime || 0) > 0 || (state.investors || 0) > 0);
     if (prior < 3) {
       const held = new Set(state.badgesEarned || []);
       for (const id of legacyBadgeIds(state)) held.add(id);
@@ -397,8 +429,8 @@ function announce(notes) {
     if (note.type === "projectstart") toast("Project started", { description: "Crews are on site. Give them a moment." });
     if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
     if (note.type === "history") {
-      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum in MORE > BADGES." });
-      else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum in MORE > BADGES." });
+      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum in MORE > MUSEUM." });
+      else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum in MORE > MUSEUM." });
     }
     if (note.type === "bubble") toast("DOT-COM BUBBLE!", { description: "Your web stock is soaring. The banner counts down to the pop." });
     if (note.type === "bubblepop") toast("The bubble popped", { description: "The web stock is worth nothing now. Sell sooner next time." });
@@ -814,6 +846,26 @@ export function useGame() {
     bump();
   }, [bump]);
 
+  const upgradeStorage = useCallback(
+    (key) => {
+      if (!buyStorage(stateRef.current, key)) return;
+      playBuy();
+      saveNow();
+      bump();
+    },
+    [bump]
+  );
+
+  const openEraAt = useCallback(
+    (index) => {
+      if (!openEra(stateRef.current, index)) return;
+      playBuy();
+      saveNow();
+      bump();
+    },
+    [bump]
+  );
+
   const purchaseUpgrade = useCallback(
     (index, kind) => {
       if (!buyUpgrade(stateRef.current, index, kind)) return;
@@ -1126,14 +1178,41 @@ export function useGame() {
       saveNow();
       bump();
     },
+    dismissRestart: () => {
+      const s = stateRef.current;
+      s.restartSeen = true;
+      s.restartSuggested = false;
+      saveNow();
+      bump();
+    },
+    toggleBenchOc: () => {
+      const s = stateRef.current;
+      s.benchOc = s.benchOc === false;
+      saveNow();
+      bump();
+    },
+    rebuildFacilities: () => {
+      const s = stateRef.current;
+      const now = Date.now();
+      const done = rebuildPlants(s, { maxCost: Math.max(0, incomePerSecond(s, now)) * REBUILD_SECONDS, businessPerSecond: businessIncomePerSecond(s, now) });
+      if (done.bought > 0) {
+        noteFacilityNews(stateRef.current, businessIncomePerSecond(stateRef.current, Date.now()));
+        buzzLight();
+        playBuy();
+        saveNow();
+        bump();
+      }
+      return done;
+    },
     buyFacilityPart: (facilityId, partId) => {
       const bought = purchasePart(stateRef.current, facilityId, partId);
-      if (!bought.ok) return;
+      if (!bought.ok) return bought;
       noteFacilityNews(stateRef.current, businessIncomePerSecond(stateRef.current, Date.now()));
       buzzLight();
       playBuy();
       saveNow();
       bump();
+      return bought;
     },
     setOrientation: (orientation) => {
       const s = stateRef.current;
@@ -1147,6 +1226,8 @@ export function useGame() {
     reset,
     dismissOffline,
     purchaseUpgrade,
+    upgradeStorage,
+    openEraAt,
     purchaseShop,
     chooseSpecialty,
     runLabProject,

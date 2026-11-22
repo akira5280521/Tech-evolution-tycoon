@@ -21,6 +21,10 @@ import { ItemHelp } from "./HintSheet";
 const SOFT = "\u00AD";
 const BREAKS = [
   ["Microprocessors", `Micro${SOFT}processors`],
+  ["Superclusters", `Super${SOFT}clusters`],
+  ["Supercomputers", `Super${SOFT}computers`],
+  ["Workstations", `Work${SOFT}stations`],
+  ["Multimedia", `Multi${SOFT}media`],
   ["Battlestations", `Battle${SOFT}stations`],
   ["Transistors", `Tran${SOFT}sistors`],
   ["Integrated", `Inte${SOFT}grated`],

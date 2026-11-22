@@ -6,7 +6,7 @@
 // a prestige, fork or challenge, like research. The plants inside still need
 // their business owned this run to work.
 import { BUSINESSES } from "./gameConfig.js";
-import { anyFacilityOpen, readNews } from "./facilities.js";
+import { FACILITY_UNLOCK, anyFacilityOpen, readNews } from "./facilities.js";
 
 // The top button's name, in one place so it can be renamed.
 export const HUB_LABEL = "HQ";
@@ -17,7 +17,7 @@ export const HUB_ITEMS = [
     id: "rigs",
     label: "RIGS",
     to: "/facilities",
-    text: "Research servers that make R&D points, then the Bitbark mine and the AI training cluster that pay cash.",
+    text: "Research servers and the PC build bench that make R&D points, then the Bitbark mine and the AI training cluster that pay cash.",
     open: (state) => !!state?.hubSeen || anyFacilityOpen(state),
   },
 ];
@@ -27,11 +27,12 @@ export function hubOpen(state) {
   return !!state?.hubSeen || HUB_ITEMS.some((item) => item.open(state));
 }
 
-const CPU_INDEX = BUSINESSES.findIndex((cfg) => cfg.id === "cpu");
+// The first business that opens any plant (Mainframes, for the research servers).
+const FIRST_PLANT_INDEX = Math.min(...Object.values(FACILITY_UNLOCK).map((id) => BUSINESSES.findIndex((cfg) => cfg.id === id)).filter((i) => i >= 0));
 
 // Signs that the hub was open before the flag existed: the plants are open
 // now, any plant part is owned, the servers' or plant's opening headline is in
-// the ticker's kept news, or the best era ever reached is Microprocessors or later.
+// the ticker's kept news, or the best era ever reached opens a plant.
 export function hubEvidence(state) {
   if (!state) return false;
   if (anyFacilityOpen(state)) return true;
@@ -41,7 +42,7 @@ export function hubEvidence(state) {
   }
   if (readNews(state.news).some((entry) => entry.id === "servers-open" || entry.id === "plant-open")) return true;
   const best = Number(state.bestEra);
-  return CPU_INDEX >= 0 && Number.isFinite(best) && best >= CPU_INDEX;
+  return Number.isFinite(FIRST_PLANT_INDEX) && Number.isFinite(best) && best >= FIRST_PLANT_INDEX;
 }
 
 // Set the flag the first time the hub opens. True when it changed.

@@ -3,7 +3,7 @@
 // singularity. Every Empire Bonuses source multiplies, then a soft ceiling
 // that rises with singularity points keeps the product finite.
 
-import { blankFacilities, facilityReport, noteFacilityNews, recentNews } from "./facilities.js";
+import { blankFacilities, facilityReport, noteFacilityNews, plantsHaveParts, readFacilities, recentNews } from "./facilities.js";
 import { advanceResearch, awayBankCap } from "./research.js";
 import { generationPayMult } from "./generations.js";
 import { blankTutorial } from "./tutorial.js";
@@ -15,6 +15,7 @@ import {
   PROJECT_MS,
   RESEARCH_MS,
   SUPPLY_KEYS,
+  ERA_MATERIAL,
   UPGRADE_MS,
   blankSupply,
   blockedByGlass,
@@ -395,12 +396,14 @@ export function blankMeta() {
     nextWindfallAt: 0,
     prestiged: false,
     supply: blankSupply(),
+    storage: {},
     foreman: false,
     sawPit: false,
     facilities: blankFacilities(),
     news: [],
     techDone: [],
     techJob: null,
+    techJob2: null,
     goalsDone: [],
     boughtX10: false,
     hubSeen: false,
@@ -458,6 +461,63 @@ export function supplyFactor(state, cfg, cycles = 1) {
   return Math.min(1, cover);
 }
 
+// Storage: each material's bins hold so much. Above the cap, new output is
+// lost (FULL); what is already stored is never thrown away. Bigger bins are
+// bought with cash and kept through prestige and forks. The cap never drops
+// below 100 cycles of what the rows make or use, so a full bin can't stall
+// a row mid-cycle: that much is added on top of the bins you bought.
+export const STORAGE_BASE = 1000;
+export const STORAGE_STEP = 4;
+export const STORAGE_MAX = 12;
+export function storageLevel(state, key) {
+  const n = state?.storage?.[key];
+  return Number.isFinite(n) && n > 0 ? Math.min(STORAGE_MAX, Math.floor(n)) : 0;
+}
+function flowOf(state, key) {
+  let make = 0;
+  let use = 0;
+  BUSINESSES.forEach((cfg, i) => {
+    const owned = state?.biz?.[i]?.owned || 0;
+    if (!owned) return;
+    if (cfg.makes?.[key]) make += (makesOf(state, cfg)[key] || 0) * owned;
+    if (cfg.uses?.[key]) use += (Number(cfg.uses[key]) || 0) * owned;
+  });
+  return Math.max(make, use);
+}
+export function boughtCap(state, key, level = storageLevel(state, key)) {
+  return STORAGE_BASE * STORAGE_STEP ** level;
+}
+// The bins always hold enough for the next era that opens with this
+// material, so a small bin can never block OPEN ERA.
+function nextEraStock(state, key) {
+  const paid = state?.erasPaid || [];
+  const next = BUSINESSES.find((cfg) => ERA_MATERIAL[cfg.id]?.key === key && !paid.includes(cfg.id));
+  return next ? ERA_MATERIAL[next.id].amount : 0;
+}
+export function supplyCap(state, key, level = storageLevel(state, key)) {
+  return Math.min(SUPPLY_CAP, Math.max(boughtCap(state, key, level) + 100 * flowOf(state, key), nextEraStock(state, key)));
+}
+export function supplyFull(state, key) {
+  return (state?.supply?.[key] || 0) >= supplyCap(state, key);
+}
+// The next bigger bins cost ten times the row that makes the material, and
+// six times more each step.
+export function storageCost(state, key) {
+  const level = storageLevel(state, key);
+  if (level >= STORAGE_MAX) return null;
+  const maker = BUSINESSES.find((cfg) => cfg.makes?.[key]);
+  return (maker?.baseCost || 1000) * 10 * 6 ** level;
+}
+
+export function buyStorage(state, key) {
+  if (!SUPPLY_KEYS.includes(key)) return false;
+  const cost = storageCost(state, key);
+  if (cost == null || !(state.cash >= cost) || !Number.isFinite(state.cash)) return false;
+  state.cash -= cost;
+  state.storage = { ...(state.storage || {}), [key]: storageLevel(state, key) + 1 };
+  return true;
+}
+
 // What one unit of a material row makes per cycle. The row's x3 upgrade
 // triples the material as well as the pay, so early on each unit makes 1.
 export const MATERIAL_UPGRADE_MULT = 3;
@@ -492,8 +552,12 @@ function moveSupply(state, cfg, cycles, owned) {
   if (cfg.makes && count > 0) {
     for (const [key, make] of Object.entries(makesOf(state, cfg))) {
       const add = (Number(make) || 0) * count * n * cover;
-      const next = (supply[key] || 0) + add;
-      supply[key] = Number.isFinite(next) ? Math.min(SUPPLY_CAP, Math.max(0, next)) : supply[key] || 0;
+      const have = supply[key] || 0;
+      const next = have + add;
+      // A batch of cycles may overfill for a moment so the rows after it
+      // can draw; the bins settle at the cap once the batch is done.
+      const room = Math.max(have, supplyCap(state, key) * Math.max(1, n));
+      supply[key] = Number.isFinite(next) ? Math.min(SUPPLY_CAP, room, Math.max(0, next)) : have;
     }
   }
 }
@@ -531,11 +595,14 @@ export function dataPerSecond(state) {
   return DATA_PER_ERA * establishedCount(state) + DATA_PER_ERA * masteredCount(state);
 }
 
-// Ceiling starts at 50 and rises by 6 for each singularity point (max 15
-// points → 140). Income approaches that ceiling and never passes it.
+// Ceiling starts at 42 and rises by 5 for each singularity point (max 15
+// points → 117). It was 50 + 6 per point; lowered so strong runs don't race
+// through the eras. Income approaches the ceiling and never passes it.
+export const CEILING_BASE = 42;
+export const CEILING_PER_FORK = 5;
 export function incomeCeiling(points) {
   const n = Math.max(0, Math.min(15, Math.floor(Number(points)) || 0));
-  return 50 + n * 6;
+  return CEILING_BASE + n * CEILING_PER_FORK;
 }
 
 // Soft cap: the first bonuses count almost 1:1, then returns diminish, and
@@ -661,6 +728,7 @@ export function creditBatch(state, due, now, rate = 1) {
     for (const [key, need] of Object.entries(cfg.uses)) demand[key] = (demand[key] || 0) + (Number(need) || 0) * due[i] * owned;
   });
   const left = {};
+  const before = { ...bin() };
   BUSINESSES.forEach((cfg, i) => {
     const cycles = due[i];
     if (!(cycles > 0)) return;
@@ -688,6 +756,12 @@ export function creditBatch(state, due, now, rate = 1) {
     const after = bin();
     for (const key of Object.keys(held)) after[key] = held[key] + (after[key] || 0);
   });
+  // Settle the bins: anything over the cap made in this batch is lost.
+  const end = bin();
+  for (const key of SUPPLY_KEYS) {
+    const cap = Math.max(before[key] || 0, supplyCap(state, key));
+    if ((end[key] || 0) > cap) end[key] = cap;
+  }
   return gains;
 }
 
@@ -1263,7 +1337,9 @@ export const INVESTOR_MILESTONES = [
   { at: 250, id: "away-36", title: "NIGHT SHIFT", text: "Time away pays for up to 36 hours instead of 24." },
   { at: 1000, id: "auto-upgrades", title: "PURCHASING DEPARTMENT", text: "Upgrades can buy themselves when you can afford them. Turn it on in the BOOST tab." },
   { at: 5000, id: "away-48", title: "WEEKEND SHIFT", text: "Time away pays for up to 48 hours." },
-  { at: 10000, id: "start-ics", title: "INDUSTRIAL BASE", text: "Every run starts with 10 of each business before Integrated Circuits." },
+  // The id stays "start-ics" so players who have it keep it; since the era
+  // gates it covers only the first ten businesses.
+  { at: 10000, id: "start-ics", title: "INDUSTRIAL BASE", text: "Every run starts with 10 of each business from Timber Camp through Vacuum Tubes." },
 ];
 
 // The most investors this company has ever had. Saves from before 0.0.22
@@ -1319,10 +1395,10 @@ export function ensureManagersHired(state) {
 // The businesses a new run (prestige or fork, not a challenge) starts with.
 // `prev` is the run being left, for managers that stay hired.
 export function startingBiz(state, biz, prev = null) {
-  const icsAt = BUSINESSES.findIndex((cfg) => cfg.id === "ics");
+  const tubesAt = BUSINESSES.findIndex((cfg) => cfg.id === "tubes");
   return biz.map((row, i) => {
     let owned = row.owned;
-    if (hasPerk(state, "start-ics") && i < icsAt) owned = Math.max(owned, ERA_GATE);
+    if (hasPerk(state, "start-ics") && i <= tubesAt) owned = Math.max(owned, ERA_GATE);
     if (hasPerk(state, "start-timber") && BUSINESSES[i].id === "timber") owned = Math.max(owned, 25);
     const keep = hasPerk(state, "keep-crews") && !!BUSINESSES[i].makes && !!prev?.[i]?.manager;
     return owned === row.owned && !keep ? row : { ...row, owned, manager: row.manager || keep };
@@ -1366,6 +1442,7 @@ export function snapshotMeta(state, options = {}) {
     // The research timeline and the ticker's own news are kept for good.
     techDone: [...(state.techDone || [])],
     techJob: state.techJob ? { ...state.techJob } : null,
+    techJob2: state.techJob2 ? { ...state.techJob2 } : null,
     news: Array.isArray(state.news) ? state.news.slice(-40) : [],
     specialties: [...(state.specialties || [])],
     upgrades: resetRunUpgrades ? {} : JSON.parse(JSON.stringify(state.upgrades || {})),
@@ -1386,6 +1463,10 @@ export function snapshotMeta(state, options = {}) {
     eventsDone: [...(state.eventsDone || [])],
     nextBubbleAt: state.nextBubbleAt || 0,
     supply: { ...ensureSupply(state) },
+    // Bigger bins are buildings: kept through prestige and forks.
+    storage: { ...(state.storage || {}) },
+    // Era materials are paid once, ever.
+    erasPaid: [...(state.erasPaid || [])],
     foreman: !!state.foreman,
     sawPit: !!state.sawPit,
     goalsDone: Array.isArray(state.goalsDone) ? [...state.goalsDone] : [],
@@ -1402,6 +1483,8 @@ export function snapshotMeta(state, options = {}) {
     bestEra: Math.max(0, Math.floor(state.bestEra || 0)),
     runs: Array.isArray(state.runs) ? state.runs.slice(-40) : [],
     milestones: { ...(state.milestones || {}) },
+    // The plants start empty again; remember this run's layout for REBUILD.
+    lastPlants: plantsHaveParts(state.facilities) ? readFacilities(state.facilities) : readFacilities(state.lastPlants),
     trackedSince: state.trackedSince || 0,
     trackedFromStart: !!state.trackedFromStart,
     // Research and projects are permanent, so a job already paid for keeps its
@@ -1459,6 +1542,15 @@ export const HEADLINES = [
   { era: "ai", text: "TENSOR FOUNDRY T1 TAKES THE INFERENCE SHIFT" },
   { era: "quantum", text: "QUANTUM CHANDELIER OBSERVED PAYING DIVIDENDS" },
   { era: "quantum", text: "QUANTUM SERVER BOTH ON AND OFF, ANALYSTS SAY" },
+  { era: "supercomputers", text: "CHIPPEWA X-MP DELIVERED WITH A PADDED BENCH" },
+  { era: "workstations", text: "SUNRISE-3 BOOTS OVER THE OFFICE NETWORK" },
+  { era: "laptops", text: "FOURTEEN-POUND PC CALLED PORTABLE WITH A STRAIGHT FACE" },
+  { era: "multimedia", text: "CD-ROM KITS SELL OUT BEFORE THE HOLIDAYS" },
+  { era: "accel3d", text: "3D CARD CLICKS ON; GAMERS CHEER" },
+  { era: "tablets", text: "ORCHARD SLATE: A PHONE, ONLY BIGGER, ANALYSTS SAY" },
+  { era: "vr", text: "VISOR Q2 SHIPS WITHOUT A CABLE" },
+  { era: "chatbots", text: "PARLANCE HITS A MILLION SIGN-UPS IN FIVE DAYS" },
+  { era: "supercluster", text: "SUPERCLUSTER BOOKS THE WHOLE POWER STATION" },
   { era: "prestige", text: "INVESTORS ASK IF THE TIMELINE CAN BE FORKED" },
 ];
 

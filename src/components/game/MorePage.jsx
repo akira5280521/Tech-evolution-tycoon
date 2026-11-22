@@ -14,6 +14,7 @@ import ScreenShell, { GoldButton, Panel, ProgressBar } from "./chrome";
 import { timedProgress } from "@/lib/progress";
 import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
+import MuseumPage from "./MuseumPage";
 import CopyStats from "./CopyStats";
 import LabProjects from "./LabProjects";
 import AccountPanel from "./AccountPanel";
@@ -27,6 +28,7 @@ const TABS = [
   { id: "howto", label: "HOW TO PLAY", title: "HOW TO PLAY" },
   { id: "stats", label: "STATS", title: "STATS" },
   { id: "badges", label: "BADGES", title: "BADGES" },
+  { id: "museum", label: "MUSEUM", title: "MUSEUM" },
 ];
 
 export function MoreLinks({ active }) {
@@ -60,6 +62,7 @@ export default function MorePage() {
   const data = getSaveData();
 
   if (tab === "badges") return <BadgesPage top={<MoreLinks active="badges" />} />;
+  if (tab === "museum") return <MuseumPage top={<MoreLinks active="museum" />} />;
 
   return (
     <ScreenShell title={TABS.find((entry) => entry.id === tab)?.title || "SETTINGS"} subtitle="">
@@ -151,7 +154,8 @@ const HOW_TO = [
       "Tap a business's picture to run it. The bar fills, then it pays you cash.",
       "Tap BUY to get another one. BUY spends cash, the big CASH number. What you earned this run is not cash.",
       "The buy-amount button sets how many one BUY tap gets. Tap it to cycle X1, X10, X25, X50, X75, X100, then MAX.",
-      "Own 10 of a business to open the next one.",
+      "Own 10 of a business to open the next one. Each era also needs some earnings this run, and more with more investors and forks.",
+      "The late eras need a TECH project first, and from Mainframes on, opening an era the first time uses some material when you tap OPEN ERA.",
     ],
   },
   {
@@ -160,6 +164,7 @@ const HOW_TO = [
     lines: [
       "Some businesses use what an earlier one makes. Timber Camp makes wood, and the Paper Mill uses that wood.",
       "The strip at the top shows what you have. If a material runs out, the business that needs it stops paying.",
+      "Each material's bins hold so much. When they're FULL, new output is lost. Tap a material to buy bigger bins; they stay through prestige.",
     ],
   },
   {
@@ -207,7 +212,7 @@ const HOW_TO = [
     id: "rd",
     title: "R&D POINTS",
     lines: [
-      `R&D points are the one research currency. Each era you own makes a trickle; research servers (${HUB_LABEL} beside TECH, then RIGS, from Microprocessors) make most of them. Both earn at half rate while the game is closed, and the servers only bank what their disks hold: 1 hour of output, plus another hour per TB of disk.`,
+      `R&D points are the one research currency. Each era you own makes a trickle; research servers (${HUB_LABEL} beside TECH, then RIGS, from Mainframes) make most of them. Both earn at half rate while the game is closed, and the servers only bank what their disks hold: 1 hour of output, plus another hour per TB of disk.`,
       "Spend them on the R&D tab (specialties and lab projects) and on the TECH timeline. They are never lost, even when you prestige.",
     ],
   },
@@ -223,7 +228,7 @@ const HOW_TO = [
     id: "facilities",
     title: `FACILITIES (${HUB_LABEL} > RIGS)`,
     lines: [
-      "Research servers open with Microprocessors and make R&D points. With AI Accelerators, the Bitbark mine and the AI training cluster add a small extra income.",
+      "Research servers open with Mainframes and make R&D points. Newer machines and parts open in their real year once you research them on TECH. With AI Accelerators, the Bitbark mine and the AI training cluster add a small extra income.",
       "Buy parts for each plant. A plant runs slower when its power or cooling can't keep up with its cards or racks, and it tells you what to add next. Parts are lost when you prestige.",
     ],
   },

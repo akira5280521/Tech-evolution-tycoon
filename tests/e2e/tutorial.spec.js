@@ -34,6 +34,21 @@ test("a new player walks all 7 steps and the starter goals take over", async ({ 
   await page.click('[data-hire="timber"]');
   await expect.poll(() => coachStep(page), { timeout: 8000 }).toBe("next");
   await expect(page.locator('[data-buy="paper"]'), "Paper Mill locked at 5 camps").toHaveCount(0);
+  // Since the era earnings gates the Paper Mill also needs $220 earned this
+  // run, which takes minutes at this income. Bank it in the save and reload;
+  // the tutorial picks up where it was.
+  // (Edited at the next page start, after the app's own save on leaving.)
+  await page.addInitScript((k) => {
+    if (sessionStorage.getItem("e2e-life")) return;
+    sessionStorage.setItem("e2e-life", "1");
+    const s = JSON.parse(localStorage.getItem(k));
+    s.lifetime = Math.max(s.lifetime || 0, 1000);
+    localStorage.setItem(k, JSON.stringify(s));
+  }, "pc-tycoon-save-v1");
+  await page.reload();
+  await page.locator("nav[aria-label='Main navigation']").waitFor();
+  await page.waitForTimeout(700);
+  expect(await coachStep(page)).toBe("next");
   await buy("timber", 5);
   await expect(page.locator('[data-buy="paper"]'), "10 camps open the Paper Mill").toHaveCount(1);
   await buy("paper", 1);

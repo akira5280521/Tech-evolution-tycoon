@@ -41,6 +41,15 @@ const BY_ERA = {
   gpu: "Raster sold its 256 card in 1999 as a GPU, and moved 3D lighting off the main processor.",
   rgb: "Before fast home internet, players carried their computers to one room and played over a local network.",
   quantum: "The qubits in a superconducting quantum computer are kept colder than outer space, a fraction of a degree above absolute zero.",
+  supercomputers: "The first Chippewa supercomputer was cooled by liquid Freon flowing through its frame.",
+  workstations: "Many 1980s workstations had no disk of their own: they started up over the network from a server.",
+  laptops: "Early laptops weighed over ten pounds; the battery alone could weigh as much as a modern laptop.",
+  multimedia: "A CD-ROM holds about 650 MB, more than four hundred 1.44 MB floppy disks.",
+  accel3d: "The first 3D-only cards passed the 2D card's picture through a short cable on the back.",
+  tablets: "A capacitive touchscreen senses the charge in your finger, so a gloved hand doesn't work.",
+  vr: "A standalone VR headset tracks the room with cameras on its front, so there are no base stations to set up.",
+  chatbots: "A language model writes one piece of a word at a time, each time picking the likeliest next piece.",
+  supercluster: "Training one large model can keep tens of thousands of graphics cards busy for months.",
 };
 
 function reachedIndex() {

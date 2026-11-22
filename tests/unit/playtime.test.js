@@ -57,8 +57,10 @@ test("INDUSTRIAL BASE gives the early product rows without managers, so they sit
   const out = startingBiz({ investors: 10060, investorPeak: 18560 }, fresh, prev);
   const at = (id) => out[BUSINESSES.findIndex((c) => c.id === id)];
   for (const id of ["timber", "paper", "sand", "copper", "glass", "filament", "germanium", "silicon", "wafers"]) assert.ok(at(id).manager, `${id} keeps its crew`);
-  for (const id of ["loom", "punchcards", "tubes", "transistors"]) {
+  // INDUSTRIAL BASE covers Timber Camp through Vacuum Tubes.
+  for (const id of ["loom", "punchcards", "tubes"]) {
     assert.equal(at(id).owned, 10, id);
     assert.equal(at(id).manager, false, `${id} starts manual`);
   }
+  assert.equal(at("transistors").owned, 0, "transistors are past the perk");
 });

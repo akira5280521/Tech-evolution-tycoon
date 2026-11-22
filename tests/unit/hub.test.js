@@ -7,7 +7,7 @@ import { blankMeta, snapshotMeta } from "../../src/lib/empire.js";
 import { anyFacilityOpen, facilityNeed } from "../../src/lib/facilities.js";
 import { BUSINESSES } from "../../src/lib/gameConfig.js";
 
-const CPU = BUSINESSES.findIndex((b) => b.id === "cpu");
+const CPU = BUSINESSES.findIndex((b) => b.id === "mainframes"); // the first plant business
 const withCpu = (n) => ({ biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: i === CPU ? n : 0 })) });
 
 test("hub label and route are set", () => {
@@ -31,7 +31,7 @@ test("hub stays locked until the plants open, same as before", () => {
   assert.equal(hubOpen(withCpu(1)), true);
 });
 
-test("hubSeen keeps HQ open with no Microprocessors owned", () => {
+test("hubSeen keeps HQ open with no Mainframes owned", () => {
   assert.equal(hubOpen({ ...withCpu(0), hubSeen: true }), true);
   assert.equal(HUB_ITEMS[0].open({ ...withCpu(0), hubSeen: true }), true);
 });
@@ -61,7 +61,8 @@ test("old saves get hubSeen from reliable evidence only", () => {
 });
 
 test("a locked plant names what it needs this run", () => {
-  assert.equal(facilityNeed("servers"), "Needs Microprocessors this run");
+  assert.equal(facilityNeed("servers"), "Needs Mainframes this run");
+  assert.equal(facilityNeed("bench"), "Needs Home Computers this run");
   assert.equal(facilityNeed("mine"), "Needs AI Accelerators this run");
   assert.equal(facilityNeed("cluster"), "Needs AI Accelerators this run");
 });

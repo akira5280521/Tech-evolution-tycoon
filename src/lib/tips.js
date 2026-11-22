@@ -214,8 +214,14 @@ export const TIPS = [
   {
     id: "page-badges",
     page: "more#badges",
-    title: "BADGES & MUSEUM",
-    text: "Badges are goals to aim for. The Museum fills with history cards as you open each business.",
+    title: "BADGES",
+    text: "Badges are goals to aim for. History cards are in the Museum, the next button.",
+  },
+  {
+    id: "page-museum",
+    page: "more#museum",
+    title: "THE MUSEUM",
+    text: "Every piece of hardware in the game, room by room. Tap one to read about it; dark ones are still to find.",
   },
   {
     id: "page-more",

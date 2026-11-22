@@ -32,6 +32,217 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
+## Next build (after 0.0.27)
+
+- **Part value on every row.** Each Facilities part shows what it would add
+  right now (cash a second and share for the mine and cluster, R&D a second
+  and away-bank hours for the servers), with the power, cooling, memory or
+  disk it needs and how fast it pays for itself; or why it adds nothing
+  ("power to spare", "at the 5% cap"). `src/lib/plantValue.js`.
+- **Rebuild last run's plants.** A prestige or fork empties the plants; the
+  mine and cluster layout is kept (`lastPlants`) and REBUILD buys it back
+  cheapest first, but only parts that pay for themselves within 15 minutes at
+  that point of the run. Sim (nonstop Quantum / fork-ready): suggestion only
+  12.7 h / 44.4 h; rebuild everything as soon as affordable 13.1 h / 45.3 h;
+  rebuild including research servers 12.9 h / 46.3 h; rebuild mine and
+  cluster with the payback rule 12.6 h / 45.8 h, casual unchanged. The
+  servers are left out of REBUILD for that reason.
+- **Memory boards with real slots.** Modelled on the real hardware:
+  - Mine: a 2017 mining board (like the ASUS B250 Mining Expert) with 2
+    desktop DDR4 slots, 32 GB at most. It takes a new 16 GB DDR4-2400 stick;
+    the mine needs 16 GB. The 32/64/128 GB server sticks are cluster-only.
+  - Cluster: a 32-slot server board, DDR4 (EPYC Rome, A100-era servers, up
+    to 1 TB with 32 GB sticks) until the first DDR5 stick, which swaps in a
+    DDR5 board (H100-era servers, 2 TB in 32 slots). DDR4 and DDR5 don't
+    fit the same slots, so the DDR4 sticks are sold back at half what they
+    cost, and no more DDR4 can be added.
+  - Full board: a bigger stick replaces the smallest (sold back at half);
+    a same-size stick is refused. Up to 32 of one stick (other parts stay
+    at 24).
+  - New top model, **Foundation**: 1,400 GB on the cards and 2 TB of RAM,
+    x3.5. Only a DDR5 board can hold 2 TB, which is what makes the 64 and
+    128 GB sticks worth it.
+  - The Facilities page shows "n of 32 slots used on the DDR4/DDR5 server
+    board", each stick's row says when buying it switches boards or replaces
+    a stick, and the "?" card has a BOARD row.
+  - Old saves: sticks that don't fit their plant, DDR4 sharing a board with
+    DDR5, or sticks over a board's slots or size are removed and refunded in
+    full on load (the rules changed, not the player).
+  - Sim with boards (nonstop Quantum / fork-ready, casual): 12.8 h / 2.0 d,
+    4.3 d / 8.8 d, the same as before. The bot switches the cluster to DDR5
+    and reaches Foundation (12x 64 GB + 10x 128 GB) in long runs.
+- **Frontier model.** A fourth cluster model above Mural: 400 GB on the
+  cards and 512 GB of RAM, x3.0 (Mural x2.2). Before, the 128 GB stick was the
+  dearest memory per GB at every point and never worth buying; at 512 GB it's
+  the cheapest way up. A memory stick is judged as the set of sticks it
+  takes to reach the next model, so the suggestion and the row values see it.
+- **Hardware by year and research** (PR after the memory boards):
+  - Every Facilities part opens in its real year (the company's newest era
+    must have reached it) and, past the first machine-room kit, once it's
+    researched on TECH. Research stays done across prestiges; the year has to
+    be reached again each run. Each project that opens a part shows its
+    picture and "Opens on RIGS: ..." on the Tech page; a locked part says
+    "Requires 1959" or "Research Inland 7090 on the Tech page".
+  - Research servers open with Mainframes (1951), not Microprocessors:
+    Irwell Mark 1 (1951), Inland 7090 (1959), Inland 360/50 (1965), Maynard
+    11/20 (1970), Maynard 11/780 (1977), Foundry Tower T4 (1989), Foundry 2U
+    (1999), Foundry Blade B2 (2006), Foundry Rack R1 and R4 (2012). New
+    SERVERS tab on TECH.
+  - Machine-room computers each need a motor-generator set and a room air
+    conditioner; rack servers draw watts from AT (1984) and ATX (1995)
+    supplies and rack fans.
+  - Storage by year: tape (1951), Inland 350 disk (1956), 2311 pack (1964),
+    3330 pack (1970), 3380 disk (1980), 9 GB 10,000 rpm SCSI (1996), 1 TB
+    (2007), 2 TB SSD (2015). Each machine needs the disk of its day for full
+    speed; the away bank adds an hour per set of that disk.
+  - Mine and cluster start with 2016 hardware (Raster 1080, Tensor P100);
+    the V100 (2017) comes with Quantum; the 3090 and A100 (2020), 3060 (2021),
+    4090, H100, 64 GB DDR5 and immersion (2022), B200 and 128 GB DDR5 (2024)
+    with the new eras. Cooling and power parts are opened by the Cooling and
+    Power projects that were already on TECH (case fan, heatpipe, 360 mm
+    loop, 80 Plus Gold and Platinum, plus a new 80 Plus Titanium).
+  - Three eras after Quantum: VR Headsets (2020), Chatbots (2022), AI
+    Superclusters (2024), with history cards, tips, headlines and "?" text.
+    Fixes DDR5 research, which needed 2020 and could never be finished.
+  - Old saves: a part owned in a year the company has reached is kept and its
+    research marked done; a part owned too early is refunded in full.
+  - Sim (nonstop Quantum / fork-ready; casual): before 12.8 h / 2.0 d,
+    4.3 d / 8.8 d; after 13.9 h / 1.7 d, 4.8 d / 9.4 d (casual runs vary by
+    about half a day with prestige timing).
+  - The 23 new pictures are drawn in code in the game's pixel style, simpler
+    than the existing art.
+- **PC build bench, stage 1 of 4** (CPUs, motherboards, memory):
+  - A fourth plant from Home Computers (1977). One PC at a time; it makes
+    R&D points. Parts open in their real year once researched (CPUs on the
+    CPU tab, boards on a new BOARDS tab, sticks on MEMORY).
+  - 63 CPUs: Chipwright and Alder through 2024, plus Moss 6502, Zylar Z80
+    and the defunct makers Cyrus (486DLC, 5x86, 6x86, 6x86MX, MII), NextGen
+    Nx586, Centaurus C6 and Riser mP6.
+  - 65 boards by chipset, each supporting only the CPU families it really
+    did: e.g. 430FX single-voltage (no MMX-era chips), 440LX vs 440BX, Z170
+    vs Z370, AM4's A320 to X570 and B550 (no Ryzen 1000/2000), the DDR4 and
+    DDR5 Z690, the 4790K needing a 9-series board. Defunct makers: Abacus
+    (Abit), Epox, DFX (DFI), Compass (Compaq), Mitts (MITS).
+  - Memory by type and real speed: memory runs at the slowest of the
+    sticks, the board's limit and, on boards that hold it, the CPU's rating.
+    Slow memory costs up to about 10%, fast memory adds up to 3.75%; an unlocked
+    CPU on an overclocking board adds 10%.
+  - Boards record their graphics slot (ISA, VLB, PCI, AGP 3.3 V or 1.5 V,
+    PCIe generation), IDE mode, SATA generation and M.2 generation for the
+    next stages.
+  - A new board takes out what doesn't fit, a new CPU replaces the old one,
+    a bigger stick replaces the smallest when slots are full; all sold back
+    at half price.
+- **Supercomputers and defunct server makers:** Chippewa (Cray) 1, X-MP/48,
+  2, Y-MP, C90, T3D, T90, T3E, XT3, XT5, XC30, EX; Thinking Engines CM-5,
+  Maynard AlphaServer 8400, Silicon Pictures Origin 2000, Sunrise
+  Enterprise 10000. Supercomputers need two or more generators and coolers
+  of their own coolant: Freon, Fluorinert or chilled water.
+- **PC build bench, stage 2** (graphics, sound, power, cases, coprocessors):
+  - 38 graphics cards from the 1981 CGA to the 2024 B580, plus two 3D-only
+    add-ins that need a 2D card beside them. Defunct makers: Herakles
+    (Hercules), Tsang (Tseng Labs), Ess Three (S3), Rendix (Rendition),
+    Threefold (3dfx), Artix (ATI).
+  - Slots: 8- and 16-bit ISA, VL-Bus, PCI, keyed AGP (3.3 V and 1.5 V slots;
+    universal cards fit both), PCI Express by generation; a card runs at the
+    slowest PCIe generation of card, slot and CPU, 3% less for each step.
+  - The PC's speed is its CPU's, held back by weak graphics; a card faster
+    than the CPU can feed is partly idle. The bench names the bottleneck.
+  - 12 sound cards (AdLab, Creatix, Gravitas, Ensonix, Aurora), 2-7% each.
+  - 10 power supplies with the board plugs of their day: AT; ATX 20-pin;
+    4-pin CPU plug (2000); 24-pin (2004); 8-pin EPS (2008); and card plugs
+    (drive power, 6-pin, 8-pin, 16-pin). The PC slows when it draws more
+    than the supply gives.
+  - 8 cases: board sizes they take, longest card, radiator mounts (for the
+    AIO stage), +5% airflow.
+  - Math coprocessors: 8087, 287, 387 and Cyrus FasMath, +15% for a CPU
+    without floating point.
+- **PC build bench, stage 3** (drives, removable drives, network, modems):
+  - 23 hard drives and SSDs: MFM (on an ISA controller card), IDE by mode
+    (a paddle card before boards had IDE ports), SATA 1.5/3/6 Gbit/s and
+    NVMe by PCIe generation (Z97's M.2 is PCIe 2.0 x2). A drive runs at the
+    slowest of itself and the board's port; a slow disk, or none, costs up
+    to 10% against the drive of the CPU's day. Defunct makers: Connor,
+    Quanta, Maxtel, OXZ; also Seabird, Western Data, Inland, Hikari,
+    Sunsung, Critical.
+  - More drives: Rodima RO352 (first 3.5-inch disk), Quanta Fireball,
+    Fujitsa MPG, Sunsung SpinPoint, Sunsung 850 Evo, Critical MX500, Corsar
+    MP600, Western Data SN850, and the Chipwright Optane 900P on a PCIe card
+    (runs at the slot's PCIe generation).
+  - 16 floppy, optical and cartridge drives (Inland 8-inch, Sugart SA-400,
+    Orchard Disk II to Blu-ray, Ioma Zip and Jaz, SyQuist EZ135 on the
+    printer port, Imagin LS-120, CD-RW, DVD-RW, HD DVD), 12 network cards
+    (TriCom EtherLink 1982, Inland Token Ring, Lucid Orinoco and Linksis
+    Wi-Fi, Chipwright PRO/1000 to Wi-Fi 7, Bigfeet Killer NIC, Aquanta
+    10 GbE) and 6 modems (Hays 300 to US Robots 56K), each adding a little.
+    Formats and networks that lost go out of production once the winner is
+    researched: HD DVD after Blu-ray, Token Ring after Fast Ethernet.
+  - 27 sound cards, including Covax Speech Thing and Castle Sound Source on
+    the printer port, Rowland LAPC-I, Media Visia Pro Audio Spectrum,
+    Ensonix Soundscape, Tortoise Beach Tropez, Aurora Vortex and Diamant
+    MX300, Auzentek X-Meridian and Astra Xonar; boards have onboard sound
+    from 1999 (AC'97) and 2004 (HD Audio), and a card beats it.
+  - All eight 3D-only add-in cards (1996-1998: Orchis Righteous 3D, Diamant
+    Monster 3D and Monster 3D II, VideoLogique Apocalypse 3D and 3Dx, Matrix
+    m3D, Creatix 3D Blaster V2, Quantum Graphics Obsidian2). Each needs a 2D
+    card beside it; two of the same Voodoo2 card can be linked (SLI). They
+    go out of production once combined 2D/3D cards are researched (the
+    Threefold 3000 for the Voodoo boards, the Raster 256 for PowerVR); one
+    already on the bench keeps working.
+- **RIGS networks and two Tech slots:**
+  - Racks of research servers need a network (SynOptix 10BASE-T hub 1990,
+    Sysco Catalyst 5000 and 6500, Sysco Nexus 5000, Melanox InfiniScale
+    IV, Switch-IB and Quantum); without one each rack works alone at half
+    speed, and one too slow for the racks' work shows Network-limited.
+    The training cluster's cards need linking (InfiniBand, Raster NVLink
+    bridge, NVSwitch) or lose up to 15%. Old saves get the first network
+    of their day.
+  - A CPU with four or more cores on the PC bench lets two Tech projects
+    run at once.
+  - Glossary and "?" entries: PC build bench, bottleneck, network.
+  - Research fixes: DDR2-533 and DDR3-1066 at launch, the Alder 1950X its
+    own project, the 80 Plus Titanium date.
+- **PC build bench, stage 4** (coolers):
+  - 15 air coolers (clip-on heatsink 1989 to Noctuo NH-D15 G2 2024, incl.
+    Thermaltech Golden Orb, Alpha Novatek PAL8045, Zalmon CNPS7000, Scythie
+    Ninja, Cooler Mister Hyper 212, Be Calm Dark Rock Pro 4, Thermalwrite
+    Peerless Assassin) and 7 AIOs (Corsar H50 2009 to Arktik Liquid
+    Freezer III), each with the sockets its mounting kits fit.
+  - Air coolers must fit the case's height; an AIO's radiator (120 to 420
+    mm) must match a mount in the case.
+  - Heat: CPUs past the 386 need a cooler that moves their watts or they
+    slow down. Overclocking adds a third more heat; an OVERCLOCK switch on
+    the bench turns it on or off, and a cooler that can't take it keeps
+    the CPU at stock speed.
+- **PC build bench, stage 5** (cases, monitors, odd cards):
+  - 35 era cases (AT desktop 1984 to Fractel North XL 2024), each with an
+    airflow rating that scales what the cooler can take. Mini-ITX and
+    E-ATX boards, a BTX board and case (out of production once the 2008
+    cases arrive), and SFX supplies: a small case takes only SFX, an ATX
+    case either.
+  - 15 monitors (Inland 5151 1981 to a 2024 4K OLED). A monitor needs a port
+    in common with the card (TTL, VGA, DVI, HDMI, DisplayPort, as on the
+    real cards of each year) and caps the graphics it can show; with no
+    monitor the PC uses a borrowed screen at 90%.
+  - Expansion cards: TV tuners, RAID controllers, the PhysX chip (out of
+    production in 2008), capture cards. Two fit at once.
+  - COAST cache modules for Pentium boards.
+  - Two graphics cards (2004–2020): a second matching card on a board with
+    SLI or CrossFire support, linked by the right bridge (SLI, SLI HB,
+    NVLink, CrossFire; none for the 2013 XDMA Artix cards). About 70% more
+    graphics early on, 50% by the end; twice the power; the monitor still
+    caps what shows. The 2022 cards can't pair.
+  - Research servers: the ARM line on the CPU tab (ARM1 1985 to Neoverse
+    N1), low-power ARM rack servers (Calxedon 2012, Amperion Altra 2020)
+    and storage arrays (EMZ Symmetrix 1990 to all-flash 2015).
+- **Hardware Museum** (MORE > MUSEUM): four wings (Computers & servers, PC
+  parts, Peripherals, History cards), a room per kind with found/total
+  counts, decade chips and a maker filter, an icon grid oldest first, and a
+  sheet per piece with its status (in use, researched, out of production).
+  Locked pieces are silhouettes with only their decade. Keyboards and mice
+  are museum-only and open by year. View-only.
+- **Space Age plan.** How to add it, in stages: `docs/space-age-plan.md`.
+
 ## Shipped in 0.0.25-0.0.26
 
 - **R&D pacing.** Eras make 0.001 R&D a second each (was 0.008); research

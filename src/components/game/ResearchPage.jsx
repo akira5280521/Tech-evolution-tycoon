@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   RESEARCH_TABS,
   canStartResearch,
@@ -8,7 +8,10 @@ import {
   researchLock,
   researchRows,
   researchSpeed,
+  researchUnlocks,
+  secondTechSlot,
   serverOutput,
+  techJobs,
 } from "@/lib/research";
 import { dataPerSecond } from "@/lib/empire";
 import { useGameState } from "./GameState";
@@ -48,26 +51,45 @@ function formatDuration(ms) {
 export default function ResearchPage() {
   const { state, startTech } = useGameState();
   const [tab, setTab] = useState("cpu");
+  const [focus, setFocus] = useState(null);
+  // Arriving from a locked era's GO TO TECH (/tech#id): open that project's
+  // tab and scroll to it.
+  useEffect(() => {
+    const id = decodeURIComponent((window.location.hash || "").slice(1));
+    const entry = id && researchItem(id);
+    if (!entry) return;
+    setTab(entry.tab);
+    setFocus(id);
+    const timer = setTimeout(() => document.querySelector(`[data-research-item="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "center" }), 50);
+    return () => clearTimeout(timer);
+  }, []);
   const rows = researchRows(tab);
-  const job = state.techJob;
-  const activeName = job ? researchItem(job.id) : null;
-  const live = techProgress(job, researchSpeed(state));
+  const jobs = techJobs(state);
+  const twoSlots = secondTechSlot(state);
+  const speed = researchSpeed(state);
   const rd = Math.floor(state.data || 0);
   const perSecond = dataPerSecond(state) + serverOutput(state).perSecond;
 
   return (
-    <ScreenShell title="TECH" subtitle="One project at a time. It keeps going while the app is closed.">
+    <ScreenShell title="TECH" subtitle="Projects keep going while the app is closed.">
       <Panel>
         <div className="flex items-start justify-between gap-1">
           <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">R&amp;D points {rd.toLocaleString("en-US")} · +{perSecond.toFixed(2)} a second · year {playerYear(state) || "—"}</p>
           <ItemHelp kind="rd" state={state} name="R&D points" className="-mr-2 -mt-2.5" />
         </div>
-        {job && activeName && (
-          <div data-research-active className="mt-2">
-            <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">Researching {activeName.name}</p>
-            <ProgressBar progress={live} label={`${activeName.name} research`} dataAttr="tech-summary" />
-          </div>
-        )}
+        {jobs.map((job) => {
+          const activeName = researchItem(job.id);
+          if (!activeName) return null;
+          return (
+            <div key={job.id} data-research-active className="mt-2">
+              <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">Researching {activeName.name}</p>
+              <ProgressBar progress={techProgress(job, speed)} label={`${activeName.name} research`} dataAttr="tech-summary" />
+            </div>
+          );
+        })}
+        <p data-research-slots className="mt-1 break-words font-term text-base leading-5 text-[var(--game-muted)]">
+          {twoSlots ? "Two projects at once: the bench's CPU has four or more cores." : "One project at a time. A four-core CPU on the PC bench allows two."}
+        </p>
       </Panel>
       <div className="flex flex-wrap gap-2 pb-1" role="tablist">
         {RESEARCH_TABS.map((entry) => (
@@ -88,14 +110,26 @@ export default function ResearchPage() {
         {rows.map((entry) => {
           const lock = researchLock(state, entry);
           const done = (state.techDone || []).includes(entry.id);
-          const running = job?.id === entry.id;
+          const running = jobs.some((j) => j.id === entry.id);
+          const opens = researchUnlocks(entry.id);
           return (
             <Panel key={entry.id}>
-              <div data-research-item={entry.id} data-help-scope className="flex items-start gap-2">
-                <div className={lock ? "opacity-60" : ""}><PixelMark id={entry.id} /></div>
+              <div data-research-item={entry.id} data-focus={focus === entry.id ? "1" : undefined} data-help-scope className={`flex items-start gap-2 ${focus === entry.id ? "outline outline-2 outline-offset-4 outline-[var(--game-accent)]" : ""}`}>
+                <div className={lock ? "opacity-60" : ""}>
+                  {opens[0]?.icon ? (
+                    <div className="h-8 w-8 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]">
+                      <img src={opens[0].icon} alt="" className="pixel-art h-full w-full scale-[1.4] object-contain" />
+                    </div>
+                  ) : (
+                    <PixelMark id={entry.id} />
+                  )}
+                </div>
                 <div className={`min-w-0 flex-1 ${lock ? "opacity-60" : ""}`}>
                   <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)] [overflow-wrap:anywhere]">{entry.year} · {entry.name}</p>
                   <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{entry.spec}</p>
+                  {opens.length > 0 && (
+                    <p data-research-opens className="break-words font-term text-base leading-5 text-[var(--game-accent)]">Opens on RIGS: {opens.map((p) => p.name).join(", ")}</p>
+                  )}
                   {entry.soon ? (
                     <p className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)]">COMING SOON</p>
                   ) : done ? (
@@ -103,7 +137,7 @@ export default function ResearchPage() {
                   ) : running ? (
                     <div data-research-running>
                       <p className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">IN PROGRESS</p>
-                      <ProgressBar progress={live} label={`${entry.name} research`} dataAttr="tech" />
+                      <ProgressBar progress={techProgress(jobs.find((j) => j.id === entry.id), speed)} label={`${entry.name} research`} dataAttr="tech" />
                     </div>
                   ) : lock ? (
                     <p data-research-lock className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)]">{lock}</p>

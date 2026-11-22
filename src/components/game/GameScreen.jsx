@@ -187,7 +187,7 @@ export default function GameScreen() {
           })}
 
           {firstLocked > 0 && (
-            <LockedRow prevName={pluralName(BUSINESSES[firstLocked - 1].name)} have={state.biz[firstLocked - 1]?.owned || 0} need={ERA_GATE} id={BUSINESSES[firstLocked].id} state={state} />
+            <LockedRow index={firstLocked} id={BUSINESSES[firstLocked].id} state={state} />
           )}
         </main>
       </div>

@@ -8,7 +8,7 @@ const TABS = [
   { id: "boost", label: "BOOST", to: "/boost", icon: Zap, isActive: (p) => p.startsWith("/boost") },
   { id: "board", label: "BOARD", to: "/board", icon: Package, isActive: (p) => p.startsWith("/board") },
   { id: "runs", label: "RUNS", to: "/runs", icon: Flag, isActive: (p) => p.startsWith("/runs") },
-  { id: "research", label: "RESEARCH", to: "/research", icon: FlaskConical, isActive: (p) => p.startsWith("/research") },
+  { id: "research", label: "R & D", to: "/research", icon: FlaskConical, isActive: (p) => p.startsWith("/research") },
   { id: "more", label: "MORE", to: "/more", icon: Settings, isActive: (p) => p.startsWith("/more") || p.startsWith("/settings") || p.startsWith("/badges") },
 ];
 

@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { PARTS, SHARE_CAP, STARTER_SHARE, facilityReport, nextPurchase, purchasePart } from "../../src/lib/facilities.js";
 
 const BIZ = 1e12;
-const open = (cluster = {}, mine = {}) => ({ biz: [{ id: "cpu", owned: 1 }], facilities: { mine, cluster, servers: {} }, cash: 1e30 });
+const open = (cluster = {}, mine = {}) => ({ biz: [{ id: "cpu", owned: 1 }], facilities: { mine, cluster, servers: {} }, cash: 1e30, supply: { wafers: 1e8, glass: 1e8, copper: 1e8, polysilicon: 1e8, ofcopper: 1e8 }, });
 // facilityUnlocked looks the AI row up by id in BUSINESSES order, so give it a full row list.
 import { BUSINESSES } from "../../src/lib/gameConfig.js";
 // Every era reached and everything researched, so every part is open.

@@ -1632,6 +1632,30 @@ export function rebuildPlants(state, limits = null) {
   return { bought, spent };
 }
 
+// Building a part also takes materials, by part type: chips and boards take
+// wafers, screens and disks glass, power, cooling, cases and cables copper.
+// A little more for later parts. From 2018 the copper parts take oxygen-free
+// copper instead, and from 2020 the chip parts polysilicon (a quarter as much).
+export const PART_GROUPS = {
+  chips: { key: "wafers", refined: "polysilicon", from: 2020, kinds: ["gpu", "ram", "server", "board", "cpu", "stick", "cache", "video", "accel", "addin", "sound", "fpu", "net", "modem"] },
+  glass: { key: "glass", kinds: ["disk", "monitor", "drive", "media"] },
+  metal: { key: "copper", refined: "ofcopper", from: 2018, kinds: ["cool", "power", "link", "bridge", "psu", "case", "cooler"] },
+};
+export function partMaterials(part) {
+  const group = Object.values(PART_GROUPS).find((g) => g.kinds.includes(part?.kind));
+  if (!group) return null;
+  const amount = Math.ceil(4 * (1 + Math.max(0, (part.year || 1950) - 1950) / 15));
+  if (group.refined && (part.year || 0) >= group.from) return { [group.refined]: Math.ceil(amount / 4) };
+  return { [group.key]: amount };
+}
+// What's missing to build a part: [{ key, need, have }], empty when all is there.
+export function partShort(state, part) {
+  const need = partMaterials(part) || {};
+  return Object.entries(need)
+    .map(([key, n]) => ({ key, need: n, have: Math.floor(state?.supply?.[key] || 0) }))
+    .filter((x) => x.have < x.need);
+}
+
 export function purchasePart(state, facilityId, partId) {
   if (!state || !facilityUnlocked(state, facilityId)) return { ok: false };
   const part = byId[partId];
@@ -1643,7 +1667,15 @@ export function purchasePart(state, facilityId, partId) {
   if (fit.reason) return { ok: false, reason: fit.reason };
   const cost = partCost(part, owned);
   if (!Number.isFinite(state.cash) || !(state.cash >= cost)) return { ok: false };
+  const short = partShort(state, part);
+  if (short.length) return { ok: false, reason: `Needs ${short.map((x) => `${x.need} ${x.key}`).join(", ")}.` };
   state.cash -= cost;
+  const need = partMaterials(part);
+  if (need) {
+    const supply = { ...(state.supply || {}) };
+    for (const [key, n] of Object.entries(need)) supply[key] = Math.max(0, (supply[key] || 0) - n);
+    state.supply = supply;
+  }
   state.cash += fit.refund;
   facilities[facilityId] = fit.counts;
   state.facilities = facilities;

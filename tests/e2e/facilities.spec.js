@@ -7,7 +7,9 @@ import { RESEARCH } from "../../src/lib/research.js";
 // Parts open in their real year once researched: give the late save the
 // eras after Quantum and every project done.
 const NEW_ERAS = ["vr", "chatbots", "supercluster"].map((id) => ({ id, owned: 1, manager: false, running: false, progress: 0, activeMs: 0 }));
-const allOpen = (save) => ({ ...save, biz: [...save.biz, ...NEW_ERAS], techDone: RESEARCH.map((e) => e.id), lastSeen: Date.now() });
+// Plenty of every material, since RIGS parts take some.
+const PLENTY = { wood: 1e6, paper: 1e6, sand: 1e6, copper: 1e8, glass: 1e8, wafers: 1e8, silicon: 1e6, germanium: 1e6, filament: 1e6, polysilicon: 1e8, ofcopper: 1e8, hpge: 1e6 };
+const allOpen = (save) => ({ ...save, biz: [...save.biz, ...NEW_ERAS], techDone: RESEARCH.map((e) => e.id), supply: PLENTY, storage: { wafers: 12, copper: 12, glass: 12, polysilicon: 12, ofcopper: 12 }, lastSeen: Date.now() });
 const LATE = allOpen(ALL_SAVES.late);
 
 test("best next part is shown, highlighted, and pays", async ({ page }) => {

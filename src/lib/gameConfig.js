@@ -753,11 +753,11 @@ export function pluralName(name) {
 // run still has to work for the late eras.
 export const ERA_EARN_POWER = 1.25;
 // Set at 60% of what the pacing sim's first run had earned on reaching each
-// era (later eras, which a first run doesn't reach, from a strong run).
+// era (later eras, which a first run doesn't reach, from a strong run). The
+// eras before Integrated Circuits need only the 10 of the one before, so the
+// tutorial and a new game's first half hour are unchanged.
 export const ERA_EARN = {
-  paper: 2.2e2, loom: 3.0e3, punchcards: 4.6e3, relay: 7.8e3, sand: 1.5e4, copper: 4.4e5, glass: 9.0e5,
-  filament: 2.2e6, tubes: 2.9e6, mainframes: 2.9e6, germanium: 3.4e6, transistors: 4.3e7, silicon: 4.4e7,
-  wafers: 1.1e8, ics: 1.1e8, minis: 1.2e8, cpu: 1.4e8, homepc: 5.0e8, consoles: 3.1e9, supercomputers: 2.5e10,
+  ics: 1.1e8, minis: 1.2e8, cpu: 1.4e8, homepc: 5.0e8, consoles: 3.1e9, supercomputers: 2.5e10,
   workstations: 9.0e10, laptops: 1.3e11, dialup: 1.7e11, multimedia: 1.9e11, accel3d: 3.2e11, gpu: 4.3e11,
   cloud: 5.8e11, phones: 1.4e12, tablets: 3.1e12, rgb: 5.7e12, ai: 9.8e12, quantum: 5.2e13, vr: 1.6e15,
   chatbots: 6.1e16, supercluster: 5.8e18,

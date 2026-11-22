@@ -1,9 +1,9 @@
 // The locked era row lists every need with progress.
 import { test, expect } from "@playwright/test";
-import { SAVES, expectClean, open, tipsOff } from "./helpers.js";
+import { expectClean, open, tipsOff } from "./helpers.js";
 
 test("the locked era shows owning enough and earning enough, each with progress", async ({ page }) => {
-  const save = { ...SAVES.mid, lastSeen: Date.now(), lifetime: 0, erasOpened: [] };
+  const save = shortOf("minis", { lifetime: 0, erasPaid: BUSINESSES.map((b) => b.id) });
   const seen = await open(page, "/", save);
   await tipsOff(page);
   const row = page.locator("[data-locked-era]");

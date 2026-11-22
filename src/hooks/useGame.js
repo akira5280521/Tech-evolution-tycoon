@@ -5,6 +5,7 @@ import {
   AWAY_GRACE_MS,
   AWAY_MODAL_MS,
   BUSINESSES,
+  openEra,
   COMMISSION_MS,
   FOREMAN_COST,
   MAX_BUY,
@@ -246,6 +247,7 @@ function pack(s) {
     nextBubbleAt: s.nextBubbleAt || 0,
     supply: s.supply,
     erasOpened: s.erasOpened || [],
+    erasPaid: s.erasPaid || [],
     foreman: !!s.foreman,
     sawPit: !!s.sawPit,
     goalsDone: Array.isArray(s.goalsDone) ? s.goalsDone : [],
@@ -349,6 +351,11 @@ function loadSave() {
     state.projectJob = data.projectJob || null;
     const prior = Number.isFinite(data.meta?.version) ? data.meta.version : 1;
     if (storedEra != null) state.bestEra = remapBestEra(storedEra, prior);
+    // Era materials are paid once. A save from before them has paid for every
+    // era it ever reached.
+    state.erasPaid = Array.isArray(data.erasPaid)
+      ? data.erasPaid.filter((id) => BUSINESSES.some((cfg) => cfg.id === id))
+      : BUSINESSES.filter((cfg, i) => i > 0 && (i <= (state.bestEra || 0) || (state.biz[i]?.owned || 0) > 0 || (state.erasOpened || []).includes(cfg.id))).map((cfg) => cfg.id);
     // A save from before the hardware and era rework (v12): offer a fresh
     // start once. The save keeps working either way.
     state.restartSuggested = prior < 12 && ((state.lifetime || 0) > 0 || (state.investors || 0) > 0);
@@ -819,6 +826,16 @@ export function useGame() {
     bump();
   }, [bump]);
 
+  const openEraAt = useCallback(
+    (index) => {
+      if (!openEra(stateRef.current, index)) return;
+      playBuy();
+      saveNow();
+      bump();
+    },
+    [bump]
+  );
+
   const purchaseUpgrade = useCallback(
     (index, kind) => {
       if (!buyUpgrade(stateRef.current, index, kind)) return;
@@ -1173,6 +1190,7 @@ export function useGame() {
     reset,
     dismissOffline,
     purchaseUpgrade,
+    openEraAt,
     purchaseShop,
     chooseSpecialty,
     runLabProject,

@@ -187,7 +187,7 @@ export default function GameScreen() {
           })}
 
           {firstLocked > 0 && (
-            <LockedRow index={firstLocked} id={BUSINESSES[firstLocked].id} state={state} />
+            <LockedRow index={firstLocked} id={BUSINESSES[firstLocked].id} state={state} onOpen={game.openEraAt} />
           )}
         </main>
       </div>

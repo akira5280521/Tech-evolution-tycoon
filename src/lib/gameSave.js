@@ -166,6 +166,8 @@ export function migrateSave(data) {
     erasOpened: Array.isArray(data.erasOpened)
       ? data.erasOpened.filter((id) => BUSINESSES.some((cfg) => cfg.id === id))
       : BUSINESSES.filter((cfg, i) => i > 0 && (biz[i]?.owned || 0) === 0 && (biz[i - 1]?.owned || 0) >= ERA_GATE).map((cfg) => cfg.id),
+    // Eras whose material is paid (once, ever). Older saves: filled in on load.
+    erasPaid: Array.isArray(data.erasPaid) ? data.erasPaid.filter((id) => BUSINESSES.some((cfg) => cfg.id === id)) : null,
     foreman: version < 4 ? progressed : !!data.foreman,
     sawPit: version < 4 ? progressed : !!data.sawPit,
     researchJob: version < 4 ? null : job(data.researchJob),

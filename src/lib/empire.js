@@ -1367,6 +1367,8 @@ export function snapshotMeta(state, options = {}) {
     eventsDone: [...(state.eventsDone || [])],
     nextBubbleAt: state.nextBubbleAt || 0,
     supply: { ...ensureSupply(state) },
+    // Era materials are paid once, ever.
+    erasPaid: [...(state.erasPaid || [])],
     foreman: !!state.foreman,
     sawPit: !!state.sawPit,
     goalsDone: Array.isArray(state.goalsDone) ? [...state.goalsDone] : [],

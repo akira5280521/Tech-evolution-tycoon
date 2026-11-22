@@ -1,11 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
-import { eraNeeds, money } from "@/lib/gameConfig";
+import { eraCanOpen, eraNeeds, money } from "@/lib/gameConfig";
 import { ItemHelp } from "./HintSheet";
 
 // The next era, still hidden ("???") until every need is met: owning enough
 // of the one before it, and earning enough this run. Each need shows its
 // progress.
-export default function LockedRow({ index, id, state }) {
+export default function LockedRow({ index, id, state, onOpen }) {
   const needs = eraNeeds(state, index);
   const navigate = useNavigate();
   return (
@@ -20,6 +20,23 @@ export default function LockedRow({ index, id, state }) {
         </div>
         {needs.map((n) => {
           const pct = Math.max(0, Math.min(100, (n.have / n.need) * 100));
+          if (n.kind === "material") {
+            const pct = Math.max(0, Math.min(100, (n.have / n.need) * 100));
+            return (
+              <div key={n.kind} data-era-need={n.kind} data-met={n.met ? "1" : "0"} className="mt-1">
+                <p className={`break-words font-term text-base leading-5 ${n.met ? "text-[var(--game-accent)]" : "text-[var(--game-muted)]"}`}>
+                  {n.met ? "✓ " : ""}
+                  {n.label}
+                  {n.paid ? "" : ` (${Math.floor(Math.min(n.have, n.need)).toLocaleString("en-US")}/${n.need.toLocaleString("en-US")})`}
+                </p>
+                {!n.paid && (
+                  <div className="mt-0.5 h-3 border-2 border-[var(--game-border)] bg-[var(--game-bg)]" aria-hidden="true">
+                    <div className={`h-full ${n.met ? "bg-[var(--game-accent)]" : "bg-[var(--game-dim)]"}`} style={{ width: `${pct}%` }} />
+                  </div>
+                )}
+              </div>
+            );
+          }
           const progress = n.kind === "earn" ? money(Math.min(n.have, n.need)) : n.kind === "research" ? (n.met ? "done" : "not done") : `${Math.min(n.have, n.need)}/${n.need}`;
           if (n.kind === "research") {
             return (
@@ -53,6 +70,16 @@ export default function LockedRow({ index, id, state }) {
             </div>
           );
         })}
+        {eraCanOpen(state, index) && (
+          <button
+            type="button"
+            data-open-era={id}
+            onClick={() => onOpen?.(index)}
+            className="mt-2 min-h-11 w-full border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]"
+          >
+            OPEN ERA
+          </button>
+        )}
       </div>
     </div>
   );

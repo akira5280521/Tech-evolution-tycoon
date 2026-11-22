@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { BUSINESSES, ERA_GATE, REFINED, SUPPLY_KEYS, blockedByGlass, eraOpen, frontierEra, money, pluralName } from "@/lib/gameConfig";
 import { activeChallengeGoal, incomePerSecond, refiningOpen, shortageOn, supplyCap, supplyFull } from "@/lib/empire";
 import StorageSheet, { amount } from "./StorageSheet";
-import { PREFS_EVENT, readPrefs } from "@/lib/gamePrefs";
+import { PREFS_EVENT, readPrefs, writePrefs } from "@/lib/gamePrefs";
+import { SECTIONS, makerOf, rowSection, sectionOfId, sectionOfTarget, shownSection, supplyAlerts, pendingRowId, focusRowLater } from "@/lib/sections";
+import { currentTip } from "@/lib/tips";
 import { applyAudioPrefs } from "@/lib/sfx";
 import { useGameState } from "./GameState";
 import TopBar from "./TopBar";
@@ -17,7 +19,7 @@ import DilemmaModal from "./DilemmaModal";
 import BubbleBanner from "./BubbleBanner";
 import CoachMark from "./CoachMark";
 import { ItemHelp, TipCard } from "./HintSheet";
-import { currentTutorialStep, tutorialActive } from "@/lib/tutorial";
+import { currentTutorialStep, stepTarget, tutorialActive } from "@/lib/tutorial";
 import { StickyHud } from "./chrome";
 
 // The first-run Timber note stays up until the player has both run a business
@@ -47,6 +49,13 @@ export default function GameScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [compact, setCompact] = useState(false);
   const [storageKey, setStorageKey] = useState(null);
+  const [savedSection, setSavedSection] = useState(() => readPrefs().gameSection);
+  // A dilemma or shortage event takes the screen: close the material sheet
+  // so the two never stack.
+  useEffect(() => {
+    if (state.dilemma) setStorageKey(null);
+  }, [state.dilemma]);
+  const [scrollTo, setScrollTo] = useState(() => pendingRowId());
   const startYRef = useRef(null);
   const pullRef = useRef(0);
   const refreshingRef = useRef(false);
@@ -54,6 +63,7 @@ export default function GameScreen() {
     const apply = () => {
       const prefs = readPrefs();
       setCompact(prefs.compact);
+      setSavedSection(prefs.gameSection);
       applyAudioPrefs(prefs);
     };
     apply();
@@ -102,12 +112,64 @@ export default function GameScreen() {
   const firstLocked = glass ? -1 : frontierEra(state);
   const supply = state.supply || {};
 
+  // TECH or SUPPLY. A tutorial step or tip that points at a row in the other
+  // section, or a row asked for by NEXT MOVE, switches the view to it.
+  const coachTarget = tutorialActive(state) ? stepTarget(currentTutorialStep(state), state) : null;
+  const tipTarget = currentTip(state, "game")?.target || null;
+  const forced = sectionOfTarget(coachTarget) || sectionOfTarget(tipTarget);
+  const section = shownSection(state, savedSection);
+  const chooseSection = useCallback((id) => {
+    setSavedSection(id);
+    writePrefs({ gameSection: id });
+  }, []);
+  useEffect(() => {
+    if (forced && forced !== section) chooseSection(forced);
+  }, [forced, section, chooseSection]);
+  useEffect(() => {
+    if (!scrollTo) return;
+    const want = sectionOfId(scrollTo);
+    if (want && want !== section) {
+      chooseSection(want);
+      return;
+    }
+    // Wait for the row to draw (the screen may still be loading), scroll to
+    // it, then once more after the page settles (a route change resets scroll).
+    let tries = 0;
+    let found = 0;
+    const iv = setInterval(() => {
+      tries += 1;
+      const el = document.querySelector(`[data-row="${scrollTo}"]`);
+      if (el) {
+        el.scrollIntoView({ block: "center" });
+        found += 1;
+      }
+      if (found >= 3 || tries >= 30) {
+        clearInterval(iv);
+        focusRowLater(null);
+        setScrollTo(null);
+      }
+    }, 100);
+    return () => clearInterval(iv);
+  }, [scrollTo, section, chooseSection]);
+  // "Needs wood" on a TECH row: open SUPPLY at the row that makes it.
+  const showMaker = useCallback((key) => {
+    const maker = makerOf(key);
+    // A refined grade has no maker row: open its sheet (REFINE lives there).
+    if (maker < 0) {
+      setStorageKey(key);
+      return;
+    }
+    setScrollTo(BUSINESSES[maker].id);
+  }, []);
+  const alerts = supplyAlerts(state);
+  const techOpen = BUSINESSES.some((cfg, i) => rowSection(i) === "tech" && eraOpen(state, i) && !blockedByGlass(state, i));
+
   return (
     <div className="game-root game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
       <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} />
       <PrestigeReport report={state.offlineReport ? null : state.prestigeReport} onDismiss={dismissPrestigeReport} />
-      {!state.offlineReport && <DilemmaModal dilemma={state.dilemma} onChoose={chooseDilemma} />}
+      {!state.offlineReport && !state.prestigeReport && <DilemmaModal dilemma={state.dilemma} onChoose={chooseDilemma} />}
 
       {(pullDist > 0 || refreshing) && (
         <div className="flex items-center justify-center gap-2 py-2 font-pixel text-[0.55rem] text-[var(--game-muted)]">
@@ -150,7 +212,7 @@ export default function GameScreen() {
                     type="button"
                     data-material={key}
                     onClick={() => setStorageKey(key)}
-                    className={`min-h-6 text-left ${full ? "text-[var(--game-danger)]" : ""}`}
+                    className={`min-h-6 text-left tabular-nums ${full ? "text-[var(--game-danger)]" : ""}`}
                   >
                     {REFINED[key]?.short || key} {amount(supply[key])}/{amount(supplyCap(state, key))}
                     {full && <span className="ml-1 font-pixel text-[0.4rem]">FULL</span>}
@@ -160,9 +222,44 @@ export default function GameScreen() {
               })}
               <ItemHelp kind="materials" id={SUPPLY_KEYS.filter((key) => supplyShown(state, key))} state={state} name="materials" className="ml-auto" />
             </p>
+            <div data-section-toggle role="group" aria-label="Game section" className="mt-2 grid grid-cols-2 border-2 border-[var(--game-border)] bg-[var(--game-panel)] shadow-[3px_3px_0_0_#000]">
+              {SECTIONS.map((item) => {
+                const on = section === item.id;
+                const alert = item.id === "supply" && alerts.length > 0;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    data-section={item.id}
+                    aria-pressed={on}
+                    disabled={item.id === "tech" && !techOpen}
+                    onClick={() => chooseSection(item.id)}
+                    className={`relative min-h-[40px] px-2 font-pixel text-[0.6rem] leading-4 ${
+                      on
+                        ? "bg-[var(--game-accent)] text-[var(--game-accent-fg)]"
+                        : "text-[var(--game-muted)] disabled:text-[var(--game-dim)]"
+                    }`}
+                  >
+                    {item.label}
+                    {alert && (
+                      <span
+                        data-supply-alert={alerts.map((a) => `${a.key}:${a.kind}`).join(" ")}
+                        aria-label="A material is empty or full"
+                        className="absolute right-2 top-1.5 h-2 w-2 bg-[var(--game-danger)] shadow-[1px_1px_0_0_#000]"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
             {!playedAndBought(state) && !tutorialActive(state) && (
               <p data-onboard className="mt-2 border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-2 font-term text-lg leading-6 text-[var(--game-fg)]">
                 Tap the Timber Camp picture to run the business. Then tap BUY. BUY spends cash.
+                {section !== "supply" && (
+                  <button type="button" data-onboard-supply onClick={() => chooseSection("supply")} className="ml-2 font-pixel text-[0.5rem] text-[var(--game-accent)] underline">
+                    SHOW SUPPLY
+                  </button>
+                )}
               </p>
             )}
           </div>
@@ -184,6 +281,7 @@ export default function GameScreen() {
           {BUSINESSES.map((cfg, i) => {
             if (blockedByGlass(state, i)) return null;
             if (!eraOpen(state, i)) return null;
+            if (rowSection(i) !== section) return null;
             return (
               <BusinessRow
                 key={cfg.id}
@@ -197,6 +295,8 @@ export default function GameScreen() {
                 state={state}
                 buyMode={buyMode}
                 compact={compact}
+                supplyCard={section === "supply"}
+                onNeed={showMaker}
                 onBuy={buy}
                 onHire={hire}
                 onRun={run}
@@ -204,7 +304,9 @@ export default function GameScreen() {
             );
           })}
 
-          {firstLocked > 0 && (
+          {/* The next era waits at the end of the TECH list (or of SUPPLY
+              before any TECH row is open). */}
+          {firstLocked > 0 && (section === "tech" || !techOpen) && (
             <LockedRow index={firstLocked} id={BUSINESSES[firstLocked].id} state={state} onOpen={game.openEraAt} />
           )}
         </main>

@@ -1,14 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { Play } from "lucide-react";
 import { BUSINESSES, FOREMAN_COST, buyModeLabel, money, nextBuyMode } from "@/lib/gameConfig";
-import { anyFacilityOpen } from "@/lib/facilities";
-import { techOpen } from "@/lib/research";
+import { HUB_LABEL, HUB_ROUTE, hubOpen } from "@/lib/hub";
+import { researchSpeed, techOpen } from "@/lib/research";
+import { techProgress } from "@/lib/progress";
 import { ItemHelp } from "./HintSheet";
 
-const SIDE = "flex min-h-12 w-[4.5rem] shrink-0 flex-col items-center justify-center border-2 px-1 overflow-hidden break-words text-center font-pixel text-[0.45rem] leading-4 shadow-[2px_2px_0_0_#000]";
+const SIDE = "relative flex min-h-12 w-[4.5rem] shrink-0 flex-col items-center justify-center border-2 px-1 overflow-hidden break-words text-center font-pixel text-[0.45rem] leading-4 shadow-[2px_2px_0_0_#000]";
 
 // A shortcut that stays greyed out ("???") until its feature is reached.
-function SideLink({ to, open, data, label }) {
+function SideLink({ to, open, data, label, progress = null }) {
   if (!open) {
     return (
       <span aria-disabled="true" aria-label={`${label}, locked`} {...{ [`data-open-${data}`]: "", "data-locked": "" }} className={`${SIDE} border-[var(--game-border)] bg-[var(--game-panel)] text-[var(--game-dim)]`}>
@@ -17,8 +18,19 @@ function SideLink({ to, open, data, label }) {
     );
   }
   return (
-    <Link to={to} {...{ [`data-open-${data}`]: "" }} className={`${SIDE} border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-fg)]`}>
+    <Link
+      to={to}
+      {...{ [`data-open-${data}`]: "" }}
+      aria-label={progress ? `${label}, research ${progress.pct}% done` : undefined}
+      className={`${SIDE} border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-fg)]`}
+    >
       {label}
+      {progress && (
+        // A thin bar along the bottom while a job runs; it takes no layout space.
+        <span data-side-progress data-pct={progress.pct} aria-hidden="true" className="absolute inset-x-0.5 bottom-0.5 h-1 bg-[var(--game-bg)]">
+          <span className="block h-full bg-[var(--game-accent)] transition-[width] duration-700 ease-linear" style={{ width: `${progress.pct}%` }} />
+        </span>
+      )}
     </Link>
   );
 }
@@ -96,9 +108,9 @@ export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll
             <span className="font-pixel text-sm leading-5">{buyModeLabel(buyMode)}</span>
             <span className="font-term text-lg leading-5">BUY AMOUNT</span>
           </button>
-          <SideLink to="/tech" open={techOpen(state)} data="research" label="TECH" />
-          <SideLink to="/facilities" open={anyFacilityOpen(state)} data="facilities" label="RIGS" />
-          <ItemHelp kind="topbar" id={{ tech: techOpen(state), rigs: anyFacilityOpen(state) }} state={state} name="buy amount, TECH and RIGS" className="my-0 self-center" />
+          <SideLink to="/tech" open={techOpen(state)} data="research" label="TECH" progress={techProgress(state.techJob, researchSpeed(state))} />
+          <SideLink to={HUB_ROUTE} open={hubOpen(state)} data="facilities" label={HUB_LABEL} />
+          <ItemHelp kind="topbar" id={{ tech: techOpen(state), rigs: hubOpen(state) }} state={state} name={`buy amount, TECH and ${HUB_LABEL}`} className="my-0 self-center" />
         </div>
       </div>
     </header>

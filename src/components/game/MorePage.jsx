@@ -3,14 +3,15 @@ import { FlaskConical } from "lucide-react";
 import { BUSINESSES, RESEARCH_MS, count, investorsFor, money } from "@/lib/gameConfig";
 import { SPECIALTIES, canCommit, dataPerSecond, establishedCount, masteredCount, specialtySlots } from "@/lib/empire";
 import { getSaveData } from "@/lib/gameSave";
-import { eraNameAt, eraReachedIndex, formatDuration } from "@/lib/records";
+import { eraNameAt, eraReachedIndex, formatDuration, longestRun, runLengthMs } from "@/lib/records";
 import { useGameState } from "./GameState";
 import AnalyticsPanel from "./AnalyticsPanel";
 import BadgesPage from "./BadgesPage";
 import AppVersionFooter from "./AppVersion";
 import DailyBriefing from "./DailyBriefing";
 import NextMove from "./NextMove";
-import ScreenShell, { GoldButton, Panel } from "./chrome";
+import ScreenShell, { GoldButton, Panel, ProgressBar } from "./chrome";
+import { timedProgress } from "@/lib/progress";
 import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
 import MuseumPage from "./MuseumPage";
@@ -20,6 +21,7 @@ import AccountPanel from "./AccountPanel";
 import { HelpTip, ItemHelp } from "./HintSheet";
 import { GLOSSARY, GLOSSARY_ORDER } from "@/lib/glossary";
 import { AchievementsButton, AwayReminder, DisplaySettings, FeedbackButton, PlayToggles, ResetProgress, WhatsNewButton } from "./SettingsControls";
+import { HUB_LABEL } from "@/lib/hub";
 
 const TABS = [
   { id: "settings", label: "SETTINGS", title: "SETTINGS" },
@@ -215,8 +217,8 @@ const HOW_TO = [
     id: "rd",
     title: "R&D POINTS",
     lines: [
-      "R&D points are the one research currency. Each era you own makes a trickle; research servers (under the RIGS button beside TECH, from Mainframes) make most of them. Both earn at half rate while the game is closed, and the servers only bank what their disks hold: 1 hour of output, plus another hour per TB of disk.",
-      "Spend them on the RESEARCH tab (specialties and lab projects) and on the TECH timeline. They are never lost, even when you prestige.",
+      `R&D points are the one research currency. Each era you own makes a trickle; research servers (${HUB_LABEL} beside TECH, then RIGS, from Mainframes) make most of them. Both earn at half rate while the game is closed, and the servers only bank what their disks hold: 1 hour of output, plus another hour per TB of disk.`,
+      "Spend them on the R&D tab (specialties and lab projects) and on the TECH timeline. They are never lost, even when you prestige.",
     ],
   },
   {
@@ -229,7 +231,7 @@ const HOW_TO = [
   },
   {
     id: "facilities",
-    title: "FACILITIES (RIGS)",
+    title: `FACILITIES (${HUB_LABEL} > RIGS)`,
     lines: [
       "Research servers open with Mainframes and make R&D points. Newer machines and parts open in their real year once you research them on TECH. With AI Accelerators, the Bitbark mine and the AI training cluster add a small extra income.",
       "Buy parts for each plant. A plant runs slower when its power or cooling can't keep up with its cards or racks, and it tells you what to add next. Parts are lost when you prestige.",
@@ -306,7 +308,7 @@ function Stats({ state, data }) {
   const era = Math.max(0, eraReachedIndex(state));
   const runs = Array.isArray(state.runs) ? state.runs : [];
   const bestEarn = runs.reduce((best, run) => (!best || run.earnings > best.earnings ? run : best), null);
-  const bestTime = runs.reduce((best, run) => (!best || run.lengthMs > best.lengthMs ? run : best), null);
+  const bestTime = longestRun(runs);
   const bestBackers = runs.reduce((best, run) => (!best || run.investorsGained > best.investorsGained ? run : best), null);
   const pending = investorsFor(state.lifetime || 0);
   const challengeName = state.challenge ? (state.challenge.id === "glass" ? "GLASS CEILING" : state.challenge.id === "noboss" ? "NO BOSSES" : "SPEEDRUN") : null;
@@ -329,7 +331,7 @@ function Stats({ state, data }) {
       <Panel>
         <h2 className="font-pixel text-[0.6rem]">BEST RUNS</h2>
         {runs.length === 0 ? (
-          <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">Finished runs show up here after a prestige, a fork, or a challenge. The run you're on is below.</p>
+          <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">Finished runs show up here after a prestige, a fork, or starting a challenge. The run you're on is below.</p>
         ) : (
           <ul className="mt-2 space-y-1 font-term text-lg leading-6">
             {bestEarn ? <li>Richest: {money(bestEarn.earnings)} · {bestEarn.eraName}</li> : null}
@@ -341,11 +343,11 @@ function Stats({ state, data }) {
       <Panel>
         <h2 className="font-pixel text-[0.6rem]">RUNS</h2>
         <p className="mt-2 font-term text-lg leading-6">
-          This run: {money(state.lifetime || 0)} earned · {formatDuration(Date.now() - (state.runStartedAt || Date.now()))} · {eraNameAt(era)}
+          This run: {money(state.lifetime || 0)} earned · {formatDuration(runLengthMs(state))} · {eraNameAt(era)}
           {pending > 0 ? ` · ${count(pending)} investors waiting` : ""}
           {challengeName ? ` · ${challengeName}` : ""}
         </p>
-        <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">Runs from before this update aren't listed. Length of the current run starts when tracking began.</p>
+        <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">Runs from before this update aren't listed. If a run's start wasn't tracked, its length shows as unknown.</p>
         <ul className="mt-2 space-y-2">
           {[...runs].reverse().map((run) => (
             <li key={`${run.at}-${run.eraId}`} className="font-term text-lg leading-6">
@@ -357,6 +359,7 @@ function Stats({ state, data }) {
       </Panel>
       <Panel>
         <h2 className="font-pixel text-[0.6rem]">BY BUSINESS</h2>
+        <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">Active is how long each business has been running this run, time away included. Without a manager a business only runs while you tap it, so a low number means it sat idle.</p>
         {BUSINESSES.map((cfg, index) => {
           const st = state.biz[index];
           const minutes = Math.floor((st?.activeMs || 0) / 60000);
@@ -375,7 +378,7 @@ function Stats({ state, data }) {
 export function ResearchPage() {
   const { state, chooseSpecialty, runLabProject } = useGameState();
   return (
-    <ScreenShell title={"RESEARCH\nLAB"} subtitle="">
+    <ScreenShell title="RESEARCH" subtitle="">
       <ResearchBody state={state} onCommit={chooseSpecialty} onLab={runLabProject} />
     </ScreenShell>
   );
@@ -408,8 +411,7 @@ export function ResearchBody({ state, onCommit, onLab }) {
           const owned = picked.includes(spec.id);
           const job = state.researchJob && state.researchJob.id === spec.id ? state.researchJob : null;
           const open = canCommit(state, spec.id);
-          const elapsed = job ? Date.now() - job.startedAt : 0;
-          const pct = job ? Math.max(0, Math.min(100, (elapsed / RESEARCH_MS) * 100)) : 0;
+          const live = job ? timedProgress(job.startedAt, RESEARCH_MS) : null;
           return (
             <div key={spec.id} data-help-scope className="mt-3 border-2 border-[var(--game-border)] p-3">
               <div className="flex items-start gap-2">
@@ -425,9 +427,7 @@ export function ResearchBody({ state, onCommit, onLab }) {
               ) : job ? (
                 <div className="mt-2">
                   <p className="font-pixel text-[0.55rem] text-[var(--game-accent)]">RESEARCHING</p>
-                  <div className="mt-2 h-5 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]">
-                    <div className="h-full bg-[var(--game-accent)]" style={{ width: `${pct}%` }} />
-                  </div>
+                  <ProgressBar progress={live} label={`${spec.name} research`} dataAttr="specialty" />
                 </div>
               ) : (
                 <div className="mt-2">

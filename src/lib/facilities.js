@@ -317,15 +317,23 @@ function ownedId(state, id) {
   return index >= 0 ? (state?.biz?.[index]?.owned || 0) : 0;
 }
 
+// The business each plant needs owned this run.
+export const FACILITY_UNLOCK = { servers: "mainframes", bench: "homepc", mine: "ai", cluster: "ai" };
+
 export function facilityUnlocked(state, facilityId) {
-  if (facilityId === "servers") return ownedId(state, "mainframes") >= 1;
-  if (facilityId === "bench") return ownedId(state, "homepc") >= 1;
-  return ownedId(state, "ai") >= 1;
+  return ownedId(state, FACILITY_UNLOCK[facilityId] || "ai") >= 1;
 }
 
 // The Facilities screen opens with its first plant (the research servers).
 export function anyFacilityOpen(state) {
   return facilityUnlocked(state, "servers") || facilityUnlocked(state, "bench") || facilityUnlocked(state, "mine");
+}
+
+// What a plant still needs this run, for its greyed-out card on RIGS.
+export function facilityNeed(facilityId) {
+  const id = FACILITY_UNLOCK[facilityId] || "ai";
+  const name = BUSINESSES.find((cfg) => cfg.id === id)?.name || id;
+  return `Needs ${name} this run`;
 }
 
 export function facilitiesOpen(state) {

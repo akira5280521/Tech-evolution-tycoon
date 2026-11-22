@@ -18,7 +18,8 @@ import {
 import { REFINED } from "@/lib/gameConfig";
 import { dataPerSecond } from "@/lib/empire";
 import { useGameState } from "./GameState";
-import ScreenShell, { GoldButton, Panel } from "./chrome";
+import ScreenShell, { GoldButton, Panel, ProgressBar } from "./chrome";
+import { techProgress } from "@/lib/progress";
 import { ItemHelp } from "./HintSheet";
 
 function PixelMark({ id }) {
@@ -68,11 +69,12 @@ export default function ResearchPage() {
   const rows = researchRows(tab);
   const jobs = techJobs(state);
   const twoSlots = secondTechSlot(state);
+  const speed = researchSpeed(state);
   const rd = Math.floor(state.data || 0);
   const perSecond = dataPerSecond(state) + serverOutput(state).perSecond;
 
   return (
-    <ScreenShell title="RESEARCH" subtitle="Projects keep going while the app is closed.">
+    <ScreenShell title="TECH" subtitle="Projects keep going while the app is closed.">
       <Panel>
         <div className="flex items-start justify-between gap-1">
           <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">R&amp;D points {rd.toLocaleString("en-US")} · +{perSecond.toFixed(2)} a second · year {playerYear(state) || "—"}</p>
@@ -81,15 +83,10 @@ export default function ResearchPage() {
         {jobs.map((job) => {
           const activeName = researchItem(job.id);
           if (!activeName) return null;
-          const progress = job.durationMs > 0 ? Math.min(100, (job.progressMs / job.durationMs) * 100) : 0;
-          const remaining = Math.max(0, (job.durationMs - job.progressMs) / Math.max(0.25, researchSpeed(state)));
           return (
             <div key={job.id} data-research-active className="mt-2">
               <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">Researching {activeName.name}</p>
-              <p className="font-term text-base leading-5 text-[var(--game-muted)]">{formatDuration(remaining)} left</p>
-              <div className="mt-1 h-2 border border-[var(--game-border)] bg-[var(--game-bg)]" aria-hidden="true">
-                <div className="h-full bg-[var(--game-accent)]" style={{ width: `${progress}%` }} />
-              </div>
+              <ProgressBar progress={techProgress(job, speed)} label={`${activeName.name} research`} dataAttr="tech-summary" />
             </div>
           );
         })}
@@ -141,7 +138,10 @@ export default function ResearchPage() {
                   ) : done ? (
                     <p className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-success)]">DONE</p>
                   ) : running ? (
-                    <p className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">IN PROGRESS</p>
+                    <div data-research-running>
+                      <p className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">IN PROGRESS</p>
+                      <ProgressBar progress={techProgress(jobs.find((j) => j.id === entry.id), speed)} label={`${entry.name} research`} dataAttr="tech" />
+                    </div>
                   ) : lock ? (
                     <p data-research-lock className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)]">{lock}</p>
                   ) : (

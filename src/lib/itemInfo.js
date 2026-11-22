@@ -61,6 +61,7 @@ import {
 import { GENERATIONS, GENERATION_BONUS, generationAt, generationIndex, generationPayMult } from "./generations.js";
 import { RESEARCH, RESEARCH_TABS, awayBankCap, awayBankHours, playerYear, researchCost, researchItem, researchLock, researchSpeed, researchUnlocks, serverOutput } from "./research.js";
 import { FACILITIES, MEM_NAMES, PARTS, SHARE_CAP, SOCKET_NAMES, diskSize, facilityReport, facilityUnlocked, FORM_NAMES, memSize, partCost, partLock, PORT_NAMES } from "./facilities.js";
+import { HUB_LABEL } from "./hub.js";
 
 export const LOCKED_TEXT = "Unlocks later in the timeline.";
 export const SOON_TEXT = "Coming soon: it isn't in the game yet.";
@@ -320,7 +321,7 @@ function topBarInfo(state, { tech, rigs }) {
     text: "Tap the buy-amount button to change how many one BUY gets: X1, X10, X25, X50, X75, X100, then MAX.",
     rows: [
       { label: "TECH", text: tech ? "The tech timeline: timed research projects paid with R&D points. CPU and GPU projects unlock new chips." : LOCKED_TEXT },
-      { label: "RIGS", text: rigs ? "Facilities: research servers that make R&D points, and later a mine and a training cluster that pay cash." : LOCKED_TEXT },
+      { label: HUB_LABEL, text: rigs ? "Your hardware menu. Its RIGS section has research servers that make R&D points, and later a mine and a training cluster that pay cash." : LOCKED_TEXT },
     ],
   };
 }

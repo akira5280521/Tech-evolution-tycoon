@@ -16,6 +16,7 @@ import { Route as BoostRouteImport } from './routes/boost'
 import { Route as FacilitiesRouteImport } from './routes/facilities'
 import { Route as MoreRouteImport } from './routes/more'
 import { Route as ResearchRouteImport } from './routes/research'
+import { Route as RigsRouteImport } from './routes/rigs'
 import { Route as RunsRouteImport } from './routes/runs'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TechRouteImport } from './routes/tech'
@@ -57,6 +58,11 @@ const ResearchRoute = ResearchRouteImport.update({
   path: '/research',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RigsRoute = RigsRouteImport.update({
+  id: '/rigs',
+  path: '/rigs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RunsRoute = RunsRouteImport.update({
   id: '/runs',
   path: '/runs',
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/facilities': typeof FacilitiesRoute
   '/more': typeof MoreRoute
   '/research': typeof ResearchRoute
+  '/rigs': typeof RigsRoute
   '/runs': typeof RunsRoute
   '/settings': typeof SettingsRoute
   '/tech': typeof TechRoute
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/facilities': typeof FacilitiesRoute
   '/more': typeof MoreRoute
   '/research': typeof ResearchRoute
+  '/rigs': typeof RigsRoute
   '/runs': typeof RunsRoute
   '/settings': typeof SettingsRoute
   '/tech': typeof TechRoute
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/facilities': typeof FacilitiesRoute
   '/more': typeof MoreRoute
   '/research': typeof ResearchRoute
+  '/rigs': typeof RigsRoute
   '/runs': typeof RunsRoute
   '/settings': typeof SettingsRoute
   '/tech': typeof TechRoute
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/facilities'
     | '/more'
     | '/research'
+    | '/rigs'
     | '/runs'
     | '/settings'
     | '/tech'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/facilities'
     | '/more'
     | '/research'
+    | '/rigs'
     | '/runs'
     | '/settings'
     | '/tech'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/facilities'
     | '/more'
     | '/research'
+    | '/rigs'
     | '/runs'
     | '/settings'
     | '/tech'
@@ -179,6 +191,7 @@ export interface RootRouteChildren {
   FacilitiesRoute: typeof FacilitiesRoute
   MoreRoute: typeof MoreRoute
   ResearchRoute: typeof ResearchRoute
+  RigsRoute: typeof RigsRoute
   RunsRoute: typeof RunsRoute
   SettingsRoute: typeof SettingsRoute
   TechRoute: typeof TechRoute
@@ -237,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rigs': {
+      id: '/rigs'
+      path: '/rigs'
+      fullPath: '/rigs'
+      preLoaderRoute: typeof RigsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/runs': {
       id: '/runs'
       path: '/runs'
@@ -283,6 +303,7 @@ const rootRouteChildren: RootRouteChildren = {
   FacilitiesRoute: FacilitiesRoute,
   MoreRoute: MoreRoute,
   ResearchRoute: ResearchRoute,
+  RigsRoute: RigsRoute,
   RunsRoute: RunsRoute,
   SettingsRoute: SettingsRoute,
   TechRoute: TechRoute,

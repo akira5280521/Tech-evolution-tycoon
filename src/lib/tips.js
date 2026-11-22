@@ -11,6 +11,7 @@ import { dataPerSecond, forkCost, managerPrice, singularityMult, upgradeOffer, u
 import { tutorialActive } from "./tutorial.js";
 import { facilitiesOpen, facilityUnlocked } from "./facilities.js";
 import { techOpen } from "./research.js";
+import { HUB_LABEL } from "./hub.js";
 
 const maxOwned = (s) => Math.max(0, ...(s?.biz || []).map((b) => b?.owned || 0));
 
@@ -128,7 +129,7 @@ export const TIPS = [
     id: "research",
     page: "game",
     title: "R&D POINTS",
-    text: "Your eras make a trickle of R&D points. Tap RESEARCH and spend them on a bonus you keep. Research servers make far more later.",
+    text: "Your eras make a trickle of R&D points. Tap R&D and spend them on a bonus you keep. Research servers make far more later.",
     target: '[data-tab="research"]',
     when: (s) => (s.data || 0) >= 1 && dataPerSecond(s) > 0,
   },
@@ -144,7 +145,7 @@ export const TIPS = [
     id: "servers",
     page: "game",
     title: "RESEARCH SERVERS",
-    text: "The RIGS button (beside TECH) now has research servers. They make most of your R&D points, far more than your eras. Buy a rack, then give it power and cooling.",
+    text: `Tap ${HUB_LABEL} (beside TECH), then RIGS, for research servers. They make most of your R&D points, far more than your eras. Buy a rack, then give it power and cooling.`,
     target: '[data-open-facilities]',
     when: (s) => facilityUnlocked(s, "servers"),
   },
@@ -152,7 +153,7 @@ export const TIPS = [
     id: "facilities",
     page: "game",
     title: "MINE AND CLUSTER",
-    text: "Two more plants opened under the RIGS button: the Bitbark mine and the AI training cluster. Buy graphics cards, memory, power and cooling. They add a small extra income, and run slower if power or cooling can't keep up.",
+    text: `Two more plants opened under ${HUB_LABEL} > RIGS: the Bitbark mine and the AI training cluster. Buy graphics cards, memory, power and cooling. They add a small extra income, and run slower if power or cooling can't keep up.`,
     target: '[data-open-facilities]',
     when: (s) => facilitiesOpen(s),
   },
@@ -195,7 +196,7 @@ export const TIPS = [
   {
     id: "page-research",
     page: "research",
-    title: "THE RESEARCH LAB",
+    title: "RESEARCH",
     text: "Spend R&D points on one bonus you keep. You start with one slot. Spare points go to the lab projects below.",
   },
   {

@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { incomePerSecond, overclockOn } from "@/lib/empire";
 import { money } from "@/lib/gameConfig";
 import { PREFS_EVENT } from "@/lib/gamePrefs";
+import { progressLabel } from "@/lib/progress";
 import BottomTabs from "./BottomTabs";
 import { ItemHelp, TipCard } from "./HintSheet";
 import NewsTicker from "./NewsTicker";
@@ -138,5 +139,33 @@ export function GoldButton({ children, disabled, onClick, dataAttr }) {
     >
       {children}
     </button>
+  );
+}
+
+// A pixel-style progress bar for a timed job: chunky blocks that fill as it
+// runs, with "42% · 1h 12m left" under it. `progress` is from lib/progress.
+export function ProgressBar({ progress, label, dataAttr = "" }) {
+  if (!progress) return null;
+  const text = progressLabel(progress);
+  return (
+    <div data-progress-bar={dataAttr} data-pct={progress.pct} className="mt-2">
+      <div
+        role="progressbar"
+        aria-label={label || "Progress"}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={progress.pct}
+        className="h-4 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] p-px shadow-[2px_2px_0_0_#000]"
+      >
+        <div
+          className="h-full bg-[var(--game-accent)] transition-[width] duration-700 ease-linear"
+          style={{
+            width: `${progress.pct}%`,
+            backgroundImage: "repeating-linear-gradient(90deg, transparent 0 6px, rgba(0,0,0,0.35) 6px 8px)",
+          }}
+        />
+      </div>
+      <p data-progress-text className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">{text}</p>
+    </div>
   );
 }

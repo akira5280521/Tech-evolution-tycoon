@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The launch window before Android 12: the game's dark background with the
+     splash art centered at its own size. Not stretched to the screen's shape,
+     and no filtering, so the pixel title stays crisp. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/tet_window_bg" />
+    <item>
+        <bitmap
+            android:src="@drawable/splash"
+            android:gravity="center"
+            android:filter="false"
+            android:antialias="false" />
+    </item>
+</layer-list>

@@ -2,13 +2,15 @@ import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { FlaskConical, Flag, Gamepad2, Package, Settings, Zap } from "lucide-react";
 import { useGameState } from "./GameState";
+import { RESEARCH_MS } from "@/lib/gameConfig";
+import { timedProgress } from "@/lib/progress";
 
 const TABS = [
   { id: "game", label: "GAME", to: "/", icon: Gamepad2, isActive: (p) => p === "/" },
   { id: "boost", label: "BOOST", to: "/boost", icon: Zap, isActive: (p) => p.startsWith("/boost") },
   { id: "board", label: "BOARD", to: "/board", icon: Package, isActive: (p) => p.startsWith("/board") },
   { id: "runs", label: "RUNS", to: "/runs", icon: Flag, isActive: (p) => p.startsWith("/runs") },
-  { id: "research", label: "RESEARCH", to: "/research", icon: FlaskConical, isActive: (p) => p.startsWith("/research") },
+  { id: "research", label: "R&D", to: "/research", icon: FlaskConical, isActive: (p) => p.startsWith("/research") },
   { id: "more", label: "MORE", to: "/more", icon: Settings, isActive: (p) => p.startsWith("/more") || p.startsWith("/settings") || p.startsWith("/badges") },
 ];
 
@@ -108,6 +110,8 @@ export default function BottomTabs() {
               </span>
             );
           }
+          // R & D: a thin bar while a specialty is being researched.
+          const job = tab.id === "research" && state?.researchJob?.startedAt ? timedProgress(state.researchJob.startedAt, RESEARCH_MS) : null;
           return (
             <button
               key={tab.id}
@@ -117,7 +121,7 @@ export default function BottomTabs() {
               aria-label={tab.label}
               title={tab.label}
               data-tab={tab.id}
-              className={`flex min-h-11 min-w-0 flex-1 basis-0 select-none flex-col items-center justify-center gap-1 overflow-hidden px-0.5 py-1.5 ${
+              className={`relative flex min-h-11 min-w-0 flex-1 basis-0 select-none flex-col items-center justify-center gap-1 overflow-hidden px-0.5 py-1.5 ${
                 active
                   ? "text-[var(--game-accent)]"
                   : "text-[var(--game-muted)] hover:text-[var(--game-accent)]"
@@ -134,6 +138,11 @@ export default function BottomTabs() {
               >
                 {tab.label}
               </span>
+              {job && job.pct < 100 && (
+                <span data-tab-progress data-pct={job.pct} aria-hidden="true" className="absolute inset-x-2 bottom-0.5 h-1 bg-[var(--game-border)]">
+                  <span className="block h-full bg-[var(--game-accent)]" style={{ width: `${job.pct}%` }} />
+                </span>
+              )}
             </button>
           );
         })}

@@ -6,6 +6,7 @@ import {
   PARTS,
   facilitiesOpen,
   facilityHint,
+  facilityNeed,
   facilityReport,
   diskSize,
   memSize,
@@ -24,6 +25,7 @@ import {
 import { extrasText, partValue } from "@/lib/plantValue";
 import { toast } from "sonner";
 import { playerYear, researchItem, serverOutput } from "@/lib/research";
+import { HUB_ROUTE } from "@/lib/hub";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { HelpTip, ItemHelp } from "./HintSheet";
@@ -157,27 +159,36 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
   }
   return (
     <Panel>
-      <div data-facility={facility.id}>
+      <div data-facility={facility.id} data-locked={open ? undefined : ""}>
         <div data-help-scope className="flex items-start gap-2">
-          <div className="h-14 w-14 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]">
+          <div className={`h-14 w-14 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] ${open ? "" : "opacity-60"}`}>
             <img src={facility.icon} alt="" className="pixel-art h-full w-full scale-[1.4] object-contain" />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="break-words font-pixel text-[0.6rem] leading-4 text-[var(--game-accent)] [overflow-wrap:anywhere]">{facility.name}</h2>
+            <h2 className={`break-words font-pixel text-[0.6rem] leading-4 [overflow-wrap:anywhere] ${open ? "text-[var(--game-accent)]" : "text-[var(--game-dim)]"}`}>{facility.name}</h2>
           </div>
           <ItemHelp kind="facility" id={facility.id} state={state} name={facility.name} className="-mr-2 -mt-2.5" />
         </div>
-        <p className="mt-2 break-words font-term text-base leading-5 text-[var(--game-fg)]">{facility.blurb}</p>
+        <p className={`mt-2 break-words font-term text-base leading-5 ${open ? "text-[var(--game-fg)]" : "text-[var(--game-muted)] opacity-60"}`}>{facility.blurb}</p>
         <p data-facility-yield className="mt-2 break-words font-term text-base leading-5 text-[var(--game-success)]">
           {bench ? `+${row.perSecond.toFixed(3)} R&D points a second` : research ? `+${(serverOutput(state).perSecond - serverOutput(state).bench).toFixed(2)} R&D points a second` : money(row.perSecond) + "/s"}
           {!research && !bench && open && business > 0 ? ` · ${percent(row.share)} of the businesses` : ""}
         </p>
-        <p data-facility-limit className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
-          {open ? row.limit : facility.id === "servers" ? "Requires 1951" : facility.id === "bench" ? "Requires 1977" : "Locked"}
-          {row.tier ? ` · ${row.tier} model` : ""}
-          {open && (/Bottleneck/.test(row.limit || "") ? <HelpTip term="bottleneck" /> : row.limit === "Network-limited" ? <HelpTip term="network" /> : null)}
-        </p>
-        <p data-facility-hint className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{facilityHint(state, facility.id, business)}</p>
+        {open ? (
+          <>
+            <p data-facility-limit className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
+              {row.limit}
+              {row.tier ? ` · ${row.tier} model` : ""}
+              {open && (/Bottleneck/.test(row.limit || "") ? <HelpTip term="bottleneck" /> : row.limit === "Network-limited" ? <HelpTip term="network" /> : null)}
+            </p>
+            <p data-facility-hint className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{facilityHint(state, facility.id, business)}</p>
+          </>
+        ) : (
+          // Not reached this run (or reset by a prestige): greyed out, with what it needs.
+          <p data-facility-limit data-facility-needs className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-dim)]">
+            {facilityNeed(facility.id)}
+          </p>
+        )}
         {open && facility.id === "bench" && (
           <p data-bench-build className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
             Board: {row.board?.name || "none"} · CPU: {row.cpu?.name || "none"} · Memory: {memSize(row.ramMb)}
@@ -326,7 +337,7 @@ export default function FacilitiesPage() {
   // The part that adds the most pay for its price (or starts a plant).
   const next = open ? nextPurchase(state, business) : null;
   return (
-    <ScreenShell title="FACILITIES" subtitle="A side plant. It pays cash, and it never outgrows the businesses.">
+    <ScreenShell title="RIGS" subtitle="A side plant. It pays cash, and it never outgrows the businesses." backTo={HUB_ROUTE}>
       {!open && (
         <Panel>
           <p data-facilities-locked className="break-words font-term text-base leading-5 text-[var(--game-fg)]">

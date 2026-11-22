@@ -9,6 +9,7 @@
 // The tutorial adds no money or speed; it only explains.
 
 import { BUSINESSES, costOf, eraOpen, managerNeed } from "./gameConfig.js";
+import { HUB_LABEL } from "./hub.js";
 
 const indexOf = (id) => BUSINESSES.findIndex((cfg) => cfg.id === id);
 const ownedOf = (state, id) => state?.biz?.[indexOf(id)]?.owned || 0;
@@ -107,7 +108,7 @@ export const TUTORIAL_STEPS = [
   {
     id: "later",
     title: "WHAT'S AHEAD",
-    text: "The ??? buttons open later. TECH is research: timed projects paid with R&D points. RIGS holds research servers and other plants. A tip explains each one when it opens.",
+    text: `The ??? buttons open later. TECH is research: timed projects paid with R&D points. ${HUB_LABEL} holds research servers and other plants. A tip explains each one when it opens.`,
     target: "[data-open-research]",
     manual: true,
     button: "DONE",

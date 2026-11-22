@@ -6,7 +6,6 @@
 import { blankFacilities, facilityReport, noteFacilityNews, plantsHaveParts, readFacilities, recentNews } from "./facilities.js";
 import { advanceResearch, awayBankCap } from "./research.js";
 import { generationPayMult } from "./generations.js";
-import { pushRun } from "./records.js";
 import { blankTutorial } from "./tutorial.js";
 import {
   BUSINESSES,
@@ -521,6 +520,7 @@ export function blankMeta() {
     techJob2: null,
     goalsDone: [],
     boughtX10: false,
+    hubSeen: false,
     tutorial: blankTutorial(),
     orientation: "auto",
     businessesBought: 0,
@@ -1052,8 +1052,9 @@ function completeChallenge(state) {
     state.challengesDone = [...(state.challengesDone || []), id];
     grantTokens(state, `challenge:${id}`, 12);
   }
-  const spec = CHALLENGES.find((entry) => entry.id === id);
-  pushRun(state, { investorsGained: 0, challenge: spec?.name || id });
+  // Keep playing this run as a normal run, same as abandoning. Logging it as a
+  // finished run used to snapshot lifetime without resetting it, so the same
+  // earnings showed up both in BEST RUNS and in "this run."
   state.challenge = null;
   state.modStamp = (state.modStamp || 0) + 1;
 }
@@ -1452,7 +1453,7 @@ export function legacyBadgeIds(state) {
   if ((state.investors || 0) >= forkCost(0)) ids.push("time-board");
   if ((state.singularities || 0) >= 1) ids.push("time-fork");
   if ((state.specialties || []).length >= 1) ids.push("time-lab");
-  if ((state.streak || 0) >= 7) ids.push("time-streak");
+  if ((state.streak || 0) >= 14) ids.push("time-streak");
   return ids;
 }
 
@@ -1619,6 +1620,28 @@ export function offlineCapMs(state) {
   return OFFLINE_CAP_MS;
 }
 
+// Lifetime "Managers hired" must be at least how many are hired right now.
+// Older saves only counted managers present when the stat was added, and
+// managers granted later (a new era row, or crews kept by a perk) were missed.
+export function countManagers(state) {
+  return (state?.biz || []).reduce((n, row) => n + (row?.manager ? 1 : 0), 0);
+}
+
+export function ensureManagersHired(state) {
+  if (!state) return false;
+  const have = countManagers(state);
+  const logged = Number.isFinite(state.managersHired) && state.managersHired >= 0 ? Math.floor(state.managersHired) : 0;
+  if (logged >= have) {
+    if (state.managersHired !== logged) {
+      state.managersHired = logged;
+      return true;
+    }
+    return false;
+  }
+  state.managersHired = have;
+  return true;
+}
+
 // The businesses a new run (prestige or fork, not a challenge) starts with.
 // `prev` is the run being left, for managers that stay hired.
 export function startingBiz(state, biz, prev = null) {
@@ -1702,6 +1725,7 @@ export function snapshotMeta(state, options = {}) {
     sawPit: !!state.sawPit,
     goalsDone: Array.isArray(state.goalsDone) ? [...state.goalsDone] : [],
     boughtX10: !!state.boughtX10,
+    hubSeen: !!state.hubSeen,
     tutorial: { ...(state.tutorial || blankTutorial()), seen: [...(state.tutorial?.seen || [])], tips: [...(state.tutorial?.tips || [])] },
     orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
     buyMode: normalizeBuyMode(state.buyMode),

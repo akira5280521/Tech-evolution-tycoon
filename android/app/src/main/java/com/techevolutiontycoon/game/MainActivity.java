@@ -2,6 +2,7 @@ package com.techevolutiontycoon.game;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.view.View;
 import android.webkit.WebView;
 import androidx.core.view.WindowCompat;
 import com.getcapacitor.BridgeActivity;
@@ -18,7 +19,20 @@ public class MainActivity extends BridgeActivity {
         // Draw behind the status and gesture bars so CSS safe-area insets
         // pad the bottom nav instead of hiding it under the system UI.
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        hideNativeScrollbars();
         applyFontScale(getResources().getConfiguration());
+    }
+
+    // The game scrolls inside the page; the WebView's own scrollbars and edge
+    // glow only showed as thin gray bars at the screen edges after launch.
+    // Turning them off does not change how the page scrolls.
+    private void hideNativeScrollbars() {
+        WebView webView = getBridge() != null ? getBridge().getWebView() : null;
+        if (webView == null) return;
+        webView.setVerticalScrollBarEnabled(false);
+        webView.setHorizontalScrollBarEnabled(false);
+        webView.setScrollbarFadingEnabled(true);
+        webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
     }
 
     @Override

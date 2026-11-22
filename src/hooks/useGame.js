@@ -11,6 +11,7 @@ import {
   FOREMAN_COST,
   MAX_BUY,
   MILESTONES,
+  NORMAL_TICK_MS,
   OFFLINE_CAP_MS,
   OFFLINE_RATE,
   buyCount,
@@ -43,6 +44,7 @@ import {
   peakFromSave,
   offlineCapMs,
   startingBiz,
+  ensureManagersHired,
   autoBuyUpgrade,
   businessIncomePerSecond,
   incomePerSecond,
@@ -70,6 +72,7 @@ import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { generationAt } from "@/lib/generations";
 import { REBUILD_SECONDS, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants, settleClosedParts } from "@/lib/facilities";
+import { noteHubSeen } from "@/lib/hub";
 import { advanceResearch, fillResearchGaps, grantOwnedResearch, readResearchData, readTechDone, readTechJob, startResearch } from "@/lib/research";
 import { currentGoal, readGoalsDone, settleGoals } from "@/lib/goals";
 import { applyOrientation } from "@/lib/orientation";
@@ -80,7 +83,7 @@ import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
 import { buzzLight, buzzStrong } from "@/lib/haptics";
 import { cancelCapNotification, scheduleCapNotification } from "@/lib/capNotify";
-import { noteMilestones, pushRun, readMilestones, readRuns, eraReachedIndex, startMilestones } from "@/lib/records";
+import { noteMilestones, playStep, pushRun, readMilestones, readRuns, eraReachedIndex, ensureRunStartedAt, settleCareerEarnings, settlePlayMs, settleRunRecords, startMilestones } from "@/lib/records";
 import { noteProgress } from "@/lib/achievements";
 
 const SAVE_INTERVAL_MS = 5000;
@@ -120,6 +123,7 @@ function freshState() {
     milestones: {},
     trackedSince: Date.now(),
     trackedFromStart: true,
+    runStartedAt: Date.now(),
   };
 }
 
@@ -206,6 +210,7 @@ function applySavedMeta(state, raw) {
   state.techJob2 = readTechJob(m.techJob2);
   state.goalsDone = readGoalsDone(m.goalsDone);
   state.boughtX10 = !!m.boughtX10;
+  state.hubSeen = !!m.hubSeen;
   state.benchOc = m.benchOc !== false;
   state.restartSeen = !!m.restartSeen;
 }
@@ -220,6 +225,10 @@ function readChallenge(raw) {
 
 function pack(s) {
   collectBadges(s);
+  settleRunRecords(s);
+  ensureRunStartedAt(s);
+  settleCareerEarnings(s);
+  ensureManagersHired(s);
   return {
     version: SAVE_VERSION,
     cash: Number.isFinite(s.cash) && s.cash >= 0 ? s.cash : 0,
@@ -262,6 +271,7 @@ function pack(s) {
     sawPit: !!s.sawPit,
     goalsDone: Array.isArray(s.goalsDone) ? s.goalsDone : [],
     boughtX10: !!s.boughtX10,
+    hubSeen: !!s.hubSeen,
     benchOc: s.benchOc !== false,
     restartSeen: !!s.restartSeen,
     tutorial: s.tutorial || null,
@@ -280,6 +290,8 @@ function pack(s) {
     managersHired: Math.floor(s.managersHired || 0),
     prestigeCount: Math.floor(s.prestigeCount || 0),
     playMs: s.playMs || 0,
+    // The one-time play time repair has run on this save.
+    playMsChecked: true,
     runStartedAt: s.runStartedAt || 0,
     bestEra: Math.max(0, Math.floor(s.bestEra || 0)),
     runs: Array.isArray(s.runs) ? s.runs.slice(-40) : [],
@@ -350,14 +362,17 @@ function loadSave() {
     if (state.businessesBought == null) {
       state.businessesBought = state.biz.reduce((n, row, i) => n + Math.max(0, (row.owned || 0) - (i === 0 ? 1 : 0)), 0);
     }
-    if (state.managersHired == null) {
-      state.managersHired = state.biz.reduce((n, row) => n + (row.manager ? 1 : 0), 0);
-    }
     if (state.prestigeCount == null) state.prestigeCount = state.prestiged ? 1 : 0;
-    if (state.playMs == null) state.playMs = state.biz.reduce((n, row) => n + (row.activeMs || 0), 0);
+    // Before time away is replayed, so the estimate is time with the app open.
+    settlePlayMs(state, Date.now(), !!data.meta?.playMsChecked);
     const storedEra = state.bestEra;
     if (storedEra == null) state.bestEra = Math.max(0, eraReachedIndex(state));
-    if (!state.runStartedAt) state.runStartedAt = Date.now();
+    // Saves from before HQ stayed open: open it if they ever had it.
+    noteHubSeen(state);
+    settleRunRecords(state);
+    ensureRunStartedAt(state);
+    settleCareerEarnings(state);
+    ensureManagersHired(state);
     // Milestones for "Copy my stats": an older save starts the log now.
     if (!state.milestones || !state.trackedSince) startMilestones(state);
     state.orientation = data.orientation === "portrait" || data.orientation === "landscape" ? data.orientation : "auto";
@@ -639,15 +654,16 @@ export function useGame() {
       const plant = facilityReport(s, business).perSecond * (dt / 1000);
       if (plant > 0) creditAmount(s, plant, wall);
       if (noteFacilityNews(s, business)) dirty = true;
+      if (noteHubSeen(s)) dirty = true;
       const researchMoved = advanceResearch(s, dt);
       if (researchMoved === "done") dirty = true;
       if (!s.runStartedAt) s.runStartedAt = wall;
-      s.playMs = (s.playMs || 0) + dt;
+      s.playMs = (s.playMs || 0) + playStep(dt, NORMAL_TICK_MS);
       if (noteMilestones(s, wall)) dirty = true;
       if (autoBuyUpgrade(s, wall)) dirty = true;
-      // No dilemma starts while Welcome Back, What's New or the fresh-start
-      // offer is up.
-      const blocked = !!s.offlineReport || (!!s.restartSuggested && !s.restartSeen) || notesUnseen();
+      // No dilemma starts while Welcome Back, the prestige report, What's New
+      // or the fresh-start offer is up.
+      const blocked = !!s.offlineReport || !!s.prestigeReport || (!!s.restartSuggested && !s.restartSeen) || notesUnseen();
       const notes = tickDilemma(s, wall, { blocked }).concat(finishTimedWork(s, wall), tickBubble(s, wall));
       const cards = collectHistory(s);
       if (cards.length) notes.push({ type: "history", cards });
@@ -781,6 +797,7 @@ export function useGame() {
       const cycle = effectiveCycleMs(BUSINESSES[i], s);
       s.biz = s.biz.map((b, j) => (j === i ? { ...b, manager: true, running: true, progress: 0, cycleStart: started, cycleAt: cycle, paidLaps: 0, holdUntil: 0 } : b));
       s.managersHired = (s.managersHired || 0) + 1;
+      ensureManagersHired(s);
       const goalPay = settleGoals(s, { pay: true });
       if (goalPay.reward > 0) toast("Goal complete", { description: `+${money(goalPay.reward)} cash` });
       buzzLight();
@@ -971,7 +988,9 @@ export function useGame() {
     next.cash = 0;
     next.lifetime = 0;
     const spec = CHALLENGES.find((entry) => entry.id === id);
-    next.challenge = { id, startedAt: Date.now(), earnings: 0, goal: scaledChallengeGoal(spec, next) };
+    const startedAt = Date.now();
+    next.runStartedAt = startedAt;
+    next.challenge = { id, startedAt, earnings: 0, goal: scaledChallengeGoal(spec, next) };
     next.dilemma = null;
     stateRef.current = next;
     saveNow();
@@ -1102,9 +1121,11 @@ export function useGame() {
     next.investors = nextInvestors;
     next.investorPeak = Math.max(investorPeak(s), nextInvestors);
     next.biz = startingBiz(next, freshBiz(), s.biz);
+    ensureManagersHired(next);
     next.cash = 0;
     next.lifetime = 0;
     next.prestiged = true;
+    next.runStartedAt = Date.now();
     next.dilemma = null;
     next.challenge = null;
     // The first prestige gets a screen that shows what changed.
@@ -1141,9 +1162,11 @@ export function useGame() {
     Object.assign(next, meta);
     next.investors = Math.max(0, (s.investors || 0) - bill);
     next.biz = startingBiz(next, freshBiz(), s.biz);
+    ensureManagersHired(next);
     next.cash = 0;
     next.lifetime = 0;
     next.singularities = (s.singularities || 0) + 1;
+    next.runStartedAt = Date.now();
     next.dilemma = null;
     next.challenge = null;
     stateRef.current = next;

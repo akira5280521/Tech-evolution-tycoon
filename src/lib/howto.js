@@ -10,7 +10,7 @@ export const HOWTO_GUIDES = [
     always: true,
     lines: [
       "The GAME list has era chips at the top and a buy-amount bar at the bottom (×1, ×10, ×100, Max). A short Next line under the cash box jumps to the most useful next goal.",
-      "R&D has Specialty and Lab Projects tabs; each section can be folded up and still shows a short summary. A green dot on BOOST, R&D, TECH or an HQ card means something there is ready. MORE is grouped into Game, Help and Settings. TECH and the Hardware Museum have a search box; locked museum pieces stay ??? and will not match a name search.",
+      "R&D has Specialty and Lab Projects tabs; each section can be folded up and still shows a short summary. A green dot on BOOST, R&D, TECH or an HQ card means something there is ready. MORE is grouped into Game, Help and Settings. TECH and the Hardware Museum have a search box; later-era TECH projects and locked museum pieces stay ??? and will not match a name search.",
     ],
   },
   {

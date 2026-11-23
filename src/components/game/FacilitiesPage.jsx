@@ -76,7 +76,7 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, busi
       ) : (
         <div className="mt-2">
           <GoldButton dataAttr={`buy-${part.id}`} disabled={!affordable} onClick={onBuy}>
-            <span className="font-pixel text-[0.55rem]">{!open || lock ? "LOCKED" : facilityId === "bench" && owned > 0 && part.kind !== "stick" ? "ON THE BENCH" : `BUY ${money(cost)}`}</span>
+            <span className="font-pixel text-[0.55rem]">{lock ? lock : !open ? "LOCKED" : facilityId === "bench" && owned > 0 && part.kind !== "stick" ? "ON THE BENCH" : `BUY ${money(cost)}`}</span>
             {open && !lock && !(facilityId === "bench" && owned > 0 && part.kind !== "stick") && mats && (
               <span data-part-materials className={`block font-term text-base leading-5 ${short.length ? "text-[var(--game-danger)]" : ""}`}>
                 {short.length

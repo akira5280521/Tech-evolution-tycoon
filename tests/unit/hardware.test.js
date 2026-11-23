@@ -42,14 +42,15 @@ test("every research project can be finished once the last era is reached", () =
   }
 });
 
-test("the research servers open with Mainframes; the Mark 1 and tape need TECH research", () => {
+test("the research servers open with Mainframes; the Mark 1, its room kit, and tape need TECH research", () => {
   const s = upTo("mainframes");
   assert.ok(facilityUnlocked(s, "servers"));
-  for (const id of ["mgset", "roomac"]) assert.ok(purchasePart(s, "servers", id).ok, id);
-  assert.equal(purchasePart(s, "servers", "mark1").ok, false);
-  assert.equal(purchasePart(s, "servers", "tape").ok, false);
+  for (const id of ["mgset", "roomac", "mark1", "tape"]) {
+    assert.equal(purchasePart(s, "servers", id).ok, false, id);
+    assert.match(partLock(s, PARTS.find((x) => x.id === id)) || "", /Research .+ in TECH/);
+  }
   s.techDone = ["srv-mark1", "store-tape"];
-  for (const id of ["mark1", "tape"]) assert.ok(purchasePart(s, "servers", id).ok, id);
+  for (const id of ["mgset", "roomac", "mark1", "tape"]) assert.ok(purchasePart(s, "servers", id).ok, id);
   assert.ok(serverOutput(s).perSecond > 0);
   // The 7090 waits for 1959, then for its research.
   const p = PARTS.find((x) => x.id === "ibm7090");

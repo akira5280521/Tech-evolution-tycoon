@@ -47,9 +47,51 @@ test("an early save opens TECH from the top bar and shows year-locked hardware",
   await expect(page.locator("[data-research-tab='gpu']")).toBeVisible();
   await expect(page.locator("[data-research-tab='memory']")).toBeVisible();
   await expect(page.locator("[data-research-tab='storage']")).toBeVisible();
-  await expect(page.locator("[data-research-item] [data-research-lock]").first()).toContainText("Requires");
   await page.locator("[data-research-tab='storage']").click();
   await expect(page.locator("[data-research-item='tab-hollerith']")).toBeVisible();
-  await expect(page.locator("[data-research-item='store-hdd'] [data-research-lock]")).toContainText("Requires 1956");
+  await expect(page.locator("[data-research-item='tab-hollerith']")).toContainText("Hollerith");
+  // 1956 is a later era: the card is ???, not a named "Requires 1956" row.
+  await expect(page.locator("[data-research-item='store-hdd']")).toHaveCount(0);
+  await expect(page.locator("[data-research-hidden]").first()).toBeVisible();
+  await expect(page.locator("[data-research-hidden]").first()).toContainText("???");
+  await expect(page.locator("body")).not.toContainText("5 MB disk");
+  expectClean(seen);
+});
+
+test("TECH shows this era's projects, hides the next era, and search does not leak names", async ({ page }) => {
+  const seen = await open(page, "/tech", earlySave("mainframes"));
+  await tipsOff(page);
+  await page.locator("[data-research-tab='servers']").click();
+  await expect(page.locator("[data-research-item='srv-mark1']")).toBeVisible();
+  await expect(page.locator("[data-research-item='srv-mark1']")).toContainText("Irwell Mark 1");
+  await expect(page.locator("[data-research-item='srv-7090']")).toHaveCount(0);
+  await expect(page.locator("[data-research-item='srv-360']")).toHaveCount(0);
+  await expect(page.locator("[data-research-hidden]").first()).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("Inland 7090");
+  await expect(page.locator("body")).not.toContainText("Inland 360");
+  await expect(page.locator("body")).not.toContainText("Chipwright P-II");
+  await expect(page.locator("body")).not.toContainText("6x86MX");
+  const box = page.locator("[data-search=tech]");
+  await box.fill("7090");
+  await expect(page.locator("[data-search-empty='tech']")).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("Inland 7090");
+  await box.fill("P-II");
+  await expect(page.locator("[data-search-empty='tech']")).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("Chipwright P-II");
+  await box.fill("Mark 1");
+  await expect(page.locator("[data-research-item='srv-mark1']")).toBeVisible();
+  await expect(page.locator("[data-research-hidden]")).toHaveCount(0);
+  expectClean(seen);
+});
+
+test("an era already reached stays revealed after prestige", async ({ page }) => {
+  const save = earlySave("timber");
+  save.bestEra = BUSINESSES.findIndex((b) => b.id === "mainframes");
+  const seen = await open(page, "/tech", save);
+  await tipsOff(page);
+  await page.locator("[data-research-tab='servers']").click();
+  await expect(page.locator("[data-research-item='srv-mark1']")).toBeVisible();
+  await expect(page.locator("[data-research-item='srv-7090']")).toHaveCount(0);
+  await expect(page.locator("body")).not.toContainText("Inland 7090");
   expectClean(seen);
 });

@@ -385,7 +385,7 @@ img[src*="/icons/"] {
 }
 
 .game-modal {
-  max-height: calc(100dvh - 1.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  max-height: calc(100dvh - 1.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - var(--tabbar-h, 0px));
   overflow: auto;
 }
 
@@ -544,7 +544,9 @@ img[src*="/icons/"] {
   left: 0.75rem;
   right: 0.75rem;
   bottom: calc(var(--tabbar-h, 8rem) + 0.5rem);
-  max-height: 60vh;
+  /* Stay in the space above the tab bar (60vh was too tall on a short
+     phone and clipped CLOSE when the sheet had no scroll body). */
+  max-height: calc(100dvh - var(--tabbar-h, 8rem) - 1rem - var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
   /* Only the words scroll; the buttons stay in view at any text size. */
   display: flex;
   flex-direction: column;

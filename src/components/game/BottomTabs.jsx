@@ -30,8 +30,11 @@ function useTabBarHeight(ref) {
     const root = document.documentElement;
     const update = () => {
       const r = el.getBoundingClientRect();
-      const atBottom = r.bottom >= window.innerHeight - 1 && r.width > r.height;
-      root.style.setProperty("--tabbar-h", `${atBottom ? Math.ceil(r.height) : 0}px`);
+      // A wide bar is the bottom tab bar. Don't require r.bottom to match
+      // innerHeight: on some phones the visual viewport is shorter, which
+      // used to report --tabbar-h as 0 and park sheets under the tabs.
+      const bottomBar = r.width > r.height;
+      root.style.setProperty("--tabbar-h", `${bottomBar ? Math.ceil(r.height) : 0}px`);
     };
     update();
     const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : null;

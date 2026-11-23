@@ -142,8 +142,8 @@ export const PARTS = [
   { id: "alpha8400", kind: "server", group: "room", name: "Maynard AlphaServer 8400", icon: "/icons/parts/alpha8400.png", fits: ["servers"], year: 1995, research: "srv-alpha", cost: 800_000_000_000, coef: 5, watts: 2, work: 700, diskGb: 2.52, spec: "1995: up to twelve 64-bit Alpha chips, the fastest chips of their day." },
   { id: "origin2000", kind: "server", group: "room", name: "Silicon Pictures Origin 2000", icon: "/icons/parts/origin2000.png", fits: ["servers"], year: 1996, research: "srv-origin", cost: 2_000_000_000_000, coef: 5, watts: 2, work: 1100, diskGb: 9, spec: "1996: modules joined into one big shared-memory machine." },
   { id: "e10k", kind: "server", group: "room", name: "Sunrise Enterprise 10000", icon: "/icons/parts/e10k.png", fits: ["servers"], year: 1997, research: "srv-e10k", cost: 4_000_000_000_000, coef: 5, watts: 2, work: 1600, diskGb: 9, spec: "1997: up to 64 processors in one cabinet, the 'Starfire'." },
-  { id: "mgset", kind: "power", group: "room", name: "Motor-generator set", icon: "/icons/parts/mgset.png", fits: ["servers"], year: 1951, research: null, cost: 10_000, coef: 1.35, power: 1, spec: "A motor turning a generator: steady power for one machine-room computer." },
-  { id: "roomac", kind: "cool", group: "room", name: "Room air conditioner", icon: "/icons/parts/roomac.png", fits: ["servers"], year: 1951, research: null, cost: 10_000, coef: 1.35, cool: 1, spec: "Chilled air under the raised floor, enough for one machine-room computer." },
+  { id: "mgset", kind: "power", group: "room", name: "Motor-generator set", icon: "/icons/parts/mgset.png", fits: ["servers"], year: 1951, research: "srv-mark1", cost: 10_000, coef: 1.35, power: 1, spec: "A motor turning a generator: steady power for one machine-room computer." },
+  { id: "roomac", kind: "cool", group: "room", name: "Room air conditioner", icon: "/icons/parts/roomac.png", fits: ["servers"], year: 1951, research: "srv-mark1", cost: 10_000, coef: 1.35, cool: 1, spec: "Chilled air under the raised floor, enough for one machine-room computer." },
 
   // --- Research servers: racks (watts)
   { id: "towerT4", kind: "server", group: "rack", name: "Foundry Tower T4", icon: "/icons/parts/towerT4.png", fits: ["servers"], year: 1989, research: "srv-tower", cost: 4_000_000_000, coef: 5, watts: 300, work: 40, diskGb: 2.52, spec: "1989: a tower server with a 486 chip, 300 W." },
@@ -694,7 +694,7 @@ function starterNext(facilityId, counts, open) {
 // --- Which parts are open --------------------------------------------------
 
 // A part opens once the company has reached its year and, for most parts, once
-// it's researched on the Tech page. Research stays done across prestiges; the
+// it's researched in TECH. Research stays done across prestiges; the
 // year has to be reached again each run.
 export function diskSize(gb) {
   if (!(gb > 0)) return "0 MB";
@@ -722,7 +722,7 @@ export function partLock(state, part, researchName) {
   if (!part) return "Locked";
   if (part.starter) return null;
   if (playerYear(state) < (part.year || 0)) return `Requires ${part.year}`;
-  if (part.research && !(state?.techDone || []).includes(part.research)) return `Research ${researchName || part.name} on the Tech page`;
+  if (part.research && !(state?.techDone || []).includes(part.research)) return `Research ${researchName || part.name} in TECH`;
   if (partRetired(state, part)) return part.kind === "accel" ? "Out of production: combined 2D and 3D cards replaced it" : ["b-915btx", "k-btx"].includes(part.id) ? "Out of production: makers went back to ATX" : part.kind === "cache" ? "Out of production: the cache moved onto the CPU" : part.id === "x-physx" ? "Out of production: graphics cards took over physics" : "Out of production: it lost to its rival";
   return null;
 }

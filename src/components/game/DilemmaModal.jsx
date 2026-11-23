@@ -19,7 +19,8 @@ export default function DilemmaModal({ dilemma, onChoose }) {
   const spec = dilemmaSpec(dilemma.id);
   return (
     <div role="dialog" aria-label={spec.shortage ? "Supply shortage" : "Boardroom dilemma"} data-shortage={spec.shortage ? spec.id : undefined} className="fixed inset-0 z-40 flex items-center justify-center bg-black/75 p-4">
-      <div className="game-modal flex max-h-[85vh] w-full max-w-md flex-col overflow-y-auto border-4 border-[var(--game-violet-border)] bg-[var(--game-card)] p-4 shadow-[6px_6px_0_0_#000]">
+      <div className="game-modal flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden border-4 border-[var(--game-violet-border)] bg-[var(--game-card)] p-4 shadow-[6px_6px_0_0_#000]">
+        <div className="hint-sheet-body">
         <p className="font-pixel text-[0.55rem] text-[var(--game-violet)]">{spec.shortage ? "SUPPLY SHORTAGE" : "BOARDROOM DILEMMA"}</p>
         <h2 className="mt-2 font-pixel text-sm text-[var(--game-fg)]">{spec.title}</h2>
         <p className="mt-3 font-term text-lg leading-6">{spec.text}</p>
@@ -27,6 +28,8 @@ export default function DilemmaModal({ dilemma, onChoose }) {
           <div className="h-full bg-[var(--game-accent)]" style={{ width: `${pct}%` }} />
         </div>
         <p className="mt-1 font-term text-base text-[var(--game-muted)]">{spec.shortage ? `Decide in ${left}s, or the shortage just hits.` : `The moment passes in ${left}s.`}</p>
+        </div>
+        <div className="hint-sheet-actions mt-2">
         {spec.choices.map((choice, n) => (
           <button
             key={choice.key}
@@ -42,6 +45,7 @@ export default function DilemmaModal({ dilemma, onChoose }) {
         <button type="button" data-dilemma="defer" onClick={() => onChoose("defer")} className="mt-2 min-h-11 w-full border-2 border-[var(--game-violet-border)] px-3 py-2 font-pixel text-[0.6rem] text-[var(--game-violet)]">
           DECIDE IN 5 MINUTES
         </button>
+        </div>
       </div>
     </div>
   );

@@ -29,6 +29,12 @@ test("the tape drive and other non-starter server parts need their TECH project"
   assert.equal(partOpen(researched, tape), true);
   assert.match(partLock(s, mark1) || "", /Research|Tech/i);
   assert.match(partLock({ ...s, biz: owning(["timber", "laptops"]) }, labfan) || "", /Research|Requires|Tech/i);
+  for (const id of ["mgset", "roomac"]) {
+    const part = PARTS.find((p) => p.id === id);
+    assert.equal(part.research, "srv-mark1");
+    assert.match(partLock(s, part) || "", /Research .+ in TECH/);
+    assert.equal(purchasePart(s, "servers", id).ok, false);
+  }
 });
 
 test("buying the first Inland 601 grants one R&D point so the first TECH project can start", () => {
@@ -45,9 +51,8 @@ test("buying the first Inland 601 grants one R&D point so the first TECH project
   assert.equal(s.data, 1, "only the first machine grants the point");
 });
 
-test("non-starter buyable parts all name a TECH project, except machine-room power and cooling", () => {
-  const allowedBare = new Set(["mgset", "roomac"]);
-  const leaks = PARTS.filter((p) => !p.soon && !p.starter && !p.research && !allowedBare.has(p.id));
+test("non-starter buyable parts all name a TECH project", () => {
+  const leaks = PARTS.filter((p) => !p.soon && !p.starter && !p.research);
   assert.deepEqual(leaks.map((p) => p.id), [], "buyable parts must need research");
 });
 

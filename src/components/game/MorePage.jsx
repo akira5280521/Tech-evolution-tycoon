@@ -186,7 +186,7 @@ const HOW_TO = [
       "A short Next line under the cash box points at the most useful next goal. Tap it to go there.",
       "A fully upgraded business with a manager on shrinks to one line (icon, name, count, income). Tap the line to expand it, or turn COLLAPSE MAXED off in Settings.",
       "The R&D tab has Specialty and Lab Projects sub-tabs; each section can be collapsed, and a short summary stays visible. A green dot on BOOST, R&D, TECH or an HQ card means something there is ready. It clears when you open that page.",
-      "MORE is grouped into Game, Help and Settings. On TECH and in the Hardware Museum, the search box filters by name and model as you type; locked museum pieces stay hidden as ??? and will not match a name search.",
+      "MORE is grouped into Game, Help and Settings. On TECH and in the Hardware Museum, the search box filters by name and model as you type; later-era TECH projects and locked museum pieces stay hidden as ??? and will not match a name search.",
     ],
   },
   {
@@ -256,7 +256,7 @@ const HOW_TO = [
     id: "tech",
     title: "THE TECH TIMELINE",
     lines: [
-      "TECH (beside the buy button) lists real chips, memory, storage, cooling, power and networking in the order they came out. Use the search box to filter by name or model. One project runs at a time and keeps going while the app is closed.",
+      "TECH (beside the buy button) lists the chips, memory, storage, cooling, power and networking of the eras you have reached, in the order they came out. Later eras stay hidden as ??? and will not match a name search. One project runs at a time and keeps going while the app is closed.",
       "\"Requires 1985\" means your company hasn't reached that year yet. \"Research X first\" means finish the project before it. Processor and graphics projects unlock each chip generation's extra pay. Finished research is kept when you prestige.",
     ],
   },

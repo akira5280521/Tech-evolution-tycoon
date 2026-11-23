@@ -290,6 +290,7 @@ function ExhibitSheet({ state, id, roomId, onClose }) {
       data-exhibit-sheet={item.id}
       className="hint-sheet fixed z-40 mx-auto max-w-md border-4 border-[var(--game-accent)] bg-[var(--game-card)] p-3 shadow-[6px_6px_0_0_#000]"
     >
+      <div className="hint-sheet-body">
       <div className="flex gap-3">
         <img src={item.icon} alt="" className={`h-24 w-24 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain ${locked ? "museum-sil" : status === "retired" ? "grayscale" : ""}`} />
         <div className="min-w-0">
@@ -302,7 +303,8 @@ function ExhibitSheet({ state, id, roomId, onClose }) {
         </div>
       </div>
       <p className="mt-2 break-words font-term text-lg leading-6 text-[var(--game-fg)]">{locked ? why : item.spec.replace(/^\d{4}: /, "").replace(/^./, (c) => c.toUpperCase())}</p>
-      <div className="mt-2 flex justify-end">
+      </div>
+      <div className="hint-sheet-actions mt-2 flex justify-end">
         <button type="button" data-exhibit-close onClick={onClose} className="min-h-11 border-2 border-[var(--game-border-strong)] px-3 font-pixel text-[0.5rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]">
           CLOSE
         </button>

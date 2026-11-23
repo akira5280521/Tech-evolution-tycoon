@@ -23,7 +23,8 @@ import ScreenShell, { GoldButton, Panel, ProgressBar } from "./chrome";
 import { techProgress } from "@/lib/progress";
 import { ItemHelp } from "./HintSheet";
 import { SearchBox } from "./SearchBox";
-import { matchesSearch, searchHaystack } from "@/lib/searchText";
+import { matchesSearch, revealedHaystack } from "@/lib/searchText";
+import { techRevealed } from "@/lib/techFog";
 
 function PixelMark({ id }) {
   const cells = [];
@@ -74,7 +75,7 @@ export default function ResearchPage() {
       // Don't yank away from a project already running on another tab.
       if (first && !done && (runningFirst || jobs.length === 0)) entry = first;
     }
-    if (!entry) return;
+    if (!entry || !techRevealed(state, entry)) return;
     setTab(entry.tab);
     setFocus(entry.id);
     const timer = setTimeout(() => document.querySelector(`[data-research-item="${CSS.escape(entry.id)}"]`)?.scrollIntoView({ block: "center" }), 50);
@@ -83,7 +84,7 @@ export default function ResearchPage() {
   useEffect(() => { noteTutorialPage?.("tech"); }, [noteTutorialPage]);
   useEffect(() => { markReadyView?.("tech"); }, [markReadyView, state.techDone]);
   const allRows = RESEARCH_TABS.flatMap((entry) => researchRows(entry.id));
-  const rows = (query.trim() ? allRows : researchRows(tab)).filter((entry) => matchesSearch(query, searchHaystack([entry.name, entry.spec, entry.year, entry.soon ? "" : entry.id])));
+  const rows = (query.trim() ? allRows : researchRows(tab)).filter((entry) => matchesSearch(query, revealedHaystack(techRevealed(state, entry), entry.name, entry.spec, entry.year)));
 
   const jobs = techJobs(state);
   const twoSlots = secondTechSlot(state);
@@ -136,6 +137,19 @@ export default function ResearchPage() {
       <div className="space-y-2">
         {rows.length === 0 && <p data-search-empty="tech" className="font-term text-lg text-[var(--game-muted)]">No matches.</p>}
         {rows.map((entry) => {
+          const revealed = techRevealed(state, entry);
+          if (!revealed) {
+            return (
+              <Panel key={entry.id}>
+                <div data-research-hidden aria-label="Unknown future project" className="flex items-start gap-2 opacity-60">
+                  <div className="h-8 w-8 shrink-0 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]" aria-hidden="true" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-pixel text-[0.55rem] leading-4 text-[var(--game-muted)]">???</p>
+                  </div>
+                </div>
+              </Panel>
+            );
+          }
           const lock = researchLock(state, entry);
           const done = (state.techDone || []).includes(entry.id);
           const running = jobs.some((j) => j.id === entry.id);

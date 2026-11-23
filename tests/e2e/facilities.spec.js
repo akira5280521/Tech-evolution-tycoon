@@ -228,10 +228,67 @@ test("a part not yet researched is locked and says where to research it", async 
   await open(page, "/facilities/mine", { ...ALL_SAVES.late, techDone: [], lastSeen: Date.now() });
   await tipsOff(page);
   const row = page.locator('[data-facility="mine"] [data-part="raster1080"]');
-  await expect(row.locator("[data-part-lock]")).toContainText("Research Raster 1080 on the Tech page");
+  await expect(row.locator("[data-part-lock]")).toContainText("Research Raster 1080 in TECH");
   await expect(row.locator('[data-action="buy-raster1080"]')).toBeDisabled();
   // A 2022 card is locked by its year.
   await expect(page.locator('[data-facility="mine"] [data-part="raster4090"] [data-part-lock]')).toContainText("Requires 2022");
+});
+
+test("research servers stay locked behind their TECH project, not a BUY button", async ({ page }) => {
+  const last = BUSINESSES.findIndex((b) => b.id === "mainframes");
+  const far = Date.now() + 9e9;
+  const save = {
+    ...ALL_SAVES.late,
+    lastSeen: Date.now(),
+    techDone: [],
+    cash: 1e12,
+    facilities: { servers: { tab601: 1 }, bench: {}, mine: {}, cluster: {} },
+    nextWindfallAt: far, nextDilemmaAt: far, nextBubbleAt: far, nextShortageAt: far,
+    biz: BUSINESSES.map((b, i) => ({
+      id: b.id,
+      owned: i <= last ? 8 : 0,
+      manager: i <= last,
+      running: false,
+      progress: 0,
+    })),
+  };
+  const seen = await open(page, "/facilities/servers", save);
+  await tipsOff(page);
+  const mark1 = page.locator('[data-facility="servers"] [data-part="mark1"]');
+  await expect(mark1.locator("[data-part-lock]")).toContainText("Research Irwell Mark 1 in TECH");
+  await expect(mark1.locator('[data-action="buy-mark1"]')).toContainText("Research Irwell Mark 1 in TECH");
+  await expect(mark1.locator('[data-action="buy-mark1"]')).not.toContainText("BUY");
+  await expect(page.locator('[data-part="mgset"] [data-action="buy-mgset"]')).toContainText(/Research .+ in TECH/);
+  await expect(page.locator('[data-part="roomac"] [data-action="buy-roomac"]')).toContainText(/Research .+ in TECH/);
+  await expect(page.locator('[data-part="ibm7090"] [data-part-lock]')).toContainText("Requires 1959");
+  await expect(page.locator('[data-action="buy-ibm7090"]')).not.toContainText("BUY");
+  expectClean(seen);
+});
+
+test("the 7090 and 360 need their TECH projects once their year is reached", async ({ page }) => {
+  const last = BUSINESSES.findIndex((b) => b.id === "silicon");
+  const far = Date.now() + 9e9;
+  const save = {
+    ...ALL_SAVES.late,
+    lastSeen: Date.now(),
+    techDone: [],
+    cash: 1e12,
+    facilities: { servers: { tab601: 1 }, bench: {}, mine: {}, cluster: {} },
+    nextWindfallAt: far, nextDilemmaAt: far, nextBubbleAt: far, nextShortageAt: far,
+    biz: BUSINESSES.map((b, i) => ({
+      id: b.id,
+      owned: i <= last ? 8 : 0,
+      manager: i <= last,
+      running: false,
+      progress: 0,
+    })),
+  };
+  const seen = await open(page, "/facilities/servers", save);
+  await tipsOff(page);
+  await expect(page.locator('[data-part="ibm7090"] [data-action="buy-ibm7090"]')).toContainText("Research Inland 7090 in TECH");
+  await expect(page.locator('[data-action="buy-ibm7090"]')).not.toContainText("BUY");
+  await expect(page.locator('[data-part="s360"] [data-part-lock]')).toContainText("Requires 1965");
+  expectClean(seen);
 });
 
 test("the Tech page shows which part a project opens", async ({ page }) => {

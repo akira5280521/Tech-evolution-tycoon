@@ -77,7 +77,7 @@ function YieldLine({ material, made }) {
   );
 }
 
-function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, onToggleManager = null, compact: compactPref, supplyCard = false, onNeed = null, tapHint = false }) {
+function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, onToggleManager = null, compact: compactPref, supplyCard = false, onNeed = null, tapHint = false, collapsed = false, canCollapse = false, onToggleCollapse = null }) {
   // SUPPLY rows always use the compact card, with their bins shown on it.
   const compact = compactPref || supplyCard;
   const holdRef = useRef(null);
@@ -145,6 +145,28 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
   const noBoss = state.challenge?.id === "noboss";
   const canHire = !commissioning && !st.manager && !hireLocked && !noBoss && affordable;
   const hireCostLine = hirePrice > 0 ? `${money(hirePrice)} cash · runs it automatically` : "Free · runs it automatically";
+  const incomeLine = `${money(perCycle)} / ${cycleSeconds}`;
+
+  if (collapsed) {
+    return (
+      <button
+        type="button"
+        data-row={cfg.id}
+        data-row-collapsed=""
+        data-cycle-ms={Math.round(cycle)}
+        data-running={managed || st.running ? "1" : "0"}
+        data-manager-off={st.manager && st.managerOff ? "1" : undefined}
+        aria-expanded="false"
+        onClick={() => onToggleCollapse?.()}
+        className="flex min-h-11 w-full items-center gap-2 border-2 border-[var(--game-border)] bg-[var(--game-card)] px-2 py-1 text-left shadow-[3px_3px_0_0_#000]"
+      >
+        <img src={cfg.icon} alt="" width={16} height={16} className="pixel-art box-content h-8 w-8 shrink-0 border-2 border-[var(--game-border)] bg-[var(--game-bg)]" />
+        <span className="min-w-0 flex-1 truncate font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)]">{shownName}</span>
+        <span data-row-count className="shrink-0 font-term text-base tabular-nums text-[var(--game-muted)]">{st.owned}</span>
+        <span data-row-income className="shrink-0 font-term text-base tabular-nums text-[var(--game-success)]">{incomeLine}</span>
+      </button>
+    );
+  }
 
   return (
     <div
@@ -178,6 +200,16 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
           )}
         </div>
         <ItemHelp kind="era" id={cfg.id} state={state} name={shownName} className="-mr-2 -mt-2.5 mb-0" />
+        {canCollapse && (
+          <button
+            type="button"
+            data-row-collapse
+            onClick={() => onToggleCollapse?.()}
+            className="min-h-11 shrink-0 px-1 font-pixel text-[0.45rem] leading-4 text-[var(--game-muted)] underline"
+          >
+            COLLAPSE
+          </button>
+        )}
         </div>
         {!compact && <p className="font-term text-base leading-5 text-[var(--game-muted)]">{shownTag}</p>}
         {commissioning ? (
@@ -343,6 +375,8 @@ function arePropsEqual(prev, next) {
   return prev.index === next.index
     && prev.buyMode === next.buyMode
     && prev.compact === next.compact
+    && prev.collapsed === next.collapsed
+    && prev.canCollapse === next.canCollapse
     && prev.supplyCard === next.supplyCard
     && prev.tapHint === next.tapHint
     && prev.onNeed === next.onNeed
@@ -357,7 +391,8 @@ function arePropsEqual(prev, next) {
     && prev.onBuy === next.onBuy
     && prev.onHire === next.onHire
     && prev.onRun === next.onRun
-    && prev.onToggleManager === next.onToggleManager;
+    && prev.onToggleManager === next.onToggleManager
+    && prev.onToggleCollapse === next.onToggleCollapse;
 }
 
 export default memo(BusinessRow, arePropsEqual);

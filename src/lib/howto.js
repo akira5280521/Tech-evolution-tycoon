@@ -5,12 +5,21 @@ import { HUB_LABEL } from "./hub.js";
 
 export const HOWTO_GUIDES = [
   {
+    id: "howto-nav",
+    title: "FINDING YOUR WAY",
+    always: true,
+    lines: [
+      "The GAME list has era chips at the top and a buy-amount bar at the bottom (×1, ×10, ×100, Max). A short Next line under the cash box jumps to the most useful next goal.",
+      "R&D has Specialty and Lab Projects tabs; each section can be folded up and still shows a short summary. A green dot on BOOST, R&D, TECH or an HQ card means something there is ready. MORE is grouped into Game, Help and Settings. TECH and the Hardware Museum have a search box; locked museum pieces stay ??? and will not match a name search.",
+    ],
+  },
+  {
     id: "howto-starter",
     title: "RESEARCH MACHINES AND TECH",
     always: true,
     lines: [
       `Open ${HUB_LABEL} (beside TECH) and tap RESEARCH SERVERS. Buy the Inland 601 Multiplying Punch: it is cheap, and it starts making R&D points at once.`,
-      "TECH (beside HQ) lists real inventions. Spend R&D points to research one at a time; the timer keeps going while the app is closed. \"Requires 1985\" means your company hasn't reached that year yet. Finished research is kept when you prestige.",
+      "TECH (beside HQ) lists real inventions. Use the search box to filter by name or model. Spend R&D points to research one at a time; the timer keeps going while the app is closed. \"Requires 1985\" means your company hasn't reached that year yet. Finished research is kept when you prestige.",
     ],
   },
   {
@@ -59,7 +68,7 @@ export const HOWTO_GUIDES = [
     always: true,
     lines: [
       `The Hardware Museum is in ${HUB_LABEL}. It shows every piece of hardware in the game, room by room and decade by decade.`,
-      "Tap an exhibit to read about it. Dark ones are still to find. Finish a room for its badge.",
+      "Tap an exhibit to read about it. Dark ones are still to find. Use the search box to filter by name or model; locked pieces stay hidden as ??? and will not match. Finish a room for its badge.",
     ],
   },
 ];

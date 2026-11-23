@@ -17,6 +17,8 @@ export function normalizePrefs(raw) {
   return {
     sound: src.sound !== false,
     compact: src.compact === true,
+    // Shrink fully upgraded, auto-run rows to one line. Default on.
+    collapseMaxed: src.collapseMaxed !== false,
     musicVolume: pct(src.musicVolume, 70),
     musicMuted: src.musicMuted === true,
     effectsVolume: pct(src.effectsVolume, 100),

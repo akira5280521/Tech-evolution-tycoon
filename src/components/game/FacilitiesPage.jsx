@@ -347,7 +347,7 @@ function RebuildPanel({ state, onRebuild }) {
 }
 
 export default function FacilitiesPage({ facilityId }) {
-  const { state, buyFacilityPart, rebuildFacilities, toggleBenchOc, noteTutorialPage } = useGameState();
+  const { state, buyFacilityPart, rebuildFacilities, toggleBenchOc, noteTutorialPage, markReadyView } = useGameState();
   const facility = FACILITIES.find((item) => item.id === facilityId);
   const business = businessIncomePerSecond(state, Date.now());
   const report = facilityReport(state, business);
@@ -356,6 +356,7 @@ export default function FacilitiesPage({ facilityId }) {
   useEffect(() => {
     if (facilityId === "servers") noteTutorialPage?.("servers");
   }, [facilityId, noteTutorialPage]);
+  useEffect(() => { markReadyView?.("hq", `${facilityId}:`); }, [markReadyView, facilityId, state.techDone]);
   if (!facility) return <Navigate to={HUB_ROUTE} replace />;
   const showRebuild = facilityId === "mine" || facilityId === "cluster";
   const showNext = showRebuild && plantsOpen && next;

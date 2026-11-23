@@ -397,6 +397,20 @@ img[src*="/icons/"] {
   padding-bottom: calc(var(--tabbar-h, 8rem) + 1rem);
 }
 
+.game-root.has-buybar {
+  padding-bottom: calc(var(--tabbar-h, 8rem) + var(--buybar-h, 3.5rem) + 1rem);
+}
+
+/* Slim buy-amount bar, parked just above the tab bar (or at the bottom
+   edge in landscape, inset so it clears the side tab rail). */
+.buy-bar {
+  position: fixed;
+  z-index: 29;
+  left: 0;
+  right: 0;
+  bottom: var(--tabbar-h, 8rem);
+}
+
 /* Hide sideways overflow without making a scroll container ("hidden" would
    stop the landscape side column from staying in place). */
 .game-clip-x {
@@ -457,6 +471,15 @@ img[src*="/icons/"] {
   .screen-shell {
     padding-bottom: 0.75rem;
     padding-left: calc(5.75rem + var(--safe-area-inset-left, env(safe-area-inset-left, 0px)));
+  }
+
+  .game-root.has-buybar {
+    padding-bottom: calc(var(--buybar-h, 3.5rem) + 0.75rem);
+  }
+
+  .buy-bar {
+    left: calc(5.75rem + var(--safe-area-inset-left, env(safe-area-inset-left, 0px)));
+    bottom: 0;
   }
 
   .update-banner {

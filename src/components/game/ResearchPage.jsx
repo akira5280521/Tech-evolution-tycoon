@@ -22,6 +22,8 @@ import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel, ProgressBar } from "./chrome";
 import { techProgress } from "@/lib/progress";
 import { ItemHelp } from "./HintSheet";
+import { SearchBox } from "./SearchBox";
+import { matchesSearch, searchHaystack } from "@/lib/searchText";
 
 function PixelMark({ id }) {
   const cells = [];
@@ -53,9 +55,10 @@ function formatDuration(ms) {
 }
 
 export default function ResearchPage() {
-  const { state, startTech, noteTutorialPage } = useGameState();
+  const { state, startTech, noteTutorialPage, markReadyView } = useGameState();
   const [tab, setTab] = useState("cpu");
   const [focus, setFocus] = useState(null);
+  const [query, setQuery] = useState("");
   // Arriving from a locked era's GO TO TECH (/tech#id): open that project's
   // tab and scroll to it.
   useEffect(() => {
@@ -78,7 +81,10 @@ export default function ResearchPage() {
     return () => clearTimeout(timer);
   }, []);
   useEffect(() => { noteTutorialPage?.("tech"); }, [noteTutorialPage]);
-  const rows = researchRows(tab);
+  useEffect(() => { markReadyView?.("tech"); }, [markReadyView, state.techDone]);
+  const allRows = RESEARCH_TABS.flatMap((entry) => researchRows(entry.id));
+  const rows = (query.trim() ? allRows : researchRows(tab)).filter((entry) => matchesSearch(query, searchHaystack([entry.name, entry.spec, entry.year, entry.soon ? "" : entry.id])));
+
   const jobs = techJobs(state);
   const twoSlots = secondTechSlot(state);
   const speed = researchSpeed(state);
@@ -111,6 +117,7 @@ export default function ResearchPage() {
           </p>
         )}
       </Panel>
+      <SearchBox value={query} onChange={setQuery} placeholder="Search TECH" testId="tech" />
       <div className="flex flex-wrap gap-2 pb-1" role="tablist">
         {RESEARCH_TABS.map((entry) => (
           <button
@@ -127,6 +134,7 @@ export default function ResearchPage() {
         ))}
       </div>
       <div className="space-y-2">
+        {rows.length === 0 && <p data-search-empty="tech" className="font-term text-lg text-[var(--game-muted)]">No matches.</p>}
         {rows.map((entry) => {
           const lock = researchLock(state, entry);
           const done = (state.techDone || []).includes(entry.id);

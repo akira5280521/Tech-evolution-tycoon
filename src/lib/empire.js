@@ -524,6 +524,7 @@ export function blankMeta() {
     hubSeen: false,
     // A new game buys its own starter machine; old saves get one once (0.0.29).
     starterGranted: true,
+    readySeen: { seeded: true, boost: [], research: [], tech: [], hq: [] },
     tutorial: blankTutorial(),
     orientation: "auto",
     businessesBought: 0,
@@ -1794,6 +1795,7 @@ export function snapshotMeta(state, options = {}) {
     boughtX10: !!state.boughtX10,
     hubSeen: !!state.hubSeen,
     starterGranted: !!state.starterGranted,
+    readySeen: { ...(state.readySeen || { seeded: true, boost: [], research: [], tech: [], hq: [] }) },
     tutorial: { ...(state.tutorial || blankTutorial()), seen: [...(state.tutorial?.seen || [])], tips: [...(state.tutorial?.tips || [])] },
     orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
     buyMode: normalizeBuyMode(state.buyMode),

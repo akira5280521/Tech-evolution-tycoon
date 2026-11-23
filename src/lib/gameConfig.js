@@ -1050,6 +1050,7 @@ export function maxAffordable(cfg, owned, cash) {
 
 // One button cycles these in order, then wraps back to X1.
 export const BUY_MODE_CYCLE = ["x1", "x10", "x25", "x50", "x75", "x100", "MAX"];
+export const QUICK_BUY_MODES = ["x1", "x10", "x100", "MAX"];
 
 // NEXT was the old "buy up to the next goal" switch. Anything that is not a
 // current amount, including NEXT, comes back as X1. x1, x10, x100 and max stay.

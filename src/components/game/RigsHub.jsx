@@ -3,6 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { HUB_ITEMS, HUB_LABEL } from "@/lib/hub";
 import { useGameState } from "./GameState";
 import ScreenShell from "./chrome";
+import { hqCardHasDot, readyDots } from "@/lib/ready";
+import { ReadyDot } from "./ReadyDot";
 
 // The menu behind the top button beside TECH. Every facility and the
 // Hardware Museum is listed; plants not unlocked this run stay visible as
@@ -10,6 +12,7 @@ import ScreenShell from "./chrome";
 export default function RigsHub() {
   const { state, noteTutorialPage } = useGameState();
   useEffect(() => { noteTutorialPage?.("hq"); }, [noteTutorialPage]);
+  const dots = readyDots(state);
   return (
     <ScreenShell title={HUB_LABEL} subtitle="Your hardware. Pick a section.">
       <div data-hub-menu className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2">
@@ -50,8 +53,9 @@ export default function RigsHub() {
               to={item.to}
               params={item.params}
               data-hub-item={item.id}
-              className="flex min-h-20 gap-3 border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] p-3 shadow-[3px_3px_0_0_#000] hover:border-[var(--game-accent)]"
+              className="relative flex min-h-20 gap-3 border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] p-3 shadow-[3px_3px_0_0_#000] hover:border-[var(--game-accent)]"
             >
+              <ReadyDot show={hqCardHasDot(dots, item.id)} testId={item.id} />
               {icon}
               <div className="min-w-0 flex-1">
                 <p className="font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">{item.label} &gt;</p>

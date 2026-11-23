@@ -23,6 +23,8 @@ import { useGameState } from "./GameState";
 import ScreenShell from "./chrome";
 import { HUB_ITEMS } from "@/lib/hub";
 import MuseumSection from "./MuseumSection";
+import { SearchBox } from "./SearchBox";
+import { matchesSearch, revealedHaystack } from "@/lib/searchText";
 
 function chipClass({ on, gold, grey }) {
   return `relative shrink-0 min-h-11 overflow-visible whitespace-nowrap border-2 px-2 py-1 text-center font-pixel text-[8px] leading-4 shadow-[3px_3px_0_0_#000] ${
@@ -69,6 +71,7 @@ export default function MuseumPage({ top = null, backTo } = {}) {
   const [sort, setSort] = useState("year");
   const [open, setOpen] = useState(null);
   const [viewed, setViewed] = useState(() => readPrefs().museumViewed || []);
+  const [query, setQuery] = useState("");
 
   const pickWing = (id) => {
     setWingId(id);
@@ -99,7 +102,11 @@ export default function MuseumPage({ top = null, backTo } = {}) {
   };
   const history = todayInHistory(state, Date.now());
   const filters = roomId ? roomFilters(state, roomId) : { decades: [], makers: [] };
-  const exhibits = sortExhibits(roomId ? roomExhibits(state, roomId, { decade, maker }) : [], sort);
+  const roomList = sortExhibits(roomId ? roomExhibits(state, roomId, { decade, maker }) : [], sort);
+  const catalog = query.trim()
+    ? WINGS.flatMap((w) => (w.rooms || []).flatMap((room) => roomExhibits(state, room.id, decade != null ? { decade } : {})))
+    : roomList;
+  const exhibits = catalog.filter((entry) => matchesSearch(query, revealedHaystack(entry.status !== "locked", entry.item?.name, entry.item?.spec, entry.item?.year, entry.maker)));
   const decades = museumDecades();
   const wingProgress = wing.id === "history" ? historyCounts(state) : wingCounts(state, wing, filter);
   const hist = historyCounts(state);
@@ -239,6 +246,7 @@ export default function MuseumPage({ top = null, backTo } = {}) {
                 </select>
               </label>
             )}
+            <SearchBox value={query} onChange={setQuery} placeholder="Search museum" testId="museum" />
             <div data-museum-grid className="grid grid-cols-4 gap-2 min-[480px]:grid-cols-6">
               {exhibits.map(({ item, status }) => {
                 const locked = status === "locked";
@@ -249,7 +257,7 @@ export default function MuseumPage({ top = null, backTo } = {}) {
                     type="button"
                     data-exhibit={item.id}
                     data-status={status}
-                    onClick={() => setOpen(item.id)}
+                    onClick={() => (query.trim() ? visit(item) : setOpen(item.id))}
                     aria-label={locked ? `Locked exhibit from ${item.year}` : item.name}
                     className={`relative min-w-0 border-2 bg-black p-1 ${locked ? "border-[var(--game-border)]" : status === "owned" ? "border-[#e6c15a]" : "border-[var(--game-border-strong)]"}`}
                   >

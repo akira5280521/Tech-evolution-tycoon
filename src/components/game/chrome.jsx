@@ -9,6 +9,7 @@ import { TechHqLinks } from "./TopBar";
 import { ItemHelp, TipCard } from "./HintSheet";
 import NewsTicker from "./NewsTicker";
 import StarterGoal from "./StarterGoal";
+import { NextGoalChip } from "./NextGoalChip";
 import { useGameState } from "./GameState";
 
 export function BackButton({ to = "/" }) {
@@ -42,6 +43,7 @@ export function CashTicker({ state, cps }) {
           </div>
         )}
       </div>
+      <NextGoalChip state={state} />
       <StarterGoal state={state} />
       <NewsTicker state={state} />
     </div>

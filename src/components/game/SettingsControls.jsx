@@ -44,6 +44,9 @@ export function PlayToggles() {
         <button type="button" data-compact onClick={() => set({ compact: !prefs.compact })} className={`${choice} ${off}`}>
           COMPACT ROWS: {prefs.compact ? "ON" : "OFF"}
         </button>
+        <button type="button" data-collapse-maxed onClick={() => set({ collapseMaxed: !prefs.collapseMaxed })} className={`${choice} ${prefs.collapseMaxed ? on : off}`}>
+          COLLAPSE MAXED: {prefs.collapseMaxed ? "ON" : "OFF"}
+        </button>
         <button type="button" data-sound onClick={() => set({ sound: !prefs.sound })} className={`${choice} ${prefs.sound ? on : off}`}>
           SOUND: {prefs.sound ? "ON" : "OFF"}
         </button>

@@ -20,6 +20,9 @@ import BubbleBanner from "./BubbleBanner";
 import { ItemHelp, TipCard } from "./HintSheet";
 import { currentTutorialStep, stepTarget, tutorialActive } from "@/lib/tutorial";
 import { StickyHud } from "./chrome";
+import { EraChipStrip } from "./EraChipStrip";
+import { BuyBar } from "./BuyBar";
+import { shouldCollapseRow, rowFullyUpgraded } from "@/lib/rowCollapse";
 
 // The first-run Timber note stays up until the player has both run a business
 // by hand and bought one. Either action on its own is not the whole loop.
@@ -47,6 +50,8 @@ export default function GameScreen() {
   const [pullDist, setPullDist] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [compact, setCompact] = useState(false);
+  const [collapseMaxed, setCollapseMaxed] = useState(true);
+  const [expandedRows, setExpandedRows] = useState({});
   const [storageKey, setStorageKey] = useState(null);
   const [savedSection, setSavedSection] = useState(() => readPrefs().gameSection);
   // A dilemma or shortage event takes the screen: close the material sheet
@@ -62,6 +67,7 @@ export default function GameScreen() {
     const apply = () => {
       const prefs = readPrefs();
       setCompact(prefs.compact);
+      setCollapseMaxed(prefs.collapseMaxed !== false);
       setSavedSection(prefs.gameSection);
       applyAudioPrefs(prefs);
     };
@@ -164,7 +170,7 @@ export default function GameScreen() {
   const techOpen = BUSINESSES.some((cfg, i) => rowSection(i) === "tech" && eraOpen(state, i) && !blockedByGlass(state, i));
 
   return (
-    <div className="game-root game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
+    <div className="game-root has-buybar game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
       <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} />
       <PrestigeReport report={state.offlineReport ? null : state.prestigeReport} onDismiss={dismissPrestigeReport} />
@@ -251,6 +257,14 @@ export default function GameScreen() {
                 );
               })}
             </div>
+            <EraChipStrip
+              state={state}
+              onPick={(chip) => {
+                const want = sectionOfId(chip.id);
+                if (want) chooseSection(want);
+                setScrollTo(chip.id);
+              }}
+            />
             {!playedAndBought(state) && !tutorialActive(state) && (
               <p data-onboard className="mt-2 border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-2 font-term text-lg leading-6 text-[var(--game-fg)]">
                 Tap the Timber Camp picture to run the business. Then tap BUY. BUY spends cash.
@@ -294,6 +308,9 @@ export default function GameScreen() {
                 state={state}
                 buyMode={buyMode}
                 compact={compact}
+                collapsed={shouldCollapseRow(state, i, { collapseMaxed }, !!expandedRows[cfg.id])}
+                canCollapse={collapseMaxed && rowFullyUpgraded(state, i)}
+                onToggleCollapse={() => setExpandedRows((m) => ({ ...m, [cfg.id]: !m[cfg.id] }))}
                 supplyCard={section === "supply"}
                 onNeed={showMaker}
                 tapHint={tutorialActive(state)}
@@ -318,6 +335,13 @@ export default function GameScreen() {
           Progress saves on this device. Close the app and managers keep earning at half speed for up to 24 hours.
         </p>
       </footer>
+      <BuyBar
+        buyMode={buyMode}
+        onPick={(mode) => {
+          setBuyMode(mode);
+          if (currentTutorialStep(state)?.id === "modes") tutorialNext("modes");
+        }}
+      />
       <BottomTabs />
       <TipCard />
     </div>

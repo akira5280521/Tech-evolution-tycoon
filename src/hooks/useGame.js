@@ -69,6 +69,7 @@ import {
   swapMaterial,
 } from "@/lib/empire";
 import { blankTutorial, readTutorial, TUTORIAL_STEPS, FACILITY_TOURS, tutorialCleared, markOpened } from "@/lib/tutorial";
+import { markReadySeen, readReadySeen, seedReadySeen } from "@/lib/ready";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { generationAt } from "@/lib/generations";
@@ -214,6 +215,7 @@ function applySavedMeta(state, raw) {
   state.hubSeen = !!m.hubSeen;
   // Saves from before 0.0.29 have no flag: grantStarter gives them one machine.
   state.starterGranted = !!m.starterGranted;
+  state.readySeen = readReadySeen(m.readySeen || raw?.readySeen);
   state.benchOc = m.benchOc !== false;
   state.restartSeen = !!m.restartSeen;
 }
@@ -276,6 +278,7 @@ function pack(s) {
     boughtX10: !!s.boughtX10,
     hubSeen: !!s.hubSeen,
     starterGranted: !!s.starterGranted,
+    readySeen: s.readySeen || null,
     benchOc: s.benchOc !== false,
     restartSeen: !!s.restartSeen,
     tutorial: s.tutorial || null,
@@ -367,6 +370,7 @@ function loadSave() {
       }
       state.tutorial.toursReady = true;
     }
+    seedReadySeen(state);
     state.supply = data.supply;
     ensureSupply(state);
     state.storage = data.storage || {};
@@ -1303,11 +1307,20 @@ export function useGame() {
     if (applyBriefing(stateRef.current)) bump();
   }, [bump]);
 
+  const markReadyView = useCallback((bucket, prefix) => {
+    if (markReadySeen(stateRef.current, bucket, Date.now(), prefix || "")) {
+      saveNow();
+      bump();
+    }
+  }, [bump, saveNow]);
+
   return {
     ready,
     state: stateRef.current,
+
     buyMode,
     setBuyMode,
+    markReadyView,
     buy,
     hire,
     run,

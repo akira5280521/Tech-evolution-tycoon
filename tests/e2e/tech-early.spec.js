@@ -47,9 +47,9 @@ test("an early save opens TECH from the top bar and shows year-locked hardware",
   await expect(page.locator("[data-research-tab='gpu']")).toBeVisible();
   await expect(page.locator("[data-research-tab='memory']")).toBeVisible();
   await expect(page.locator("[data-research-tab='storage']")).toBeVisible();
-  await expect(page.locator("[data-tech-opens-year]")).toContainText(String(TECH_OPENS));
   await expect(page.locator("[data-research-item] [data-research-lock]").first()).toContainText("Requires");
   await page.locator("[data-research-tab='storage']").click();
-  await expect(page.locator("[data-research-item='store-hdd'] [data-research-lock]")).toContainText(`Requires ${TECH_OPENS}`);
+  await expect(page.locator("[data-research-item='tab-hollerith']")).toBeVisible();
+  await expect(page.locator("[data-research-item='store-hdd'] [data-research-lock]")).toContainText("Requires 1956");
   expectClean(seen);
 });

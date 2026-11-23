@@ -57,7 +57,7 @@ function markViewed(id, viewed, setViewed) {
 // The Hardware Museum: decade chips, a four-tab section bar, scrolling room
 // chips, and a grid of icons. Locked pieces show as silhouettes of the real
 // icon. View-only: looking never changes the empire save.
-export default function MuseumPage({ top = null }) {
+export default function MuseumPage({ top = null, backTo } = {}) {
   const { state } = useGameState();
   const [wingId, setWingId] = useState("parts");
   const wing = WINGS.find((w) => w.id === wingId) || WINGS[0];
@@ -110,7 +110,7 @@ export default function MuseumPage({ top = null }) {
   }, [open, roomId, state, viewed]);
 
   return (
-    <ScreenShell title={"HARDWARE\nMUSEUM"} subtitle="">
+    <ScreenShell title={"HARDWARE\nMUSEUM"} subtitle="" backTo={backTo}>
       {top}
       <section data-hw-museum className="space-y-3">
         <div data-museum-decades className="museum-chip-row flex flex-nowrap gap-2 overflow-x-auto pb-1">

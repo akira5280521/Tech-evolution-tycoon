@@ -56,7 +56,7 @@ test("xl text on a small phone: tip and help buttons stay reachable", async ({ p
   await page.setViewportSize({ width: 320, height: 568 });
   const problems = [];
   await open(page, "/tech", "late", { extra: { [PREFS]: JSON.stringify({ textSize: "xl" }) } });
-  for (const path of ["/tech", "/rigs", "/facilities", "/boost", "/board", "/runs", "/research", "/"]) {
+  for (const path of ["/tech", "/rigs", "/facilities/servers", "/boost", "/board", "/runs", "/research", "/"]) {
     await page.goto(path);
     await page.waitForTimeout(600);
     if (await page.locator("[data-tip]").count()) {

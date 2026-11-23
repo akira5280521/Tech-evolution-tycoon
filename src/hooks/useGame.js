@@ -68,7 +68,7 @@ import {
   sellMaterial,
   swapMaterial,
 } from "@/lib/empire";
-import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/lib/tutorial";
+import { blankTutorial, readTutorial, TUTORIAL_STEPS, FACILITY_TOURS, tutorialCleared, markOpened } from "@/lib/tutorial";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { generationAt } from "@/lib/generations";
@@ -359,6 +359,14 @@ function loadSave() {
     // Eras stopped making R&D points in 0.0.29: a save before Mainframes with
     // no research machine gets one free starter machine, once.
     grantStarter(state);
+    // Existing saves shouldn't get unlock tours for plants they already have.
+    if (!state.tutorial?.toursReady) {
+      const hadProgress = (state.careerEarnings || 0) > 0 || (state.investors || 0) > 0 || (state.biz || []).some((b, i) => (b?.owned || 0) > (i === 0 ? 1 : 0));
+      if (hadProgress) {
+        state.tutorial.toursDone = FACILITY_TOURS.filter((tour) => tour.when(state)).map((tour) => tour.id);
+      }
+      state.tutorial.toursReady = true;
+    }
     state.supply = data.supply;
     ensureSupply(state);
     state.storage = data.storage || {};
@@ -455,8 +463,8 @@ function announce(notes) {
     if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
     if (note.type === "refined") toast("Refinery batch done", { description: `${note.amount} ${REFINED[note.id]?.name || note.id} added.` });
     if (note.type === "history") {
-      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum in MORE > MUSEUM." });
-      else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum in MORE > MUSEUM." });
+      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum in HQ > HARDWARE MUSEUM." });
+      else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum in HQ > HARDWARE MUSEUM." });
     }
     if (note.type === "bubble") toast("DOT-COM BUBBLE!", { description: "Your web stock is soaring. The banner counts down to the pop." });
     if (note.type === "bubblepop") toast("The bubble popped", { description: "The web stock is worth nothing now. Sell sooner next time." });
@@ -1091,7 +1099,47 @@ export function useGame() {
   const tutorialReplay = useCallback(() => {
     const s = stateRef.current;
     const t = s.tutorial || blankTutorial();
-    s.tutorial = { ...blankTutorial(), replay: true, tips: [...(t.tips || [])], tipsOff: !!t.tipsOff };
+    s.tutorial = {
+      ...blankTutorial(),
+      replay: true,
+      tips: [...(t.tips || [])],
+      tipsOff: !!t.tipsOff,
+      toursSeen: [...(t.toursSeen || [])],
+      toursSkipped: [...(t.toursSkipped || [])],
+      toursDone: [...(t.toursDone || [])],
+      toursReady: true,
+    };
+    saveNow();
+    bump();
+  }, [bump, saveNow]);
+
+  const noteTutorialPage = useCallback((id) => {
+    const s = stateRef.current;
+    if (!markOpened(s, id)) return;
+    saveNow();
+    bump();
+  }, [bump, saveNow]);
+
+  const tourNext = useCallback((stepId) => {
+    const s = stateRef.current;
+    const t = s.tutorial || blankTutorial();
+    if ((t.toursSeen || []).includes(stepId)) return;
+    const toursSeen = [...(t.toursSeen || []), stepId];
+    const toursDone = [...(t.toursDone || [])];
+    for (const tour of FACILITY_TOURS) {
+      if (toursDone.includes(tour.id) || (t.toursSkipped || []).includes(tour.id)) continue;
+      if (tour.steps.every((step) => toursSeen.includes(step.id)) && !toursDone.includes(tour.id)) toursDone.push(tour.id);
+    }
+    s.tutorial = { ...t, toursSeen, toursDone };
+    saveNow();
+    bump();
+  }, [bump, saveNow]);
+
+  const tourSkip = useCallback((tourId) => {
+    const s = stateRef.current;
+    const t = s.tutorial || blankTutorial();
+    if (!tourId || (t.toursSkipped || []).includes(tourId)) return;
+    s.tutorial = { ...t, toursSkipped: [...(t.toursSkipped || []), tourId] };
     saveNow();
     bump();
   }, [bump, saveNow]);
@@ -1341,6 +1389,9 @@ export function useGame() {
     tipShown,
     tutorialSkip,
     tutorialReplay,
+    noteTutorialPage,
+    tourNext,
+    tourSkip,
     tipSeen,
     setTipsOff,
     setAutoUpgrades,

@@ -8,7 +8,7 @@
 
 import { BUSINESSES, FOREMAN_COST, investorsFor, managerNeed, shortMaterial } from "./gameConfig.js";
 import { forkCost, managerPrice, singularityMult, upgradeOffer, upgradesOf } from "./empire.js";
-import { tutorialActive } from "./tutorial.js";
+import { currentCoach, tutorialActive } from "./tutorial.js";
 import { facilitiesOpen, facilityUnlocked } from "./facilities.js";
 import { serverOutput } from "./research.js";
 import { HUB_LABEL } from "./hub.js";
@@ -215,11 +215,11 @@ export const TIPS = [
     id: "page-badges",
     page: "more#badges",
     title: "BADGES",
-    text: "Badges are goals to aim for. History cards are in the Museum, the next button.",
+    text: "Badges are goals to aim for. History cards are in the Hardware Museum, in HQ.",
   },
   {
     id: "page-museum",
-    page: "more#museum",
+    page: "museum",
     title: "THE MUSEUM",
     text: "Every piece of hardware in the game, room by room. Tap one to read about it; dark ones are still to find. Finish a room for its badge.",
   },
@@ -227,7 +227,7 @@ export const TIPS = [
     id: "page-more",
     page: "more#settings",
     title: "MORE",
-    text: "Change sound and text size here. How to Play explains any word, and Badges are the next button.",
+    text: "Change sound and text size here. How to Play explains any word. The Hardware Museum is in HQ.",
   },
 ];
 
@@ -237,7 +237,7 @@ export function tipsOn(state) {
 
 // The tip to show on this page now, or null.
 export function currentTip(state, page) {
-  if (!state || !tipsOn(state) || tutorialActive(state)) return null;
+  if (!state || !tipsOn(state) || tutorialActive(state) || currentCoach(state)) return null;
   if (state.offlineReport || state.dilemma || state.prestigeReport) return null;
   const seen = state.tutorial?.tips || [];
   // A tip that has been on screen stays up until GOT IT, even if what

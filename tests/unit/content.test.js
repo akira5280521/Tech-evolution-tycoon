@@ -8,7 +8,8 @@ import { RESEARCH, researchCost } from "../../src/lib/research.js";
 import { FACILITIES, PARTS } from "../../src/lib/facilities.js";
 import { GENERATIONS } from "../../src/lib/generations.js";
 import { TIPS } from "../../src/lib/tips.js";
-import { TUTORIAL_STEPS } from "../../src/lib/tutorial.js";
+import { TUTORIAL_STEPS, tourSteps } from "../../src/lib/tutorial.js";
+import { HOWTO_GUIDES } from "../../src/lib/howto.js";
 import { STARTER_GOALS } from "../../src/lib/goals.js";
 
 const publicFile = (p) => new URL(`../../public${p}`, import.meta.url);
@@ -20,6 +21,8 @@ test("ids are unique", () => {
   assert.ok(unique(PARTS.map((x) => x.id)), "parts");
   assert.ok(unique(TIPS.map((x) => x.id)), "tips");
   assert.ok(unique(TUTORIAL_STEPS.map((x) => x.id)), "tutorial steps");
+  assert.ok(unique([...TUTORIAL_STEPS, ...tourSteps()].map((x) => x.id)), "tutorial and tour steps");
+  assert.ok(unique(HOWTO_GUIDES.map((x) => x.id)), "howto guides");
   assert.ok(unique(STARTER_GOALS.map((x) => x.id)), "starter goals");
 });
 
@@ -50,6 +53,7 @@ test("every picture the game shows exists", () => {
   const paths = [
     ...BUSINESSES.map((b) => b.icon),
     ...FACILITIES.map((f) => f.icon),
+    "/icons/facilities/museum-placeholder.png",
     ...PARTS.map((p) => p.icon),
     "/icons/placeholder-era.svg",
   ].filter(Boolean);
@@ -67,7 +71,9 @@ test("every tip and tutorial step has words and a known page", () => {
     assert.ok(tip.text.length < 320, `tip ${tip.id} is long (${tip.text.length})`);
   }
   for (const step of TUTORIAL_STEPS) assert.ok(step.title && step.text, `step ${step.id}`);
+  for (const step of tourSteps()) assert.ok(step.title && step.text, `tour ${step.id}`);
   assert.equal(TUTORIAL_STEPS.at(-1).manual, true, "the last step finishes with a button");
+  for (const guide of HOWTO_GUIDES) assert.ok(guide.title && guide.lines?.length, `guide ${guide.id}`);
 });
 
 test("release notes exist for the current version", () => {

@@ -53,6 +53,17 @@ function EraProgress({ state }) {
   );
 }
 
+// TECH and HQ, for any screen so the tutorial and later play can reach them
+// without going all the way back to the game list.
+export function TechHqLinks({ state }) {
+  return (
+    <div className="flex items-stretch gap-2">
+      <SideLink to="/tech" open={techOpen(state)} data="research" label="TECH" progress={techProgress(state.techJob, researchSpeed(state))} />
+      <SideLink to={HUB_ROUTE} open={hubOpen(state)} data="facilities" label={HUB_LABEL} />
+    </div>
+  );
+}
+
 export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll, onBuyForeman }) {
   const unlocked = !!state.foreman;
   const affordForeman = state.cash >= FOREMAN_COST;

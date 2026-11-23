@@ -17,13 +17,18 @@ test("hub label and route are set", () => {
 });
 
 test("HQ lists every facility, with research servers first", () => {
-  assert.deepEqual(HUB_ITEMS.map((item) => item.id), FACILITIES.map((fac) => fac.id));
+  assert.deepEqual(HUB_ITEMS.map((item) => item.id), [...FACILITIES.map((fac) => fac.id), "museum"]);
   assert.equal(HUB_ITEMS[0].id, "servers");
   assert.equal(HUB_ITEMS[0].label, "RESEARCH SERVERS");
-  assert.equal(HUB_ITEMS[0].to, "/facilities");
-  assert.equal(HUB_ITEMS[0].hash, "servers");
+  assert.equal(HUB_ITEMS[0].to, "/facilities/$facilityId");
+  assert.equal(HUB_ITEMS[0].params.facilityId, "servers");
+  assert.equal(HUB_ITEMS.at(-1).id, "museum");
+  assert.equal(HUB_ITEMS.at(-1).to, "/museum");
+  assert.equal(HUB_ITEMS.at(-1).open({}), true);
   for (const item of HUB_ITEMS) {
-    assert.ok(item.label && item.to && item.hash && item.text && typeof item.open === "function");
+    assert.ok(item.label && item.to && item.text && typeof item.open === "function");
+  }
+  for (const item of HUB_ITEMS.filter((row) => row.id !== "museum")) {
     assert.equal(item.need(), facilityNeed(item.id));
   }
 });

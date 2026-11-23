@@ -12,6 +12,7 @@ import {
   secondTechSlot,
   serverOutput,
   TECH_OPENS,
+  FIRST_RESEARCH_ID,
   techJobs,
   hasResearchMaterials,
   researchMaterials,
@@ -52,20 +53,31 @@ function formatDuration(ms) {
 }
 
 export default function ResearchPage() {
-  const { state, startTech } = useGameState();
+  const { state, startTech, noteTutorialPage } = useGameState();
   const [tab, setTab] = useState("cpu");
   const [focus, setFocus] = useState(null);
   // Arriving from a locked era's GO TO TECH (/tech#id): open that project's
   // tab and scroll to it.
   useEffect(() => {
     const id = decodeURIComponent((window.location.hash || "").slice(1));
-    const entry = id && researchItem(id);
+    let entry = id && researchItem(id);
+    // New players land on the first teaching project (it lives on Storage),
+    // not on the CPU tab where the tree starts in 1971.
+    if (!entry) {
+      const first = researchItem(FIRST_RESEARCH_ID);
+      const done = first && (state.techDone || []).includes(first.id);
+      const jobs = techJobs(state);
+      const runningFirst = first && jobs.some((job) => job.id === first.id);
+      // Don't yank away from a project already running on another tab.
+      if (first && !done && (runningFirst || jobs.length === 0)) entry = first;
+    }
     if (!entry) return;
     setTab(entry.tab);
-    setFocus(id);
-    const timer = setTimeout(() => document.querySelector(`[data-research-item="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "center" }), 50);
+    setFocus(entry.id);
+    const timer = setTimeout(() => document.querySelector(`[data-research-item="${CSS.escape(entry.id)}"]`)?.scrollIntoView({ block: "center" }), 50);
     return () => clearTimeout(timer);
   }, []);
+  useEffect(() => { noteTutorialPage?.("tech"); }, [noteTutorialPage]);
   const rows = researchRows(tab);
   const jobs = techJobs(state);
   const twoSlots = secondTechSlot(state);
@@ -77,7 +89,7 @@ export default function ResearchPage() {
     <ScreenShell title="TECH" subtitle="Projects keep going while the app is closed.">
       <Panel>
         <div className="flex items-start justify-between gap-1">
-          <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">R&amp;D points {rd.toLocaleString("en-US")} · +{perSecond.toFixed(2)} a second · year {playerYear(state) || "—"}</p>
+          <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">R&amp;D points {rd.toLocaleString("en-US")} · +{(perSecond >= 10 ? perSecond.toFixed(1) : perSecond >= 0.1 ? perSecond.toFixed(2) : perSecond.toFixed(3))} a second · year {playerYear(state) || "—"}</p>
           <ItemHelp kind="rd" state={state} name="R&D points" className="-mr-2 -mt-2.5" />
         </div>
         {jobs.map((job) => {

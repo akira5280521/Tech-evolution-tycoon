@@ -17,7 +17,6 @@ import PrestigeReport from "./PrestigeReport";
 import BottomTabs from "./BottomTabs";
 import DilemmaModal from "./DilemmaModal";
 import BubbleBanner from "./BubbleBanner";
-import CoachMark from "./CoachMark";
 import { ItemHelp, TipCard } from "./HintSheet";
 import { currentTutorialStep, stepTarget, tutorialActive } from "@/lib/tutorial";
 import { StickyHud } from "./chrome";
@@ -320,7 +319,6 @@ export default function GameScreen() {
         </p>
       </footer>
       <BottomTabs />
-      <CoachMark state={state} onNext={tutorialNext} onSkip={tutorialSkip} />
       <TipCard />
     </div>
   );

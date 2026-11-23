@@ -15,6 +15,7 @@ import { Route as BoardRouteImport } from './routes/board'
 import { Route as BoostRouteImport } from './routes/boost'
 import { Route as FacilitiesRouteImport } from './routes/facilities'
 import { Route as MoreRouteImport } from './routes/more'
+import { Route as MuseumRouteImport } from './routes/museum'
 import { Route as ResearchRouteImport } from './routes/research'
 import { Route as RigsRouteImport } from './routes/rigs'
 import { Route as RunsRouteImport } from './routes/runs'
@@ -22,6 +23,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TechRouteImport } from './routes/tech'
 import { Route as ApiSwRouteImport } from './routes/api/sw'
 import { Route as ApiTimeRouteImport } from './routes/api/time'
+import { Route as FacilitiesFacilityIdRouteImport } from './routes/facilities.$facilityId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -51,6 +53,11 @@ const FacilitiesRoute = FacilitiesRouteImport.update({
 const MoreRoute = MoreRouteImport.update({
   id: '/more',
   path: '/more',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MuseumRoute = MuseumRouteImport.update({
+  id: '/museum',
+  path: '/museum',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResearchRoute = ResearchRouteImport.update({
@@ -88,14 +95,20 @@ const ApiTimeRoute = ApiTimeRouteImport.update({
   path: '/api/time',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FacilitiesFacilityIdRoute = FacilitiesFacilityIdRouteImport.update({
+  id: '/$facilityId',
+  path: '/$facilityId',
+  getParentRoute: () => FacilitiesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/badges': typeof BadgesRoute
   '/board': typeof BoardRoute
   '/boost': typeof BoostRoute
-  '/facilities': typeof FacilitiesRoute
+  '/facilities': typeof FacilitiesRouteWithChildren
   '/more': typeof MoreRoute
+  '/museum': typeof MuseumRoute
   '/research': typeof ResearchRoute
   '/rigs': typeof RigsRoute
   '/runs': typeof RunsRoute
@@ -103,14 +116,16 @@ export interface FileRoutesByFullPath {
   '/tech': typeof TechRoute
   '/api/sw': typeof ApiSwRoute
   '/api/time': typeof ApiTimeRoute
+  '/facilities/$facilityId': typeof FacilitiesFacilityIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/badges': typeof BadgesRoute
   '/board': typeof BoardRoute
   '/boost': typeof BoostRoute
-  '/facilities': typeof FacilitiesRoute
+  '/facilities': typeof FacilitiesRouteWithChildren
   '/more': typeof MoreRoute
+  '/museum': typeof MuseumRoute
   '/research': typeof ResearchRoute
   '/rigs': typeof RigsRoute
   '/runs': typeof RunsRoute
@@ -118,6 +133,7 @@ export interface FileRoutesByTo {
   '/tech': typeof TechRoute
   '/api/sw': typeof ApiSwRoute
   '/api/time': typeof ApiTimeRoute
+  '/facilities/$facilityId': typeof FacilitiesFacilityIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,8 +141,9 @@ export interface FileRoutesById {
   '/badges': typeof BadgesRoute
   '/board': typeof BoardRoute
   '/boost': typeof BoostRoute
-  '/facilities': typeof FacilitiesRoute
+  '/facilities': typeof FacilitiesRouteWithChildren
   '/more': typeof MoreRoute
+  '/museum': typeof MuseumRoute
   '/research': typeof ResearchRoute
   '/rigs': typeof RigsRoute
   '/runs': typeof RunsRoute
@@ -134,6 +151,7 @@ export interface FileRoutesById {
   '/tech': typeof TechRoute
   '/api/sw': typeof ApiSwRoute
   '/api/time': typeof ApiTimeRoute
+  '/facilities/$facilityId': typeof FacilitiesFacilityIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -144,6 +162,7 @@ export interface FileRouteTypes {
     | '/boost'
     | '/facilities'
     | '/more'
+    | '/museum'
     | '/research'
     | '/rigs'
     | '/runs'
@@ -151,6 +170,7 @@ export interface FileRouteTypes {
     | '/tech'
     | '/api/sw'
     | '/api/time'
+    | '/facilities/$facilityId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -159,6 +179,7 @@ export interface FileRouteTypes {
     | '/boost'
     | '/facilities'
     | '/more'
+    | '/museum'
     | '/research'
     | '/rigs'
     | '/runs'
@@ -166,6 +187,7 @@ export interface FileRouteTypes {
     | '/tech'
     | '/api/sw'
     | '/api/time'
+    | '/facilities/$facilityId'
   id:
     | '__root__'
     | '/'
@@ -174,6 +196,7 @@ export interface FileRouteTypes {
     | '/boost'
     | '/facilities'
     | '/more'
+    | '/museum'
     | '/research'
     | '/rigs'
     | '/runs'
@@ -181,6 +204,7 @@ export interface FileRouteTypes {
     | '/tech'
     | '/api/sw'
     | '/api/time'
+    | '/facilities/$facilityId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -188,8 +212,9 @@ export interface RootRouteChildren {
   BadgesRoute: typeof BadgesRoute
   BoardRoute: typeof BoardRoute
   BoostRoute: typeof BoostRoute
-  FacilitiesRoute: typeof FacilitiesRoute
+  FacilitiesRoute: typeof FacilitiesRouteWithChildren
   MoreRoute: typeof MoreRoute
+  MuseumRoute: typeof MuseumRoute
   ResearchRoute: typeof ResearchRoute
   RigsRoute: typeof RigsRoute
   RunsRoute: typeof RunsRoute
@@ -243,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MoreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/museum': {
+      id: '/museum'
+      path: '/museum'
+      fullPath: '/museum'
+      preLoaderRoute: typeof MuseumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/research': {
       id: '/research'
       path: '/research'
@@ -292,16 +324,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTimeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/facilities/$facilityId': {
+      id: '/facilities/$facilityId'
+      path: '/$facilityId'
+      fullPath: '/facilities/$facilityId'
+      preLoaderRoute: typeof FacilitiesFacilityIdRouteImport
+      parentRoute: typeof FacilitiesRoute
+    }
   }
 }
+
+interface FacilitiesRouteChildren {
+  FacilitiesFacilityIdRoute: typeof FacilitiesFacilityIdRoute
+}
+
+const FacilitiesRouteChildren: FacilitiesRouteChildren = {
+  FacilitiesFacilityIdRoute: FacilitiesFacilityIdRoute,
+}
+
+const FacilitiesRouteWithChildren = FacilitiesRoute._addFileChildren(
+  FacilitiesRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BadgesRoute: BadgesRoute,
   BoardRoute: BoardRoute,
   BoostRoute: BoostRoute,
-  FacilitiesRoute: FacilitiesRoute,
+  FacilitiesRoute: FacilitiesRouteWithChildren,
   MoreRoute: MoreRoute,
+  MuseumRoute: MuseumRoute,
   ResearchRoute: ResearchRoute,
   RigsRoute: RigsRoute,
   RunsRoute: RunsRoute,

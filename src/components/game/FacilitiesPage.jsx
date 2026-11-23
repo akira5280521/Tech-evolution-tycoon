@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Navigate } from "@tanstack/react-router";
 import { REFINED, money } from "@/lib/gameConfig";
 import { businessIncomePerSecond, incomePerSecond } from "@/lib/empire";
 import {
@@ -179,7 +180,7 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
         </div>
         <p className={`mt-2 break-words font-term text-base leading-5 ${open ? "text-[var(--game-fg)]" : "text-[var(--game-muted)] opacity-60"}`}>{facility.blurb}</p>
         <p data-facility-yield className="mt-2 break-words font-term text-base leading-5 text-[var(--game-success)]">
-          {bench ? `+${row.perSecond.toFixed(3)} R&D points a second` : research ? `+${(serverOutput(state).perSecond - serverOutput(state).bench).toFixed(2)} R&D points a second` : money(row.perSecond) + "/s"}
+          {bench ? `+${rate(row.perSecond)} R&D points a second` : research ? `+${rate(serverOutput(state).perSecond - serverOutput(state).bench)} R&D points a second` : money(row.perSecond) + "/s"}
           {!research && !bench && open && business > 0 ? ` · ${percent(row.share)} of the businesses` : ""}
         </p>
         {open ? (
@@ -345,47 +346,33 @@ function RebuildPanel({ state, onRebuild }) {
   );
 }
 
-export default function FacilitiesPage() {
-  const { state, buyFacilityPart, rebuildFacilities, toggleBenchOc } = useGameState();
+export default function FacilitiesPage({ facilityId }) {
+  const { state, buyFacilityPart, rebuildFacilities, toggleBenchOc, noteTutorialPage } = useGameState();
+  const facility = FACILITIES.find((item) => item.id === facilityId);
   const business = businessIncomePerSecond(state, Date.now());
   const report = facilityReport(state, business);
-  const open = facilitiesOpen(state);
-  // The part that adds the most pay for its price (or starts a plant).
-  const next = open ? nextPurchase(state, business) : null;
-  // HQ cards link to /facilities#servers (and the other plants).
+  const plantsOpen = facilitiesOpen(state);
+  const next = plantsOpen ? nextPurchase(state, business) : null;
   useEffect(() => {
-    const id = decodeURIComponent((window.location.hash || "").slice(1));
-    if (!id) return;
-    const timer = setTimeout(() => document.querySelector(`[data-facility="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "start" }), 50);
-    return () => clearTimeout(timer);
-  }, []);
+    if (facilityId === "servers") noteTutorialPage?.("servers");
+  }, [facilityId, noteTutorialPage]);
+  if (!facility) return <Navigate to={HUB_ROUTE} replace />;
+  const showRebuild = facilityId === "mine" || facilityId === "cluster";
+  const showNext = showRebuild && plantsOpen && next;
   return (
-    <ScreenShell title="FACILITIES" subtitle="Research machines and side plants." backTo={HUB_ROUTE}>
-      {!open && (
-        <Panel>
-          <p data-facilities-locked className="break-words font-term text-base leading-5 text-[var(--game-fg)]">
-            The punch-card machine in the tabulating room works from the start. The PC bench opens with Home Computers, and the Bitbark mine and training cluster with an AI Accelerator.
-          </p>
-        </Panel>
-      )}
-      {open && (
+    <ScreenShell title={facility.name} subtitle={facility.blurb} backTo={HUB_ROUTE}>
+      {showRebuild && plantsOpen && (
         <p className="break-words px-1 font-term text-base leading-5 text-[var(--game-muted)]">
           Both plants together pay {money(report.perSecond)}/s, {percent(report.share)} of the businesses. Short power or cooling throttles the cards. The cluster also needs enough memory for its model.
         </p>
       )}
-      {open && (
+      {showNext && (
         <p data-next-part className="break-words px-1 font-term text-base leading-5 text-[var(--game-accent)]">
-          {next
-            ? `Best next part: ${next.name} for the ${next.facilityId === "mine" ? "mine" : "cluster"}${next.extras?.length ? `, with ${extrasText(next.extras)} to run it` : ""}, ${money(next.bundleCost || next.cost)}${next.payback ? `; pays for itself in about ${Math.max(1, Math.round(next.payback / 60))} min` : " to get it running"}.`
-            : report.capped
-              ? "Both plants are at the income cap; more parts won't add pay."
-              : "No part pays for itself within 15 minutes right now."}
+          {`Best next part: ${next.name} for the ${next.facilityId === "mine" ? "mine" : "cluster"}${next.extras?.length ? `, with ${extrasText(next.extras)} to run it` : ""}, ${money(next.bundleCost || next.cost)}${next.payback ? `; pays for itself in about ${Math.max(1, Math.round(next.payback / 60))} min` : " to get it running"}.`}
         </p>
       )}
-      <RebuildPanel state={state} onRebuild={rebuildFacilities} />
-      {FACILITIES.map((facility) => (
-        <Plant key={facility.id} facility={facility} state={state} report={report} business={business} cash={state.cash || 0} onBuy={buyFacilityPart} next={next} onToggleOc={toggleBenchOc} />
-      ))}
+      {showRebuild && <RebuildPanel state={state} onRebuild={rebuildFacilities} />}
+      <Plant facility={facility} state={state} report={report} business={business} cash={state.cash || 0} onBuy={buyFacilityPart} next={next} onToggleOc={toggleBenchOc} />
     </ScreenShell>
   );
 }

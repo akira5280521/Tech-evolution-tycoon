@@ -5,6 +5,7 @@ import { money } from "@/lib/gameConfig";
 import { PREFS_EVENT } from "@/lib/gamePrefs";
 import { progressLabel } from "@/lib/progress";
 import BottomTabs from "./BottomTabs";
+import { TechHqLinks } from "./TopBar";
 import { ItemHelp, TipCard } from "./HintSheet";
 import NewsTicker from "./NewsTicker";
 import StarterGoal from "./StarterGoal";
@@ -108,6 +109,9 @@ export default function ScreenShell({ title, subtitle, children, backTo = "/" })
               {subtitle && <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{subtitle}</p>}
             </div>
             <BackButton to={backTo} />
+          </div>
+          <div className="mt-2">
+            <TechHqLinks state={state} />
           </div>
         </div>
       </header>

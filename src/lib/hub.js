@@ -12,17 +12,30 @@ import { FACILITIES, FACILITY_UNLOCK, PARTS, STARTER_PART_ID, anyFacilityOpen, f
 export const HUB_LABEL = "HQ";
 export const HUB_ROUTE = "/rigs";
 
-export const HUB_ITEMS = FACILITIES.map((fac) => ({
-  id: fac.id,
-  label: fac.name,
-  to: "/facilities",
-  hash: fac.id,
-  text: fac.blurb,
-  // Research servers stay open from era 1 so the starter punch-card machine
-  // can be bought before Mainframes. The rest wait for their era this run.
-  open: (state) => (fac.id === "servers" ? !!state : facilityUnlocked(state, fac.id)),
-  need: () => facilityNeed(fac.id),
-}));
+export const HUB_ITEMS = [
+  ...FACILITIES.map((fac) => ({
+    id: fac.id,
+    label: fac.name,
+    to: "/facilities/$facilityId",
+    params: { facilityId: fac.id },
+    icon: fac.icon,
+    text: fac.blurb,
+    // Research servers stay open from era 1 so the starter punch-card machine
+    // can be bought before Mainframes. The rest wait for their era this run.
+    open: (state) => (fac.id === "servers" ? !!state : facilityUnlocked(state, fac.id)),
+    need: () => facilityNeed(fac.id),
+  })),
+  {
+    id: "museum",
+    label: "HARDWARE MUSEUM",
+    to: "/museum",
+    // Placeholder until Andrew picks the building or the PC exhibit.
+    icon: "/icons/facilities/museum-placeholder.png",
+    text: "Every piece of hardware in the game, room by room and decade by decade.",
+    open: (state) => !!state,
+    need: () => "",
+  },
+];
 
 // The starter research machine is owned, or the cash for the first one is
 // there (a few dollars in the first minutes of a new game).

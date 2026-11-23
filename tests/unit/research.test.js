@@ -56,22 +56,22 @@ test("R&D never goes below zero or turns into NaN", () => {
   assert.equal(s.data, 0);
 });
 
-test("TECH is reachable from the first era; projects still wait for their year", () => {
-  const early = { biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: i === 0 ? 1 : 0 })), techDone: [] };
+test("TECH is reachable from the first era; later projects still wait for their year", () => {
+  const early = { biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: i === 0 ? 1 : 0 })), techDone: [], data: 1 };
   assert.ok(techOpen(early), "the TECH page itself is open from era 1");
-  assert.ok(playerYear(early) < TECH_OPENS, `era 1 is before ${TECH_OPENS}`);
-  const first = researchItem("store-hdd");
-  assert.equal(first.year, TECH_OPENS);
-  assert.equal(researchLock(early, first), `Requires ${TECH_OPENS}`);
+  assert.equal(researchLock(early, researchItem("tab-hollerith")), null, "the first teaching project is open from era 1");
+  assert.equal(researchLock(early, researchItem("store-tape")), "Requires 1951");
+  assert.equal(researchLock(early, researchItem("store-hdd")), "Requires 1956");
   const cpu = researchRows("cpu").find((entry) => !entry.soon);
   assert.ok(cpu, "the CPU tab still lists hardware to research");
   assert.match(researchLock(early, cpu) || "", /^Requires /);
 });
 
-test("a year that has reached the first project can start it once prereqs are met", () => {
+test("the 5 MB disk waits for the magnetic tape project", () => {
   const late = { biz: BUSINESSES.map((b) => ({ id: b.id, owned: 50 })), techDone: [] };
-  assert.ok(playerYear(late) >= TECH_OPENS);
+  assert.ok(playerYear(late) >= 1956);
   assert.equal(techOpen(late), true);
-  const first = researchItem("store-hdd");
-  assert.equal(researchLock(late, first), null);
+  assert.equal(researchLock(late, researchItem("store-tape")), null);
+  assert.match(researchLock(late, researchItem("store-hdd")) || "", /tape|Tape|Research/i);
+  assert.equal(researchLock({ ...late, techDone: ["store-tape"] }, researchItem("store-hdd")), null);
 });

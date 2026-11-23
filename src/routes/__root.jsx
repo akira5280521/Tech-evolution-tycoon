@@ -7,6 +7,7 @@ import { NotFound } from "@/components/NotFound";
 import { Toaster } from "@/components/ui/sonner";
 import { GameStateProvider } from "@/components/game/GameState";
 import { UpdateCheckProvider } from "@/components/game/UpdateNotice";
+import CoachHost from "@/components/game/CoachHost";
 import { AuthProvider } from "@/lib/AuthContext";
 import { installNativeLifecycle } from "@/lib/nativeShell";
 import { installErrorLog } from "@/lib/errorLog";
@@ -55,6 +56,7 @@ function RootComponent() {
       <AuthProvider>
         <GameStateProvider>
         <UpdateCheckProvider>
+        <CoachHost />
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={location.pathname}

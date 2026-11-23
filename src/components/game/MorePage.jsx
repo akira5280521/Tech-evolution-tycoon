@@ -15,7 +15,6 @@ import ScreenShell, { GoldButton, Panel, ProgressBar } from "./chrome";
 import { timedProgress } from "@/lib/progress";
 import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
-import MuseumPage from "./MuseumPage";
 import CopyStats from "./CopyStats";
 import LabProjects from "./LabProjects";
 import AccountPanel from "./AccountPanel";
@@ -23,13 +22,13 @@ import { HelpTip, ItemHelp } from "./HintSheet";
 import { GLOSSARY, GLOSSARY_ORDER } from "@/lib/glossary";
 import { AchievementsButton, AwayReminder, DisplaySettings, FeedbackButton, PlayToggles, ResetProgress, WhatsNewButton } from "./SettingsControls";
 import { HUB_LABEL } from "@/lib/hub";
+import { HOWTO_GUIDES, guideLocked } from "@/lib/howto";
 
 const TABS = [
   { id: "settings", label: "SETTINGS", title: "SETTINGS" },
   { id: "howto", label: "HOW TO PLAY", title: "HOW TO PLAY" },
   { id: "stats", label: "STATS", title: "STATS" },
   { id: "badges", label: "BADGES", title: "BADGES" },
-  { id: "museum", label: "MUSEUM", title: "MUSEUM" },
 ];
 
 export function MoreLinks({ active }) {
@@ -63,7 +62,10 @@ export default function MorePage() {
   const data = getSaveData();
 
   if (tab === "badges") return <BadgesPage top={<MoreLinks active="badges" />} />;
-  if (tab === "museum") return <MuseumPage top={<MoreLinks active="museum" />} />;
+  if (hash === "museum") {
+    navigate({ to: "/museum", replace: true });
+    return null;
+  }
 
   return (
     <ScreenShell title={TABS.find((entry) => entry.id === tab)?.title || "SETTINGS"} subtitle="">
@@ -103,7 +105,7 @@ export default function MorePage() {
               </GoldButton>
             </div>
           </Panel>
-          <HowTo tipsOff={!!state.tutorial?.tipsOff} onTips={setTipsOff} />
+          <HowTo state={state} tipsOff={!!state.tutorial?.tipsOff} onTips={setTipsOff} />
         </>
       )}
       {tab === "stats" && <Stats state={state} data={data} />}
@@ -234,8 +236,8 @@ const HOW_TO = [
     id: "facilities",
     title: `FACILITIES (${HUB_LABEL})`,
     lines: [
-      "Research servers open with Mainframes and make R&D points. Newer machines and parts open in their real year once you research them on TECH. With AI Accelerators, the Bitbark mine and the AI training cluster add a small extra income.",
-      "Buy parts for each plant. A plant runs slower when its power or cooling can't keep up with its cards or racks, and it tells you what to add next. Parts are lost when you prestige.",
+      "HQ (beside TECH) is the menu for every area: Research Servers, the PC Build Bench, the Bitbark Mine, the training cluster, and the Hardware Museum. Tap a card to open that area.",
+      "Each plant has its own page. Research servers make R&D points; later plants add a little income. Parts need their TECH project, and are lost when you prestige.",
     ],
   },
   {
@@ -260,7 +262,7 @@ const HOW_TO = [
   },
 ];
 
-function HowTo({ tipsOff, onTips }) {
+function HowTo({ state, tipsOff, onTips }) {
   return (
     <>
       {HOW_TO.map((section, i) => (
@@ -276,6 +278,26 @@ function HowTo({ tipsOff, onTips }) {
           </ul>
         </details>
       ))}
+      {HOWTO_GUIDES.map((guide) => {
+        const locked = guideLocked(state, guide);
+        return (
+          <details key={guide.id} data-howto={guide.id} data-howto-locked={locked ? "" : undefined} className="howto-section border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]">
+            <summary className={`flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 ${locked ? "text-[var(--game-dim)]" : "text-[var(--game-accent)]"}`}>
+              {locked ? "??? " + guide.title : guide.title}
+              <span aria-hidden="true" className="howto-caret shrink-0 text-[var(--game-muted)]">+</span>
+            </summary>
+            {locked ? (
+              <p data-howto-need className="px-3 pb-3 font-pixel text-[0.5rem] leading-4 text-[var(--game-dim)]">Unlocks with {guide.unlocks}. COMING SOON</p>
+            ) : (
+              <ul className="space-y-2 px-3 pb-3">
+                {guide.lines.map((line) => (
+                  <li key={line} className="font-term text-lg leading-6">{line}</li>
+                ))}
+              </ul>
+            )}
+          </details>
+        );
+      })}
       <details data-howto="words" className="howto-section border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]">
         <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">
           WORDS TO KNOW

@@ -2,7 +2,7 @@
 import { test, expect } from "@playwright/test";
 import { coachStep, expectClean, open, saved } from "./helpers.js";
 
-test("a new player walks all 7 steps and the starter goals take over", async ({ page }) => {
+test("a new player walks all 12 steps and the starter goals take over", async ({ page }) => {
   test.setTimeout(120_000);
   const seen = await open(page, "/", "newrich");
   expect(await coachStep(page)).toBe("run");
@@ -56,8 +56,32 @@ test("a new player walks all 7 steps and the starter goals take over", async ({ 
 
   await page.click("[data-supply]");
   if (await page.locator("[data-help-close]").count()) await page.click("[data-help-close]");
-  await expect.poll(() => coachStep(page)).toBe("later");
-  await expect(page.locator("[data-coach]")).toContainText("7/7");
+  await expect.poll(() => coachStep(page)).toBe("hq");
+  await page.locator("[data-open-facilities]").click();
+  await expect.poll(() => coachStep(page), { timeout: 8000 }).toBe("servers");
+  await page.locator("[data-hub-item='servers']").click();
+  await expect.poll(() => coachStep(page), { timeout: 8000 }).toBe("starter");
+  const buyStarter = page.locator("[data-action='buy-tab601']");
+  if (!(await buyStarter.isEnabled())) {
+    await page.evaluate((k) => {
+      const s = JSON.parse(localStorage.getItem(k));
+      s.supply = { ...(s.supply || {}), wood: Math.max(s.supply?.wood || 0, 8) };
+      localStorage.setItem(k, JSON.stringify(s));
+    }, "pc-tycoon-save-v1");
+    await page.reload();
+    await page.locator("nav[aria-label='Main navigation']").waitFor();
+    await page.waitForTimeout(700);
+  }
+  await page.locator("[data-action='buy-tab601']").click();
+  await expect.poll(() => coachStep(page), { timeout: 8000 }).toBe("tech");
+  await page.locator("[data-open-research]").click();
+  await expect.poll(() => coachStep(page), { timeout: 8000 }).toBe("project");
+  const startFirst = page.locator("[data-action='research-tab-hollerith']");
+  if (!(await startFirst.count())) await page.locator("[data-research-tab='storage']").click();
+  await expect(startFirst).toBeVisible();
+  await startFirst.click();
+  await expect.poll(() => coachStep(page), { timeout: 8000 }).toBe("later");
+  await expect(page.locator("[data-coach]")).toContainText("12/12");
   await expect(page.locator("[data-coach-next]")).toContainText("DONE");
   await page.click("[data-coach-next]");
   await expect.poll(() => coachStep(page)).toBe(null);
@@ -80,19 +104,19 @@ for (const save of ["mid", "early", "v4mid"]) {
   });
 }
 
-test("replay from How to Play walks all 7 steps with Next", async ({ page }) => {
+test("replay from How to Play walks all 12 steps with Next", async ({ page }) => {
   await open(page, "/more#howto", "mid");
   await page.click('[data-action="tutorial-replay"]');
   await page.waitForTimeout(600);
   await page.goto("/");
   await expect.poll(() => coachStep(page), { timeout: 8000 }).toBe("run");
   let steps = 0;
-  for (let i = 0; i < 20 && (await coachStep(page)); i++) {
+  for (let i = 0; i < 30 && (await coachStep(page)); i++) {
     await page.click("[data-coach-next]");
     await page.waitForTimeout(200);
     steps++;
   }
-  expect(steps).toBe(7);
+  expect(steps).toBe(12);
 });
 
 for (const viewport of [{ width: 844, height: 390 }, { width: 320, height: 568 }]) {

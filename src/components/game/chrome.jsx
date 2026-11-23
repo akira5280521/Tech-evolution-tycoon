@@ -93,7 +93,7 @@ export function StickyHud({ state, cps }) {
   );
 }
 
-export default function ScreenShell({ title, subtitle, children, backTo = "/" }) {
+export default function ScreenShell({ title, subtitle, children, backTo = "/", titleIcon } = {}) {
   const { state } = useGameState();
   const cps = incomePerSecond(state, Date.now());
   return (
@@ -104,9 +104,21 @@ export default function ScreenShell({ title, subtitle, children, backTo = "/" })
       <header className="safe-x border-b-2 border-[var(--game-border)] bg-[var(--game-bg)] px-3 pb-3 pt-2">
         <div className="mx-auto max-w-4xl">
           <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h1 className="title-glow whitespace-pre-line font-pixel text-sm leading-6 text-[var(--game-accent)]">{title}</h1>
-              {subtitle && <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{subtitle}</p>}
+            <div className="flex min-w-0 items-center gap-2.5">
+              {titleIcon && (
+                <img
+                  src={titleIcon}
+                  alt=""
+                  width={32}
+                  height={32}
+                  data-title-icon
+                  className="pixel-art h-8 w-8 shrink-0"
+                />
+              )}
+              <div className="min-w-0">
+                <h1 className="title-glow whitespace-pre-line font-pixel text-sm leading-6 text-[var(--game-accent)]">{title}</h1>
+                {subtitle && <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{subtitle}</p>}
+              </div>
             </div>
             <BackButton to={backTo} />
           </div>

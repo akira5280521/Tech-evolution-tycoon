@@ -15,8 +15,15 @@ export default function RigsHub() {
       <div data-hub-menu className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2">
         {HUB_ITEMS.map((item) => {
           const open = item.open(state);
+          const museum = item.id === "museum";
           const icon = item.icon ? (
-            <img src={item.icon} alt="" className="pixel-art h-10 w-10 shrink-0 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] object-contain" />
+            <img
+              src={item.icon}
+              alt=""
+              width={museum ? 16 : 40}
+              height={museum ? 16 : 40}
+              className={`pixel-art shrink-0 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] ${museum ? "box-content h-8 w-8" : "h-10 w-10 object-contain"}`}
+            />
           ) : null;
           if (!open) {
             return (

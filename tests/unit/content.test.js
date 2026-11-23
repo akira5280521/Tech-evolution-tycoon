@@ -53,12 +53,22 @@ test("every picture the game shows exists", () => {
   const paths = [
     ...BUSINESSES.map((b) => b.icon),
     ...FACILITIES.map((f) => f.icon),
-    "/icons/facilities/museum-placeholder.png",
+    "/icons/facilities/museum.png",
+    "/icons/facilities/museum-32.png",
     ...PARTS.map((p) => p.icon),
     "/icons/placeholder-era.svg",
   ].filter(Boolean);
   const missing = paths.filter((p) => !existsSync(publicFile(p)));
   assert.deepEqual(missing, []);
+});
+
+test("the Museum icons are the 16px card and 32px title drawings", () => {
+  const size = (p) => {
+    const buf = readFileSync(publicFile(p));
+    return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
+  };
+  assert.deepEqual(size("/icons/facilities/museum.png"), { w: 16, h: 16 });
+  assert.deepEqual(size("/icons/facilities/museum-32.png"), { w: 32, h: 32 });
 });
 
 test("unfinished parts are marked Coming soon and can't be bought", () => {

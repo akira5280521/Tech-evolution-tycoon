@@ -29,8 +29,10 @@ export const HUB_ITEMS = [
     id: "museum",
     label: "HARDWARE MUSEUM",
     to: "/museum",
-    // Placeholder until Andrew picks the building or the PC exhibit.
-    icon: "/icons/facilities/museum-placeholder.png",
+    // Option A: the gold classical museum. 16px on the HQ card (shown at 2x),
+    // 32px beside the Museum page title.
+    icon: "/icons/facilities/museum.png",
+    titleIcon: "/icons/facilities/museum-32.png",
     text: "Every piece of hardware in the game, room by room and decade by decade.",
     open: (state) => !!state,
     need: () => "",

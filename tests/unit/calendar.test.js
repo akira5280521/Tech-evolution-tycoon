@@ -59,7 +59,7 @@ test("the calendar starts at its start year and reaches each era's year at its p
 test("the calendar never goes backwards and keeps going past the last era", () => {
   const s = run();
   let prev = -Infinity;
-  for (let h = 0; h <= 200; h += 0.25) {
+  for (let h = 0; h <= 600; h += 0.5) {
     const y = calendarYearAt(s, T0 + h * 3600e3);
     assert.ok(y >= prev, `hour ${h}`);
     prev = y;

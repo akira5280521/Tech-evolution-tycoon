@@ -15,47 +15,52 @@ import { ERA_YEAR } from "./eraYear.js";
 const MIN = 60e3;
 const H = 60 * MIN;
 
-// Time after a first run starts, era by era, from the pacing sim. Germanium
+// Time after a run starts, era by era, for a run with no investors: twice the
+// pacing sim's nonstop first run (0.0.29), so a steady player who isn't on
+// all day is about on time. The first run in the sim prestiges after 3D
+// Accelerators; later eras come from its strong run (20,000 investors, one
+// fork) times 14.5, how much faster it was on the eras both reached. Germanium
 // is left out: it opens after Mainframes in the game but came first (1948),
 // so it would always read as behind.
 export const HISTORY_PACE_MS = {
-  loom: 6 * MIN,
-  punchcards: 12 * MIN,
-  relay: 20 * MIN,
+  loom: 19 * MIN,
+  punchcards: 21 * MIN,
+  relay: 23 * MIN,
   sand: 26 * MIN,
-  copper: 30 * MIN,
-  glass: 34 * MIN,
-  filament: 38 * MIN,
-  tubes: 45 * MIN,
-  mainframes: 1 * H,
-  transistors: 1.3 * H,
-  silicon: 1.5 * H,
-  wafers: 1.7 * H,
-  ics: 2 * H,
-  minis: 2.3 * H,
-  cpu: 2.8 * H,
-  homepc: 3.4 * H,
-  consoles: 3.8 * H,
-  supercomputers: 4.5 * H,
-  workstations: 5.2 * H,
-  laptops: 6 * H,
-  dialup: 7 * H,
-  multimedia: 8 * H,
-  accel3d: 9.5 * H,
-  gpu: 11 * H,
-  cloud: 13 * H,
-  phones: 15 * H,
-  tablets: 17 * H,
-  rgb: 20 * H,
-  ai: 23 * H,
-  quantum: 27 * H,
-  vr: 32 * H,
-  chatbots: 38 * H,
-  supercluster: 46 * H,
+  copper: 46 * MIN,
+  glass: 51 * MIN,
+  filament: 64 * MIN,
+  tubes: 74 * MIN,
+  mainframes: 75 * MIN,
+  transistors: 103 * MIN,
+  silicon: 104 * MIN,
+  wafers: 131 * MIN,
+  ics: 137 * MIN,
+  minis: 139 * MIN,
+  cpu: 143 * MIN,
+  homepc: 3.2 * H,
+  consoles: 4.4 * H,
+  supercomputers: 5.8 * H,
+  workstations: 6.4 * H,
+  laptops: 7 * H,
+  dialup: 7.2 * H,
+  multimedia: 7.3 * H,
+  accel3d: 7.8 * H,
+  gpu: 10 * H,
+  cloud: 10.5 * H,
+  phones: 12.4 * H,
+  tablets: 15 * H,
+  rgb: 17.3 * H,
+  ai: 19.3 * H,
+  quantum: 29 * H,
+  vr: 67 * H,
+  chatbots: 197 * H,
+  supercluster: 500 * H,
 };
 
 // How strongly run strength speeds the calendar: speed = runBonus ^ power.
-export const CALENDAR_POWER = 1;
+// The strong run was 14.5x faster at a run bonus of 16.4: 0.95.
+export const CALENDAR_POWER = 0.95;
 
 // The calendar starts here; earlier eras open in the first minutes anyway.
 export const CALENDAR_START = 1800;

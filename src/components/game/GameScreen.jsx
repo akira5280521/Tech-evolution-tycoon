@@ -179,10 +179,8 @@ export default function GameScreen() {
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
       <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} />
       <PrestigeReport report={state.offlineReport ? null : state.prestigeReport} onDismiss={dismissPrestigeReport} />
-      {!state.offlineReport && !state.prestigeReport && (
-        {!tutorialActive(state) && (
-          <ArrivalCard arrival={currentArrival(state)} onDismiss={dismissArrivalCard} />
-        )}
+      {!state.offlineReport && !state.prestigeReport && !tutorialActive(state) && (
+        <ArrivalCard arrival={currentArrival(state)} onDismiss={dismissArrivalCard} />
       )}
       {!state.offlineReport && !state.prestigeReport && !currentArrival(state) && (
         <StoryEventModal event={state.storyEvent} onChoose={chooseStoryEvent} />

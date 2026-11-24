@@ -194,6 +194,8 @@ export function migrateSave(data) {
       : BUSINESSES.filter((cfg, i) => i > 0 && (biz[i]?.owned || 0) === 0 && (biz[i - 1]?.owned || 0) >= ERA_GATE).map((cfg) => cfg.id),
     // A historical shortage under way: { key, until }, or none.
     shortage: data.shortage && typeof data.shortage === "object" && typeof data.shortage.key === "string" && Number.isFinite(data.shortage.until) ? { key: data.shortage.key, until: data.shortage.until } : null,
+    // A recall being ridden out: { era, until }, or none.
+    recall: data.recall && typeof data.recall === "object" && BUSINESSES.some((cfg) => cfg.id === data.recall.era) && Number.isFinite(data.recall.until) ? { era: data.recall.era, until: data.recall.until } : null,
     // Eras whose material is paid (once, ever). Older saves: filled in on load.
     erasPaid: Array.isArray(data.erasPaid) ? data.erasPaid.filter((id) => BUSINESSES.some((cfg) => cfg.id === id)) : null,
     foreman: version < 4 ? progressed : !!data.foreman,

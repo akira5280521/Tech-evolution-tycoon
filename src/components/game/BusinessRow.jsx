@@ -13,7 +13,8 @@ import {
   money,
   nextMilestone,
 } from "@/lib/gameConfig";
-import { effectiveCycleMs, empireFactors, makesOf, managerPrice, runYield, supplyCap, supplyFactor, supplyFull, upgradesOf } from "@/lib/empire";
+import { ANNIVERSARY_MULT, anniversaryMult } from "@/lib/anniversaries";
+import { effectiveCycleMs, empireFactors, makesOf, managerPrice, recallMult, runYield, supplyCap, supplyFactor, supplyFull, upgradesOf } from "@/lib/empire";
 import { amount } from "./StorageSheet";
 import { generationAt, generationPayMult } from "@/lib/generations";
 import IconTile from "./IconTile";
@@ -131,7 +132,9 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
   const shownName = face?.name || cfg.name;
   const shownTag = face?.tagline || cfg.tagline;
   const shownEra = face?.year ? `c. ${face.year}` : cfg.era;
-  const perCycle = cfg.revenue * generationPayMult(cfg.id, st.owned, state?.techDone) * rev * st.owned * mult * empireFactors(state, Date.now()).total * fed;
+  const recalled = recallMult(state, cfg.id, Date.now()) < 1;
+  const party = anniversaryMult(cfg.id, Date.now()) > 1;
+  const perCycle = cfg.revenue * generationPayMult(cfg.id, st.owned, state?.techDone) * rev * st.owned * mult * empireFactors(state, Date.now()).total * fed * (party ? ANNIVERSARY_MULT : 1) * (recalled ? 0.5 : 1);
   // The materials this row is short of right now, for the warning line.
   const shortOf = st.owned > 0 && fed < 1 && cfg.uses
     ? Object.entries(cfg.uses).filter(([key, need]) => (state.supply?.[key] || 0) < need * st.owned).map(([key]) => key)
@@ -256,6 +259,16 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
               {!st.manager ? "Manager: none" : st.managerOff ? "Manager: off" : "Manager: on"}
             </p>
           </div>
+        )}
+        {recalled && (
+          <p data-recall className="font-term text-base leading-5 text-[var(--game-danger)]">
+            Riding out a recall: earning half for {Math.max(1, Math.ceil(((state.recall?.until || 0) - Date.now()) / 60000))} more min
+          </p>
+        )}
+        {party && st.owned > 0 && (
+          <p data-anniversary-row className="font-term text-base leading-5 text-[var(--game-success)]">
+            Anniversary week: earning ×{ANNIVERSARY_MULT}
+          </p>
         )}
         {shortOf.length > 0 && (
           <p data-short className="font-term text-base leading-5 text-[var(--game-danger)]">

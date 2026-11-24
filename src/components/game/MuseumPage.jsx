@@ -25,6 +25,7 @@ import { HUB_ITEMS } from "@/lib/hub";
 import MuseumSection from "./MuseumSection";
 import { SearchBox } from "./SearchBox";
 import { matchesSearch, revealedHaystack } from "@/lib/searchText";
+import RecordsSection from "./RecordsSection";
 
 function chipClass({ on, gold, grey }) {
   return `relative shrink-0 min-h-11 overflow-visible whitespace-nowrap border-2 px-2 py-1 text-center font-pixel text-[8px] leading-4 shadow-[3px_3px_0_0_#000] ${
@@ -183,6 +184,8 @@ export default function MuseumPage({ top = null, backTo } = {}) {
             )}
             <MuseumSection state={state} />
           </>
+        ) : wing.id === "records" ? (
+          <RecordsSection state={state} />
         ) : (
           <>
             <div data-museum-rooms className="museum-chip-row flex flex-nowrap gap-2 overflow-x-auto pb-1">

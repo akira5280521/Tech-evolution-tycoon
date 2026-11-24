@@ -52,7 +52,7 @@ test("every room has a badge, earned once every exhibit in it is found", () => {
   const fresh = { biz: [], techDone: [], facilities: {} };
   assert.ok(roomComplete(all, "keyboards"));
   assert.ok(!roomComplete(fresh, "keyboards"));
-  const ids = badgeList(fresh).filter((b) => b.group === "MUSEUM").map((b) => b.id);
+  const ids = badgeList(fresh).filter((b) => b.group === "MUSEUM" && b.id.startsWith("room-")).map((b) => b.id);
   assert.equal(ids.length, ROOMS.length);
   const s = { ...all, badgesEarned: [] };
   collectBadges(s);

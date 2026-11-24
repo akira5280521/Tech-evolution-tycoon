@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { PROJECT_MS, money } from "@/lib/gameConfig";
 import { CHALLENGES, PROJECTS, activeChallengeGoal, projectRevealed, scaledChallengeGoal } from "@/lib/empire";
+import { aheadLabel, calendarYear, historyRows } from "@/lib/calendar";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { HelpTip, ItemHelp } from "./HintSheet";
@@ -16,6 +17,7 @@ export default function RunsPage() {
   }, []);
   return (
     <ScreenShell title="RUNS" subtitle="Optional harder runs and big goals. Their rewards are kept forever.">
+      <AheadOfHistory state={state} now={now} />
       <h2 className="flex items-center gap-2 font-pixel text-[0.7rem] text-[var(--game-accent)]">
         CHALLENGE RUNS <HelpTip term="challenge" />
       </h2>
@@ -117,5 +119,58 @@ export default function RunsPage() {
         );
       })}
     </ScreenShell>
+  );
+}
+
+// Each run has a calendar that moves through real history. Opening an era
+// before the calendar reaches its real year puts you ahead of history.
+function AheadOfHistory({ state, now }) {
+  const year = now ? calendarYear(state, now) : null;
+  const rows = historyRows(state);
+  const cell = (n) => (n == null ? "—" : n === 0 ? "ON TIME" : `${n > 0 ? "▲" : "▼"} ${Math.abs(n)}`);
+  const tone = (n) => (n == null ? "text-[var(--game-dim)]" : n >= 0 ? "text-[var(--game-success)]" : "text-[var(--game-danger)]");
+  return (
+    <section data-ahead className="space-y-2">
+      <h2 className="font-pixel text-[0.7rem] text-[var(--game-accent)]">AHEAD OF HISTORY</h2>
+      <p className="font-term text-lg leading-6 text-[var(--game-muted)]">
+        Every run has a calendar that moves through history at a steady pace, and faster the more investors and forks you have. Open an era before the calendar reaches the year it really arrived to get ahead of history.
+      </p>
+      {year != null && (
+        <p data-calendar-year={year} className="font-pixel text-[0.6rem] text-[var(--game-fg)]">CALENDAR: {year}</p>
+      )}
+      {rows.length > 0 ? (
+        <Panel>
+          <table data-ahead-table className="w-full font-term text-lg leading-6">
+            <thead>
+              <tr className="font-pixel text-[0.45rem] text-[var(--game-muted)]">
+                <th className="text-left font-normal">ERA</th>
+                <th className="text-right font-normal">THIS RUN</th>
+                <th className="text-right font-normal">BEST</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id} data-ahead-row={r.id} data-run={r.run ?? ""} data-best={r.best ?? ""}>
+                  <td className="min-w-0 break-words pr-2">
+                    {r.name} <span className="text-[var(--game-dim)]">{r.year}</span>
+                  </td>
+                  <td className={`whitespace-nowrap text-right tabular-nums ${tone(r.run)}`} aria-label={aheadLabel(r.run) || "not reached this run"}>
+                    {cell(r.run)}
+                  </td>
+                  <td className={`whitespace-nowrap pl-2 text-right tabular-nums ${tone(r.best)}`} aria-label={aheadLabel(r.best) || "no best yet"}>
+                    {cell(r.best)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">▲ years ahead of history · ▼ years behind</p>
+        </Panel>
+      ) : (
+        <Panel>
+          <p className="font-term text-lg leading-6 text-[var(--game-muted)]">Open your next era to see how you compare with history.</p>
+        </Panel>
+      )}
+    </section>
   );
 }

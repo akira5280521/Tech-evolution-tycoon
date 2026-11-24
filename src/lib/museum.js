@@ -84,6 +84,7 @@ export const WINGS = [
     ],
   },
   { id: "history", name: "HISTORY CARDS", rooms: [] },
+  { id: "records", name: "RECORDS", rooms: [] },
 ];
 
 // The maker is the parody brand at the front of the name ("Corsar K70").

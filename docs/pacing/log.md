@@ -36,3 +36,8 @@ Times are America/Chicago (CT).
 - Active: first prestige 6h 28m (was 7h 15m, −10.8%), Quantum 15d 6h (was 15d 7h, −0.3%), fork still not reached in 21 days.
 - Casual: first prestige still 1d 11h; Quantum and fork still not reached.
 - Workstations / Laptops / Dial-up jumped earlier on the active profile because the recosted early mega-projects (and then Moore) let those eras open on the first run, before prestige. That is an expected reason, so no numbers were retuned.
+
+## 2026-11-24, late morning CT — Quantum must be reachable
+
+- History-event knobs (even Moore at 50% off, a stronger moth, cheaper cable/mainframe) leave Quantum at 15d 5h nonstop / 28d 2h casual. The wall is late TECH (SSD and Tensor P100) at 0.006 R&D/s from the six starter machines.
+- Three local balance branches raise only the starter machine's R&D rate. Results and the recommendation are in `docs/pacing/balance-options-2026-11-24.md`. No option was made the default on `feature/core-history`.

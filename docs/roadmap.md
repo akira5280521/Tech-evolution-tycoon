@@ -32,6 +32,34 @@ and list the next items under "Coming soon" in the release notes (see
 Nothing open. The display and polish list from playtesting and the layout
 test shipped in 0.0.13 (see Done).
 
+## In progress
+
+- **HQ rooms** (Cursor, PR #119): side-on rooms in the 32-bit style for
+  HQ, changing with the era and what you've unlocked. The PC bench and
+  research server rooms come first; the mine and AI cluster rooms show
+  "Coming soon" until their art is done. This is the start of item 14,
+  the garage-to-campus HQ.
+- **Play Games achievements** (PR #67): on hold until the achievement ids
+  are set up in Play Console.
+
+## Merged for 0.0.30
+
+- **Ahead of History** (#120): every run has a calendar that moves through
+  real history; opening an era before it really arrived puts you years
+  ahead. A toast, a line on the locked era, and a table on RUNS with the
+  best for each era (kept through prestige). No income change.
+- **Museum RECORDS wing** (#121): compute power (supercomputer cabinets and
+  compute cards at their FP64 peak) against the real record holders, from
+  Chippewa 1 to Summit, each +10 era tokens once. Plus a Moore's Law chart
+  of 19 real PC chips against the doubling line, and its badge.
+- **Product recalls** (#122): five famous hardware flaws, once each in
+  their years (1994 division bug to 2016 phone battery fires). Recall for
+  a minute of income, or ride it out with that row at half for ten
+  minutes. Also fixes shortages coming back as the government grant after
+  a reload.
+- **Anniversary weeks** (#123): for the week of 16 real launch days, that
+  era's row earns x1.25, with a banner on the game screen.
+
 ## Ships in 0.0.28
 
 - **Part value on every row.** Each Facilities part shows what it would add
@@ -552,23 +580,19 @@ production. See `docs/play-store/console-checklist.md`. Phase 1 starts when
 the game is live on Google Play after all testing. Work that already shipped
 in 0.0.18, or that is merged for 0.0.19, is not repeated here.
 
-- **Real icons** for all 9 placeholder material businesses: Timber Camp,
-  Paper Mill, Sand Quarry, Copper Seam, Glassworks, Filament Forge,
-  Germanium Refinery, Silicon Still and Wafer Bench, before store screenshots.
+- ~~**Real icons** for all 9 placeholder material businesses~~ Done (icons
+  pass 1, November 2026).
 - **Approve parody company names.**
 - **Bug and balance fixes from testers.** The landscape fixes from testers'
   phones ship in 0.0.19 (see above).
-- **Sound pauses in the background**, plus separate music and effects volume.
-  Era themes and era music wait for item 3.
-- **Feedback and settings.** Floating "+$" on payouts, light vibration on
-  buy (can be turned off), hold Buy to preview "+$X per second", number
-  style (letters, names, scientific), reduced motion, high contrast and
-  colorblind-friendly colors. Plus a **stats page**: lifetime earnings,
-  prestige count, best time to each era with a small token reward for beating
-  it (these run records move here from the Runs tab), cards collected, play
-  time. And a **prestige guide**: the prestige button shows what a prestige
-  would give right now ("+340 investors, income x1.8") and lights up once it
-  would at least double your investors.
+- ~~**Sound pauses in the background**, plus separate music and effects
+  volume~~ Done. Era themes and era music wait for item 3.
+- **Feedback and settings.** Done: floating "+$" on payouts, light
+  vibration on buy (can be turned off), number style (letters, names,
+  scientific), high contrast, reduced motion for the tips, the STATS tab
+  and the prestige guide. Still to do: hold Buy to preview "+$X per
+  second", colorblind-friendly colors, and a small token reward for beating
+  your best time to an era.
   [Design](ideas.md#first-minutes-and-ui). [Design](ideas.md#mid-game).
 - **Play Games sign-in and cloud save.** Add the Android credentials (app
   signing key and upload key SHA-1s), turn on Saved games, add testers, put
@@ -576,8 +600,10 @@ in 0.0.18, or that is merged for 0.0.19, is not repeated here.
   `docs/play-games.md`.
 - **Play Games achievements** for the existing badges (needs achievement ids
   from Play Console).
-- **Notifications** (factories full, research done).
-- **Starter goals and company name**: name your company at the start
+- **Notifications.** Done: the away-time notification when offline
+  earnings hit their cap. Still to do: research done.
+- **Starter goals and company name** (starter goals done; naming the
+  company is still to do): name your company at the start
   (shown in headlines and later on the HQ picture), plus a short goal list
   (buy 5 Timber Camps, hire a first manager, unlock the next era) with a
   fixed reward. Also: the last few one-time tips (the first dilemma,
@@ -877,13 +903,15 @@ where they fit in real life; no chance-based outcomes; locked parts stay
 In this order. [Design](ideas.md#long-term).
 
 14. **Garage-to-campus HQ**: a picture of the company that grows with
-    lifetime earnings: garage, office park, campus, space-age HQ.
+    lifetime earnings: garage, office park, campus, space-age HQ. **In
+    progress:** Cursor's HQ rooms (#119) are the start.
 
 15. **Parody rival companies** racing through history at a fixed, visible
     pace; beating one to an era pays a bonus and a Museum card.
 
 16. **History anniversaries** on the real calendar: a short event with a
-    fixed cosmetic or Museum card on the day.
+    fixed cosmetic or Museum card on the day. **Started:** Today in History
+    in the Museum (0.0.28) and anniversary weeks (0.0.30).
 
 17. **Museum completion**: a timeline wall; finishing an era's set pays.
     Vintage parts (retired parts become "vintage" after a fixed number of

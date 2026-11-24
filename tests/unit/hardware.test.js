@@ -42,10 +42,15 @@ test("every research project can be finished once the last era is reached", () =
   }
 });
 
-test("the research servers open with Mainframes, and the Mark 1 kit needs no research", () => {
+test("the research servers open with Mainframes; the Mark 1, its room kit, and tape need TECH research", () => {
   const s = upTo("mainframes");
   assert.ok(facilityUnlocked(s, "servers"));
-  for (const id of ["mark1", "mgset", "roomac", "tape"]) assert.ok(purchasePart(s, "servers", id).ok, id);
+  for (const id of ["mgset", "roomac", "mark1", "tape"]) {
+    assert.equal(purchasePart(s, "servers", id).ok, false, id);
+    assert.match(partLock(s, PARTS.find((x) => x.id === id)) || "", /Research .+ in TECH/);
+  }
+  s.techDone = ["srv-mark1", "store-tape"];
+  for (const id of ["mgset", "roomac", "mark1", "tape"]) assert.ok(purchasePart(s, "servers", id).ok, id);
   assert.ok(serverOutput(s).perSecond > 0);
   // The 7090 waits for 1959, then for its research.
   const p = PARTS.find((x) => x.id === "ibm7090");
@@ -106,4 +111,19 @@ test("a v11 save past a new era gets that row started, and its best era still po
   assert.equal(row("tablets").owned > 0, true, "past RGB Battlestations");
   // bestEra 21 was Graphics Cards in the v11 order.
   assert.equal(BUSINESSES[remapBestEra(21, 11)].id, "gpu");
+});
+
+test("a v12 save remaps bestEra by id and seeds Radio Valves if Relay is already owned", () => {
+  const v12ids = ["timber", "paper", "loom", "punchcards", "relay", "sand", "copper", "glass", "filament", "tubes", "mainframes", "germanium", "transistors", "silicon", "wafers", "ics", "minis", "cpu", "homepc", "consoles", "supercomputers", "workstations", "laptops", "dialup", "multimedia", "accel3d", "gpu", "cloud", "phones", "tablets", "rgb", "ai", "quantum", "vr", "chatbots", "supercluster"];
+  const v12 = { version: 12, investors: 3, biz: v12ids.map((id) => ({ id, owned: 1 })), bestEra: v12ids.indexOf("tubes") };
+  const out = migrateSave(v12);
+  const row = (id) => out.biz[BUSINESSES.findIndex((b) => b.id === id)];
+  assert.ok(row("radios").owned > 0, "Radio Valves seeded because Relay was already owned");
+  assert.equal(row("tubes").owned, 1, "Vacuum Tubes kept by id");
+  assert.equal(row("relay").owned, 1);
+  assert.equal(BUSINESSES[remapBestEra(v12ids.indexOf("tubes"), 12)].id, "tubes");
+  assert.equal(BUSINESSES[remapBestEra(v12ids.indexOf("relay"), 12)].id, "relay");
+  // A v12 player who has not yet reached Relay does not get the new era started.
+  const early = migrateSave({ version: 12, investors: 0, biz: ["timber", "paper", "loom", "punchcards"].map((id) => ({ id, owned: 1 })) });
+  assert.equal(early.biz[BUSINESSES.findIndex((b) => b.id === "radios")].owned, 0);
 });

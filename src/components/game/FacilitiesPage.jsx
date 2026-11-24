@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Navigate } from "@tanstack/react-router";
 import { REFINED, money } from "@/lib/gameConfig";
 import { businessIncomePerSecond, incomePerSecond } from "@/lib/empire";
 import {
@@ -30,6 +31,7 @@ import { HUB_ROUTE } from "@/lib/hub";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { HelpTip, ItemHelp } from "./HintSheet";
+import FacilityRoom from "./FacilityRoom";
 
 function percent(share) {
   if (!(share > 0)) return "0%";
@@ -75,7 +77,7 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, busi
       ) : (
         <div className="mt-2">
           <GoldButton dataAttr={`buy-${part.id}`} disabled={!affordable} onClick={onBuy}>
-            <span className="font-pixel text-[0.55rem]">{!open || lock ? "LOCKED" : facilityId === "bench" && owned > 0 && part.kind !== "stick" ? "ON THE BENCH" : `BUY ${money(cost)}`}</span>
+            <span className="font-pixel text-[0.55rem]">{lock ? lock : !open ? "LOCKED" : facilityId === "bench" && owned > 0 && part.kind !== "stick" ? "ON THE BENCH" : `BUY ${money(cost)}`}</span>
             {open && !lock && !(facilityId === "bench" && owned > 0 && part.kind !== "stick") && mats && (
               <span data-part-materials className={`block font-term text-base leading-5 ${short.length ? "text-[var(--game-danger)]" : ""}`}>
                 {short.length
@@ -161,9 +163,13 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
     hiddenOld = reached.length - keep.length;
     parts = keep;
   }
+  // Before Mainframes, the server room only lists the starter machine.
+  // Other locked plants show the need, not a wall of greyed parts.
+  if (starterOnly) parts = parts.filter((part) => part.starter);
+  else if (!open) parts = [];
   return (
     <Panel>
-      <div data-facility={facility.id} data-locked={open ? undefined : ""}>
+      <div id={facility.id} data-facility={facility.id} data-locked={open || starterOnly ? undefined : ""} className="scroll-mt-[var(--hud-h,0px)]">
         <div data-help-scope className="flex items-start gap-2">
           <div className={`h-14 w-14 shrink-0 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] ${open || starterOnly ? "" : "opacity-60"}`}>
             <img src={facility.icon} alt="" className="pixel-art h-full w-full scale-[1.4] object-contain" />
@@ -175,7 +181,7 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
         </div>
         <p className={`mt-2 break-words font-term text-base leading-5 ${open ? "text-[var(--game-fg)]" : "text-[var(--game-muted)] opacity-60"}`}>{facility.blurb}</p>
         <p data-facility-yield className="mt-2 break-words font-term text-base leading-5 text-[var(--game-success)]">
-          {bench ? `+${row.perSecond.toFixed(3)} R&D points a second` : research ? `+${(serverOutput(state).perSecond - serverOutput(state).bench).toFixed(2)} R&D points a second` : money(row.perSecond) + "/s"}
+          {bench ? `+${rate(row.perSecond)} R&D points a second` : research ? `+${rate(serverOutput(state).perSecond - serverOutput(state).bench)} R&D points a second` : money(row.perSecond) + "/s"}
           {!research && !bench && open && business > 0 ? ` · ${percent(row.share)} of the businesses` : ""}
         </p>
         {open ? (
@@ -197,6 +203,7 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
             )}
             <p data-facility-limit data-facility-needs className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-dim)]">
               {facilityNeed(facility.id)}
+              {!open ? " · COMING SOON" : ""}
             </p>
           </>
         )}
@@ -340,40 +347,35 @@ function RebuildPanel({ state, onRebuild }) {
   );
 }
 
-export default function FacilitiesPage() {
-  const { state, buyFacilityPart, rebuildFacilities, toggleBenchOc } = useGameState();
+export default function FacilitiesPage({ facilityId }) {
+  const { state, buyFacilityPart, rebuildFacilities, toggleBenchOc, noteTutorialPage, markReadyView } = useGameState();
+  const facility = FACILITIES.find((item) => item.id === facilityId);
   const business = businessIncomePerSecond(state, Date.now());
   const report = facilityReport(state, business);
-  const open = facilitiesOpen(state);
-  // The part that adds the most pay for its price (or starts a plant).
-  const next = open ? nextPurchase(state, business) : null;
+  const plantsOpen = facilitiesOpen(state);
+  const next = plantsOpen ? nextPurchase(state, business) : null;
+  useEffect(() => {
+    if (facilityId === "servers") noteTutorialPage?.("servers");
+  }, [facilityId, noteTutorialPage]);
+  useEffect(() => { markReadyView?.("hq", `${facilityId}:`); }, [markReadyView, facilityId, state.techDone]);
+  if (!facility) return <Navigate to={HUB_ROUTE} replace />;
+  const showRebuild = facilityId === "mine" || facilityId === "cluster";
+  const showNext = showRebuild && plantsOpen && next;
   return (
-    <ScreenShell title="RIGS" subtitle="A side plant. It pays cash, and it never outgrows the businesses." backTo={HUB_ROUTE}>
-      {!open && (
-        <Panel>
-          <p data-facilities-locked className="break-words font-term text-base leading-5 text-[var(--game-fg)]">
-            The plant opens when you own an AI Accelerator. Until then every part stays locked.
-          </p>
-        </Panel>
-      )}
-      {open && (
+    <ScreenShell title={facility.name} subtitle={facility.blurb} backTo={HUB_ROUTE}>
+      <FacilityRoom facilityId={facility.id} state={state} />
+      {showRebuild && plantsOpen && (
         <p className="break-words px-1 font-term text-base leading-5 text-[var(--game-muted)]">
           Both plants together pay {money(report.perSecond)}/s, {percent(report.share)} of the businesses. Short power or cooling throttles the cards. The cluster also needs enough memory for its model.
         </p>
       )}
-      {open && (
+      {showNext && (
         <p data-next-part className="break-words px-1 font-term text-base leading-5 text-[var(--game-accent)]">
-          {next
-            ? `Best next part: ${next.name} for the ${next.facilityId === "mine" ? "mine" : "cluster"}${next.extras?.length ? `, with ${extrasText(next.extras)} to run it` : ""}, ${money(next.bundleCost || next.cost)}${next.payback ? `; pays for itself in about ${Math.max(1, Math.round(next.payback / 60))} min` : " to get it running"}.`
-            : report.capped
-              ? "Both plants are at the income cap; more parts won't add pay."
-              : "No part pays for itself within 15 minutes right now."}
+          {`Best next part: ${next.name} for the ${next.facilityId === "mine" ? "mine" : "cluster"}${next.extras?.length ? `, with ${extrasText(next.extras)} to run it` : ""}, ${money(next.bundleCost || next.cost)}${next.payback ? `; pays for itself in about ${Math.max(1, Math.round(next.payback / 60))} min` : " to get it running"}.`}
         </p>
       )}
-      <RebuildPanel state={state} onRebuild={rebuildFacilities} />
-      {FACILITIES.map((facility) => (
-        <Plant key={facility.id} facility={facility} state={state} report={report} business={business} cash={state.cash || 0} onBuy={buyFacilityPart} next={next} onToggleOc={toggleBenchOc} />
-      ))}
+      {showRebuild && <RebuildPanel state={state} onRebuild={rebuildFacilities} />}
+      <Plant facility={facility} state={state} report={report} business={business} cash={state.cash || 0} onBuy={buyFacilityPart} next={next} onToggleOc={toggleBenchOc} />
     </ScreenShell>
   );
 }

@@ -28,7 +28,7 @@ for (const [name, data] of Object.entries(OLD)) {
   });
 }
 
-test("a player partway through the old 6-step tutorial plays on to the new step 7", async ({ page }) => {
+test("a player partway through the old 6-step tutorial plays on through the new steps", async ({ page }) => {
   test.setTimeout(120_000);
   const mid = Object.entries(OLD).find(([k, s]) => k.startsWith("v0.0.26") && !s.tutorial?.done)[1];
   await open(page, "/", { ...mid, lastSeen: Date.now() });
@@ -62,6 +62,26 @@ test("a player partway through the old 6-step tutorial plays on to the new step 
     } else if (step === "materials") {
       await page.click("[data-supply]");
       if (await page.locator("[data-help-close]").count()) await page.click("[data-help-close]");
+    } else if (step === "hq") {
+      await page.locator("[data-open-facilities]").click();
+    } else if (step === "hq-go") {
+      await page.locator("[data-action='go-servers']").click();
+    } else if (step === "servers") {
+      await page.locator("[data-hub-item='servers']").click();
+    } else if (step === "starter") {
+      const buy = page.locator("[data-action='buy-tab601']");
+      if (await buy.count()) await buy.click();
+      else await page.click("[data-coach-next]");
+    } else if (step === "tech") {
+      await page.locator("[data-open-research]").click();
+    } else if (step === "project") {
+      const start = page.locator("[data-action='research-tab-hollerith']");
+      if (!(await start.count())) {
+        const tab = page.locator("[data-research-tab='storage']");
+        if (await tab.count()) await tab.click();
+      }
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await start.click();
     } else await page.click("[data-coach-next]");
     await page.waitForTimeout(400);
   }

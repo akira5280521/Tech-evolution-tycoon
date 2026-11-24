@@ -1,7 +1,8 @@
 // R&D: costs, locks, and what the servers bank while you're away.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { AWAY_BANK, advanceResearch, awayBankCap, awayBankHours, researchCost, researchItem, serverOutput } from "../../src/lib/research.js";
+import { AWAY_BANK, TECH_OPENS, advanceResearch, awayBankCap, awayBankHours, playerYear, researchCost, researchItem, researchLock, researchRows, techOpen, serverOutput } from "../../src/lib/research.js";
+import { BUSINESSES } from "../../src/lib/gameConfig.js";
 import { replayAway } from "../../src/lib/empire.js";
 import { OFFLINE_RATE } from "../../src/lib/gameConfig.js";
 
@@ -53,4 +54,24 @@ test("R&D never goes below zero or turns into NaN", () => {
   advanceResearch(s, NaN);
   advanceResearch(s, -1000);
   assert.equal(s.data, 0);
+});
+
+test("TECH is reachable from the first era; later projects still wait for their year", () => {
+  const early = { biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: i === 0 ? 1 : 0 })), techDone: [], data: 1 };
+  assert.ok(techOpen(early), "the TECH page itself is open from era 1");
+  assert.equal(researchLock(early, researchItem("tab-hollerith")), null, "the first teaching project is open from era 1");
+  assert.equal(researchLock(early, researchItem("store-tape")), "Requires 1951");
+  assert.equal(researchLock(early, researchItem("store-hdd")), "Requires 1956");
+  const cpu = researchRows("cpu").find((entry) => !entry.soon);
+  assert.ok(cpu, "the CPU tab still lists hardware to research");
+  assert.match(researchLock(early, cpu) || "", /^Requires /);
+});
+
+test("the 5 MB disk waits for the magnetic tape project", () => {
+  const late = { biz: BUSINESSES.map((b) => ({ id: b.id, owned: 50 })), techDone: [] };
+  assert.ok(playerYear(late) >= 1956);
+  assert.equal(techOpen(late), true);
+  assert.equal(researchLock(late, researchItem("store-tape")), null);
+  assert.match(researchLock(late, researchItem("store-hdd")) || "", /tape|Tape|Research/i);
+  assert.equal(researchLock({ ...late, techDone: ["store-tape"] }, researchItem("store-hdd")), null);
 });

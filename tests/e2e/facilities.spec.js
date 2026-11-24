@@ -16,10 +16,15 @@ const allOpen = (save) => ({ ...save, biz: [...save.biz, ...NEW_ERAS], techDone:
 const LATE = allOpen(ALL_SAVES.late);
 
 test("best next part is shown, highlighted, and pays", async ({ page }) => {
-  const seen = await open(page, "/facilities", LATE);
+  const seen = await open(page, "/facilities/mine", LATE);
   await tipsOff(page);
   const line = page.locator("[data-next-part]");
   await expect(line).toContainText(/Best next part: .+ for the (mine|cluster)/);
+  if ((await line.textContent() || "").includes("for the cluster") && !(await page.locator("[data-best-part]").count())) {
+    await page.goto("/facilities/cluster");
+    await page.locator("nav[aria-label='Main navigation']").waitFor();
+    await tipsOff(page);
+  }
   const best = page.locator("[data-best-part]");
   await expect(best).toHaveCount(1);
   const pay = async () => page.locator("[data-facility-yield]").allInnerTexts();
@@ -35,8 +40,8 @@ test("best next part is shown, highlighted, and pays", async ({ page }) => {
   expectClean(seen);
 });
 
-// The top button beside TECH opens a hub; its RIGS sub-button opens the plants.
-test("top RIGS button opens the hub, and its RIGS button opens the plants", async ({ page }) => {
+// The top button beside TECH opens a hub; RESEARCH SERVERS opens the plants.
+test("top HQ button opens the hub, and RESEARCH SERVERS opens the plants", async ({ page }) => {
   const seen = await open(page, "/", "late");
   await tipsOff(page);
   const top = page.locator("[data-open-facilities]");
@@ -44,9 +49,10 @@ test("top RIGS button opens the hub, and its RIGS button opens the plants", asyn
   await top.click();
   await expect(page).toHaveURL(/\/rigs$/);
   const items = page.locator("[data-hub-item]");
+  await expect(items).toHaveCount(6);
   await expect(items.first()).toHaveAttribute("data-hub-item", "rigs");
-  await items.first().click();
-  await expect(page).toHaveURL(/\/facilities$/);
+  await page.locator("[data-hub-item='servers']").click();
+  await expect(page).toHaveURL(/\/facilities\/servers$/);
   await expect(page.locator("[data-facility='servers']")).toBeVisible();
   // BACK returns to the hub, not the game screen.
   await page.getByRole("link", { name: "< BACK" }).click();
@@ -54,16 +60,78 @@ test("top RIGS button opens the hub, and its RIGS button opens the plants", asyn
   expectClean(seen);
 });
 
-test("hub button stays ??? until the starter machine is affordable", async ({ page }) => {
-  // A brand-new game (no gift: it buys its own starter) with no cash yet.
-  const seen = await open(page, "/", { ...SAVES.newgame, lastSeen: Date.now(), cash: 0, starterGranted: true, sawPit: true });
+const far = () => Date.now() + 9e9;
+const quietTutorial = { seen: [], tips: [], tipsOff: true, done: true, skipped: false, replay: false };
+function earlySave({ throughId, cash = 50, wood = 20 } = {}) {
+  const last = throughId ? BUSINESSES.findIndex((b) => b.id === throughId) : 0;
+  return {
+    version: 12, cash, lifetime: 10, investors: 0, lastSeen: Date.now(),
+    sawPit: true, starterGranted: true, hubSeen: false,
+    tutorial: quietTutorial,
+    nextWindfallAt: far(), nextDilemmaAt: far(), nextBubbleAt: far(), nextShortageAt: far(),
+    supply: { wood },
+    facilities: { servers: {}, bench: {}, mine: {}, cluster: {} },
+    biz: BUSINESSES.map((b, i) => ({
+      id: b.id,
+      owned: i <= last ? 1 : 0,
+      manager: false, running: false, progress: 0, commissionUntil: 0,
+    })),
+  };
+}
+
+async function buyStarterFromGame(page, save) {
+  const seen = await open(page, "/", save);
   await tipsOff(page);
   const top = page.locator("[data-open-facilities]");
-  await expect(top).toHaveText("???");
-  await expect(top).toHaveAttribute("data-locked", "");
-  await page.goto("/rigs");
-  await page.locator("nav[aria-label='Main navigation']").waitFor();
-  await expect(page.locator("[data-hub-item='rigs']")).toHaveAttribute("data-locked", "");
+  await expect(top).toHaveText("HQ");
+  await expect(top).not.toHaveAttribute("data-locked", "");
+  await top.click();
+  await expect(page).toHaveURL(/\/rigs$/);
+  const rigs = page.locator("[data-hub-item='servers']");
+  await expect(rigs).not.toHaveAttribute("data-locked", "");
+  await rigs.click();
+  await expect(page).toHaveURL(/\/facilities\/servers$/);
+  const room = page.locator("[data-facility='servers']");
+  await expect(room).toBeVisible();
+  await expect(room).not.toHaveAttribute("data-locked", "");
+  await expect(page.locator("[data-tabulating-room]")).toBeVisible();
+  const part = page.locator("[data-part='tab601']");
+  await expect(part).toBeVisible();
+  await expect(page.locator('[data-action="buy-tab601"]')).toBeEnabled();
+  await page.locator('[data-action="buy-tab601"]').click();
+  await expect.poll(async () => (await saved(page))?.facilities?.servers?.tab601 || 0).toBe(1);
+  expectClean(seen);
+}
+
+test("a fresh save can open HQ and buy the Inland 601", async ({ page }) => {
+  await buyStarterFromGame(page, earlySave({ throughId: "timber" }));
+});
+
+test("an era-9 save can open HQ and buy the Inland 601 before Mainframes", async ({ page }) => {
+  expect(BUSINESSES.findIndex((b) => b.id === "radios") + 1).toBe(9);
+  await buyStarterFromGame(page, earlySave({ throughId: "radios", cash: 1e6, wood: 50 }));
+});
+
+test("an early HQ lists every facility, and locked cards say what they need", async ({ page }) => {
+  const seen = await open(page, "/rigs", earlySave({ throughId: "timber" }));
+  await tipsOff(page);
+  const items = page.locator("[data-hub-item]");
+  await expect(items).toHaveCount(6);
+  await expect(page.locator("[data-hub-item='servers']")).not.toHaveAttribute("data-locked", "");
+  await expect(page.locator("[data-hub-item='servers']")).toContainText("RESEARCH SERVERS");
+  await expect(page.locator("[data-hub-item='museum']")).not.toHaveAttribute("data-locked", "");
+  await expect(page.locator("[data-hub-item='museum']")).toContainText("HARDWARE MUSEUM");
+  for (const id of ["rigs", "bench", "mine", "cluster"]) {
+    const card = page.locator(`[data-hub-item='${id}']`);
+    await expect(card).toHaveAttribute("data-locked", "");
+    await expect(card).toContainText("???");
+    await expect(card).toContainText("COMING SOON");
+    await expect(card.locator("[data-hub-need]")).toBeVisible();
+  }
+  await expect(page.locator("[data-hub-item='rigs'] [data-hub-need]")).toContainText("Needs Home Computers this run");
+  await expect(page.locator("[data-hub-item='bench'] [data-hub-need]")).toContainText("Needs Home Computers this run");
+  await expect(page.locator("[data-hub-item='mine'] [data-hub-need]")).toContainText("Needs AI Accelerators this run");
+  await expect(page.locator("[data-hub-item='cluster'] [data-hub-need]")).toContainText("Needs AI Accelerators this run");
   expectClean(seen);
 });
 
@@ -92,11 +160,18 @@ test("after a prestige HQ still opens and RIGS says what each plant needs", asyn
   await expect(top).not.toHaveAttribute("data-locked", "");
   await top.click();
   await expect(page).toHaveURL(/\/rigs$/);
-  await expect(page.locator("[data-hub-item='rigs']")).not.toHaveAttribute("data-locked", "");
-  await page.click("[data-hub-item='rigs']");
-  await expect(page).toHaveURL(/\/facilities$/);
-  await expect(page.locator("[data-facility='servers'] [data-facility-needs]")).toHaveText("Needs Mainframes this run");
-  await expect(page.locator("[data-facility='mine'] [data-facility-needs]")).toHaveText("Needs AI Accelerators this run");
+  await expect(page.locator("[data-hub-item]")).toHaveCount(6);
+  await expect(page.locator("[data-hub-item='servers']")).not.toHaveAttribute("data-locked", "");
+  await expect(page.locator("[data-hub-item='rigs']")).toHaveAttribute("data-locked", "");
+  await expect(page.locator("[data-hub-item='rigs'] [data-hub-need]")).toContainText("Needs Home Computers this run");
+  await expect(page.locator("[data-hub-item='bench']")).toHaveAttribute("data-locked", "");
+  await expect(page.locator("[data-hub-item='bench'] [data-hub-need]")).toContainText("Needs Home Computers this run");
+  await expect(page.locator("[data-hub-item='mine'] [data-hub-need]")).toContainText("Needs AI Accelerators this run");
+  await expect(page.locator("[data-hub-item='cluster']")).toContainText("COMING SOON");
+  await page.click("[data-hub-item='servers']");
+  await expect(page).toHaveURL(/\/facilities\/servers$/);
+  await expect(page.locator("[data-facility='servers'] [data-facility-needs]")).toContainText("Needs Mainframes this run");
+  await expect(page.locator("[data-facility='mine']")).toHaveCount(0);
   const saved = await page.evaluate((k) => JSON.parse(localStorage.getItem(k)), "pc-tycoon-save-v1");
   expect(saved.hubSeen).toBe(true);
   expectClean(seen);
@@ -110,7 +185,7 @@ test("an old save that once reached Mainframes gets HQ back", async ({ page }) =
 });
 
 test("every open part shows what it would add", async ({ page }) => {
-  await open(page, "/facilities", LATE);
+  await open(page, "/facilities/mine", LATE);
   await tipsOff(page);
   const values = await page.locator("[data-part-value]").allInnerTexts();
   expect(values.length).toBeGreaterThan(10);
@@ -121,7 +196,7 @@ test("every open part shows what it would add", async ({ page }) => {
 test("REBUILD buys last run's plants back after a prestige", async ({ page }) => {
   const late = LATE;
   const lastPlants = { mine: { raster3060: 2, psu750: 1, fans: 2, ddr4_16: 1 }, cluster: { raster3060: 2, psu750: 1, fans: 2, ddr4_32: 1 }, servers: { mark1: 1, mgset: 1, roomac: 1, tape: 1 } };
-  await open(page, "/facilities", { ...late, facilities: { mine: {}, cluster: {}, servers: {} }, lastPlants, cash: 1e15, lastSeen: Date.now() });
+  await open(page, "/facilities/mine", { ...late, facilities: { mine: {}, cluster: {}, servers: {} }, lastPlants, cash: 1e15, lastSeen: Date.now() });
   await tipsOff(page);
   await expect(page.locator("[data-rebuild]")).toContainText("12 parts to go");
   await page.click('[data-action="rebuild"]');
@@ -139,7 +214,7 @@ test("64 GB sticks an old save held in the mine are refunded", async ({ page }) 
 test("the cluster's memory board shows its slots and swaps to DDR5", async ({ page }) => {
   const late = LATE;
   const cluster = { raster3060: 2, psu750: 2, fans: 2, ddr4_32: 3 };
-  await open(page, "/facilities", { ...late, cash: 1e15, facilities: { mine: {}, cluster, servers: {} }, lastSeen: Date.now() });
+  await open(page, "/facilities/cluster", { ...late, cash: 1e15, facilities: { mine: {}, cluster, servers: {} }, lastSeen: Date.now() });
   await tipsOff(page);
   const board = page.locator('[data-facility="cluster"] [data-board]');
   await expect(board).toContainText("3 of 32 slots used on the DDR4 server board");
@@ -153,13 +228,70 @@ test("the cluster's memory board shows its slots and swaps to DDR5", async ({ pa
 
 test("a part not yet researched is locked and says where to research it", async ({ page }) => {
   // Quantum (2019) reached, nothing researched: the 1080 is locked behind its research.
-  await open(page, "/facilities", { ...ALL_SAVES.late, techDone: [], lastSeen: Date.now() });
+  await open(page, "/facilities/mine", { ...ALL_SAVES.late, techDone: [], lastSeen: Date.now() });
   await tipsOff(page);
   const row = page.locator('[data-facility="mine"] [data-part="raster1080"]');
-  await expect(row.locator("[data-part-lock]")).toContainText("Research Raster 1080 on the Tech page");
+  await expect(row.locator("[data-part-lock]")).toContainText("Research Raster 1080 in TECH");
   await expect(row.locator('[data-action="buy-raster1080"]')).toBeDisabled();
   // A 2022 card is locked by its year.
   await expect(page.locator('[data-facility="mine"] [data-part="raster4090"] [data-part-lock]')).toContainText("Requires 2022");
+});
+
+test("research servers stay locked behind their TECH project, not a BUY button", async ({ page }) => {
+  const last = BUSINESSES.findIndex((b) => b.id === "mainframes");
+  const far = Date.now() + 9e9;
+  const save = {
+    ...ALL_SAVES.late,
+    lastSeen: Date.now(),
+    techDone: [],
+    cash: 1e12,
+    facilities: { servers: { tab601: 1 }, bench: {}, mine: {}, cluster: {} },
+    nextWindfallAt: far, nextDilemmaAt: far, nextBubbleAt: far, nextShortageAt: far,
+    biz: BUSINESSES.map((b, i) => ({
+      id: b.id,
+      owned: i <= last ? 8 : 0,
+      manager: i <= last,
+      running: false,
+      progress: 0,
+    })),
+  };
+  const seen = await open(page, "/facilities/servers", save);
+  await tipsOff(page);
+  const mark1 = page.locator('[data-facility="servers"] [data-part="mark1"]');
+  await expect(mark1.locator("[data-part-lock]")).toContainText("Research Irwell Mark 1 in TECH");
+  await expect(mark1.locator('[data-action="buy-mark1"]')).toContainText("Research Irwell Mark 1 in TECH");
+  await expect(mark1.locator('[data-action="buy-mark1"]')).not.toContainText("BUY");
+  await expect(page.locator('[data-part="mgset"] [data-action="buy-mgset"]')).toContainText(/Research .+ in TECH/);
+  await expect(page.locator('[data-part="roomac"] [data-action="buy-roomac"]')).toContainText(/Research .+ in TECH/);
+  await expect(page.locator('[data-part="ibm7090"] [data-part-lock]')).toContainText("Requires 1959");
+  await expect(page.locator('[data-action="buy-ibm7090"]')).not.toContainText("BUY");
+  expectClean(seen);
+});
+
+test("the 7090 and 360 need their TECH projects once their year is reached", async ({ page }) => {
+  const last = BUSINESSES.findIndex((b) => b.id === "silicon");
+  const far = Date.now() + 9e9;
+  const save = {
+    ...ALL_SAVES.late,
+    lastSeen: Date.now(),
+    techDone: [],
+    cash: 1e12,
+    facilities: { servers: { tab601: 1 }, bench: {}, mine: {}, cluster: {} },
+    nextWindfallAt: far, nextDilemmaAt: far, nextBubbleAt: far, nextShortageAt: far,
+    biz: BUSINESSES.map((b, i) => ({
+      id: b.id,
+      owned: i <= last ? 8 : 0,
+      manager: i <= last,
+      running: false,
+      progress: 0,
+    })),
+  };
+  const seen = await open(page, "/facilities/servers", save);
+  await tipsOff(page);
+  await expect(page.locator('[data-part="ibm7090"] [data-action="buy-ibm7090"]')).toContainText("Research Inland 7090 in TECH");
+  await expect(page.locator('[data-action="buy-ibm7090"]')).not.toContainText("BUY");
+  await expect(page.locator('[data-part="s360"] [data-part-lock]')).toContainText("Requires 1965");
+  expectClean(seen);
 });
 
 test("the Tech page shows which part a project opens", async ({ page }) => {
@@ -170,7 +302,7 @@ test("the Tech page shows which part a project opens", async ({ page }) => {
 });
 
 test("the PC bench: a board, then a CPU for its socket and memory for its slots", async ({ page }) => {
-  await open(page, "/facilities", { ...LATE, cash: 1e40, facilities: { mine: {}, cluster: {}, servers: {}, bench: {} } });
+  await open(page, "/facilities/bench", { ...LATE, cash: 1e40, facilities: { mine: {}, cluster: {}, servers: {}, bench: {} } });
   await tipsOff(page);
   const bench = page.locator('[data-facility="bench"]');
   // Newest first; older parts on request.
@@ -189,7 +321,7 @@ test("the PC bench: a board, then a CPU for its socket and memory for its slots"
 
 test("the bench names its bottleneck and checks plugs", async ({ page }) => {
   const bench = { "b-z77": 1, "c-3770k": 1, "m-ddr3b": 2, "p-atx3": 1, "v-4090": 1, "k-mesh": 1, "h-d14": 1 };
-  await open(page, "/facilities", { ...LATE, cash: 1e40, facilities: { mine: {}, cluster: {}, servers: {}, bench } });
+  await open(page, "/facilities/bench", { ...LATE, cash: 1e40, facilities: { mine: {}, cluster: {}, servers: {}, bench } });
   await tipsOff(page);
   const b = page.locator('[data-facility="bench"]');
   await expect(b.locator("[data-facility-limit]")).toContainText("Bottleneck: CPU");

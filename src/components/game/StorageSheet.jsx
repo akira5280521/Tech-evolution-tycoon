@@ -31,6 +31,7 @@ export default function StorageSheet({ state, materialKey, onUpgrade, onRefine, 
       data-storage-sheet={materialKey}
       className="hint-sheet fixed z-40 mx-auto max-w-md border-4 border-[var(--game-accent)] bg-[var(--game-card)] p-3 shadow-[6px_6px_0_0_#000]"
     >
+      <div className="hint-sheet-body">
       <div className="flex items-baseline gap-2">
         <h2 className="font-pixel text-[0.6rem] uppercase text-[var(--game-accent)]">{REFINED[materialKey]?.short || materialKey} storage</h2>
         {full && <span data-full className="border-2 border-[var(--game-danger)] px-1 font-pixel text-[0.45rem] text-[var(--game-danger)]">FULL</span>}
@@ -48,7 +49,8 @@ export default function StorageSheet({ state, materialKey, onUpgrade, onRefine, 
       </p>
       {refiningOpen(state) && refinedOf(materialKey) && <RefinePanel state={state} grade={refinedOf(materialKey)} onRefine={onRefine} />}
       <MarketPanel state={state} materialKey={materialKey} shown={shown} onSell={onSell} onSwap={onSwap} />
-      <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
+      </div>
+      <div className="hint-sheet-actions mt-2 flex flex-wrap items-center justify-end gap-2">
         {cost != null ? (
           <button
             type="button"

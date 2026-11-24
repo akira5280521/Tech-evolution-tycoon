@@ -1,12 +1,14 @@
 import { BUSINESSES, UPGRADE_MS, eraOpen, money } from "@/lib/gameConfig";
 import { hasPerk, isMastered, masteryNeed, upgradeOffer, upgradesOf } from "@/lib/empire";
+import { useEffect } from "react";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { HelpTip, ItemHelp } from "./HintSheet";
 import { generationAt } from "@/lib/generations";
 
 export default function BoostPage() {
-  const { state, purchaseUpgrade, setAutoUpgrades } = useGameState();
+  const { state, purchaseUpgrade, setAutoUpgrades, markReadyView } = useGameState();
+  useEffect(() => { markReadyView?.("boost"); }, [markReadyView, state.cash, state.modStamp]);
   return (
     <ScreenShell title="BOOST" subtitle="Upgrades make businesses pay more or run faster. Bought again after each prestige.">
       {hasPerk(state, "auto-upgrades") && (

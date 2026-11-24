@@ -10,7 +10,7 @@ const VIEWPORTS = [
 ];
 
 for (const vp of VIEWPORTS) {
-  for (const path of ["/", "/boost", "/tech", "/facilities", "/board", "/runs", "/research"]) {
+  for (const path of ["/", "/boost", "/tech", "/facilities/servers", "/board", "/runs", "/research"]) {
     test(`"?" buttons on ${path}, ${vp.name}`, async ({ page }) => {
       test.setTimeout(180_000);
       await page.setViewportSize(vp);

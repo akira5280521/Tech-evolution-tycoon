@@ -11,6 +11,8 @@ import {
   researchUnlocks,
   secondTechSlot,
   serverOutput,
+  TECH_OPENS,
+  FIRST_RESEARCH_ID,
   techJobs,
   hasResearchMaterials,
   researchMaterials,
@@ -20,6 +22,9 @@ import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel, ProgressBar } from "./chrome";
 import { techProgress } from "@/lib/progress";
 import { ItemHelp } from "./HintSheet";
+import { SearchBox } from "./SearchBox";
+import { matchesSearch, revealedHaystack } from "@/lib/searchText";
+import { techRevealed } from "@/lib/techFog";
 
 function PixelMark({ id }) {
   const cells = [];
@@ -51,21 +56,36 @@ function formatDuration(ms) {
 }
 
 export default function ResearchPage() {
-  const { state, startTech } = useGameState();
+  const { state, startTech, noteTutorialPage, markReadyView } = useGameState();
   const [tab, setTab] = useState("cpu");
   const [focus, setFocus] = useState(null);
+  const [query, setQuery] = useState("");
   // Arriving from a locked era's GO TO TECH (/tech#id): open that project's
   // tab and scroll to it.
   useEffect(() => {
     const id = decodeURIComponent((window.location.hash || "").slice(1));
-    const entry = id && researchItem(id);
-    if (!entry) return;
+    let entry = id && researchItem(id);
+    // New players land on the first teaching project (it lives on Storage),
+    // not on the CPU tab where the tree starts in 1971.
+    if (!entry) {
+      const first = researchItem(FIRST_RESEARCH_ID);
+      const done = first && (state.techDone || []).includes(first.id);
+      const jobs = techJobs(state);
+      const runningFirst = first && jobs.some((job) => job.id === first.id);
+      // Don't yank away from a project already running on another tab.
+      if (first && !done && (runningFirst || jobs.length === 0)) entry = first;
+    }
+    if (!entry || !techRevealed(state, entry)) return;
     setTab(entry.tab);
-    setFocus(id);
-    const timer = setTimeout(() => document.querySelector(`[data-research-item="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "center" }), 50);
+    setFocus(entry.id);
+    const timer = setTimeout(() => document.querySelector(`[data-research-item="${CSS.escape(entry.id)}"]`)?.scrollIntoView({ block: "center" }), 50);
     return () => clearTimeout(timer);
   }, []);
-  const rows = researchRows(tab);
+  useEffect(() => { noteTutorialPage?.("tech"); }, [noteTutorialPage]);
+  useEffect(() => { markReadyView?.("tech"); }, [markReadyView, state.techDone]);
+  const allRows = RESEARCH_TABS.flatMap((entry) => researchRows(entry.id));
+  const rows = (query.trim() ? allRows : researchRows(tab)).filter((entry) => matchesSearch(query, revealedHaystack(techRevealed(state, entry), entry.name, entry.spec, entry.year)));
+
   const jobs = techJobs(state);
   const twoSlots = secondTechSlot(state);
   const speed = researchSpeed(state);
@@ -76,7 +96,7 @@ export default function ResearchPage() {
     <ScreenShell title="TECH" subtitle="Projects keep going while the app is closed.">
       <Panel>
         <div className="flex items-start justify-between gap-1">
-          <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">R&amp;D points {rd.toLocaleString("en-US")} · +{perSecond.toFixed(2)} a second · year {playerYear(state) || "—"}</p>
+          <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">R&amp;D points {rd.toLocaleString("en-US")} · +{(perSecond >= 10 ? perSecond.toFixed(1) : perSecond >= 0.1 ? perSecond.toFixed(2) : perSecond.toFixed(3))} a second · year {playerYear(state) || "—"}</p>
           <ItemHelp kind="rd" state={state} name="R&D points" className="-mr-2 -mt-2.5" />
         </div>
         {jobs.map((job) => {
@@ -92,7 +112,13 @@ export default function ResearchPage() {
         <p data-research-slots className="mt-1 break-words font-term text-base leading-5 text-[var(--game-muted)]">
           {twoSlots ? "Two projects at once: the bench's CPU has four or more cores." : "One project at a time. A four-core CPU on the PC bench allows two."}
         </p>
+        {playerYear(state) < TECH_OPENS && (
+          <p data-tech-opens-year className="mt-2 break-words font-term text-base leading-5 text-[var(--game-accent)]">
+            Projects open in their real year. The earliest ones open in {TECH_OPENS}.
+          </p>
+        )}
       </Panel>
+      <SearchBox value={query} onChange={setQuery} placeholder="Search TECH" testId="tech" />
       <div className="flex flex-wrap gap-2 pb-1" role="tablist">
         {RESEARCH_TABS.map((entry) => (
           <button
@@ -109,7 +135,21 @@ export default function ResearchPage() {
         ))}
       </div>
       <div className="space-y-2">
+        {rows.length === 0 && <p data-search-empty="tech" className="font-term text-lg text-[var(--game-muted)]">No matches.</p>}
         {rows.map((entry) => {
+          const revealed = techRevealed(state, entry);
+          if (!revealed) {
+            return (
+              <Panel key={entry.id}>
+                <div data-research-hidden aria-label="Unknown future project" className="flex items-start gap-2 opacity-60">
+                  <div className="h-8 w-8 shrink-0 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]" aria-hidden="true" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-pixel text-[0.55rem] leading-4 text-[var(--game-muted)]">???</p>
+                  </div>
+                </div>
+              </Panel>
+            );
+          }
           const lock = researchLock(state, entry);
           const done = (state.techDone || []).includes(entry.id);
           const running = jobs.some((j) => j.id === entry.id);
@@ -130,7 +170,7 @@ export default function ResearchPage() {
                   <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)] [overflow-wrap:anywhere]">{entry.year} · {entry.name}</p>
                   <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{entry.spec}</p>
                   {opens.length > 0 && (
-                    <p data-research-opens className="break-words font-term text-base leading-5 text-[var(--game-accent)]">Opens on RIGS: {opens.map((p) => p.name).join(", ")}</p>
+                    <p data-research-opens className="break-words font-term text-base leading-5 text-[var(--game-accent)]">Opens in HQ: {opens.map((p) => p.name).join(", ")}</p>
                   )}
                   {entry.soon ? (
                     <p className="mt-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)]">COMING SOON</p>

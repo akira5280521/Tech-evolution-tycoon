@@ -50,6 +50,18 @@ const SELL_BACK = 0.5;
 
 export const FACILITIES = [
   {
+    id: "servers",
+    name: "RESEARCH SERVERS",
+    icon: "/icons/facilities/servers.png",
+    blurb: "Research machines make R&D points: a punch-card multiplier from the start, servers from Mainframes. Spend them on the R&D tab and the TECH timeline.",
+  },
+  {
+    id: "bench",
+    name: "PC BUILD BENCH",
+    icon: "/icons/facilities/bench.png",
+    blurb: "One PC at a time, built from parts that fit: a board, a CPU for its socket, and memory for its slots. It makes R&D points.",
+  },
+  {
     id: "mine",
     name: "BITBARK MINE",
     icon: "/icons/facilities/mine.png",
@@ -60,18 +72,6 @@ export const FACILITIES = [
     name: "TRAINING CLUSTER",
     icon: "/icons/facilities/cluster.png",
     blurb: "The cluster trains a model and bills the studio. A bigger model needs more memory.",
-  },
-  {
-    id: "bench",
-    name: "PC BUILD BENCH",
-    icon: "/icons/facilities/bench.png",
-    blurb: "One PC at a time, built from parts that fit: a board, a CPU for its socket, and memory for its slots. It makes R&D points.",
-  },
-  {
-    id: "servers",
-    name: "RESEARCH SERVERS",
-    icon: "/icons/facilities/servers.png",
-    blurb: "Research machines make R&D points: a punch-card multiplier from the start, servers from Mainframes. Spend them on the R&D tab and the TECH timeline.",
   },
 ];
 
@@ -111,10 +111,10 @@ export const PARTS = [
   // --- Research servers: the starter machine. Open from the first era (the
   // only server part that is), cheap, plugs into the wall (no generator or
   // air conditioner), and makes a small flat R&D rate.
-  { id: "tab601", kind: "tabulator", group: "room", starter: true, name: "Inland 601 Multiplying Punch", icon: "/icons/parts/tab601.png", fits: ["servers"], year: 1931, research: null, cost: 5, coef: 2.5, max: 6, watts: 0, rd: 0.001, spec: "1931: reads two 8-digit numbers from a punched card, multiplies them with relays and punches the product onto the same card. Plugs into the wall: no generator or air conditioner." },
+  { id: "tab601", kind: "tabulator", group: "room", starter: true, name: "Inland 601 Multiplying Punch", icon: "/icons/parts/tab601.png", fits: ["servers"], year: 1931, research: null, cost: 5, coef: 2.5, max: 6, watts: 0, rd: 0.005, spec: "1931: reads two 8-digit numbers from a punched card, multiplies them with relays and punches the product onto the same card. Plugs into the wall: no generator or air conditioner." },
 
   // --- Research servers: machine room (one generator and one air conditioner each)
-  { id: "mark1", kind: "server", group: "room", name: "Irwell Mark 1", icon: "/icons/parts/mark1.png", fits: ["servers"], year: 1951, research: null, cost: 30_000, coef: 5, watts: 1, work: 2, diskGb: 0.001, spec: "1951: about 4,000 valves, the first commercial computer to be installed." },
+  { id: "mark1", kind: "server", group: "room", name: "Irwell Mark 1", icon: "/icons/parts/mark1.png", fits: ["servers"], year: 1951, research: "srv-mark1", cost: 30_000, coef: 5, watts: 1, work: 2, diskGb: 0.001, spec: "1951: about 4,000 valves, the first commercial computer to be installed." },
   { id: "ibm7090", kind: "server", group: "room", name: "Inland 7090", icon: "/icons/parts/ibm7090.png", fits: ["servers"], year: 1959, research: "srv-7090", cost: 300_000, coef: 5, watts: 1, work: 4, diskGb: 0.005, spec: "1959: more than 50,000 transistors, about six times the valve machine it replaced." },
   { id: "s360", kind: "server", group: "room", name: "Inland 360/50", icon: "/icons/parts/s360.png", fits: ["servers"], year: 1965, research: "srv-360", cost: 3_000_000, coef: 5, watts: 1, work: 6, diskGb: 0.00725, spec: "1965: one of a family of machines that all ran the same programs." },
   { id: "pdp1120", kind: "server", group: "room", name: "Maynard 11/20", icon: "/icons/parts/pdp1120.png", fits: ["servers"], year: 1970, research: "srv-1120", cost: 10_000_000, coef: 5, watts: 1, work: 8, diskGb: 0.1, spec: "1970: a 16-bit minicomputer in one cabinet." },
@@ -142,8 +142,8 @@ export const PARTS = [
   { id: "alpha8400", kind: "server", group: "room", name: "Maynard AlphaServer 8400", icon: "/icons/parts/alpha8400.png", fits: ["servers"], year: 1995, research: "srv-alpha", cost: 800_000_000_000, coef: 5, watts: 2, work: 700, diskGb: 2.52, spec: "1995: up to twelve 64-bit Alpha chips, the fastest chips of their day." },
   { id: "origin2000", kind: "server", group: "room", name: "Silicon Pictures Origin 2000", icon: "/icons/parts/origin2000.png", fits: ["servers"], year: 1996, research: "srv-origin", cost: 2_000_000_000_000, coef: 5, watts: 2, work: 1100, diskGb: 9, spec: "1996: modules joined into one big shared-memory machine." },
   { id: "e10k", kind: "server", group: "room", name: "Sunrise Enterprise 10000", icon: "/icons/parts/e10k.png", fits: ["servers"], year: 1997, research: "srv-e10k", cost: 4_000_000_000_000, coef: 5, watts: 2, work: 1600, diskGb: 9, spec: "1997: up to 64 processors in one cabinet, the 'Starfire'." },
-  { id: "mgset", kind: "power", group: "room", name: "Motor-generator set", icon: "/icons/parts/mgset.png", fits: ["servers"], year: 1951, research: null, cost: 10_000, coef: 1.35, power: 1, spec: "A motor turning a generator: steady power for one machine-room computer." },
-  { id: "roomac", kind: "cool", group: "room", name: "Room air conditioner", icon: "/icons/parts/roomac.png", fits: ["servers"], year: 1951, research: null, cost: 10_000, coef: 1.35, cool: 1, spec: "Chilled air under the raised floor, enough for one machine-room computer." },
+  { id: "mgset", kind: "power", group: "room", name: "Motor-generator set", icon: "/icons/parts/mgset.png", fits: ["servers"], year: 1951, research: "srv-mark1", cost: 10_000, coef: 1.35, power: 1, spec: "A motor turning a generator: steady power for one machine-room computer." },
+  { id: "roomac", kind: "cool", group: "room", name: "Room air conditioner", icon: "/icons/parts/roomac.png", fits: ["servers"], year: 1951, research: "srv-mark1", cost: 10_000, coef: 1.35, cool: 1, spec: "Chilled air under the raised floor, enough for one machine-room computer." },
 
   // --- Research servers: racks (watts)
   { id: "towerT4", kind: "server", group: "rack", name: "Foundry Tower T4", icon: "/icons/parts/towerT4.png", fits: ["servers"], year: 1989, research: "srv-tower", cost: 4_000_000_000, coef: 5, watts: 300, work: 40, diskGb: 2.52, spec: "1989: a tower server with a 486 chip, 300 W." },
@@ -156,7 +156,7 @@ export const PARTS = [
   { id: "altra", kind: "server", group: "rack", name: "Amperion Altra 1U", icon: "/icons/parts/altra.png", fits: ["servers"], year: 2020, research: "srv-altra", cost: 1_400_000_000_000_000, coef: 5, watts: 250, work: 600, diskGb: 2000, spec: "2020: 80 ARM cores in one socket, 250 W." },
   { id: "psuAT", kind: "power", group: "rack", name: "200 W AT supply", icon: "/icons/parts/psuAT.png", fits: ["servers"], year: 1984, research: "pwr-at", cost: 400_000_000, coef: 2, power: 200, spec: "A 200 W AT supply with a big mains switch." },
   { id: "psu400", kind: "power", group: "rack", name: "400 W supply", icon: "/icons/parts/psu400.png", fits: ["servers"], year: 1995, research: "pwr-atx", cost: 2_000_000_000, coef: 2, power: 450, spec: "400 W ATX supply for a single rack." },
-  { id: "labfan", kind: "cool", group: "rack", name: "Rack fan", icon: "/icons/parts/labfan.png", fits: ["servers"], year: 1989, research: null, cost: 300_000_000, coef: 2, cool: 300, spec: "A 120 mm fan. Moves about 300 W of heat out of a rack." },
+  { id: "labfan", kind: "cool", group: "rack", name: "Rack fan", icon: "/icons/parts/labfan.png", fits: ["servers"], year: 1989, research: "cool-labfan", cost: 300_000_000, coef: 2, cool: 300, spec: "A 120 mm fan. Moves about 300 W of heat out of a rack." },
 
   // --- Networks: racks of research servers, and the training cluster's cards,
   // share work over a network. A slow one limits them (cap: work units).
@@ -171,7 +171,7 @@ export const PARTS = [
   { id: "l-nvswitch", kind: "link", name: "Raster NVSwitch", icon: "/icons/parts/l-nvswitch.png", fits: ["cluster"], year: 2018, research: "net-nvswitch", cost: price(2018, 0.15), coef: 1, cap: 100000, mbps: 2400000, spec: "2018: every card in the box linked to every other." },
 
   // --- Research servers: storage
-  { id: "tape", kind: "disk", name: "Tape drive", icon: "/icons/parts/tape.png", fits: ["servers"], year: 1951, research: null, cost: 5_000, coef: 2, gb: 0.001, spec: "Half-inch metal tape on a reel, about a megabyte a reel." },
+  { id: "tape", kind: "disk", name: "Tape drive", icon: "/icons/parts/tape.png", fits: ["servers"], year: 1951, research: "store-tape", cost: 5_000, coef: 2, gb: 0.001, spec: "Half-inch metal tape on a reel, about a megabyte a reel." },
   { id: "ramac", kind: "disk", name: "Inland 350 disk", icon: "/icons/parts/ramac.png", fits: ["servers"], year: 1956, research: "store-hdd", cost: 50_000, coef: 2, gb: 0.005, spec: "1956: fifty 24-inch platters, 5 million characters." },
   { id: "pack2311", kind: "disk", name: "Inland 2311 pack", icon: "/icons/parts/pack2311.png", fits: ["servers"], year: 1964, research: "store-pack", cost: 500_000, coef: 2, gb: 0.00725, spec: "1964: six platters you lift out by the handle, 7.25 MB." },
   { id: "pack3330", kind: "disk", name: "Inland 3330 pack", icon: "/icons/parts/pack3330.png", fits: ["servers"], year: 1970, research: "store-3330", cost: 3_000_000, coef: 2, gb: 0.1, spec: "1970: eleven platters, 100 MB a pack." },
@@ -330,6 +330,16 @@ export function facilityUnlocked(state, facilityId) {
   return ownedId(state, FACILITY_UNLOCK[facilityId] || "ai") >= 1;
 }
 
+// True if this run has the era, or a past run reached it, so How to Play
+// stays readable after a prestige.
+export function facilityEverUnlocked(state, facilityId) {
+  if (facilityUnlocked(state, facilityId)) return true;
+  const bizId = FACILITY_UNLOCK[facilityId];
+  const idx = BUSINESSES.findIndex((cfg) => cfg.id === bizId);
+  const best = Number(state?.bestEra);
+  return idx >= 0 && Number.isFinite(best) && best >= idx;
+}
+
 // The starter research machine: the one server part open before Mainframes.
 export const STARTER_PART_ID = "tab601";
 
@@ -347,11 +357,17 @@ export function grantStarter(state) {
   if (!state || state.starterGranted) return false;
   state.starterGranted = true;
   if (facilityUnlocked(state, "servers")) return false;
+  // Brand-new games buy the machine themselves. Old saves with real
+  // progress (more than the starting camp, or leftover R&D) still get one.
+  const played = (state.biz || []).some((row, i) => (row?.owned || 0) > (i === 0 ? 1 : 0));
+  if (!played && !(Number(state.data) > 0)) return false;
   const facilities = readFacilities(state.facilities);
   const servers = facilities.servers || {};
   if (Object.values(servers).some((n) => Number(n) > 0)) return false;
   facilities.servers = { ...servers, [STARTER_PART_ID]: 1 };
   state.facilities = facilities;
+  // Same first-machine R&D grant as buying it, but only if they don't already have points.
+  if (!(Number(state.data) > 0)) state.data = 1;
   return true;
 }
 
@@ -399,6 +415,7 @@ function stock(counts, facilityId) {
   let ram = 0;
   let work = 0;
   let gpus = 0;
+  let tabulators = 0;
   let storage = 0;
   let need = 0;
   let linkCap = 0;
@@ -434,6 +451,7 @@ function stock(counts, facilityId) {
       }
     } else if (part.kind === "ram") ram += part.gb * n;
     else if (part.kind === "disk") storage += part.gb * n;
+    else if (part.kind === "tabulator" || part.starter) tabulators += n;
     else if (part.kind === "link") linkCap = Math.max(linkCap, part.cap);
   }
   let speed = watts <= 0 ? 0 : Math.min(1, Math.min(power, cool) / watts);
@@ -467,7 +485,7 @@ function stock(counts, facilityId) {
     netFactor = 0.85 + 0.15 * Math.min(1, linkCap / work);
     speed *= netFactor;
   }
-  return { watts, power, cool, vram, ram, work, gpus, speed, rawSpeed, storage, need, groups, linkCap, netFactor };
+  return { watts, power, cool, vram, ram, work, gpus, tabulators, speed, rawSpeed, storage, need, groups, linkCap, netFactor };
 }
 
 // What the plant is short of first: power or cooling (for the servers, per
@@ -527,10 +545,15 @@ function nextTierRam(stocked) {
   return Math.min(...higher.map((tier) => tier.ram));
 }
 
-function hardwareLimit(stocked, mem) {
+function hardwareLimit(stocked, mem, facilityId) {
   const powerFactor = stocked.gpus <= 0 ? 0 : stocked.rawSpeed ?? stocked.speed;
   const memFactor = mem.factor >= 1 ? 1 : mem.factor;
-  if (stocked.gpus <= 0) return "Add a GPU";
+  if (stocked.gpus <= 0) {
+    if (facilityId === "servers") {
+      return (stocked.tabulators || 0) > 0 ? "Punch-card machine running" : "Add a research machine";
+    }
+    return "Add a GPU";
+  }
   if (powerFactor < 0.999 && powerFactor <= memFactor) {
     if (stocked.groups && stocked.need !== undefined && Object.values(stocked.groups).some((g) => g.watts > 0 && g.speed < 0.999)) {
       const g = Object.values(stocked.groups).find((x) => x.watts > 0 && x.speed < 0.999);
@@ -551,7 +574,7 @@ function rowOf(facilityId, counts) {
   const share = running ? STARTER_SHARE * Math.sqrt(power) : 0;
   return {
     share,
-    limit: hardwareLimit(stocked, mem),
+    limit: hardwareLimit(stocked, mem, facilityId),
     tier: mem.tier || null,
     speed: stocked.speed,
     watts: stocked.watts,
@@ -671,7 +694,7 @@ function starterNext(facilityId, counts, open) {
 // --- Which parts are open --------------------------------------------------
 
 // A part opens once the company has reached its year and, for most parts, once
-// it's researched on the Tech page. Research stays done across prestiges; the
+// it's researched in TECH. Research stays done across prestiges; the
 // year has to be reached again each run.
 export function diskSize(gb) {
   if (!(gb > 0)) return "0 MB";
@@ -699,7 +722,7 @@ export function partLock(state, part, researchName) {
   if (!part) return "Locked";
   if (part.starter) return null;
   if (playerYear(state) < (part.year || 0)) return `Requires ${part.year}`;
-  if (part.research && !(state?.techDone || []).includes(part.research)) return `Research ${researchName || part.name} on the Tech page`;
+  if (part.research && !(state?.techDone || []).includes(part.research)) return `Research ${researchName || part.name} in TECH`;
   if (partRetired(state, part)) return part.kind === "accel" ? "Out of production: combined 2D and 3D cards replaced it" : ["b-915btx", "k-btx"].includes(part.id) ? "Out of production: makers went back to ATX" : part.kind === "cache" ? "Out of production: the cache moved onto the CPU" : part.id === "x-physx" ? "Out of production: graphics cards took over physics" : "Out of production: it lost to its rival";
   return null;
 }
@@ -1757,5 +1780,8 @@ export function purchasePart(state, facilityId, partId) {
   state.cash += fit.refund;
   facilities[facilityId] = fit.counts;
   state.facilities = facilities;
+  // The first Inland 601 punches one result as it starts, enough to begin
+  // the first TECH project without a long wait at 0.001 R&D/s.
+  if (part.starter && owned === 0) state.data = (Number(state.data) || 0) + 1;
   return { ok: true, cost, refund: fit.refund, note: fit.note };
 }

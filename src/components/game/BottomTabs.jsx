@@ -4,6 +4,8 @@ import { FlaskConical, Flag, Gamepad2, Package, Settings, Zap } from "lucide-rea
 import { useGameState } from "./GameState";
 import { RESEARCH_MS } from "@/lib/gameConfig";
 import { timedProgress } from "@/lib/progress";
+import { readyDots, tabHasDot } from "@/lib/ready";
+import { ReadyDot } from "./ReadyDot";
 
 const TABS = [
   { id: "game", label: "GAME", to: "/", icon: Gamepad2, isActive: (p) => p === "/" },
@@ -28,8 +30,11 @@ function useTabBarHeight(ref) {
     const root = document.documentElement;
     const update = () => {
       const r = el.getBoundingClientRect();
-      const atBottom = r.bottom >= window.innerHeight - 1 && r.width > r.height;
-      root.style.setProperty("--tabbar-h", `${atBottom ? Math.ceil(r.height) : 0}px`);
+      // A wide bar is the bottom tab bar. Don't require r.bottom to match
+      // innerHeight: on some phones the visual viewport is shorter, which
+      // used to report --tabbar-h as 0 and park sheets under the tabs.
+      const bottomBar = r.width > r.height;
+      root.style.setProperty("--tabbar-h", `${bottomBar ? Math.ceil(r.height) : 0}px`);
     };
     update();
     const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : null;
@@ -51,6 +56,7 @@ export default function BottomTabs() {
   const navRef = useRef(null);
   const { state } = useGameState();
   useTabBarHeight(navRef);
+  const dots = readyDots(state);
 
   // When a tab's route becomes active, restore the position it left off at.
   // The small delay lets the 200ms screen transition finish rendering first.
@@ -138,6 +144,7 @@ export default function BottomTabs() {
               >
                 {tab.label}
               </span>
+              <ReadyDot show={tabHasDot(dots, tab.id)} testId={tab.id} />
               {job && job.pct < 100 && (
                 <span data-tab-progress data-pct={job.pct} aria-hidden="true" className="absolute inset-x-2 bottom-0.5 h-1 bg-[var(--game-border)]">
                   <span className="block h-full bg-[var(--game-accent)]" style={{ width: `${job.pct}%` }} />

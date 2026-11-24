@@ -44,6 +44,9 @@ export function PlayToggles() {
         <button type="button" data-compact onClick={() => set({ compact: !prefs.compact })} className={`${choice} ${off}`}>
           COMPACT ROWS: {prefs.compact ? "ON" : "OFF"}
         </button>
+        <button type="button" data-collapse-maxed onClick={() => set({ collapseMaxed: !prefs.collapseMaxed })} className={`${choice} ${prefs.collapseMaxed ? on : off}`}>
+          COLLAPSE MAXED: {prefs.collapseMaxed ? "ON" : "OFF"}
+        </button>
         <button type="button" data-sound onClick={() => set({ sound: !prefs.sound })} className={`${choice} ${prefs.sound ? on : off}`}>
           SOUND: {prefs.sound ? "ON" : "OFF"}
         </button>
@@ -130,6 +133,20 @@ export function DisplaySettings() {
           </button>
         ))}
       </div>
+      <p className="mt-3 font-pixel text-[0.5rem] leading-4 text-[var(--game-fg)]">MONITOR DISPLAY</p>
+      <p className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">The picture on facility room monitors. Era-accurate is the default and uses the real phosphor or palette for each unlock.</p>
+      <div className="mt-2 grid grid-cols-2 gap-2" role="group" aria-label="Monitor display">
+        {[
+          ["era", "ERA-ACCURATE"],
+          ["green", "GREEN"],
+          ["amber", "AMBER"],
+          ["color", "COLOR"],
+        ].map(([id, label]) => (
+          <button key={id} type="button" data-monitor-display={id} aria-pressed={prefs.monitorDisplay === id} onClick={() => set({ monitorDisplay: id })} className={`${choice} ${prefs.monitorDisplay === id ? on : off}`}>
+            {label}
+          </button>
+        ))}
+      </div>
       <button type="button" data-contrast onClick={() => set({ contrast: !prefs.contrast })} className={`${choice} mt-3 w-full ${prefs.contrast ? on : off}`}>
         HIGH CONTRAST: {prefs.contrast ? "ON" : "OFF"}
       </button>
@@ -140,41 +157,45 @@ export function DisplaySettings() {
 export function AwayReminder() {
   const [prefs, set] = usePrefs();
   const [help, setHelp] = useState("");
-  const waiting = useRef(false);
-  const turnOn = async () => {
+  const waiting = useRef(null);
+  const anyOn = (next) => !!(next.notifyCap || next.notifyResearch || next.notifyBins);
+  const turnOn = async (key) => {
     const result = await requestNotifyPermission();
     if (result === "granted") {
-      waiting.current = false;
+      waiting.current = null;
       setHelp("");
-      set({ notifyCap: true });
+      set({ [key]: true });
       return;
     }
-    waiting.current = true;
-    set({ notifyCap: false });
+    waiting.current = key;
+    set({ [key]: false });
     if (result === "denied") {
       setHelp("Android isn't showing the allow prompt. Open notification settings, allow notifications for this app, then come back.");
       return;
     }
     setHelp("This install can't post notifications yet.");
   };
-  const toggle = () => {
-    if (prefs.notifyCap) {
-      waiting.current = false;
+  const toggle = (key) => {
+    if (prefs[key]) {
+      waiting.current = null;
       setHelp("");
-      set({ notifyCap: false });
-      void cancelCapNotification();
+      const next = { [key]: false };
+      const after = { ...prefs, ...next };
+      set(next);
+      if (!anyOn(after)) void cancelCapNotification();
       return;
     }
-    void turnOn();
+    void turnOn(key);
   };
   useEffect(() => {
     const onShow = () => {
       if (document.hidden || !waiting.current) return;
+      const key = waiting.current;
       void notificationPermission().then((status) => {
         if (status !== "granted") return;
-        waiting.current = false;
+        waiting.current = null;
         setHelp("");
-        set({ notifyCap: true });
+        set({ [key]: true });
       });
     };
     document.addEventListener("visibilitychange", onShow);
@@ -182,12 +203,18 @@ export function AwayReminder() {
   }, [set]);
   return (
     <Panel>
-      <h2 className="font-pixel text-[0.6rem]">AWAY TIME</h2>
+      <h2 className="font-pixel text-[0.6rem]">NOTIFICATIONS</h2>
       <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
-        Optional. A notification when managers hit the away-time cap. Off unless you turn it on. Opening the game clears the reminder.
+        Optional. Reminders when away time fills, research finishes, or bins are full. Off unless you turn them on. Opening the game clears them. Each kind notifies at most once every 30 minutes.
       </p>
-      <button type="button" data-notify-cap onClick={toggle} className={`${choice} mt-3 w-full ${prefs.notifyCap ? on : off}`}>
+      <button type="button" data-notify-cap onClick={() => toggle("notifyCap")} className={`${choice} mt-3 w-full ${prefs.notifyCap ? on : off}`}>
         CAP REMINDER: {prefs.notifyCap ? "ON" : "OFF"}
+      </button>
+      <button type="button" data-notify-research onClick={() => toggle("notifyResearch")} className={`${choice} mt-2 w-full ${prefs.notifyResearch ? on : off}`}>
+        RESEARCH DONE: {prefs.notifyResearch ? "ON" : "OFF"}
+      </button>
+      <button type="button" data-notify-bins onClick={() => toggle("notifyBins")} className={`${choice} mt-2 w-full ${prefs.notifyBins ? on : off}`}>
+        BINS FULL: {prefs.notifyBins ? "ON" : "OFF"}
       </button>
       {help ? (
         <div className="mt-2">

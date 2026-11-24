@@ -3,6 +3,7 @@
 // Loom (the reported row); a fake clock to loop over every row.
 import { test, expect } from "@playwright/test";
 import { seed } from "./helpers.js";
+import { SAVE_VERSION } from "../../src/lib/gameSave.js";
 import { BUSINESSES, cycleLabel } from "../../src/lib/gameConfig.js";
 import { effectiveCycleMs } from "../../src/lib/empire.js";
 import { rowSection } from "../../src/lib/sections.js";
@@ -13,7 +14,7 @@ function build(id, { owned = 1, manager = false, stock = 1e7, all = false, extra
   const far = Date.now() + 9e9;
   const supply = Object.fromEntries(MATERIALS.map((k) => [k, stock]));
   return {
-    version: 12, cash: 0, lifetime: 1, investors: 0, lastSeen: Date.now(), sawPit: true, restartSeen: true, starterGranted: true, hubSeen: true,
+    version: SAVE_VERSION, cash: 0, lifetime: 1, investors: 0, lastSeen: Date.now(), sawPit: true, restartSeen: true, starterGranted: true, hubSeen: true,
     tutorial: { seen: [], tips: [], tipsOff: true, done: true, skipped: false, replay: false },
     nextWindfallAt: far, nextDilemmaAt: far, nextBubbleAt: far, nextShortageAt: far, supply, upgrades: {}, specialties: [],
     biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: all ? owned : i === target ? owned : i < target ? 1 : 0, manager: i === target && manager, running: i === target && manager, progress: 0, activeMs: 0, commissionUntil: 0, ...(extraRows[b.id] || {}) })),

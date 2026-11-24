@@ -2,6 +2,7 @@
 // (read/write) and the settings screen (read-only analytics).
 
 import { BUSINESSES, ERA_GATE, blankSupply, managerNeed, normalizeBuyMode } from "./gameConfig.js";
+import { readRigs } from "./rigs.js";
 
 export const SAVE_KEY = "pc-tycoon-save-v1";
 
@@ -20,7 +21,14 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 // v10 adds the facility plants. A save from before v10 has no parts, so the
 // plants start empty. v11 adds the research tree. A chip generation the
 // player had already reached by owning enough of that row stays researched.
-export const SAVE_VERSION = 12;
+// v13 inserts Radio Valves (c. 1920) after the tube materials and before
+// Relay Computers, and moves sand, copper, glass and filament earlier so
+// they feed the radio era. Existing rows are matched by id; bestEra is
+// remapped from the v12 index. v14 adds the Rigs garage: cosmetic snapshots
+// of the PC on the Build Bench, kept through prestige like the museum. A
+// save from before v14 has no builds. v15 adds early-era contracts and the
+// moth / Moore's Law story events. Older saves start with none in progress.
+export const SAVE_VERSION = 15;
 const V1_INVESTOR_DIVISOR = 1000;
 // Row order of each older save version.
 const V4_ORDER = ["sand", "copper", "silicon", "wafers", "tubes", "punchcards", "transistors", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];
@@ -44,6 +52,11 @@ const NEW_IN_V8 = {
 };
 // Eras added in v12, between ones players may already have passed.
 const NEW_IN_V12 = { supercomputers: "dialup", workstations: "dialup", laptops: "dialup", multimedia: "gpu", accel3d: "gpu", tablets: "rgb" };
+// Radio Valves sits historically before Relay. A player who already owns
+// Relay (or anything after it) has passed that gap, so seed the new row.
+const NEW_IN_V13 = { radios: "relay" };
+// Row order of a v12 save (bestEra is an index into it).
+const V12_ORDER = ["timber", "paper", "loom", "punchcards", "relay", "sand", "copper", "glass", "filament", "tubes", "mainframes", "germanium", "transistors", "silicon", "wafers", "ics", "minis", "cpu", "homepc", "consoles", "supercomputers", "workstations", "laptops", "dialup", "multimedia", "accel3d", "gpu", "cloud", "phones", "tablets", "rgb", "ai", "quantum", "vr", "chatbots", "supercluster"];
 // Row order of a v8-v11 save (bestEra is an index into it).
 const V11_ORDER = ["timber", "paper", "loom", "punchcards", "relay", "sand", "copper", "glass", "filament", "tubes", "mainframes", "germanium", "transistors", "silicon", "wafers", "ics", "minis", "cpu", "homepc", "consoles", "dialup", "gpu", "cloud", "phones", "rgb", "ai", "quantum", "vr", "chatbots", "supercluster"];
 // bestEra in a v7 save is an index into this order.
@@ -113,6 +126,11 @@ export function migrateSave(data) {
   }
   if (version < 12) {
     for (const [id, needs] of Object.entries(NEW_IN_V12)) {
+      if (ownedOf(needs) > 0 || seed.has(needs)) seed.add(id);
+    }
+  }
+  if (version < 13) {
+    for (const [id, needs] of Object.entries(NEW_IN_V13)) {
       if (ownedOf(needs) > 0 || seed.has(needs)) seed.add(id);
     }
   }
@@ -188,6 +206,7 @@ export function migrateSave(data) {
     refineJob: job(data.refineJob),
     orientation: data.orientation === "portrait" || data.orientation === "landscape" ? data.orientation : "auto",
     buyMode: normalizeBuyMode(data.buyMode),
+    rigs: readRigs(data.rigs),
     meta: data,
     biz,
   };
@@ -206,8 +225,9 @@ function upgradeJob(raw, version) {
 
 // A v7 bestEra is an index into V7_ORDER. Later saves already use the new index.
 export function remapBestEra(index, version) {
-  if (index == null || !(version < 12)) return index;
-  const id = (version < 8 ? V7_ORDER : V11_ORDER)[Math.floor(index)];
+  if (index == null || !(version < 13)) return index;
+  const order = version < 8 ? V7_ORDER : version < 12 ? V11_ORDER : V12_ORDER;
+  const id = order[Math.floor(index)];
   const at = BUSINESSES.findIndex((cfg) => cfg.id === id);
   return at >= 0 ? at : index;
 }

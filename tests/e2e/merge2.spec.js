@@ -3,6 +3,7 @@
 // say which materials they lack, material badges and lab projects.
 import { test, expect } from "@playwright/test";
 import { SAVES, expectClean, open, tipsOff } from "./helpers.js";
+import { RESEARCH } from "../../src/lib/research.js";
 
 const SHOTS = process.env.MERGE2_SHOTS;
 const quiet = { nextDilemmaAt: Date.now() + 864e5, nextWindfallAt: Date.now() + 864e5, nextBubbleAt: Date.now() + 864e5, dilemma: null, bubble: null, sawPit: true };
@@ -42,7 +43,7 @@ test("the material sheet opens from the strip in TECH and in SUPPLY, refined gra
 
 test("a RIGS part short of a material says so on its BUY button", async ({ page }) => {
   const supply = Object.fromEntries(Object.keys(SAVES.late.supply || {}).map((k) => [k, 0]));
-  const seen = await open(page, "/facilities", late({ cash: 1e30, supply: { ...supply, wafers: 0, glass: 0, copper: 0 } }));
+  const seen = await open(page, "/facilities/mine", late({ cash: 1e30, techDone: RESEARCH.map((e) => e.id), supply: { ...supply, wafers: 0, glass: 0, copper: 0 } }));
   await tipsOff(page);
   const mats = page.locator("[data-part-materials]");
   await expect(mats.first()).toBeVisible();

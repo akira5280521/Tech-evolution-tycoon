@@ -48,6 +48,9 @@ const RD_DOUBLING_YEARS = 15;
 
 export function researchCost(entry) {
   if (!entry) return 0;
+  // A few early teaching projects set a fixed cost so the first research
+  // is reachable with the starter machine, instead of the later-year curve.
+  if (Number.isFinite(entry.fixedCost) && entry.fixedCost > 0) return Math.round(entry.fixedCost);
   const year = Number(entry.year) || RD_BASE_YEAR;
   return Math.round((entry.rd || 0) * RD_COST_SCALE * Math.pow(2, (year - RD_BASE_YEAR) / RD_DOUBLING_YEARS));
 }
@@ -99,7 +102,9 @@ export const RESEARCH = [
   item({ id: "mem-ddr5-128", tab: "memory", year: 2024, name: "128 GB DDR5-6400", spec: "Registered DDR5 at 6400 MT/s", rd: 72, durationMs: 130_000, prereq: "mem-ddr5-64" }),
   item({ id: "mem-ddr6", tab: "memory", year: 2024, name: "DDR6", spec: "Next memory module", rd: 0, durationMs: 0, prereq: "mem-ddr5", soon: true }),
 
-  item({ id: "store-hdd", tab: "storage", year: 1956, name: "5 MB disk", spec: "The first commercial disk drive: fifty platters, 5 million characters", rd: 8, durationMs: 25_000, prereq: null }),
+  item({ id: "tab-hollerith", tab: "storage", year: 1, name: "Hollerith tabulator", spec: "1890: punched cards count a census in months, not years.", rd: 1, fixedCost: 1, durationMs: 20_000, prereq: null }),
+  item({ id: "store-tape", tab: "storage", year: 1951, name: "Magnetic tape", spec: "Half-inch metal tape on a reel, about a megabyte a reel.", rd: 4, durationMs: 25_000, prereq: null }),
+  item({ id: "store-hdd", tab: "storage", year: 1956, name: "5 MB disk", spec: "The first commercial disk drive: fifty platters, 5 million characters", rd: 8, durationMs: 25_000, prereq: "store-tape" }),
   item({ id: "store-pack", tab: "storage", year: 1964, name: "Disk pack", spec: "Inland 2311: a stack of six platters you lift out, 7.25 MB", rd: 5, durationMs: 25_000, prereq: "store-hdd" }),
   item({ id: "store-3330", tab: "storage", year: 1970, name: "100 MB disk pack", spec: "Inland 3330: eleven platters, 100 MB a pack", rd: 6, durationMs: 30_000, prereq: "store-pack" }),
   item({ id: "store-3380", tab: "storage", year: 1980, name: "2.5 GB disk", spec: "Inland 3380: the first disk to hold gigabytes, 2.52 GB a unit", rd: 14, durationMs: 35_000, prereq: "store-3330" }),
@@ -113,6 +118,7 @@ export const RESEARCH = [
   item({ id: "store-nvme", tab: "storage", year: 2013, name: "NVMe", spec: "Flash on PCI Express, not a SATA bridge", rd: 40, durationMs: 70_000, prereq: "store-ssd" }),
 
   item({ id: "cool-sink", tab: "cooling", year: 1982, name: "Clip heatsink", spec: "Aluminium block clipped to a 286-class chip", rd: 8, durationMs: 20_000, prereq: null }),
+  item({ id: "cool-labfan", tab: "cooling", year: 1989, name: "Rack fan", spec: "A 120 mm fan for a server rack, about 300 W of airflow.", rd: 10, durationMs: 25_000, prereq: "cool-sink" }),
   item({ id: "cool-fan", tab: "cooling", year: 1994, name: "Case fan", spec: "80 mm fan, a few watts of airflow", rd: 12, durationMs: 30_000, prereq: "cool-sink" }),
   item({ id: "cool-pipe", tab: "cooling", year: 2001, name: "Heatpipe tower", spec: "Heatpipes into a fin stack", rd: 20, durationMs: 45_000, prereq: "cool-fan" }),
   item({ id: "cool-liquid", tab: "cooling", year: 2008, name: "360 mm loop", spec: "External radiator, about 700 W of heat", rd: 28, durationMs: 60_000, prereq: "cool-pipe" }),
@@ -143,7 +149,8 @@ export const RESEARCH = [
 
   // Research servers, from the machine room to the rack. The Irwell Mark 1
   // (1951) needs no research; each later machine does.
-  item({ id: "srv-7090", tab: "servers", year: 1959, name: "Inland 7090", spec: "Transistors instead of valves, about six times the speed", rd: 4, durationMs: 25_000, prereq: null }),
+  item({ id: "srv-mark1", tab: "servers", year: 1951, name: "Irwell Mark 1", spec: "A stored-program machine, 1951: about 3,500 valves, a 17-foot-long cabinet.", rd: 3, durationMs: 25_000, prereq: null }),
+  item({ id: "srv-7090", tab: "servers", year: 1959, name: "Inland 7090", spec: "Transistors instead of valves, about six times the speed", rd: 4, durationMs: 25_000, prereq: "srv-mark1" }),
   item({ id: "srv-360", tab: "servers", year: 1965, name: "Inland 360/50", spec: "One family of compatible machines, from small to large", rd: 5, durationMs: 30_000, prereq: "srv-7090" }),
   item({ id: "srv-1120", tab: "servers", year: 1970, name: "Maynard 11/20", spec: "A 16-bit minicomputer that fits in one cabinet", rd: 6, durationMs: 35_000, prereq: "srv-360" }),
   item({ id: "srv-780", tab: "servers", year: 1977, name: "Maynard 11/780", spec: "32-bit, the yardstick for '1 MIPS'", rd: 8, durationMs: 40_000, prereq: "srv-1120" }),
@@ -224,10 +231,15 @@ export function researchItem(id) {
 
 
 // The tech timeline opens once the first project's year is reached.
+export const FIRST_RESEARCH_ID = "tab-hollerith";
+
 export const TECH_OPENS = Math.min(...RESEARCH.filter((entry) => !entry.soon).map((entry) => entry.year));
 
+// The TECH page is reachable from the first era so the parts tree is
+// always browsable. Individual projects still lock with researchLock
+// until their year (the earliest open at TECH_OPENS).
 export function techOpen(state) {
-  return playerYear(state) >= TECH_OPENS;
+  return !!state;
 }
 
 export function readTechDone(raw) {

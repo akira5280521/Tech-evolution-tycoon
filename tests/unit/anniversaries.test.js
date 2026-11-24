@@ -73,3 +73,12 @@ test("the next one coming up wraps into next year", () => {
   assert.equal(n.era, "punchcards");
   assert.equal(n.years, 2027 - 1889);
 });
+
+test("an anniversary and a recall on the same row both apply", () => {
+  const i = at("cpu");
+  const s = (extra) => ({ cash: 0, lifetime: 0, biz: BUSINESSES.map((_, k) => ({ owned: k <= i ? 10 : 0, manager: true })), supply: {}, ...extra });
+  const on = local(2026, 11, 16);
+  const plain = creditCycles(s(), i, 1, local(2026, 11, 30));
+  const both = creditCycles(s({ recall: { era: "cpu", until: on + 1e6 } }), i, 1, on);
+  assert.ok(Math.abs(both - plain * ANNIVERSARY_MULT * 0.5) <= plain * 1e-9);
+});

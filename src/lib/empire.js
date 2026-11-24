@@ -233,12 +233,77 @@ export const SHORTAGES = [
     { key: "b", label: "WAIT IT OUT", effects: { shortage: { key: x.key, minutes: 10 }, data: 2 } },
   ],
 }));
-const ALL_DILEMMAS = () => [...DILEMMAS, ...SHORTAGES];
+// Famous hardware flaws, once each in their years. Recall and replace, or
+// ride it out while that row earns half. Company names are parody.
+export const RECALLS = [
+  {
+    id: "recall-fdiv",
+    from: "multimedia",
+    to: "accel3d",
+    era: "cpu",
+    title: "1994 DIVISION BUG",
+    text: "A maths professor has found that your 586 chip gets some divisions wrong, in rare cases. Buyers want new chips. In 1994 the real maker swapped them for anyone who asked, at a cost of $475 million.",
+  },
+  {
+    id: "recall-caps",
+    from: "gpu",
+    to: "cloud",
+    era: "homepc",
+    title: "2002 BAD CAPACITORS",
+    text: "Capacitors on your motherboards are bulging and leaking, and PCs are dying a year or two in. From about 1999 to 2007 a bad electrolyte batch spread through the industry.",
+  },
+  {
+    id: "recall-rrod",
+    from: "phones",
+    to: "tablets",
+    era: "consoles",
+    title: "2007 THREE RED LIGHTS",
+    text: "Your newest console overheats, flashes three red lights and dies. In 2007 the real maker extended the warranty to three years and set aside more than $1 billion.",
+  },
+  {
+    id: "recall-chipset",
+    from: "tablets",
+    to: "rgb",
+    era: "cpu",
+    title: "2011 CHIPSET RECALL",
+    text: "A flaw in your new chipset can slowly wear out its disk ports. In 2011 the real maker stopped shipping, fixed the chip and replaced the boards, at about $700 million.",
+  },
+  {
+    id: "recall-battery",
+    from: "ai",
+    to: "quantum",
+    era: "phones",
+    title: "2016 PHONE BATTERY FIRES",
+    text: "Your big-screen phone's battery can swell and catch fire. Airlines are banning it. In 2016 the real maker recalled every one and stopped making it.",
+  },
+].map((x) => ({
+  ...x,
+  once: true,
+  recall: true,
+  choices: [
+    { key: "a", label: "RECALL AND REPLACE", effects: { pay: 60 } },
+    { key: "b", label: "RIDE IT OUT", effects: { recall: { era: x.era, minutes: 10 } } },
+  ],
+}));
+export const RECALL_MS = 10 * 60 * 1000;
+
+// The share a row earns right now: half while it rides out a recall.
+export function recallMult(state, id, now = 0) {
+  const r = state?.recall;
+  return r && r.era === id && now > 0 && now < (r.until || 0) ? 0.5 : 1;
+}
+
+const ALL_DILEMMAS = () => [...DILEMMAS, ...SHORTAGES, ...RECALLS];
 
 // The material in a shortage right now (its rows make half), or null.
 export function shortageOn(state, now = 0) {
   const sh = state?.shortage;
   return sh && now > 0 && now < (sh.until || 0) ? sh.key : null;
+}
+
+// Any event id a save might hold: dilemmas, shortages and recalls.
+export function isDilemmaId(id) {
+  return ALL_DILEMMAS().some((d) => d.id === id);
 }
 
 export function dilemmaSpec(id) {
@@ -269,6 +334,8 @@ function pickDilemma(state) {
   // A shortage in its years comes first: it only happens once.
   const crunch = SHORTAGES.find((d) => inEraSpan(state, d.from, d.to) && !eventDone(state, d.id));
   if (crunch) return crunch;
+  const flaw = RECALLS.find((d) => inEraSpan(state, d.from, d.to) && !eventDone(state, d.id));
+  if (flaw) return flaw;
   const fits = DILEMMAS.filter((d) => inEraSpan(state, d.from, d.to) && !(d.once && eventDone(state, d.id)));
   const pool = fits.length > 1 ? fits.filter((d) => d.id !== state.lastDilemma) : fits;
   return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
@@ -883,7 +950,7 @@ export function businessIncomePerSecond(state, now = 0) {
     if (!isManaged(st) && !st.running) return;
     const cfg = BUSINESSES[i];
     const up = upgradesOf(state, cfg.id);
-    const rev = (up.rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone);
+    const rev = (up.rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone) * recallMult(state, cfg.id, now);
     sum += (cfg.revenue * rev * st.owned * milestoneMult(st.owned) * mult * supplyFactor(state, cfg) * 1000) / effectiveCycleMs(cfg, state);
   });
   return sum;
@@ -902,7 +969,7 @@ export function creditCycles(state, index, cycles, now = 0, rate = 1) {
   const cfg = BUSINESSES[index];
   const st = state.biz?.[index];
   if (!st || st.owned <= 0) return 0;
-  const rev = (upgradesOf(state, cfg.id).rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone);
+  const rev = (upgradesOf(state, cfg.id).rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone) * recallMult(state, cfg.id, now);
   const factor = supplyFactor(state, cfg, cycles);
   moveSupply(state, cfg, cycles, st.owned, now);
   const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor * rate;
@@ -1397,6 +1464,14 @@ const BADGE_DEFS = [
     earned: (s) => (s.materialsSold || 0) >= 10000,
   },
   {
+    id: "recalls-all",
+    group: "HISTORY",
+    name: "Quality control",
+    desc: "Get through all five historical recalls",
+    era: BUSINESSES.findIndex((cfg) => cfg.id === "ai"),
+    earned: (s) => RECALLS.every((x) => (s.eventsDone || []).includes(x.id)),
+  },
+  {
     id: "shortages-all",
     group: "MATERIALS",
     name: "Supply chain veteran",
@@ -1562,6 +1637,8 @@ export function tickDilemma(state, now, { blocked = false } = {}) {
     // A shortage nobody answered still happens.
     const spec = dilemmaSpec(state.dilemma.id);
     if (spec.shortage) state.shortage = { key: spec.key, until: now + 10 * 60 * 1000 };
+    // So does a recall: the flaw is out there either way.
+    if (spec.recall) state.recall = { era: spec.era, until: now + RECALL_MS };
     state.dilemma = null;
     state.nextDilemmaAt = now + 6 * 60 * 1000;
     notes.push({ type: "expire" });
@@ -1611,6 +1688,7 @@ export function describeEffects(effects) {
   if (effects.boost) parts.push(`Income x1.15 for ${effects.boost} minutes`);
   if (effects.pay) parts.push(`Costs ${effects.pay} seconds of income`);
   if (effects.shortage) parts.push(`${effects.shortage.key} made at half rate for ${effects.shortage.minutes} minutes`);
+  if (effects.recall) parts.push(`${BUSINESSES.find((cfg) => cfg.id === effects.recall.era)?.name || effects.recall.era} earn half for ${effects.recall.minutes} minutes`);
   return parts.join(", ");
 }
 
@@ -1632,6 +1710,7 @@ export function resolveDilemma(state, choice, now) {
     // Paying never takes more than the cash on hand.
     if (fx.pay) state.cash = Math.max(0, (state.cash || 0) - Math.min(state.cash || 0, Math.max(100, incomePerSecond(state, now) * fx.pay)));
     if (fx.shortage) state.shortage = { key: fx.shortage.key, until: now + fx.shortage.minutes * 60 * 1000 };
+    if (fx.recall) state.recall = { era: fx.recall.era, until: now + fx.recall.minutes * 60 * 1000 };
     state.modStamp = (state.modStamp || 0) + 1;
     return { type: "choice", title: picked.label, summary };
   }
@@ -1785,6 +1864,7 @@ export function snapshotMeta(state, options = {}) {
     materialsMade: { ...(state.materialsMade || {}) },
     materialsSold: state.materialsSold || 0,
     shortage: state.shortage ? { ...state.shortage } : null,
+    recall: state.recall ? { ...state.recall } : null,
     // Era materials are paid once, ever.
     erasPaid: [...(state.erasPaid || [])],
     foreman: !!state.foreman,

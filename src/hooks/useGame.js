@@ -85,6 +85,8 @@ import { playBuy, playCollect } from "@/lib/sfx";
 import { buzzLight, buzzStrong } from "@/lib/haptics";
 import { cancelCapNotification, scheduleCapNotification } from "@/lib/capNotify";
 import { COMPUTE_RECORD_TOKENS, flopsLabel, noteComputeRecords, readComputeRecords } from "@/lib/compute";
+import { aheadLabel, noteCalendar, readCalendar, readHistoryBest } from "@/lib/calendar";
+import { ERA_YEAR } from "@/lib/eraYear";
 import { noteMilestones, playStep, pushRun, readMilestones, readRuns, eraReachedIndex, ensureRunStartedAt, settleCareerEarnings, settlePlayMs, settleRunRecords, startMilestones } from "@/lib/records";
 import { noteProgress } from "@/lib/achievements";
 
@@ -197,6 +199,8 @@ function applySavedMeta(state, raw) {
   state.runs = readRuns(m.runs);
   state.milestones = readMilestones(m.milestones);
   state.computeRecords = readComputeRecords(m.computeRecords);
+  state.calendar = readCalendar(m.calendar);
+  state.historyBest = readHistoryBest(m.historyBest);
   state.lastPlants = migrateFacilities(m.lastPlants).facilities;
   state.trackedSince = m.trackedSince == null ? 0 : num(m.trackedSince);
   state.trackedFromStart = !!m.trackedFromStart;
@@ -303,6 +307,8 @@ function pack(s) {
     runs: Array.isArray(s.runs) ? s.runs.slice(-40) : [],
     milestones: s.milestones || {},
     computeRecords: s.computeRecords || [],
+    calendar: s.calendar || null,
+    historyBest: s.historyBest || {},
     lastPlants: s.lastPlants || undefined,
     trackedSince: s.trackedSince || 0,
     trackedFromStart: !!s.trackedFromStart,
@@ -464,6 +470,13 @@ function announce(notes) {
     if (note.type === "compute") {
       toast(`Compute record: ${note.record.name}`, {
         description: `Your plants pass ${flopsLabel(note.record.flops)}, the ${note.record.year} record. +${COMPUTE_RECORD_TOKENS} era tokens. See MORE > MUSEUM > RECORDS.`,
+      });
+    }
+    if (note.type === "calendar") {
+      const cfg = BUSINESSES.find((b) => b.id === note.id);
+      const year = ERA_YEAR[note.id];
+      toast(`${cfg?.name || note.id}: ${aheadLabel(note.ahead).toLowerCase()}`, {
+        description: `Your calendar: ${year - note.ahead}. History got there in ${year}.${note.newBest ? " A new best." : ` Best: ${aheadLabel(note.best).toLowerCase()}.`}`,
       });
     }
     if (note.type === "bubble") toast("DOT-COM BUBBLE!", { description: "Your web stock is soaring. The banner counts down to the pop." });
@@ -680,6 +693,8 @@ export function useGame() {
       if (!s.runStartedAt) s.runStartedAt = wall;
       s.playMs = (s.playMs || 0) + playStep(dt, NORMAL_TICK_MS);
       if (noteMilestones(s, wall)) dirty = true;
+      const reachedNow = noteCalendar(s, wall);
+      if (reachedNow.length) dirty = true;
       if (autoBuyUpgrade(s, wall)) dirty = true;
       // No dilemma starts while Welcome Back, the prestige report, What's New
       // or the fresh-start offer is up.
@@ -688,6 +703,7 @@ export function useGame() {
       const cards = collectHistory(s);
       if (cards.length) notes.push({ type: "history", cards });
       for (const r of noteComputeRecords(s)) notes.push({ type: "compute", record: r });
+      for (const r of reachedNow) notes.push({ type: "calendar", ...r });
       if (notes.length) {
         announce(notes);
         dirty = true;

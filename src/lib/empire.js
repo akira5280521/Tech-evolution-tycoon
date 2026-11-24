@@ -1806,6 +1806,8 @@ export function snapshotMeta(state, options = {}) {
     milestones: { ...(state.milestones || {}) },
     // Compute records passed (kept forever).
     computeRecords: [...(state.computeRecords || [])],
+    // Best "ahead of history" per era; the run calendar itself starts over.
+    historyBest: { ...(state.historyBest || {}) },
     // The plants start empty again; remember this run's layout for REBUILD.
     lastPlants: plantsHaveParts(state.facilities) ? readFacilities(state.facilities) : readFacilities(state.lastPlants),
     trackedSince: state.trackedSince || 0,

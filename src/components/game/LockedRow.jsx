@@ -1,5 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { eraCanOpen, eraNeeds, money } from "@/lib/gameConfig";
+import { HISTORY_PACE_MS, calendarYear } from "@/lib/calendar";
+import { ERA_YEAR } from "@/lib/eraYear";
 import { ItemHelp } from "./HintSheet";
 
 // The next era, still hidden ("???") until every need is met: owning enough
@@ -8,6 +10,9 @@ import { ItemHelp } from "./HintSheet";
 export default function LockedRow({ index, id, state, onOpen }) {
   const needs = eraNeeds(state, index);
   const navigate = useNavigate();
+  // The run calendar against the real year this era arrived.
+  const cal = id && HISTORY_PACE_MS[id] != null ? calendarYear(state, Date.now()) : null;
+  const real = id ? ERA_YEAR[id] : null;
   return (
     <div data-locked-era data-help-scope className="flex items-center gap-3 border-2 border-dashed border-[var(--game-border)] bg-[var(--game-bg-deep)] p-3 opacity-80">
       <div className="grid h-16 w-16 shrink-0 place-items-center border-2 border-[var(--game-border)] bg-[var(--game-bg)] font-pixel text-lg text-[var(--game-border-strong)]">
@@ -18,6 +23,11 @@ export default function LockedRow({ index, id, state, onOpen }) {
           <h3 className="font-pixel text-sm text-[var(--game-dim)]">??? — NEXT ERA LOCKED</h3>
           {id && <ItemHelp kind="locked-era" id={id} state={state} name="the next era" className="-mr-2 -mt-2.5" />}
         </div>
+        {cal != null && real != null && (
+          <p data-calendar={cal} className={`h-5 truncate whitespace-nowrap font-term text-base leading-5 tabular-nums ${cal <= real ? "text-[var(--game-success)]" : "text-[var(--game-muted)]"}`}>
+            Calendar {cal} · history got here in {real}
+          </p>
+        )}
         {needs.map((n) => {
           const pct = Math.max(0, Math.min(100, (n.have / n.need) * 100));
           if (n.kind === "material") {

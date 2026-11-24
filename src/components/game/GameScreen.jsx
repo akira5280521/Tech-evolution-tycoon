@@ -16,6 +16,8 @@ import WelcomeBack from "./WelcomeBack";
 import PrestigeReport from "./PrestigeReport";
 import BottomTabs from "./BottomTabs";
 import DilemmaModal from "./DilemmaModal";
+import ArrivalCard from "./ArrivalCard";
+import { currentArrival } from "@/lib/arrivals";
 import BubbleBanner from "./BubbleBanner";
 import { ItemHelp, TipCard } from "./HintSheet";
 import { currentTutorialStep, stepTarget, tutorialActive } from "@/lib/tutorial";
@@ -45,7 +47,7 @@ function supplyShown(state, key) {
 export default function GameScreen() {
   const game = useGameState();
   const { state, buyMode, setBuyMode, buy, hire, run, runAll, toggleManager, buyForeman, prestige, dismissOffline,
-    dismissPrestigeReport, chooseDilemma, cashOut, tutorialNext, tutorialSkip } = game;
+    dismissPrestigeReport, dismissArrivalCard, chooseDilemma, cashOut, tutorialNext, tutorialSkip } = game;
   const [, bumpTick] = useState(0);
   const [pullDist, setPullDist] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
@@ -174,7 +176,10 @@ export default function GameScreen() {
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
       <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} />
       <PrestigeReport report={state.offlineReport ? null : state.prestigeReport} onDismiss={dismissPrestigeReport} />
-      {!state.offlineReport && !state.prestigeReport && <DilemmaModal dilemma={state.dilemma} onChoose={chooseDilemma} />}
+      {!state.offlineReport && !state.prestigeReport && (
+        <ArrivalCard arrival={currentArrival(state)} onDismiss={dismissArrivalCard} />
+      )}
+      {!state.offlineReport && !state.prestigeReport && !currentArrival(state) && <DilemmaModal dilemma={state.dilemma} onChoose={chooseDilemma} />}
 
       {(pullDist > 0 || refreshing) && (
         <div className="flex items-center justify-center gap-2 py-2 font-pixel text-[0.55rem] text-[var(--game-muted)]">

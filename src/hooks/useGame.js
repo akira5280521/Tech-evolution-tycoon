@@ -70,6 +70,7 @@ import { notesUnseen } from "@/lib/releaseNotes";
 import { SAVE_VERSION, clearSaveData, getSaveData, remapBestEra, writeSaveData } from "@/lib/gameSave";
 import { deleteRig, readRigs, saveRig } from "@/lib/rigs";
 import { applyFork, applyPrestige, buyBusiness, buyForeman as takeForeman, freshBiz, freshState, hireManager, startAllRuns, startRun } from "@/lib/playState";
+import { beginArrivalCatchup, dismissArrival, endArrivalCatchup, queueEraArrival, queueGenerationArrival } from "@/lib/arrivals";
 import { encodeSave } from "@/lib/saveCode";
 import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
@@ -397,7 +398,9 @@ function loadSave() {
       // Managers, plants and R&D earn at OFFLINE_RATE while the app is closed.
       const rate = elapsed < AWAY_GRACE_MS ? 1 : OFFLINE_RATE;
       state.data = (state.data || 0) + dataPerSecond(state) * (elapsed / 1000) * rate;
+      beginArrivalCatchup(state);
       ({ gain: offlineGain, rows, short, full } = replayAway(state, elapsed, Date.now(), rate));
+      endArrivalCatchup(state, elapsed);
     }
     if (offlineGain > 0 && elapsed >= AWAY_MODAL_MS) {
       state.offlineReport = { amount: offlineGain, awayMs: elapsed, rows, short, full };
@@ -599,7 +602,9 @@ export function useGame() {
       if (away > 0) {
         const rate = away < AWAY_GRACE_MS ? 1 : OFFLINE_RATE;
         s.data = (s.data || 0) + dataPerSecond(s) * (away / 1000) * rate;
+        beginArrivalCatchup(s);
         const { gain, rows, short, full } = replayAway(s, away, now, rate);
+        endArrivalCatchup(s, away);
         if (gain > 0 && away >= AWAY_MODAL_MS) s.offlineReport = { amount: gain, awayMs: away, rows, short, full };
       }
       lastWall = now;
@@ -731,6 +736,8 @@ export function useGame() {
       if (!purchased.ok) return;
       const { count, before, after, beforeGen, afterGen, goalPay } = purchased;
       const cfg = BUSINESSES[i];
+      if (before === 0) queueEraArrival(s, cfg.id);
+      if (afterGen && afterGen.id !== beforeGen?.id) queueGenerationArrival(s, cfg.id, afterGen);
       playBuy();
       // Celebrate each milestone this purchase reached.
       const reached = MILESTONES.filter((ms) => before < ms.owned && after >= ms.owned);
@@ -862,7 +869,9 @@ export function useGame() {
 
   const openEraAt = useCallback(
     (index) => {
-      if (!openEra(stateRef.current, index)) return;
+      const s = stateRef.current;
+      if (!openEra(s, index)) return;
+      queueEraArrival(s, BUSINESSES[index].id);
       playBuy();
       saveNow();
       bump();
@@ -990,6 +999,11 @@ export function useGame() {
   }, [bump]);
 
   // Tutorial: a manual step's button, skipping, and replaying from Help.
+  const dismissArrivalCard = useCallback(() => {
+    dismissArrival(stateRef.current);
+    bump();
+  }, [bump]);
+
   const tutorialNext = useCallback((id) => {
     const s = stateRef.current;
     const t = s.tutorial || blankTutorial();
@@ -1269,6 +1283,7 @@ export function useGame() {
     prestige,
     reset,
     dismissOffline,
+    dismissArrivalCard,
     purchaseUpgrade,
     upgradeStorage,
     openEraAt,

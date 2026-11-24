@@ -12,3 +12,7 @@ Times are America/Chicago (CT).
 - Nonstop: first prestige 7h 15m, Quantum Servers 15d 7h, first fork not reached in 21 days. Late eras after Supercomputers are gated by earnings, by TECH projects (GPU, RGB, Quantum), and by the $100B first-investor point landing before those gates unless the bot delays a close era. This is later than the 0.0.22 “Quantum ~6h / prestige near Quantum” note, because many eras and research gates were added after that tune. Not retuned in this commit.
 - Casual (21 days calendar, 1d 19h active play): first prestige 1d 11h; Quantum and fork not reached.
 
+
+## 2026-11-24, morning CT — item B, arrival cards
+
+- Short era and CPU/GPU generation cards (year, parody name with real model numbers, one history line). Queued, tap to dismiss. Fast offline catch-up (a minute or more) collapses to one summary. The sting uses the effects bus and is skipped when sound is off, effects are muted, or reduced motion is on. The starting Timber Camp is not announced.

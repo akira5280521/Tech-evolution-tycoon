@@ -58,7 +58,7 @@ import {
   managerPrice,
   notePurchase,
   resolveDilemma,
-  DILEMMAS,
+  isDilemmaId,
   forkCost,
   singularityMult,
   snapshotMeta,
@@ -185,7 +185,7 @@ function applySavedMeta(state, raw) {
   state.challenge = readChallenge(m.challenge);
   state.dilemma =
     m.dilemma && Number(m.dilemma.expiresAt) > Date.now()
-      ? { id: DILEMMAS.some((d) => d.id === m.dilemma.id) ? m.dilemma.id : "grant", expiresAt: Number(m.dilemma.expiresAt) }
+      ? { id: isDilemmaId(m.dilemma.id) ? m.dilemma.id : "grant", expiresAt: Number(m.dilemma.expiresAt) }
       : null;
   state.businessesBought = m.businessesBought == null ? null : Math.floor(num(m.businessesBought));
   state.managersHired = m.managersHired == null ? null : Math.floor(num(m.managersHired));
@@ -269,6 +269,7 @@ function pack(s) {
     materialsSold: s.materialsSold || 0,
     erasOpened: s.erasOpened || [],
     shortage: s.shortage || null,
+    recall: s.recall || null,
     erasPaid: s.erasPaid || [],
     foreman: !!s.foreman,
     sawPit: !!s.sawPit,
@@ -366,6 +367,7 @@ function loadSave() {
     state.materialsSold = data.materialsSold || 0;
     state.erasOpened = Array.isArray(data.erasOpened) ? data.erasOpened : [];
     state.shortage = data.shortage && typeof data.shortage === "object" && Number.isFinite(data.shortage.until) ? data.shortage : null;
+    state.recall = data.recall || null;
     state.foreman = !!data.foreman;
     state.sawPit = !!data.sawPit;
     state.buyMode = normalizeBuyMode(data.buyMode);

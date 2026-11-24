@@ -31,6 +31,7 @@ import { HUB_ROUTE } from "@/lib/hub";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { HelpTip, ItemHelp } from "./HintSheet";
+import FacilityRoom from "./FacilityRoom";
 
 function percent(share) {
   if (!(share > 0)) return "0%";
@@ -362,6 +363,7 @@ export default function FacilitiesPage({ facilityId }) {
   const showNext = showRebuild && plantsOpen && next;
   return (
     <ScreenShell title={facility.name} subtitle={facility.blurb} backTo={HUB_ROUTE}>
+      <FacilityRoom facilityId={facility.id} state={state} />
       {showRebuild && plantsOpen && (
         <p className="break-words px-1 font-term text-base leading-5 text-[var(--game-muted)]">
           Both plants together pay {money(report.perSecond)}/s, {percent(report.share)} of the businesses. Short power or cooling throttles the cards. The cluster also needs enough memory for its model.

@@ -37,11 +37,12 @@ export function CashTicker({ state, cps }) {
         <div data-cash-rate className="h-[1.15em] truncate whitespace-nowrap font-term text-[clamp(12px,4.2vw,16px)] leading-[1.15] tabular-nums text-[var(--game-success)]">
           {money(cps)}/s income
         </div>
-        {overclockOn(state, Date.now()) && (
-          <div data-overclock className="font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
-            OVERCLOCKED x1.5 · {Math.ceil((state.lab.overclockUntil - Date.now()) / 60000)} MIN LEFT
-          </div>
-        )}
+        {/* Always reserve this line so an Overclock never jumps the box height. */}
+        <div data-overclock className="h-4 overflow-hidden font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
+          {overclockOn(state, Date.now())
+            ? `OVERCLOCKED x1.5 · ${Math.ceil((state.lab.overclockUntil - Date.now()) / 60000)} MIN LEFT`
+            : " "}
+        </div>
       </div>
       <NextGoalChip state={state} />
       <StarterGoal state={state} />

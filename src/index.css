@@ -717,3 +717,40 @@ html[data-contrast="high"] {
 .museum-progress {
   image-rendering: pixelated;
 }
+
+/* Facility room banners: native 360×200 art, full width, nearest-neighbor. */
+.facility-room {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 2px solid var(--game-border-strong);
+  background: #0b0a12;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.facility-room-layer {
+  position: absolute;
+  display: block;
+  max-width: none;
+  pointer-events: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.facility-room-strip {
+  background-repeat: no-repeat;
+  background-origin: border-box;
+}
+.facility-room-soon {
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  border: 2px solid var(--game-border);
+  background: var(--game-bg-deep);
+  color: var(--game-dim, var(--game-muted));
+  font-family: var(--font-pixel, inherit);
+  font-size: 0.5rem;
+  line-height: 1rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  text-align: center;
+}

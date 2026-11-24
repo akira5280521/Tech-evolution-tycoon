@@ -133,6 +133,20 @@ export function DisplaySettings() {
           </button>
         ))}
       </div>
+      <p className="mt-3 font-pixel text-[0.5rem] leading-4 text-[var(--game-fg)]">MONITOR DISPLAY</p>
+      <p className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">The picture on facility room monitors. Era-accurate is the default and uses the real phosphor or palette for each unlock.</p>
+      <div className="mt-2 grid grid-cols-2 gap-2" role="group" aria-label="Monitor display">
+        {[
+          ["era", "ERA-ACCURATE"],
+          ["green", "GREEN"],
+          ["amber", "AMBER"],
+          ["color", "COLOR"],
+        ].map(([id, label]) => (
+          <button key={id} type="button" data-monitor-display={id} aria-pressed={prefs.monitorDisplay === id} onClick={() => set({ monitorDisplay: id })} className={`${choice} ${prefs.monitorDisplay === id ? on : off}`}>
+            {label}
+          </button>
+        ))}
+      </div>
       <button type="button" data-contrast onClick={() => set({ contrast: !prefs.contrast })} className={`${choice} mt-3 w-full ${prefs.contrast ? on : off}`}>
         HIGH CONTRAST: {prefs.contrast ? "ON" : "OFF"}
       </button>

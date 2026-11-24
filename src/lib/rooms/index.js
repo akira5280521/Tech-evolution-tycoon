@@ -8,6 +8,10 @@ export {
   ROOM_MILESTONES,
   conditionMet,
   pickVariant,
+  pickPlacements,
+  pickBase,
+  resolveServersStage,
+  stageMatches,
   generatorOwned,
   partOwned,
   normalizeMonitorDisplay,
@@ -16,6 +20,7 @@ export {
   monitorFlickerKind,
   MONITOR_MODES,
 } from "./roomConditions.js";
+export { SERVERS_STAGE_DEFS } from "./serversRoom.js";
 
 export const ROOMS = {
   bench: BENCH_ROOM,
@@ -33,6 +38,7 @@ export function roomFor(facilityId) {
 export function roomUnlockIds(room) {
   const ids = new Set();
   for (const slot of room?.slots || []) {
+    if (slot.unlockId) ids.add(slot.unlockId);
     for (const variant of slot.variants || []) {
       if (variant.unlockId) ids.add(variant.unlockId);
     }

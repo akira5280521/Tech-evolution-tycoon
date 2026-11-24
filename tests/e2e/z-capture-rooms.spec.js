@@ -5,6 +5,7 @@ import { open, tipsOff } from "./helpers.js";
 import { BUSINESSES } from "../../src/lib/gameConfig.js";
 import { ERA_YEAR } from "../../src/lib/eraYear.js";
 import { SAVE_VERSION } from "../../src/lib/gameSave.js";
+import { PARTS } from "../../src/lib/facilities.js";
 import { mkdirSync } from "node:fs";
 
 const DIR = "/workspace/mockups/ingame";
@@ -20,7 +21,31 @@ function throughYear(year) {
   return BUSINESSES.length - 1;
 }
 
+function techDoneFor(parts) {
+  return Object.keys(parts).map((id) => PARTS.find((p) => p.id === id)?.research).filter(Boolean);
+}
+
+const serversFor = (serverParts, year) => ({
+  version: SAVE_VERSION,
+  cash: 1e12,
+  lifetime: 1e12,
+  investors: 0,
+  lastSeen: Date.now(),
+  sawPit: true,
+  starterGranted: true,
+  hubSeen: true,
+  tutorial: { seen: [], tips: [], tipsOff: true, done: true, skipped: false, replay: false },
+  nextWindfallAt: far(), nextDilemmaAt: far(), nextBubbleAt: far(), nextShortageAt: far(),
+  facilities: { servers: { ...serverParts }, bench: {}, mine: {}, cluster: {} },
+  techDone: techDoneFor(serverParts),
+  biz: BUSINESSES.map((b, i) => {
+    const last = throughYear(year);
+    return { id: b.id, owned: i <= last ? 8 : 0, manager: i <= last, running: false, progress: 0 };
+  }),
+});
+
 const saveFor = (owned, parts, year = 1993) => ({
+
   version: SAVE_VERSION,
   cash: 1e12,
   lifetime: 1e12,
@@ -84,6 +109,24 @@ capture("capture mid, maxed, monitor modes, settings, soon strips", async ({ bro
     await shot(page, saveFor(owned, parts, year), prefs, file);
     await page.close();
   }
+  const serverJobs = [
+    ["servers-1930s-start.png", { tab601: 1 }, 1931],
+    ["servers-1976-cray1.png", { cray1: 1, mgset: 1, roomac: 1, pack3330: 1, freon: 1 }, 1976],
+    ["servers-1999-racks.png", { rack2u: 1, roomac: 1, "l-cat6500": 1, psu400: 1, labfan: 1 }, 1999],
+    ["servers-2021-ex.png", { crayex: 1, altra: 1, flasharray: 1, ssd2t: 1, "l-edr": 1, "l-quantum": 1, roomac: 1 }, 2021],
+  ];
+  for (const [file, parts, year] of serverJobs) {
+    const sp = await browser.newPage();
+    await sp.setViewportSize({ width: 412, height: 915 });
+    await sp.emulateMedia({ reducedMotion: "reduce" });
+    await open(sp, "/facilities/servers", serversFor(parts, year), {});
+    await tipsOff(sp);
+    const room = sp.locator("[data-facility-room='servers']");
+    await expect(room).toBeVisible();
+    mkdirSync(DIR, { recursive: true });
+    await room.screenshot({ path: `${DIR}/${file}`, animations: "disabled" });
+    await sp.close();
+  }
   const page = await browser.newPage();
   await page.setViewportSize({ width: 412, height: 915 });
   await open(page, "/more#settings", saveFor(1, START_PARTS), {});
@@ -99,9 +142,9 @@ capture("capture mid, maxed, monitor modes, settings, soon strips", async ({ bro
   await page.goto("/facilities/mine");
   await page.locator("nav[aria-label='Main navigation']").waitFor();
   await page.locator("[data-facility-room='mine']").screenshot({ path: `${DIR}/mine-coming-soon.png` });
-  await page.goto("/facilities/servers");
+  await page.goto("/facilities/cluster");
   await page.locator("nav[aria-label='Main navigation']").waitFor();
-  await page.locator("[data-facility-room='servers']").screenshot({ path: `${DIR}/servers-coming-soon.png` });
+  await page.locator("[data-facility-room='cluster']").screenshot({ path: `${DIR}/cluster-coming-soon.png` });
   await page.goto("/museum");
   await page.locator("nav[aria-label='Main navigation']").waitFor();
   await page.locator("header").screenshot({ path: `${DIR}/museum-title-icon.png` });

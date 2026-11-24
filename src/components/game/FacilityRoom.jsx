@@ -2,9 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { isPageHidden } from "@/lib/pageVisibility";
 import { PREFS_EVENT, readPrefs } from "@/lib/gamePrefs";
 import {
-  pickVariant,
+  pickPlacements,
+  pickBase,
   resolveMonitorMode,
   monitorFlickerKind,
+  resolveServersStage,
   roomFor,
 } from "@/lib/rooms";
 
@@ -114,18 +116,21 @@ function LayeredRoom({ room, state }) {
 
   const drawn = useMemo(() => {
     const items = [];
+    const ctx = room.facilityId === "servers" ? { stage: resolveServersStage(state) } : {};
     for (const slot of [...(room.slots || [])].sort((a, b) => (a.z || 0) - (b.z || 0))) {
-      const variant = pickVariant(state, slot, room.facilityId);
-      if (!variant) continue;
-      items.push({ slot, variant });
+      for (const variant of pickPlacements(state, slot, room.facilityId, ctx)) {
+        items.push({ slot, variant });
+      }
     }
     return items;
   }, [room, state]);
 
+  const base = pickBase(room, state);
+
   return (
     <div ref={ref} data-facility-room={room.facilityId} className="facility-room" style={{ aspectRatio: `${room.width} / ${room.height}` }}>
       <img
-        src={room.base.sprite}
+        src={base.sprite}
         alt=""
         className="facility-room-layer pixel-art"
         style={{ left: 0, top: 0, width: "100%", height: "100%", zIndex: 0 }}
@@ -142,7 +147,7 @@ function LayeredRoom({ room, state }) {
           const show = (reduce ? 0 : frame) % n;
           nodes.push(
             <div
-              key={slot.id}
+              key={`${slot.id}-${variant.x}-${variant.y}`}
               data-room-slot={slot.id}
               data-room-unlock={variant.unlockId || undefined}
               className="facility-room-layer facility-room-strip pixel-art"
@@ -173,7 +178,7 @@ function LayeredRoom({ room, state }) {
         } else if (variant.sprite) {
           nodes.push(
             <img
-              key={slot.id}
+              key={`${slot.id}-${variant.x}-${variant.y}`}
               src={variant.sprite}
               alt=""
               data-room-slot={slot.id}

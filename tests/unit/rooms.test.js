@@ -5,12 +5,17 @@ import assert from "node:assert/strict";
 import { BUSINESSES } from "../../src/lib/gameConfig.js";
 import { PARTS } from "../../src/lib/facilities.js";
 import { blankMeta } from "../../src/lib/empire.js";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import {
   BENCH_ROOM,
   SERVERS_ROOM,
   ROOM_MILESTONES,
   conditionMet,
   pickVariant,
+  pickPlacements,
+  pickBase,
+  resolveServersStage,
   generatorOwned,
   partOwned,
   normalizeMonitorDisplay,
@@ -43,10 +48,10 @@ test("every bench and servers unlockId is a real part", () => {
   }
 });
 
-test("the bench room is ready; servers, mine and cluster wait on art", async () => {
+test("the bench and servers rooms are ready; mine and cluster wait on art", async () => {
   const { ROOMS } = await import("../../src/lib/rooms/index.js");
   assert.equal(BENCH_ROOM.ready, true);
-  assert.equal(SERVERS_ROOM.ready, false);
+  assert.equal(SERVERS_ROOM.ready, true);
   assert.equal(ROOMS.mine.ready, false);
   assert.equal(ROOMS.cluster.ready, false);
 });
@@ -127,4 +132,97 @@ test("the Inland 601 mapping counts each owned machine up to the cap of 6", () =
   state.facilities.servers = { tab601: 3 };
   assert.equal(conditionMet(state, { facilityId: "servers", partId: "tab601", minParts: 3 }, "servers"), true);
   assert.equal(conditionMet(state, { facilityId: "servers", partId: "tab601", minParts: 4 }, "servers"), false);
+});
+
+
+const publicFile = (url) => fileURLToPath(new URL(`../../public${url}`, import.meta.url));
+
+const serverAt = (parts, tech = true) => {
+  const research = tech
+    ? Object.keys(parts).map((id) => PARTS.find((p) => p.id === id)?.research).filter(Boolean)
+    : [];
+  return at(0, {}, { facilities: { servers: { ...parts }, bench: {}, mine: {}, cluster: {} }, techDone: research });
+};
+
+const serverShown = (state) => {
+  const ctx = { stage: resolveServersStage(state) };
+  const items = [];
+  for (const slot of SERVERS_ROOM.slots) {
+    for (const variant of pickPlacements(state, slot, "servers", ctx)) {
+      items.push({ id: slot.id, unlockId: variant.unlockId, sprite: variant.sprite, x: variant.x, y: variant.y });
+    }
+  }
+  return { stage: ctx.stage, base: pickBase(SERVERS_ROOM, state), items };
+};
+
+test("the Inland 601 room lays out 1, 3 or 6 punches on the 1930s stages", () => {
+  const start = serverShown(serverAt({ tab601: 1 }));
+  assert.equal(start.stage.id, "era-1930s-start");
+  assert.ok(start.base.sprite.includes("base-1930s"));
+  assert.equal(start.items.filter((i) => i.unlockId === "tab601").length, 1);
+  assert.equal(start.items.find((i) => i.id === "cat-1930s")?.x, 269);
+
+  const mid = serverShown(serverAt({ tab601: 3 }));
+  assert.equal(mid.stage.id, "era-1930s-mid");
+  assert.equal(mid.items.filter((i) => i.unlockId === "tab601").length, 3);
+  assert.ok(mid.items.some((i) => i.id === "desk-1930s"));
+
+  const maxed = serverShown(serverAt({ tab601: 6 }));
+  assert.equal(maxed.stage.id, "era-1930s-maxed");
+  assert.equal(maxed.items.filter((i) => i.unlockId === "tab601").length, 6);
+  assert.equal(maxed.items.some((i) => i.id === "desk-1930s"), false);
+});
+
+test("servers era bases switch at 1951, 1976 and 1999, and roomac-floor is used on the later stages", () => {
+  const s1951 = serverShown(serverAt({ tab601: 1, mark1: 1, mgset: 1, roomac: 1, tape: 1 }));
+  assert.equal(s1951.stage.id, "era-1951-start");
+  assert.ok(s1951.base.sprite.includes("base-1950s"));
+  assert.ok(s1951.items.some((i) => i.unlockId === "mark1"));
+  assert.ok(s1951.items.some((i) => i.sprite.includes("roomac.png") && !i.sprite.includes("roomac-floor")));
+  assert.ok(s1951.items.some((i) => i.id === "lamp-motes"));
+  assert.equal(s1951.items.some((i) => i.unlockId === "tab601"), false);
+
+  const cray = serverShown(serverAt({ cray1: 1, mgset: 1, roomac: 1, pack3330: 1, freon: 1 }));
+  assert.equal(cray.stage.id, "era-1976-cray1");
+  assert.ok(cray.base.sprite.includes("base-raised"));
+  assert.ok(cray.items.some((i) => i.unlockId === "cray1"));
+  assert.ok(cray.items.some((i) => i.sprite.includes("roomac-floor.png")));
+  assert.ok(cray.items.some((i) => i.unlockId === "pack3330"));
+  assert.ok(cray.items.some((i) => i.id === "cat-later"));
+
+  const racks = serverShown(serverAt({ rack2u: 1, roomac: 1, "l-cat6500": 1, psu400: 1, labfan: 1 }));
+  assert.equal(racks.stage.id, "era-1999-racks");
+  assert.ok(racks.base.sprite.includes("base-datacenter"));
+  assert.ok(racks.items.some((i) => i.unlockId === "rack2u"));
+  assert.ok(racks.items.some((i) => i.sprite.includes("roomac-floor.png")));
+  assert.equal(racks.items.some((i) => i.unlockId === "cray1"), false);
+
+  const ex = serverShown(serverAt({ crayex: 1, altra: 1, flasharray: 1, ssd2t: 1, "l-edr": 1, "l-quantum": 1, roomac: 1 }));
+  assert.equal(ex.stage.id, "era-2021-ex");
+  assert.ok(ex.base.sprite.includes("base-datacenter"));
+  assert.ok(ex.items.some((i) => i.unlockId === "crayex"));
+  assert.ok(ex.items.some((i) => i.unlockId === "altra"));
+  assert.ok(ex.items.some((i) => i.unlockId === "flasharray"));
+});
+
+test("every room sprite, strip and base file is in public/", async () => {
+  const { ROOMS } = await import("../../src/lib/rooms/index.js");
+  const urls = [];
+  for (const room of Object.values(ROOMS)) {
+    if (room.base?.sprite) urls.push(room.base.sprite);
+    for (const base of Object.values(room.bases || {})) {
+      if (base.sprite) urls.push(base.sprite);
+    }
+    for (const slot of room.slots || []) {
+      for (const variant of slot.variants || []) {
+        if (variant.sprite) urls.push(variant.sprite);
+        if (variant.strip) urls.push(variant.strip);
+        for (const screen of Object.values(variant.screenVariants || {})) {
+          if (screen.sprite) urls.push(screen.sprite);
+        }
+      }
+    }
+  }
+  const missing = [...new Set(urls)].filter((url) => !existsSync(publicFile(url)));
+  assert.deepEqual(missing, []);
 });

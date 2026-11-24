@@ -6,6 +6,7 @@
 import { blankFacilities, facilityReport, noteFacilityNews, plantsHaveParts, readFacilities, recentNews } from "./facilities.js";
 import { advanceResearch, awayBankCap } from "./research.js";
 import { generationPayMult } from "./generations.js";
+import { anniversaryMult } from "./anniversaries.js";
 import { blankTutorial } from "./tutorial.js";
 import { ROOMS, exhibitStatus, roomComplete } from "./museum.js";
 import { COMPUTE_RECORDS, computePower, flopsLabel, moorePoints } from "./compute.js";
@@ -950,7 +951,7 @@ export function businessIncomePerSecond(state, now = 0) {
     if (!isManaged(st) && !st.running) return;
     const cfg = BUSINESSES[i];
     const up = upgradesOf(state, cfg.id);
-    const rev = (up.rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone) * recallMult(state, cfg.id, now);
+    const rev = (up.rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone) * anniversaryMult(cfg.id, now) * recallMult(state, cfg.id, now);
     sum += (cfg.revenue * rev * st.owned * milestoneMult(st.owned) * mult * supplyFactor(state, cfg) * 1000) / effectiveCycleMs(cfg, state);
   });
   return sum;
@@ -969,7 +970,7 @@ export function creditCycles(state, index, cycles, now = 0, rate = 1) {
   const cfg = BUSINESSES[index];
   const st = state.biz?.[index];
   if (!st || st.owned <= 0) return 0;
-  const rev = (upgradesOf(state, cfg.id).rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone) * recallMult(state, cfg.id, now);
+  const rev = (upgradesOf(state, cfg.id).rev ? 3 : 1) * generationPayMult(cfg.id, st.owned, state?.techDone) * anniversaryMult(cfg.id, now) * recallMult(state, cfg.id, now);
   const factor = supplyFactor(state, cfg, cycles);
   moveSupply(state, cfg, cycles, st.owned, now);
   const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor * rate;

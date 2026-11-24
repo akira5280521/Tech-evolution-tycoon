@@ -16,3 +16,7 @@ Times are America/Chicago (CT).
 ## 2026-11-24, morning CT — item B, arrival cards
 
 - Short era and CPU/GPU generation cards (year, parody name with real model numbers, one history line). Queued, tap to dismiss. Fast offline catch-up (a minute or more) collapses to one summary. The sting uses the effects bus and is skipped when sound is off, effects are muted, or reduced motion is on. The starting Timber Camp is not announced.
+
+## 2026-11-24, morning CT — item C, notifications
+
+- On the existing away-reminder hook: optional RESEARCH DONE and BINS FULL notices, same permission as the cap reminder. One of each kind, with a 30-minute cooldown. Opening the app still cancels pending notices.

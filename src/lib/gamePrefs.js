@@ -25,6 +25,13 @@ export function normalizePrefs(raw) {
     effectsMuted: src.effectsMuted === true,
     haptics: src.haptics !== false,
     notifyCap: src.notifyCap === true,
+    notifyResearch: src.notifyResearch === true,
+    notifyBins: src.notifyBins === true,
+    notifyAt: {
+      cap: Number.isFinite(Number(src.notifyAt?.cap)) ? Number(src.notifyAt.cap) : 0,
+      research: Number.isFinite(Number(src.notifyAt?.research)) ? Number(src.notifyAt.research) : 0,
+      bins: Number.isFinite(Number(src.notifyAt?.bins)) ? Number(src.notifyAt.bins) : 0,
+    },
     numberFormat,
     textSize,
     // Facility room monitor glass: era-accurate (default), or a forced phosphor.

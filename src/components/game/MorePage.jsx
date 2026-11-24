@@ -17,6 +17,8 @@ import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
 import MuseumPage from "./MuseumPage";
 import CopyStats from "./CopyStats";
+import { CompanyNameSetting } from "./CompanyName";
+import { companyName } from "@/lib/company";
 import LabProjects from "./LabProjects";
 import AccountPanel from "./AccountPanel";
 import { HelpTip, ItemHelp } from "./HintSheet";
@@ -58,7 +60,7 @@ export default function MorePage() {
   const location = useLocation();
   const hash = (location.hash || "#settings").replace("#", "");
   const tab = TABS.some((entry) => entry.id === hash) ? hash : "settings";
-  const { state, reset, setOrientation, touchBriefing, exportSave, importSave, tutorialReplay, setTipsOff } = useGameState();
+  const { state, reset, setOrientation, touchBriefing, exportSave, importSave, tutorialReplay, setTipsOff, nameCompany } = useGameState();
   const navigate = useNavigate();
   const data = getSaveData();
 
@@ -70,6 +72,9 @@ export default function MorePage() {
       <MoreLinks active={tab} />
       {tab === "settings" && (
         <div className="flex min-h-[60vh] flex-col gap-3">
+          <Panel>
+            <CompanyNameSetting state={state} onName={nameCompany} />
+          </Panel>
           <PlayToggles />
           <DisplaySettings />
           <OrientationSetting value={state.orientation || "auto"} onChange={setOrientation} />
@@ -317,6 +322,7 @@ function Stats({ state, data }) {
   const challengeName = state.challenge ? (state.challenge.id === "glass" ? "GLASS CEILING" : state.challenge.id === "noboss" ? "NO BOSSES" : "SPEEDRUN") : null;
   return (
     <>
+      <p data-stats-company className="break-words font-pixel text-[0.6rem] text-[var(--game-accent)]">{companyName(state).toUpperCase()}</p>
       <AnalyticsPanel data={data} />
       <CopyStats state={state} />
       <Panel>

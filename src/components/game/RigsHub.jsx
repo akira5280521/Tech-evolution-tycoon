@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { HUB_ITEMS, HUB_LABEL } from "@/lib/hub";
+import { companyName } from "@/lib/company";
 import { useGameState } from "./GameState";
 import ScreenShell from "./chrome";
 
@@ -8,7 +9,7 @@ import ScreenShell from "./chrome";
 export default function RigsHub() {
   const { state } = useGameState();
   return (
-    <ScreenShell title={HUB_LABEL} subtitle="Your hardware. Pick a section.">
+    <ScreenShell title={HUB_LABEL} subtitle={`${companyName(state)}: your hardware. Pick a section.`}>
       <div data-hub-menu className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2">
         {HUB_ITEMS.map((item) => {
           const open = item.open(state);

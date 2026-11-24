@@ -87,6 +87,7 @@ import { cancelCapNotification, scheduleCapNotification } from "@/lib/capNotify"
 import { COMPUTE_RECORD_TOKENS, flopsLabel, noteComputeRecords, readComputeRecords } from "@/lib/compute";
 import { aheadLabel, noteCalendar, readCalendar, readHistoryBest } from "@/lib/calendar";
 import { ERA_YEAR } from "@/lib/eraYear";
+import { cleanCompanyName, setCompanyName } from "@/lib/company";
 import { noteMilestones, playStep, pushRun, readMilestones, readRuns, eraReachedIndex, ensureRunStartedAt, settleCareerEarnings, settlePlayMs, settleRunRecords, startMilestones } from "@/lib/records";
 import { noteProgress } from "@/lib/achievements";
 
@@ -198,6 +199,8 @@ function applySavedMeta(state, raw) {
   state.bestEra = m.bestEra == null ? null : Math.floor(num(m.bestEra));
   state.runs = readRuns(m.runs);
   state.milestones = readMilestones(m.milestones);
+  state.companyName = cleanCompanyName(m.companyName);
+  state.companyAsked = !!m.companyAsked;
   state.computeRecords = readComputeRecords(m.computeRecords);
   state.calendar = readCalendar(m.calendar);
   state.historyBest = readHistoryBest(m.historyBest);
@@ -307,6 +310,8 @@ function pack(s) {
     bestEra: Math.max(0, Math.floor(s.bestEra || 0)),
     runs: Array.isArray(s.runs) ? s.runs.slice(-40) : [],
     milestones: s.milestones || {},
+    companyName: s.companyName || null,
+    companyAsked: !!s.companyAsked,
     computeRecords: s.computeRecords || [],
     calendar: s.calendar || null,
     historyBest: s.historyBest || {},
@@ -1296,6 +1301,12 @@ export function useGame() {
     startTech: (id) => {
       const started = startResearch(stateRef.current, id);
       if (!started.ok) return;
+      saveNow();
+      bump();
+    },
+    // Name the company (or keep the default: null). Either way it was asked.
+    nameCompany: (name) => {
+      setCompanyName(stateRef.current, name);
       saveNow();
       bump();
     },

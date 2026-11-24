@@ -11,6 +11,7 @@
 // stays free so a new microprocessor works before any project.
 
 import { BUSINESSES } from "./gameConfig.js";
+import { companyCaps } from "./company.js";
 import { GENERATIONS } from "./generations.js";
 import { PARTS, benchStock, pushHeadline, readFacilities, serverStock, starterRate } from "./facilities.js";
 import { playerYear } from "./eraYear.js";
@@ -365,7 +366,7 @@ export function startResearch(state, id) {
   const job = { id: entry.id, progressMs: 0, durationMs: entry.durationMs };
   if (!state.techJob) state.techJob = job;
   else state.techJob2 = job;
-  pushHeadline(state, `rd-start-${entry.id}`, `R&D: ${entry.name.toUpperCase()} RESEARCH STARTS`);
+  pushHeadline(state, `rd-start-${entry.id}`, `${companyCaps(state)} R&D: ${entry.name.toUpperCase()} RESEARCH STARTS`);
   return { ok: true };
 }
 
@@ -377,7 +378,7 @@ function finishResearch(state, id) {
   state.techDone = done;
   if (state.techJob?.id === id) state.techJob = null;
   if (state.techJob2?.id === id) state.techJob2 = null;
-  pushHeadline(state, `rd-done-${id}`, `R&D: ${entry.name.toUpperCase()} RESEARCH COMPLETE`);
+  pushHeadline(state, `rd-done-${id}`, `${companyCaps(state)} R&D: ${entry.name.toUpperCase()} RESEARCH COMPLETE`);
 }
 
 // ms of real time. Servers make the bar move faster than the wall clock.

@@ -17,6 +17,8 @@ import PrestigeReport from "./PrestigeReport";
 import BottomTabs from "./BottomTabs";
 import DilemmaModal from "./DilemmaModal";
 import BubbleBanner from "./BubbleBanner";
+import { CompanyNameCard, CompanyNameScreen } from "./CompanyName";
+import { companyPrompt } from "@/lib/company";
 import AnniversaryBanner from "./AnniversaryBanner";
 import CoachMark from "./CoachMark";
 import { ItemHelp, TipCard } from "./HintSheet";
@@ -268,6 +270,7 @@ export default function GameScreen() {
 
         <main className="safe-x mx-auto min-w-0 max-w-4xl space-y-2 overflow-x-hidden px-3 py-2">
           <BubbleBanner state={state} onCashOut={cashOut} />
+          <CompanyNameCard state={state} onName={game.nameCompany} />
           <AnniversaryBanner state={state} />
           {state.challenge && (
             <p className="break-words border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-3 font-term text-lg leading-6 text-[var(--game-accent)]">
@@ -322,7 +325,9 @@ export default function GameScreen() {
         </p>
       </footer>
       <BottomTabs />
-      <CoachMark state={state} onNext={tutorialNext} onSkip={tutorialSkip} />
+      {/* A new game names the company first; the tutorial waits for it. */}
+      <CompanyNameScreen state={state} onName={game.nameCompany} />
+      {companyPrompt(state) !== "screen" && <CoachMark state={state} onNext={tutorialNext} onSkip={tutorialSkip} />}
       <TipCard />
     </div>
   );

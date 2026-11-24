@@ -4,6 +4,7 @@ import { ROOMS, STATUS_LABEL, WINGS, roomCounts, roomExhibits, roomFilters, room
 import { useGameState } from "./GameState";
 import ScreenShell from "./chrome";
 import MuseumSection from "./MuseumSection";
+import RecordsSection from "./RecordsSection";
 
 const chip = (on) =>
   `min-h-11 border-2 px-2 py-1 text-center font-pixel text-[0.45rem] leading-4 shadow-[3px_3px_0_0_#000] ${
@@ -105,6 +106,8 @@ export default function MuseumPage({ top = null }) {
 
         {wing.id === "history" ? (
           <MuseumSection state={state} />
+        ) : wing.id === "records" ? (
+          <RecordsSection state={state} />
         ) : (
           <>
             <div data-museum-rooms className="grid grid-cols-3 gap-2">

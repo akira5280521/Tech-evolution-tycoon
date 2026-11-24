@@ -15,11 +15,22 @@ export const ROUTES = ["/", "/boost", "/tech", "/rigs", "/facilities/servers", "
 // Put a save in localStorage before the app starts. Only once per tab, so a
 // reload keeps whatever the game saved since. `save` is a fixture name from
 // tests/fixtures/saves.json or a save object.
-export async function seed(page, save, { seenNotes = true, extra = {}, restartOffer = false, prefs = {} } = {}) {
+export async function seed(page, save, { seenNotes = true, extra = {}, restartOffer = false, prefs = {}, historyEvents = false } = {}) {
   let data = typeof save === "string" ? { ...SAVES[save], lastSeen: Date.now() } : save;
   // The fixtures are older saves; the one-time "start fresh?" offer is tested
   // on its own, so other tests skip it.
   if (data && !restartOffer) data = { ...data, restartSeen: true };
+  // History events added in step 1 would otherwise pop over late-era fixtures
+  // (Moore's Law once Integrated Circuits are owned, early contracts once
+  // Punch Cards / Relay / Tubes are owned) and steal clicks. Tests that want
+  // the events can pass historyEvents: true.
+  if (data && !historyEvents) {
+    data = {
+      ...data,
+      eventsDone: [...new Set([...(data.eventsDone || []), "moore", "moth"])],
+      contractsDone: [...new Set([...(data.contractsDone || []), "census", "codebreak", "ballistics"])],
+    };
+  }
   if (typeof save === "string" && !SAVES[save]) throw new Error(`no fixture ${save}`);
   // Existing late-save tests click BUY on fully upgraded rows. The new
   // collapse-maxed pref is on for players, but off in e2e unless a test
@@ -65,12 +76,43 @@ export async function watch(page) {
   return { errors, outside };
 }
 
+export async function dismissOverlays(page) {
+  for (let i = 0; i < 6; i++) {
+    const arrival = page.locator("[data-arrival-dismiss]");
+    if (await arrival.count()) {
+      await arrival.click();
+      await page.waitForTimeout(150);
+      continue;
+    }
+    const story = page.locator("[data-story]");
+    if (await story.count()) {
+      await page.locator("[data-story-defer], [data-story-choice='a']").first().click();
+      await page.waitForTimeout(150);
+      continue;
+    }
+    const contract = page.locator("[data-contract-skip]");
+    if (await contract.count()) {
+      await contract.click();
+      await page.waitForTimeout(150);
+      continue;
+    }
+    const dilemma = page.locator("[data-dilemma='defer']");
+    if (await dilemma.count()) {
+      await dilemma.click();
+      await page.waitForTimeout(150);
+      continue;
+    }
+    break;
+  }
+}
+
 export async function open(page, path, save, opts) {
   const seen = await watch(page);
   await seed(page, save, opts);
   await page.goto(path);
   await page.locator("nav[aria-label='Main navigation']").waitFor();
   await page.waitForTimeout(700);
+  await dismissOverlays(page);
   return seen;
 }
 

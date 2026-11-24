@@ -37,7 +37,7 @@ test("HQ opens each plant on its own page, and the Museum card leaves More", asy
   await expect(page).toHaveURL(/\/facilities\/servers$/);
   await expect(page.locator("[data-facility='servers']")).toBeVisible();
   await expect(page.locator("[data-facility='mine']")).toHaveCount(0);
-  await expect(page.locator("[data-facility-yield]")).toContainText("+0.001");
+  await expect(page.locator("[data-facility-yield]")).toContainText("+0.005");
   await expect(page.getByText("Add a GPU")).toHaveCount(0);
   await expect(page.getByText("Irwell Mark 1")).toHaveCount(0);
   await page.getByRole("link", { name: "< BACK" }).click();

@@ -96,12 +96,8 @@ export async function dismissOverlays(page) {
       await page.waitForTimeout(150);
       continue;
     }
-    const dilemma = page.locator("[data-dilemma='defer']");
-    if (await dilemma.count()) {
-      await dilemma.click();
-      await page.waitForTimeout(150);
-      continue;
-    }
+    // Leave boardroom, shortage, and recall dilemmas alone: those tests
+    // assert on the card after open().
     break;
   }
 }

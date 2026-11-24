@@ -29,3 +29,10 @@ Times are America/Chicago (CT).
 - Mega-projects are in historical order: cable, mainframe, ARPANET, Apollo, Homebrew, Y2K, LAN, Orbital, Parallel Timeline. Career goals recosted so the 1860s Transcontinental Cable is first and cheapest ($5.00M, was $10B) and the National Mainframe is $100M (was $1T). Those dollar amounts are a design call. Existing project badges (higher lifetime totals) were left as they were.
 - The pacing bot accepts Moore, the moth, and contracts during active sessions so the post-D comparison includes them. True away catch-up still pauses contracts.
 - SAVE_VERSION is 15. Live contract / story offers are not kept across prestige; completed contracts and events are.
+
+## 2026-11-24, 7:45 AM CT — item E, post-D comparison
+
+- Re-ran `npm run sim:pace` after D (wall time 417.6s). Saved `docs/pacing/after-d-2026-11-24.md` and `docs/pacing/compare-d-2026-11-24.md`.
+- Active: first prestige 6h 28m (was 7h 15m, −10.8%), Quantum 15d 6h (was 15d 7h, −0.3%), fork still not reached in 21 days.
+- Casual: first prestige still 1d 11h; Quantum and fork still not reached.
+- Workstations / Laptops / Dial-up jumped earlier on the active profile because the recosted early mega-projects (and then Moore) let those eras open on the first run, before prestige. That is an expected reason, so no numbers were retuned.

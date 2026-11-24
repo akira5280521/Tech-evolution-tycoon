@@ -1789,6 +1789,8 @@ export function snapshotMeta(state, options = {}) {
     bestEra: Math.max(0, Math.floor(state.bestEra || 0)),
     runs: Array.isArray(state.runs) ? state.runs.slice(-40) : [],
     milestones: { ...(state.milestones || {}) },
+    // Best "ahead of history" per era; the run calendar itself starts over.
+    historyBest: { ...(state.historyBest || {}) },
     // The plants start empty again; remember this run's layout for REBUILD.
     lastPlants: plantsHaveParts(state.facilities) ? readFacilities(state.facilities) : readFacilities(state.lastPlants),
     trackedSince: state.trackedSince || 0,

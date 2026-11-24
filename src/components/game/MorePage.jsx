@@ -171,6 +171,7 @@ const HOW_TO = [
       "Two lab projects use materials: FAB TEST RUN (400 wafers for an era token, three a day) and CLEAN ROOM (100 polysilicon: TECH research 25% faster for 15 minutes).",
       "Tap a material to sell spare stock for a little cash, or swap it for another material (with a 10% fee). Prices are small, set by the era that makes it, and drift slowly.",
       "Real shortages happen once each, in their years: the 1988 memory chip crunch, the 1999 Taiwan earthquake, the 2011 Thailand floods, the 2017 crypto rush and the 2020 chip shortage. Pay to keep going, or wait it out with that material made at half rate for ten minutes.",
+      "Anniversary weeks: in the week that starts on a real launch day (ENIAC on February 15, the 4004 on November 15 and more), that era's row earns ×1.25. A banner on the game screen says which.",
     ],
   },
   {

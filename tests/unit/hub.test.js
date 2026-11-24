@@ -16,19 +16,23 @@ test("hub label and route are set", () => {
   assert.equal(HUB_ROUTE, "/rigs");
 });
 
-test("HQ lists every facility, with research servers first", () => {
-  assert.deepEqual(HUB_ITEMS.map((item) => item.id), [...FACILITIES.map((fac) => fac.id), "museum"]);
-  assert.equal(HUB_ITEMS[0].id, "servers");
-  assert.equal(HUB_ITEMS[0].label, "RESEARCH SERVERS");
-  assert.equal(HUB_ITEMS[0].to, "/facilities/$facilityId");
-  assert.equal(HUB_ITEMS[0].params.facilityId, "servers");
+test("HQ lists Rigs first, then every facility, then the Museum", () => {
+  assert.deepEqual(HUB_ITEMS.map((item) => item.id), ["rigs", ...FACILITIES.map((fac) => fac.id), "museum"]);
+  assert.equal(HUB_ITEMS[0].id, "rigs");
+  assert.equal(HUB_ITEMS[0].label, "RIGS");
+  assert.equal(HUB_ITEMS[0].to, "/garage");
+  const servers = HUB_ITEMS.find((item) => item.id === "servers");
+  assert.equal(servers.label, "RESEARCH SERVERS");
+  assert.equal(servers.to, "/facilities/$facilityId");
+  assert.equal(servers.params.facilityId, "servers");
   assert.equal(HUB_ITEMS.at(-1).id, "museum");
   assert.equal(HUB_ITEMS.at(-1).to, "/museum");
   assert.equal(HUB_ITEMS.at(-1).open({}), true);
   for (const item of HUB_ITEMS) {
     assert.ok(item.label && item.to && item.text && typeof item.open === "function");
   }
-  for (const item of HUB_ITEMS.filter((row) => row.id !== "museum")) {
+  assert.equal(HUB_ITEMS.find((item) => item.id === "rigs").need(), facilityNeed("bench"));
+  for (const item of HUB_ITEMS.filter((row) => row.id !== "museum" && row.id !== "rigs")) {
     assert.equal(item.need(), facilityNeed(item.id));
   }
 });
@@ -39,18 +43,20 @@ test("HQ is open from the first era so the starter machine is reachable", () => 
   assert.equal(hubOpen({ biz: [] }), true);
   assert.equal(hubOpen(withCpu(0)), true);
   assert.equal(hubOpen(withCpu(1)), true);
-  assert.equal(HUB_ITEMS[0].open(withCpu(0)), true);
+  assert.equal(HUB_ITEMS.find((item) => item.id === "servers").open(withCpu(0)), true);
 });
 
 test("research servers stay open with no Mainframes; later plants stay locked", () => {
   const early = withCpu(0);
   assert.equal(HUB_ITEMS.find((item) => item.id === "servers").open(early), true);
+  assert.equal(HUB_ITEMS.find((item) => item.id === "rigs").open(early), false);
   assert.equal(HUB_ITEMS.find((item) => item.id === "bench").open(early), false);
   assert.equal(HUB_ITEMS.find((item) => item.id === "mine").open(early), false);
   assert.equal(HUB_ITEMS.find((item) => item.id === "cluster").open(early), false);
   assert.match(HUB_ITEMS.find((item) => item.id === "bench").need(), /Home Computers/);
   assert.match(HUB_ITEMS.find((item) => item.id === "mine").need(), /AI Accelerators/);
   const later = { biz: BUSINESSES.map((b) => ({ id: b.id, owned: 1 })) };
+  assert.equal(HUB_ITEMS.find((item) => item.id === "rigs").open(later), true);
   assert.equal(HUB_ITEMS.find((item) => item.id === "bench").open(later), true);
   assert.equal(HUB_ITEMS.find((item) => item.id === "mine").open(later), true);
   assert.equal(HUB_ITEMS.find((item) => item.id === "cluster").open(later), true);
@@ -58,7 +64,7 @@ test("research servers stay open with no Mainframes; later plants stay locked", 
 
 test("hubSeen keeps HQ open with no Mainframes owned", () => {
   assert.equal(hubOpen({ ...withCpu(0), hubSeen: true }), true);
-  assert.equal(HUB_ITEMS[0].open({ ...withCpu(0), hubSeen: true }), true);
+  assert.equal(HUB_ITEMS.find((item) => item.id === "servers").open({ ...withCpu(0), hubSeen: true }), true);
 });
 
 test("hubSeen defaults false and survives snapshotMeta (prestige, fork, challenge)", () => {
@@ -93,4 +99,15 @@ test("a locked plant names what it needs this run", () => {
   assert.equal(facilityNeed("bench"), "Needs Home Computers this run");
   assert.equal(facilityNeed("mine"), "Needs AI Accelerators this run");
   assert.equal(facilityNeed("cluster"), "Needs AI Accelerators this run");
+});
+
+test("Rigs stays locked until Home Computers this run, same as the Bench", () => {
+  const early = withCpu(0);
+  const rigs = HUB_ITEMS.find((item) => item.id === "rigs");
+  assert.equal(rigs.open(early), false);
+  assert.match(rigs.need(), /Home Computers/);
+  const home = BUSINESSES.findIndex((b) => b.id === "homepc");
+  const unlocked = { biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: i === home ? 1 : 0 })) };
+  assert.equal(rigs.open(unlocked), true);
+  assert.equal(HUB_ITEMS.find((item) => item.id === "bench").open(unlocked), true);
 });

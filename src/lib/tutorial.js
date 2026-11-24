@@ -115,6 +115,13 @@ export const TUTORIAL_STEPS = [
     done: (s) => !!(s.tutorial?.opened || []).includes("hq"),
   },
   {
+    id: "hq-go",
+    title: "GO",
+    text: "These are locations you can visit. Tap GO to go there.",
+    target: "[data-action='go-servers']",
+    done: (s) => !!(s.tutorial?.opened || []).includes("servers"),
+  },
+  {
     id: "servers",
     title: "RESEARCH SERVERS",
     text: "Tap RESEARCH SERVERS. This room holds the machines that make R&D points.",

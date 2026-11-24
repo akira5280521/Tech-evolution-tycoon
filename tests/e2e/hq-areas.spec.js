@@ -32,7 +32,7 @@ const through = (id, extra = {}) => {
 test("HQ opens each plant on its own page, and the Museum card leaves More", async ({ page }) => {
   const seen = await open(page, "/rigs", through("tubes"));
   await tipsOff(page);
-  await expect(page.locator("[data-hub-item]")).toHaveCount(5);
+  await expect(page.locator("[data-hub-item]")).toHaveCount(6);
   await page.locator("[data-hub-item='servers']").click();
   await expect(page).toHaveURL(/\/facilities\/servers$/);
   await expect(page.locator("[data-facility='servers']")).toBeVisible();

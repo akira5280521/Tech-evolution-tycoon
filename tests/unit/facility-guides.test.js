@@ -83,7 +83,9 @@ test("a facility tour starts once the plant unlocks, and can be skipped", () => 
 
 test("the first-session tutorial includes HQ, the starter machine and the first TECH project", () => {
   const ids = TUTORIAL_STEPS.map((step) => step.id);
-  for (const id of ["hq", "servers", "starter", "tech", "project", "later"]) assert.ok(ids.includes(id), id);
+  for (const id of ["hq", "hq-go", "servers", "starter", "tech", "project", "later"]) assert.ok(ids.includes(id), id);
+  assert.equal(ids.indexOf("hq-go"), ids.indexOf("hq") + 1);
+  assert.ok(ids.indexOf("hq-go") < ids.indexOf("servers"));
   assert.equal(FIRST_RESEARCH_ID, "tab-hollerith");
   assert.ok(FACILITY_TOURS.map((t) => t.id).includes("tour-mine"));
 });

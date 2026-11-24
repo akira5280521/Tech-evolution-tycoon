@@ -14,6 +14,7 @@ import { Route as BadgesRouteImport } from './routes/badges'
 import { Route as BoardRouteImport } from './routes/board'
 import { Route as BoostRouteImport } from './routes/boost'
 import { Route as FacilitiesRouteImport } from './routes/facilities'
+import { Route as GarageRouteImport } from './routes/garage'
 import { Route as MoreRouteImport } from './routes/more'
 import { Route as MuseumRouteImport } from './routes/museum'
 import { Route as ResearchRouteImport } from './routes/research'
@@ -48,6 +49,11 @@ const BoostRoute = BoostRouteImport.update({
 const FacilitiesRoute = FacilitiesRouteImport.update({
   id: '/facilities',
   path: '/facilities',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GarageRoute = GarageRouteImport.update({
+  id: '/garage',
+  path: '/garage',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MoreRoute = MoreRouteImport.update({
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/board': typeof BoardRoute
   '/boost': typeof BoostRoute
   '/facilities': typeof FacilitiesRouteWithChildren
+  '/garage': typeof GarageRoute
   '/more': typeof MoreRoute
   '/museum': typeof MuseumRoute
   '/research': typeof ResearchRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/board': typeof BoardRoute
   '/boost': typeof BoostRoute
   '/facilities': typeof FacilitiesRouteWithChildren
+  '/garage': typeof GarageRoute
   '/more': typeof MoreRoute
   '/museum': typeof MuseumRoute
   '/research': typeof ResearchRoute
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/board': typeof BoardRoute
   '/boost': typeof BoostRoute
   '/facilities': typeof FacilitiesRouteWithChildren
+  '/garage': typeof GarageRoute
   '/more': typeof MoreRoute
   '/museum': typeof MuseumRoute
   '/research': typeof ResearchRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/board'
     | '/boost'
     | '/facilities'
+    | '/garage'
     | '/more'
     | '/museum'
     | '/research'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/board'
     | '/boost'
     | '/facilities'
+    | '/garage'
     | '/more'
     | '/museum'
     | '/research'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/board'
     | '/boost'
     | '/facilities'
+    | '/garage'
     | '/more'
     | '/museum'
     | '/research'
@@ -213,6 +225,7 @@ export interface RootRouteChildren {
   BoardRoute: typeof BoardRoute
   BoostRoute: typeof BoostRoute
   FacilitiesRoute: typeof FacilitiesRouteWithChildren
+  GarageRoute: typeof GarageRoute
   MoreRoute: typeof MoreRoute
   MuseumRoute: typeof MuseumRoute
   ResearchRoute: typeof ResearchRoute
@@ -259,6 +272,13 @@ declare module '@tanstack/react-router' {
       path: '/facilities'
       fullPath: '/facilities'
       preLoaderRoute: typeof FacilitiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/garage': {
+      id: '/garage'
+      path: '/garage'
+      fullPath: '/garage'
+      preLoaderRoute: typeof GarageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/more': {
@@ -352,6 +372,7 @@ const rootRouteChildren: RootRouteChildren = {
   BoardRoute: BoardRoute,
   BoostRoute: BoostRoute,
   FacilitiesRoute: FacilitiesRouteWithChildren,
+  GarageRoute: GarageRoute,
   MoreRoute: MoreRoute,
   MuseumRoute: MuseumRoute,
   ResearchRoute: ResearchRoute,

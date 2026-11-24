@@ -6,8 +6,25 @@ import ScreenShell from "./chrome";
 import { hqCardHasDot, readyDots } from "@/lib/ready";
 import { ReadyDot } from "./ReadyDot";
 
-// The menu behind the top button beside TECH. Every facility and the
-// Hardware Museum is listed; plants not unlocked this run stay visible as
+function GoButton({ id, disabled }) {
+  const cls = `inline-flex min-h-11 min-w-14 shrink-0 self-center items-center justify-center border-2 px-3 font-pixel text-[0.55rem] shadow-[3px_3px_0_0_#000] ${
+    disabled
+      ? "cursor-not-allowed border-[var(--game-border)] bg-[var(--game-panel)] text-[var(--game-dim)]"
+      : "border-[var(--game-accent)] bg-[var(--game-accent)] text-black"
+  }`;
+  return (
+    <span
+      aria-disabled={disabled ? "true" : undefined}
+      data-action={`go-${id}`}
+      className={cls}
+    >
+      GO &gt;
+    </span>
+  );
+}
+
+// The menu behind the top button beside TECH. Rigs, every facility and the
+// Hardware Museum are listed; plants not unlocked this run stay visible as
 // locked ? cards with the era they need, greyed Coming soon.
 export default function RigsHub() {
   const { state, noteTutorialPage } = useGameState();
@@ -44,6 +61,7 @@ export default function RigsHub() {
                   <p data-hub-need className="break-words font-pixel text-[0.5rem] leading-4">{item.need?.(state) || "Unlocks later in the timeline."}</p>
                   <p className="mt-1 font-pixel text-[0.5rem] leading-4">COMING SOON</p>
                 </div>
+                <GoButton id={item.id} disabled />
               </div>
             );
           }
@@ -61,6 +79,7 @@ export default function RigsHub() {
                 <p className="font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">{item.label} &gt;</p>
                 <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">{item.text}</p>
               </div>
+              <GoButton id={item.id} />
             </Link>
           );
         })}

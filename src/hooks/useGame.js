@@ -80,6 +80,7 @@ import { currentGoal, readGoalsDone, settleGoals } from "@/lib/goals";
 import { applyOrientation } from "@/lib/orientation";
 import { notesUnseen } from "@/lib/releaseNotes";
 import { SAVE_VERSION, clearSaveData, getSaveData, remapBestEra, writeSaveData } from "@/lib/gameSave";
+import { deleteRig, readRigs, saveRig } from "@/lib/rigs";
 import { encodeSave } from "@/lib/saveCode";
 import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
@@ -177,6 +178,7 @@ function applySavedMeta(state, raw) {
   state.tutorial = readTutorial(m.tutorial, num(m.careerEarnings) > 0 || num(raw?.investors) > 0 || (raw?.biz || []).some((b, i) => (b?.owned || 0) > (i === 0 ? 1 : 0)));
   state.badgesEarned = Array.isArray(m.badgesEarned) ? m.badgesEarned.filter((id) => typeof id === "string") : [];
   state.museum = Array.isArray(m.museum) ? m.museum.filter((id) => isHistoryCardId(id)) : [];
+  state.rigs = readRigs(m.rigs);
   state.bubble = cleanBubble(m.bubble);
   state.eventsDone = Array.isArray(m.eventsDone) ? [...new Set(m.eventsDone.filter((id) => typeof id === "string"))] : [];
   state.nextBubbleAt = num(m.nextBubbleAt);
@@ -262,6 +264,7 @@ function pack(s) {
     prestiged: !!s.prestiged,
     badgesEarned: s.badgesEarned || [],
     museum: s.museum || [],
+    rigs: readRigs(s.rigs),
     eventsDone: s.eventsDone || [],
     bubble: s.bubble || null,
     nextBubbleAt: s.nextBubbleAt || 0,
@@ -1376,6 +1379,22 @@ export function useGame() {
       applyOrientation(orientation);
       saveNow();
       bump();
+    },
+    saveBenchRig: () => {
+      const done = saveRig(stateRef.current);
+      if (done.ok) {
+        saveNow();
+        bump();
+      }
+      return done;
+    },
+    deleteBenchRig: (id) => {
+      const done = deleteRig(stateRef.current, id);
+      if (done.ok) {
+        saveNow();
+        bump();
+      }
+      return done;
     },
     prestige,
     reset,

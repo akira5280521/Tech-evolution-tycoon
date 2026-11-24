@@ -34,7 +34,7 @@ test("a new game is in the tutorial; goals wait until it ends", () => {
   assert.equal(currentGoal(s)?.id, STARTER_GOALS[0].id);
 });
 
-test("the tutorial has 12 steps and ends on a button", () => {
-  assert.equal(TUTORIAL_STEPS.length, 12);
+test("the tutorial has 13 steps and ends on a button", () => {
+  assert.equal(TUTORIAL_STEPS.length, 13);
   assert.equal(TUTORIAL_STEPS.at(-1).id, "later");
 });

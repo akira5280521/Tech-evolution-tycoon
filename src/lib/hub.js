@@ -7,12 +7,23 @@
 // their business owned this run to work.
 import { BUSINESSES } from "./gameConfig.js";
 import { FACILITIES, FACILITY_UNLOCK, PARTS, STARTER_PART_ID, anyFacilityOpen, facilityNeed, facilityUnlocked, partCost, readNews } from "./facilities.js";
+import { RIGS_ICON, RIGS_ROUTE, rigsOpen } from "./rigs.js";
 
 // The top button's name, in one place so it can be renamed.
 export const HUB_LABEL = "HQ";
 export const HUB_ROUTE = "/rigs";
 
 export const HUB_ITEMS = [
+  {
+    id: "rigs",
+    label: "RIGS",
+    to: RIGS_ROUTE,
+    icon: RIGS_ICON,
+    text: "Custom PCs from the PC Build Bench, saved so you can browse or show them off.",
+    // Same lock as the Bench: Home Computers this run.
+    open: (state) => rigsOpen(state),
+    need: () => facilityNeed("bench"),
+  },
   ...FACILITIES.map((fac) => ({
     id: fac.id,
     label: fac.name,

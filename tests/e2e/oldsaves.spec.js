@@ -64,6 +64,8 @@ test("a player partway through the old 6-step tutorial plays on through the new 
       if (await page.locator("[data-help-close]").count()) await page.click("[data-help-close]");
     } else if (step === "hq") {
       await page.locator("[data-open-facilities]").click();
+    } else if (step === "hq-go") {
+      await page.locator("[data-action='go-servers']").click();
     } else if (step === "servers") {
       await page.locator("[data-hub-item='servers']").click();
     } else if (step === "starter") {

@@ -2,7 +2,7 @@
 import { test, expect } from "@playwright/test";
 import { coachStep, expectClean, open, saved } from "./helpers.js";
 
-test("a new player walks all 12 steps and the starter goals take over", async ({ page }) => {
+test("a new player walks all 13 steps and the starter goals take over", async ({ page }) => {
   test.setTimeout(120_000);
   const seen = await open(page, "/", "newrich");
   expect(await coachStep(page)).toBe("run");
@@ -58,8 +58,9 @@ test("a new player walks all 12 steps and the starter goals take over", async ({
   if (await page.locator("[data-help-close]").count()) await page.click("[data-help-close]");
   await expect.poll(() => coachStep(page)).toBe("hq");
   await page.locator("[data-open-facilities]").click();
-  await expect.poll(() => coachStep(page), { timeout: 8000 }).toBe("servers");
-  await page.locator("[data-hub-item='servers']").click();
+  await expect.poll(() => coachStep(page), { timeout: 8000 }).toBe("hq-go");
+  await expect(page.locator("[data-coach]")).toContainText("8/13");
+  await page.locator("[data-action='go-servers']").click();
   await expect.poll(() => coachStep(page), { timeout: 8000 }).toBe("starter");
   const buyStarter = page.locator("[data-action='buy-tab601']");
   if (!(await buyStarter.isEnabled())) {
@@ -81,7 +82,7 @@ test("a new player walks all 12 steps and the starter goals take over", async ({
   await expect(startFirst).toBeVisible();
   await startFirst.click();
   await expect.poll(() => coachStep(page), { timeout: 8000 }).toBe("later");
-  await expect(page.locator("[data-coach]")).toContainText("12/12");
+  await expect(page.locator("[data-coach]")).toContainText("13/13");
   await expect(page.locator("[data-coach-next]")).toContainText("DONE");
   await page.click("[data-coach-next]");
   await expect.poll(() => coachStep(page)).toBe(null);
@@ -104,7 +105,7 @@ for (const save of ["mid", "early", "v4mid"]) {
   });
 }
 
-test("replay from How to Play walks all 12 steps with Next", async ({ page }) => {
+test("replay from How to Play walks all 13 steps with Next", async ({ page }) => {
   await open(page, "/more#howto", "mid");
   await page.click('[data-action="tutorial-replay"]');
   await page.waitForTimeout(600);
@@ -116,7 +117,7 @@ test("replay from How to Play walks all 12 steps with Next", async ({ page }) =>
     await page.waitForTimeout(200);
     steps++;
   }
-  expect(steps).toBe(12);
+  expect(steps).toBe(13);
 });
 
 for (const viewport of [{ width: 844, height: 390 }, { width: 320, height: 568 }]) {

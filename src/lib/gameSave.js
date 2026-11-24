@@ -2,6 +2,7 @@
 // (read/write) and the settings screen (read-only analytics).
 
 import { BUSINESSES, ERA_GATE, blankSupply, managerNeed, normalizeBuyMode } from "./gameConfig.js";
+import { readRigs } from "./rigs.js";
 
 export const SAVE_KEY = "pc-tycoon-save-v1";
 
@@ -23,8 +24,10 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 // v13 inserts Radio Valves (c. 1920) after the tube materials and before
 // Relay Computers, and moves sand, copper, glass and filament earlier so
 // they feed the radio era. Existing rows are matched by id; bestEra is
-// remapped from the v12 index.
-export const SAVE_VERSION = 13;
+// remapped from the v12 index. v14 adds the Rigs garage: cosmetic snapshots
+// of the PC on the Build Bench, kept through prestige like the museum. A
+// save from before v14 has no builds.
+export const SAVE_VERSION = 14;
 const V1_INVESTOR_DIVISOR = 1000;
 // Row order of each older save version.
 const V4_ORDER = ["sand", "copper", "silicon", "wafers", "tubes", "punchcards", "transistors", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];
@@ -200,6 +203,7 @@ export function migrateSave(data) {
     refineJob: job(data.refineJob),
     orientation: data.orientation === "portrait" || data.orientation === "landscape" ? data.orientation : "auto",
     buyMode: normalizeBuyMode(data.buyMode),
+    rigs: readRigs(data.rigs),
     meta: data,
     biz,
   };

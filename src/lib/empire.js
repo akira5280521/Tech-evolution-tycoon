@@ -8,6 +8,7 @@ import { advanceResearch, awayBankCap } from "./research.js";
 import { generationPayMult } from "./generations.js";
 import { blankTutorial } from "./tutorial.js";
 import { ROOMS, roomComplete } from "./museum.js";
+import { readRigs } from "./rigs.js";
 import {
   BUSINESSES,
   ERA_GATE,
@@ -503,6 +504,7 @@ export function blankMeta() {
     dilemma: null,
     lastDilemma: null,
     museum: [],
+    rigs: [],
     eventsDone: [],
     bubble: null,
     nextBubbleAt: 0,
@@ -1778,6 +1780,8 @@ export function snapshotMeta(state, options = {}) {
     briefingDay: state.briefingDay || null,
     badgesEarned: [...(state.badgesEarned || [])],
     museum: [...(state.museum || [])],
+    // Cosmetic bench snapshots, kept through prestige like the museum.
+    rigs: readRigs(state.rigs),
     eventsDone: [...(state.eventsDone || [])],
     nextBubbleAt: state.nextBubbleAt || 0,
     supply: { ...ensureSupply(state) },

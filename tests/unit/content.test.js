@@ -6,6 +6,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { BUSINESSES } from "../../src/lib/gameConfig.js";
 import { RESEARCH, researchCost } from "../../src/lib/research.js";
 import { FACILITIES, PARTS } from "../../src/lib/facilities.js";
+import { HUB_ITEMS } from "../../src/lib/hub.js";
 import { GENERATIONS } from "../../src/lib/generations.js";
 import { TIPS } from "../../src/lib/tips.js";
 import { TUTORIAL_STEPS, tourSteps } from "../../src/lib/tutorial.js";
@@ -55,6 +56,7 @@ test("every picture the game shows exists", () => {
     ...FACILITIES.map((f) => f.icon),
     "/icons/facilities/museum.png",
     "/icons/facilities/museum-32.png",
+    ...HUB_ITEMS.map((item) => item.icon),
     ...PARTS.map((p) => p.icon),
     "/icons/placeholder-era.svg",
   ].filter(Boolean);

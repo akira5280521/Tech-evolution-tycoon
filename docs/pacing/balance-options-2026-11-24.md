@@ -1,6 +1,8 @@
 # Quantum pacing: design numbers, bottleneck, and balance options
 
-24 November 2026, morning America/Chicago (CT). Local work on `feature/core-history`. No option below is the default on that branch.
+24 November 2026, morning America/Chicago (CT). Local work on `feature/core-history`.
+
+**Chosen: Option B, medium.** Andrew picked this at 11:11 AM CT on 24 November 2026. It was cherry-picked onto `feature/core-history` (starter machine `tab601.rd` is now 0.005/s). Nothing was pushed.
 
 The pacing bot is a reasonable active player (or, for casual, 45-minute sessions then 8 hours away at half speed). It buys the six starter research machines and does the TECH projects that unlock GPU, RGB, and Quantum. It does not research the later server hardware (Irwell Mark 1 and up), so R&D stays at the starter-machine rate.
 
@@ -46,13 +48,13 @@ Prestige multipliers and the soft income ceiling are not what hold Quantum. Afte
 
 ## 3. Balance options
 
-Each option only changes one config number: the starter machine's R&D rate (`tab601.rd` in `src/lib/facilities.js`). Earnings gates, prestige math, Moore, the moth, and mega-project costs stay as they are. The three options live on local branches, not as the default on `feature/core-history`.
+Each option only changes one config number: the starter machine's R&D rate (`tab601.rd` in `src/lib/facilities.js`). Earnings gates, prestige math, Moore, the moth, and mega-project costs stay as they are. Options A and C remain on local branches. Option B is now the default on `feature/core-history`.
 
 | Option | Branch | What changes | Nonstop prestige | Nonstop Quantum | Nonstop fork | Casual prestige | Casual Quantum | Casual fork |
 |---|---|---|---|---|---|---|---|---|
-| Current | `feature/core-history` | Starter 0.001/s each (0.006/s for six) | 6h 28m | 15d 6h | — | 1d 11h | 28d 10h | — |
+| Before | `feature/core-history` at 7a15ec7 | Starter 0.001/s each (0.006/s for six) | 6h 28m | 15d 6h | — | 1d 11h | 28d 10h | — |
 | A. Gentle | `balance/starter-rd-gentle` | Starter **0.0025/s** each (2.5×, 0.015/s for six) | 6h 28m | **6d 2h** | — | 1d 11h | **11d 7h** | — |
-| B. Medium | `balance/starter-rd-medium` | Starter **0.005/s** each (5×, 0.030/s for six) | 6h 28m | **3d 1h** | — | 1d 11h | **7d 7h** | — |
+| B. Medium (chosen) | `feature/core-history` (from `balance/starter-rd-medium`) | Starter **0.005/s** each (5×, 0.030/s for six) | 6h 28m | **3d 1h** | — | 1d 11h | **7d 7h** | — |
 | C. Strong | `balance/starter-rd-strong` | Starter **0.01/s** each (10×, 0.060/s for six) | 6h 28m | **1d 17h** | — | 1d 11h | **7d 7h** | — |
 
 Every option gets casual to Quantum inside three weeks. First prestige does not move. First fork is still not reached.
@@ -63,6 +65,4 @@ A player who researches a real 1951 Irwell Mark 1 (and later racks) would alread
 
 ## 4. Recommendation
 
-**Option B, medium (starter 0.005/s).** Casual is sure to reach Quantum in about a week. Nonstop lands at about 3 days — later than the old 0.0.22 “Quantum ~6h” note, which is fine given how many eras and TECH gates were added after that tune, without turning the late game into a one-day rush. If you want nonstop under two days, take C; casual stays about a week either way. If you want the lightest touch that still makes Quantum achievable, take A (6 days nonstop, 11 days casual).
-
-To try one: `git checkout balance/starter-rd-medium` (or `-gentle` / `-strong`). Nothing has been pushed, and `feature/core-history` still has the current 0.001/s rate.
+**Option B, medium (starter 0.005/s) was chosen** and is on `feature/core-history`. Casual is sure to reach Quantum in about a week. Nonstop lands at about 3 days — later than the old 0.0.22 “Quantum ~6h” note, which is fine given how many eras and TECH gates were added after that tune, without turning the late game into a one-day rush. Options A (`balance/starter-rd-gentle`) and C (`balance/starter-rd-strong`) are still available locally if you want to compare. Nothing has been pushed.

@@ -41,3 +41,8 @@ Times are America/Chicago (CT).
 
 - History-event knobs (even Moore at 50% off, a stronger moth, cheaper cable/mainframe) leave Quantum at 15d 5h nonstop / 28d 2h casual. The wall is late TECH (SSD and Tensor P100) at 0.006 R&D/s from the six starter machines.
 - Three local balance branches raise only the starter machine's R&D rate. Results and the recommendation are in `docs/pacing/balance-options-2026-11-24.md`. No option was made the default on `feature/core-history`.
+
+## 2026-11-24, 11:11 AM CT — Option B chosen
+
+- Andrew picked Option B, medium: starter machine R&D 0.005/s each (0.030/s for six). Cherry-picked `balance/starter-rd-medium` onto `feature/core-history`. Local only; not pushed.
+- Expected sim times from the options run: nonstop Quantum about 3d 1h, casual about 7d 7h, first prestige unchanged (6h 28m / 1d 11h), fork still not reached.

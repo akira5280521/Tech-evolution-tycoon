@@ -4,6 +4,7 @@
 import { readFileSync } from "node:fs";
 import { test, expect } from "@playwright/test";
 import { coachStep, expectClean, open, saved } from "./helpers.js";
+import { SAVE_VERSION } from "../../src/lib/gameSave.js";
 
 const OLD = JSON.parse(readFileSync(new URL("../fixtures/old-saves.json", import.meta.url), "utf8"));
 
@@ -12,16 +13,24 @@ for (const [name, data] of Object.entries(OLD)) {
     const before = { ...data, lastSeen: Date.now() - 3 * 3600e3 };
     const seen = await open(page, "/", before);
     await expect(page.locator("[data-cash-panel]")).toBeVisible();
-    await page.waitForTimeout(1500);
+    // Wait for the game's own save (it writes every 5 s). Reading earlier
+    // just reads back the old save the test put in, which proves nothing; on
+    // a busy machine the real save sometimes landed first.
+    await expect.poll(async () => (await saved(page))?.version, { message: "the game saved again", timeout: 20_000 }).toBe(SAVE_VERSION);
     const after = await saved(page);
-    expect(after, "the game saved again").toBeTruthy();
     expect(after.investors).toBe(before.investors);
     expect(after.cash).toBeGreaterThanOrEqual(before.cash * 0.999);
     expect(after.data || 0, "R&D points kept").toBeGreaterThanOrEqual((before.data || 0) - 1e-6);
     for (const id of before.techDone || []) expect(after.techDone, `research ${id} kept`).toContain(id);
     for (const id of before.goalsDone || []) expect(after.goalsDone, `goal ${id} kept`).toContain(id);
     expect(after.facilities?.servers || {}).toMatchObject(before.facilities?.servers || {});
-    after.biz.forEach((row, i) => expect(row.owned, `${row.id} owned`).toBeGreaterThanOrEqual(before.biz[i]?.owned || 0));
+    // Match rows by era id, not position: newer builds insert eras between
+    // old ones (Supercomputers now sits where Dial-up was in a 0.0.24 save).
+    for (const row of before.biz || []) {
+      const now = after.biz.find((b) => b.id === row.id);
+      expect(now, `${row.id} row kept`).toBeTruthy();
+      expect(now.owned, `${row.id} owned`).toBeGreaterThanOrEqual(row.owned || 0);
+    }
     if (before.tutorial?.done) expect(await coachStep(page), "a finished tutorial stays finished").toBe(null);
     else expect(await coachStep(page), "an unfinished tutorial picks up again").not.toBe(null);
     expectClean(seen);

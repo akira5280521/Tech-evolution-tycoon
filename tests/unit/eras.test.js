@@ -87,7 +87,7 @@ test("late eras need a TECH project that can be done before them", () => {
   assert.ok(eraOpen({ ...ready, techDone: [ERA_RESEARCH.quantum.id], erasPaid: ["quantum"] }, index));
 });
 
-import { ERA_MATERIAL, eraCanOpen, openEra } from "../../src/lib/gameConfig.js";
+import { ERA_BUILD, ERA_MATERIAL, eraBuildMs, eraCanOpen, finishEraBuild, openEra, readEraBuild } from "../../src/lib/gameConfig.js";
 test("opening an era takes its material only on the tap, and only once", () => {
   const index = BUSINESSES.findIndex((b) => b.id === "cpu");
   const cost = ERA_MATERIAL.cpu;
@@ -103,16 +103,42 @@ test("opening an era takes its material only on the tap, and only once", () => {
   assert.ok(!eraOpen(s, index));
   assert.equal(s.supply.wafers, cost.amount + 5);
   assert.ok(eraCanOpen(s, index));
-  assert.ok(openEra(s, index));
+  assert.ok(openEra(s, index, 1000));
   assert.equal(s.supply.wafers, 5);
+  // Paid on the tap, then set up for a while before it opens.
+  assert.ok(!eraOpen(s, index));
+  assert.ok(!eraCanOpen(s, index));
+  assert.equal(finishEraBuild(s, 1000 + eraBuildMs(index) - 1), null);
+  assert.equal(finishEraBuild(s, 1000 + eraBuildMs(index)), "cpu");
   assert.ok(eraOpen(s, index));
   // Next run: paid already, so it opens by itself once the other needs are met.
-  const next = { ...s, erasOpened: [], supply: { wafers: 0 } };
+  const next = { ...s, erasOpened: [], eraBuild: null, supply: { wafers: 0 } };
   assert.ok(eraOpen(next, index));
   const needs = eraNeeds(next, index);
   assert.ok(needs.find((n) => n.kind === "material").paid);
   // Later eras cost more.
   assert.ok(ERA_MATERIAL.supercluster.amount > ERA_MATERIAL.minis.amount);
+});
+
+test("setting an era up takes 20 seconds at first, longer later, at most 10 minutes", () => {
+  const at = (id) => BUSINESSES.findIndex((b) => b.id === id);
+  assert.equal(eraBuildMs(at("mainframes")), 20e3);
+  assert.equal(eraBuildMs(at("ics")), 24e3);
+  assert.ok(eraBuildMs(at("gpu")) > eraBuildMs(at("cpu")));
+  assert.equal(eraBuildMs(at("supercluster")), ERA_BUILD.maxMs);
+  let total = 0;
+  for (let i = 0; i < BUSINESSES.length; i++) if (ERA_MATERIAL[BUSINESSES[i].id]) total += eraBuildMs(i);
+  // About 82 minutes over the whole game, once ever.
+  assert.ok(total > 70 * 60e3 && total < 95 * 60e3, String(total));
+});
+
+test("only one era sets up at a time, and bad saved builds are dropped", () => {
+  const s = { eraBuild: { id: "cpu", startedAt: 0, readyAt: 9e12 } };
+  assert.ok(!eraCanOpen({ ...s, lifetime: 1e300, techDone: [], supply: { wafers: 1e9 }, biz: BUSINESSES.map(() => ({ owned: 25 })) }, 1));
+  assert.equal(readEraBuild({ id: "nope", startedAt: 0, readyAt: 1 }), null);
+  assert.equal(readEraBuild({ id: "cpu", startedAt: 5, readyAt: 1 }), null);
+  assert.deepEqual(readEraBuild({ id: "cpu", startedAt: 0, readyAt: 9e12 }), { id: "cpu", startedAt: 0, readyAt: ERA_BUILD.maxMs });
+  assert.equal(readEraBuild(null), null);
 });
 
 import { incomeCeiling, softenMultiplier } from "../../src/lib/empire.js";

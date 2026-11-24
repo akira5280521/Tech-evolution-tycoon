@@ -59,5 +59,22 @@ test("OPEN ERA takes the material only when tapped, and opens the era", async ({
   const after = await page.evaluate(() => JSON.parse(localStorage.getItem("pc-tycoon-save-v1")).supply.wafers);
   expect(before == null || after < before).toBeTruthy();
   await expect(page.locator("[data-locked-era] [data-open-era='cpu']")).toHaveCount(0);
+  // Then the era sets up for a while before it opens.
+  await expect(page.locator("[data-locked-era] [data-era-build='cpu']")).toBeVisible();
+  await expect(page.locator("[data-era-build-left]")).toHaveText(/^\d+s$/);
+  expect((await page.evaluate(() => JSON.parse(localStorage.getItem("pc-tycoon-save-v1")).eraBuild))?.id).toBe("cpu");
+  expectClean(seen);
+});
+
+test("an era being set up opens when its bar fills, with a toast", async ({ page }) => {
+  const now = Date.now();
+  const seen = await open(page, "/", shortOf("cpu", { techDone: [], erasPaid: ["cpu"], eraBuild: { id: "cpu", startedAt: now - 33_000, readyAt: now + 2500 } }));
+  await tipsOff(page);
+  const bar = page.locator("[data-era-build='cpu']");
+  await bar.scrollIntoViewIfNeeded();
+  await expect(bar).toBeVisible();
+  await expect(page.getByText("Microprocessors is open")).toBeVisible({ timeout: 8000 });
+  await expect(bar).toHaveCount(0);
+  await expect.poll(async () => page.evaluate(() => JSON.parse(localStorage.getItem("pc-tycoon-save-v1")).erasOpened || [])).toContain("cpu");
   expectClean(seen);
 });

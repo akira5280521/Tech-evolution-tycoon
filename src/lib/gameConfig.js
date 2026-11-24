@@ -851,6 +851,8 @@ export function eraOpen(state, index) {
   if (blockedByGlass(state, index)) return false;
   const biz = state?.biz || [];
   if ((biz[index]?.owned || 0) > 0) return true;
+  // Still being set up after OPEN ERA: it opens when the bar fills.
+  if (state?.eraBuild?.id === BUSINESSES[index]?.id) return false;
   if ((state?.erasOpened || []).includes(BUSINESSES[index]?.id)) return true;
   // An unpaid material is never taken on its own: it waits for OPEN ERA.
   if (ERA_MATERIAL[BUSINESSES[index]?.id] && !eraPaid(state, index)) return false;
@@ -860,11 +862,24 @@ export function eraOpen(state, index) {
 // Every need met and the material on hand, so OPEN ERA can be tapped.
 export function eraCanOpen(state, index) {
   if (index <= 0 || eraOpen(state, index) || blockedByGlass(state, index)) return false;
+  if (state?.eraBuild) return false;
   return eraNeeds(state, index).every((n) => n.met);
 }
 
-// The player tapped OPEN ERA: take the material, once, and open the era.
-export function openEra(state, index) {
+// After OPEN ERA the era takes a while to set up: 20 seconds for Mainframes,
+// a fifth longer for each era with a material after it, at most 10 minutes.
+// Only the first time ever: a paid era opens by itself in later runs.
+export const ERA_BUILD = { baseMs: 20e3, step: 1.2, maxMs: 10 * 60e3 };
+const MATERIAL_ERAS = () => BUSINESSES.map((cfg) => cfg.id).filter((id) => ERA_MATERIAL[id]);
+export function eraBuildMs(index) {
+  const k = MATERIAL_ERAS().indexOf(BUSINESSES[index]?.id);
+  if (k < 0) return ERA_BUILD.baseMs;
+  return Math.min(ERA_BUILD.maxMs, Math.round(ERA_BUILD.baseMs * ERA_BUILD.step ** k / 1000) * 1000);
+}
+
+// The player tapped OPEN ERA: take the material, once, and start setting the
+// era up. It opens when the bar fills (finishEraBuild).
+export function openEra(state, index, now = Date.now()) {
   if (!eraCanOpen(state, index)) return false;
   const id = BUSINESSES[index].id;
   const material = ERA_MATERIAL[id];
@@ -872,8 +887,28 @@ export function openEra(state, index) {
     state.supply = { ...(state.supply || {}), [material.key]: Math.max(0, (state.supply?.[material.key] || 0) - material.amount) };
     state.erasPaid = [...(state.erasPaid || []), id];
   }
-  state.erasOpened = [...(state.erasOpened || []), id];
+  const ms = eraBuildMs(index);
+  state.eraBuild = { id, startedAt: now, readyAt: now + ms };
   return true;
+}
+
+// The era being set up, once its bar is full: open it. Returns its id.
+export function finishEraBuild(state, now = Date.now()) {
+  const b = state?.eraBuild;
+  if (!b || now < b.readyAt) return null;
+  state.eraBuild = null;
+  if (!(state.erasOpened || []).includes(b.id)) state.erasOpened = [...(state.erasOpened || []), b.id];
+  return b.id;
+}
+
+// Save reader: a known era with sane times, or none.
+export function readEraBuild(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  if (!BUSINESSES.some((cfg) => cfg.id === raw.id)) return null;
+  const startedAt = Number(raw.startedAt);
+  const readyAt = Number(raw.readyAt);
+  if (!Number.isFinite(startedAt) || !Number.isFinite(readyAt) || readyAt < startedAt) return null;
+  return { id: raw.id, startedAt, readyAt: Math.min(readyAt, startedAt + ERA_BUILD.maxMs) };
 }
 
 export function formatFlow(flow) {

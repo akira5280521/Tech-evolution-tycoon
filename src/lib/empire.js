@@ -7,7 +7,8 @@ import { blankFacilities, facilityReport, noteFacilityNews, plantsHaveParts, rea
 import { advanceResearch, awayBankCap } from "./research.js";
 import { generationPayMult } from "./generations.js";
 import { blankTutorial } from "./tutorial.js";
-import { ROOMS, roomComplete } from "./museum.js";
+import { ROOMS, exhibitStatus, roomComplete } from "./museum.js";
+import { COMPUTE_RECORDS, computePower, flopsLabel, moorePoints } from "./compute.js";
 import {
   BUSINESSES,
   ERA_GATE,
@@ -1485,6 +1486,20 @@ const BADGE_DEFS = [
     desc: `Find every exhibit in the museum's ${room.name} room`,
     earned: (s) => roomComplete(s, room.id),
   })),
+  ...COMPUTE_RECORDS.map((r) => ({
+    id: `compute-${r.id}`,
+    group: "COMPUTE",
+    name: r.name,
+    desc: `Pass the ${r.year} record: ${flopsLabel(r.flops)} of compute power`,
+    earned: (s) => (s.computeRecords || []).includes(r.id) || computePower(s) >= r.flops,
+  })),
+  {
+    id: "moore-all",
+    group: "MUSEUM",
+    name: "Moore's Law",
+    desc: "Find every chip on the Moore's Law chart",
+    earned: (s) => moorePoints(s, exhibitStatus).every((p) => p.found),
+  },
   ...LIFE_BADGES.map((row) => ({
     id: row.id,
     group: "LIFETIME",
@@ -1869,6 +1884,10 @@ export function snapshotMeta(state, options = {}) {
     bestEra: Math.max(0, Math.floor(state.bestEra || 0)),
     runs: Array.isArray(state.runs) ? state.runs.slice(-40) : [],
     milestones: { ...(state.milestones || {}) },
+    // Compute records passed (kept forever).
+    computeRecords: [...(state.computeRecords || [])],
+    // Best "ahead of history" per era; the run calendar itself starts over.
+    historyBest: { ...(state.historyBest || {}) },
     // The plants start empty again; remember this run's layout for REBUILD.
     lastPlants: plantsHaveParts(state.facilities) ? readFacilities(state.facilities) : readFacilities(state.lastPlants),
     trackedSince: state.trackedSince || 0,

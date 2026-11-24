@@ -26,8 +26,9 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 // they feed the radio era. Existing rows are matched by id; bestEra is
 // remapped from the v12 index. v14 adds the Rigs garage: cosmetic snapshots
 // of the PC on the Build Bench, kept through prestige like the museum. A
-// save from before v14 has no builds.
-export const SAVE_VERSION = 14;
+// save from before v14 has no builds. v15 adds early-era contracts and the
+// moth / Moore's Law story events. Older saves start with none in progress.
+export const SAVE_VERSION = 15;
 const V1_INVESTOR_DIVISOR = 1000;
 // Row order of each older save version.
 const V4_ORDER = ["sand", "copper", "silicon", "wafers", "tubes", "punchcards", "transistors", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];

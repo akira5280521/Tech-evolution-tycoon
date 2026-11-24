@@ -28,10 +28,14 @@ import {
   singularityMult,
   snapshotMeta,
   startingBiz,
+  creditAmount,
+  incomePerSecond,
 } from "./empire.js";
 import { currentGoal, settleGoals } from "./goals.js";
 import { eraReachedIndex, pushRun } from "./records.js";
 import { generationAt } from "./generations.js";
+import { acceptContract, finishContract, tickContracts } from "./contracts.js";
+import { resolveStoryEvent, tickStoryEvents } from "./storyEvents.js";
 
 export function freshBiz(mode) {
   return BUSINESSES.map((cfg, i) => ({
@@ -67,9 +71,9 @@ export function buyBusiness(state, index, mode, now = Date.now()) {
   if (!canBuyIndex(state, index)) return { ok: false };
   const cfg = BUSINESSES[index];
   const st = state.biz[index];
-  const count = Math.floor(buyCount(mode, cfg, st.owned, state.cash));
+  const count = Math.floor(buyCount(mode, cfg, st.owned, state.cash, state));
   if (!Number.isFinite(count) || count < 1 || count > MAX_BUY) return { ok: false };
-  const cost = costOf(cfg, st.owned, count);
+  const cost = costOf(cfg, st.owned, count, state);
   if (!Number.isFinite(state.cash) || !Number.isFinite(cost) || !(state.cash >= cost)) return { ok: false };
   if (normalizeBuyMode(mode) === "x10" && currentGoal(state)?.id === "x10") state.boughtX10 = true;
   const before = st.owned;
@@ -231,4 +235,46 @@ export function applyFork(state, now = Date.now()) {
   next.dilemma = null;
   next.challenge = null;
   return { next, bill };
+}
+
+export function applyStoryChoice(state, key, now = Date.now()) {
+  const result = resolveStoryEvent(state, key, now);
+  if (!result || result.type !== "choice") return result;
+  const fx = result.effects || {};
+  if (fx.tokens) state.tokens = (state.tokens || 0) + fx.tokens;
+  if (fx.data) state.data = (state.data || 0) + fx.data;
+  if (fx.cash) creditAmount(state, Math.max(100, incomePerSecond(state, now) * fx.cash), now);
+  if (fx.boost) state.boostUntil = Math.max(state.boostUntil || 0, now) + fx.boost * 60 * 1000;
+  return result;
+}
+
+export function payoutContract(state, now = Date.now()) {
+  const spec = finishContract(state);
+  if (!spec) return null;
+  if (spec.reward?.cash) {
+    creditAmount(state, Math.max(100, incomePerSecond(state, now) * spec.reward.cash), now);
+  }
+  return spec;
+}
+
+export function playHistory(state, now = Date.now(), { blocked = false, hidden = false } = {}) {
+  const notes = hidden || blocked ? [] : tickContracts(state, now, { hidden: false });
+  if (!blocked && !hidden) tickStoryEvents(state, now, { blocked, hidden });
+  const finished = [];
+  for (const note of notes) {
+    if (note.type === "contract-done") {
+      const spec = payoutContract(state, now);
+      if (spec) finished.push({ type: "contract-done", id: spec.id, spec });
+    } else {
+      finished.push(note);
+    }
+  }
+  return finished;
+}
+
+export function botPlayHistory(state, now = Date.now()) {
+  const notes = playHistory(state, now, { blocked: false, hidden: false });
+  if (state.storyEvent) applyStoryChoice(state, "a", now);
+  if (state.contract?.status === "offered") acceptContract(state, now);
+  return notes;
 }

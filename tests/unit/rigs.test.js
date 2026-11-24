@@ -36,13 +36,13 @@ const withEra = (id, extra = {}) => {
   };
 };
 
-test("SAVE_VERSION is 14 for the Rigs garage field", () => {
-  assert.equal(SAVE_VERSION, 14);
+test("SAVE_VERSION stays current after the Rigs garage field", () => {
+  assert.ok(SAVE_VERSION >= 14);
 });
 
 test("a v13 save with no rigs migrates to an empty garage", () => {
   const out = migrateSave({ version: 13, cash: 10, biz: [{ id: "timber", owned: 1 }] });
-  assert.equal(out.version, 14);
+  assert.equal(out.version, SAVE_VERSION);
   assert.deepEqual(out.rigs, []);
 });
 

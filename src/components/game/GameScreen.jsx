@@ -17,6 +17,8 @@ import PrestigeReport from "./PrestigeReport";
 import BottomTabs from "./BottomTabs";
 import DilemmaModal from "./DilemmaModal";
 import ArrivalCard from "./ArrivalCard";
+import ContractCard, { ContractChip } from "./ContractCard";
+import StoryEventModal from "./StoryEventModal";
 import { currentArrival } from "@/lib/arrivals";
 import BubbleBanner from "./BubbleBanner";
 import { ItemHelp, TipCard } from "./HintSheet";
@@ -47,7 +49,7 @@ function supplyShown(state, key) {
 export default function GameScreen() {
   const game = useGameState();
   const { state, buyMode, setBuyMode, buy, hire, run, runAll, toggleManager, buyForeman, prestige, dismissOffline,
-    dismissPrestigeReport, dismissArrivalCard, chooseDilemma, cashOut, tutorialNext, tutorialSkip } = game;
+    dismissPrestigeReport, dismissArrivalCard, chooseDilemma, chooseStoryEvent, acceptContractOffer, skipContractOffer, cashOut, tutorialNext, tutorialSkip } = game;
   const [, bumpTick] = useState(0);
   const [pullDist, setPullDist] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
@@ -59,8 +61,8 @@ export default function GameScreen() {
   // A dilemma or shortage event takes the screen: close the material sheet
   // so the two never stack.
   useEffect(() => {
-    if (state.dilemma) setStorageKey(null);
-  }, [state.dilemma]);
+    if (state.dilemma || state.storyEvent || state.contract?.status === "offered") setStorageKey(null);
+  }, [state.dilemma, state.storyEvent, state.contract]);
   const [scrollTo, setScrollTo] = useState(() => pendingRowId());
   const startYRef = useRef(null);
   const pullRef = useRef(0);
@@ -179,7 +181,15 @@ export default function GameScreen() {
       {!state.offlineReport && !state.prestigeReport && (
         <ArrivalCard arrival={currentArrival(state)} onDismiss={dismissArrivalCard} />
       )}
-      {!state.offlineReport && !state.prestigeReport && !currentArrival(state) && <DilemmaModal dilemma={state.dilemma} onChoose={chooseDilemma} />}
+      {!state.offlineReport && !state.prestigeReport && !currentArrival(state) && (
+        <StoryEventModal event={state.storyEvent} onChoose={chooseStoryEvent} />
+      )}
+      {!state.offlineReport && !state.prestigeReport && !currentArrival(state) && !state.storyEvent && (
+        <ContractCard contract={state.contract} state={state} onAccept={acceptContractOffer} onSkip={skipContractOffer} />
+      )}
+      {!state.offlineReport && !state.prestigeReport && !currentArrival(state) && !state.storyEvent && state.contract?.status !== "offered" && (
+        <DilemmaModal dilemma={state.dilemma} onChoose={chooseDilemma} />
+      )}
 
       {(pullDist > 0 || refreshing) && (
         <div className="flex items-center justify-center gap-2 py-2 font-pixel text-[0.55rem] text-[var(--game-muted)]">
@@ -232,6 +242,7 @@ export default function GameScreen() {
               })}
               <ItemHelp kind="materials" id={SUPPLY_KEYS.filter((key) => supplyShown(state, key))} state={state} name="materials" className="ml-auto" />
             </p>
+            <ContractChip contract={state.contract} now={Date.now()} />
             <div data-section-toggle role="group" aria-label="Game section" className="mt-2 grid grid-cols-2 border-2 border-[var(--game-border)] bg-[var(--game-panel)] shadow-[3px_3px_0_0_#000]">
               {SECTIONS.map((item) => {
                 const on = section === item.id;

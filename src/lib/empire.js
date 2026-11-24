@@ -9,6 +9,7 @@ import { generationPayMult } from "./generations.js";
 import { blankTutorial } from "./tutorial.js";
 import { ROOMS, roomComplete } from "./museum.js";
 import { readRigs } from "./rigs.js";
+import { noteContractProgress } from "./contracts.js";
 import {
   BUSINESSES,
   ERA_GATE,
@@ -307,10 +308,17 @@ export const CHALLENGES = [
   },
 ];
 
+// Career earnings goals for the two early mega-projects. Dollar amounts are
+// a design call so the 1860s cable is first and cheapest, not a $10B gate
+// sitting behind later owned-count work.
+export const CABLE_NEED = 5e6;
+export const MAINFRAME_NEED = 1e8;
+
 export const PROJECTS = [
-  { id: "cable", name: "TRANSCONTINENTAL CABLE", blurb: "Career earnings reach $10.00B.", reward: 0.1, tokens: 20 },
-  { id: "mainframe", name: "NATIONAL MAINFRAME", blurb: "Career earnings reach $1.00T.", reward: 0.1, tokens: 20 },
-  { id: "orbital", name: "ORBITAL ARRAY", blurb: "Own 25 Quantum Servers at once.", reward: 0.1, tokens: 20, eras: ["quantum"] },
+  { id: "cable", name: "TRANSCONTINENTAL CABLE", blurb: "Career earnings reach $5.00M.", reward: 0.1, tokens: 20,
+    check: (s) => (s.careerEarnings || 0) >= CABLE_NEED },
+  { id: "mainframe", name: "NATIONAL MAINFRAME", blurb: "Career earnings reach $100.00M.", reward: 0.1, tokens: 20,
+    check: (s) => (s.careerEarnings || 0) >= MAINFRAME_NEED },
   // Later projects pay a smaller bonus each so the set stays inside the soft ceiling.
   { id: "arpanet", name: "ARPANET NODE", blurb: "Own 100 Punch Cards and 100 Transistors at once.", reward: 0.05, tokens: 15, eras: ["punchcards", "transistors"],
     check: (s) => owns(s, "punchcards", 100) && owns(s, "transistors", 100) },
@@ -322,6 +330,7 @@ export const PROJECTS = [
     check: (s) => (s.careerEarnings || 0) >= 1e15 },
   { id: "lan", name: "WORLD'S BIGGEST LAN PARTY", blurb: "Own 150 Graphics Cards and 150 RGB Battlestations at once.", reward: 0.05, tokens: 15, eras: ["gpu", "rgb"],
     check: (s) => owns(s, "gpu", 150) && owns(s, "rgb", 150) },
+  { id: "orbital", name: "ORBITAL ARRAY", blurb: "Own 25 Quantum Servers at once.", reward: 0.1, tokens: 20, eras: ["quantum"] },
   { id: "timeline", name: "PARALLEL TIMELINE", blurb: "Fork the timeline once.", reward: 0.05, tokens: 15,
     check: (s) => (s.singularities || 0) >= 1 },
 ];
@@ -506,6 +515,11 @@ export function blankMeta() {
     museum: [],
     rigs: [],
     eventsDone: [],
+    contractsDone: [],
+    contract: null,
+    contractDeferUntil: 0,
+    storyEvent: null,
+    storyDeferUntil: 0,
     bubble: null,
     nextBubbleAt: 0,
     dilemmaDeferUntil: 0,
@@ -924,6 +938,7 @@ export function creditCycles(state, index, cycles, now = 0, rate = 1) {
   const factor = supplyFactor(state, cfg, cycles);
   moveSupply(state, cfg, cycles, st.owned, now);
   const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor * rate;
+  noteContractProgress(state, index, cycles, st.owned);
   return creditAmount(state, amount, now);
 }
 
@@ -1009,6 +1024,10 @@ export function replayAway(state, elapsed, end, rate = 1, options = {}) {
   // alsoManual: an active player keeps tapping unmanaged rows. Away
   // catch-up leaves this off, so only hired managers run while you're gone.
   const alsoManual = options.alsoManual === true;
+  const prevAway = !!state.awayReplay;
+  // Real away catch-up pauses contracts. An active sim session uses
+  // alsoManual and should still count contract progress.
+  state.awayReplay = options.pauseContracts ?? !alsoManual;
   // How long each material ran short (rows using it paid less) or sat FULL
   // (new output lost), for the Welcome Back report.
   const shortMs = {};
@@ -1072,6 +1091,7 @@ export function replayAway(state, elapsed, end, rate = 1, options = {}) {
     .filter(([, ms]) => ms >= 60_000)
     .sort((a, b) => b[1] - a[1])
     .map(([key, ms]) => ({ key, ms }));
+  state.awayReplay = prevAway;
   return { gain, rows, short, full };
 }
 
@@ -1133,8 +1153,6 @@ export function failChallenge(state) {
 
 function projectReady(state, id) {
   if ((state.projectsDone || []).includes(id)) return false;
-  if (id === "cable") return (state.careerEarnings || 0) >= 1e10;
-  if (id === "mainframe") return (state.careerEarnings || 0) >= 1e12;
   if (id === "orbital") return (state.biz?.[indexOfBusiness("quantum")]?.owned || 0) >= 25;
   const spec = PROJECTS.find((p) => p.id === id);
   return !!spec?.check?.(state);
@@ -1620,6 +1638,7 @@ export function describeEffects(effects) {
   if (effects.boost) parts.push(`Income x1.15 for ${effects.boost} minutes`);
   if (effects.pay) parts.push(`Costs ${effects.pay} seconds of income`);
   if (effects.shortage) parts.push(`${effects.shortage.key} made at half rate for ${effects.shortage.minutes} minutes`);
+  if (effects.moore) parts.push("Newer eras (1965 on) cost 15% less");
   return parts.join(", ");
 }
 
@@ -1788,6 +1807,9 @@ export function snapshotMeta(state, options = {}) {
     // Cosmetic bench snapshots, kept through prestige like the museum.
     rigs: readRigs(state.rigs),
     eventsDone: [...(state.eventsDone || [])],
+    // Completed early-era contracts stay done across prestige, like events.
+    // A live offer or deadline is cleared; it can come back later in the new run.
+    contractsDone: [...(state.contractsDone || [])],
     nextBubbleAt: state.nextBubbleAt || 0,
     supply: { ...ensureSupply(state) },
     // Bigger bins are buildings: kept through prestige and forks.

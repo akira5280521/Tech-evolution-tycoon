@@ -20,3 +20,12 @@ Times are America/Chicago (CT).
 ## 2026-11-24, morning CT — item C, notifications
 
 - On the existing away-reminder hook: optional RESEARCH DONE and BINS FULL notices, same permission as the cap reminder. One of each kind, with a 30-minute cooldown. Opening the app still cancels pending notices.
+
+## 2026-11-24, morning CT — item D, history events step 1
+
+- Early-era contracts (one at a time): Census Office (200 Punch Cards in 10 minutes), Wartime Code-Breaking (80 Relay Computers), Wartime Ballistics (100 Vacuum Tubes). Offered when that era is owned. The deadline and production only run while the app is open; fail or skip loses nothing and the office asks again later (5 or 10 minutes). Reward is era tokens plus a couple of minutes of income.
+- The 1947 moth is a once-a-game story event in the relay–mainframes window. It has no 45-second timer. Done is marked when the player chooses, so deferring it (5 minutes) can bring it back. Design call: pin-it pays +4 R&D, clear-it is a 5-minute income boost.
+- Moore's Law (1965) is a once-a-game research upgrade offered from Integrated Circuits on. Accepting it marks `moore` in `eventsDone` and cuts buy costs of eras dated 1965 or later by 15% (including ICs and minicomputers). The 15% figure is a design call; docs did not specify the discount. Earn gates are unchanged.
+- Mega-projects are in historical order: cable, mainframe, ARPANET, Apollo, Homebrew, Y2K, LAN, Orbital, Parallel Timeline. Career goals recosted so the 1860s Transcontinental Cable is first and cheapest ($5.00M, was $10B) and the National Mainframe is $100M (was $1T). Those dollar amounts are a design call. Existing project badges (higher lifetime totals) were left as they were.
+- The pacing bot accepts Moore, the moth, and contracts during active sessions so the post-D comparison includes them. True away catch-up still pauses contracts.
+- SAVE_VERSION is 15. Live contract / story offers are not kept across prestige; completed contracts and events are.

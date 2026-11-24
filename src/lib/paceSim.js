@@ -36,6 +36,7 @@ import { RESEARCH, canStartResearch, researchCost, startResearch } from "./resea
 import {
   applyFork,
   applyPrestige,
+  botPlayHistory,
   buyBusiness,
   buyForeman,
   canFork,
@@ -216,6 +217,8 @@ function shouldDelayPrestige(state) {
 export function act(state, now) {
   let acted = false;
 
+  botPlayHistory(state, now);
+
   if (tryResearch(state, now)) acted = true;
   if (tryHire(state, now)) acted = true;
 
@@ -268,7 +271,7 @@ export function act(state, now) {
   // climbing), then any cheaper earlier row that still pays back.
   for (let i = BUSINESSES.length - 1; i >= 0; i--) {
     if (!eraOpen(state, i)) continue;
-    const cost = costOf(BUSINESSES[i], state.biz[i]?.owned || 0, 1);
+    const cost = costOf(BUSINESSES[i], state.biz[i]?.owned || 0, 1, state);
     if (Number.isFinite(cost) && cost <= state.cash && buyMax(state, i, now)) return true;
   }
 
@@ -311,7 +314,7 @@ function waitMs(state, now, cap) {
     const front = frontierEra(state);
     if (front > 0 && eraOpen(state, front - 1)) {
       const have = state.biz[front - 1]?.owned || 0;
-      const cost = costOf(BUSINESSES[front - 1], have, 1);
+      const cost = costOf(BUSINESSES[front - 1], have, 1, state);
       if (Number.isFinite(cost) && cost > state.cash) {
         const need = (cost - state.cash) / income * 1000;
         if (need > 0 && need < wait) wait = need;

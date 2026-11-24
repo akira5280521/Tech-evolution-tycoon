@@ -47,6 +47,7 @@ import {
   ensureSupply,
   finishTimedWork,
   resolveDilemma,
+  describeEffects,
   DILEMMAS,
   forkCost,
   singularityMult,
@@ -69,8 +70,9 @@ import { applyOrientation } from "@/lib/orientation";
 import { notesUnseen } from "@/lib/releaseNotes";
 import { SAVE_VERSION, clearSaveData, getSaveData, remapBestEra, writeSaveData } from "@/lib/gameSave";
 import { deleteRig, readRigs, saveRig } from "@/lib/rigs";
-import { applyFork, applyPrestige, buyBusiness, buyForeman as takeForeman, freshBiz, freshState, hireManager, startAllRuns, startRun } from "@/lib/playState";
-import { beginArrivalCatchup, dismissArrival, endArrivalCatchup, queueEraArrival, queueGenerationArrival } from "@/lib/arrivals";
+import { applyFork, applyPrestige, applyStoryChoice, buyBusiness, buyForeman as takeForeman, freshBiz, freshState, hireManager, playHistory, startAllRuns, startRun } from "@/lib/playState";
+import { acceptContract, skipContract } from "@/lib/contracts";
+import { beginArrivalCatchup, currentArrival, dismissArrival, endArrivalCatchup, queueEraArrival, queueGenerationArrival } from "@/lib/arrivals";
 import { encodeSave } from "@/lib/saveCode";
 import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
@@ -141,6 +143,11 @@ function applySavedMeta(state, raw) {
   state.rigs = readRigs(m.rigs);
   state.bubble = cleanBubble(m.bubble);
   state.eventsDone = Array.isArray(m.eventsDone) ? [...new Set(m.eventsDone.filter((id) => typeof id === "string"))] : [];
+  state.contractsDone = Array.isArray(m.contractsDone) ? [...new Set(m.contractsDone.filter((id) => typeof id === "string"))] : [];
+  state.contract = m.contract && typeof m.contract === "object" ? m.contract : null;
+  state.contractDeferUntil = num(m.contractDeferUntil);
+  state.storyEvent = m.storyEvent && typeof m.storyEvent === "object" && typeof m.storyEvent.id === "string" ? { id: m.storyEvent.id } : null;
+  state.storyDeferUntil = num(m.storyDeferUntil);
   state.nextBubbleAt = num(m.nextBubbleAt);
   state.modStamp = 1;
   const orient = raw?.orientation;
@@ -226,6 +233,11 @@ function pack(s) {
     museum: s.museum || [],
     rigs: readRigs(s.rigs),
     eventsDone: s.eventsDone || [],
+    contractsDone: s.contractsDone || [],
+    contract: s.contract || null,
+    contractDeferUntil: s.contractDeferUntil || 0,
+    storyEvent: s.storyEvent || null,
+    storyDeferUntil: s.storyDeferUntil || 0,
     bubble: s.bubble || null,
     nextBubbleAt: s.nextBubbleAt || 0,
     supply: s.supply,
@@ -437,6 +449,8 @@ function announce(notes) {
     }
     if (note.type === "bubble") toast("DOT-COM BUBBLE!", { description: "Your web stock is soaring. The banner counts down to the pop." });
     if (note.type === "bubblepop") toast("The bubble popped", { description: "The web stock is worth nothing now. Sell sooner next time." });
+    if (note.type === "contract-done") toast(note.spec?.title || "CONTRACT COMPLETE", { description: "The office paid in cash and era tokens." });
+    if (note.type === "contract-fail") toast(note.spec?.title || "CONTRACT LAPSED", { description: "Nothing lost. The office will ask again later." });
   }
 }
 
@@ -654,8 +668,10 @@ export function useGame() {
       if (autoBuyUpgrade(s, wall)) dirty = true;
       // No dilemma starts while Welcome Back, the prestige report, What's New
       // or the fresh-start offer is up.
-      const blocked = !!s.offlineReport || !!s.prestigeReport || (!!s.restartSuggested && !s.restartSeen) || notesUnseen();
-      const notes = tickDilemma(s, wall, { blocked }).concat(finishTimedWork(s, wall), tickBubble(s, wall));
+      const blocked = !!s.offlineReport || !!s.prestigeReport || (!!s.restartSuggested && !s.restartSeen) || notesUnseen() || !!currentArrival(s);
+      const historyNotes = playHistory(s, wall, { blocked, hidden: false });
+      const eventUp = !!s.storyEvent || s.contract?.status === "offered";
+      const notes = tickDilemma(s, wall, { blocked: blocked || eventUp }).concat(finishTimedWork(s, wall), tickBubble(s, wall), historyNotes);
       const cards = collectHistory(s);
       if (cards.length) notes.push({ type: "history", cards });
       if (notes.length) {
@@ -974,6 +990,34 @@ export function useGame() {
     [bump]
   );
 
+  const chooseStoryEvent = useCallback(
+    (choice) => {
+      const result = applyStoryChoice(stateRef.current, choice, Date.now());
+      if (!result) return;
+      if (result.type === "choice") {
+        const summary = describeEffects(result.effects || {}) || "The event is in the logbook.";
+        toast(result.title, { description: `${summary}.` });
+      }
+      if (result.type === "defer") toast("Deferred", { description: "The story will wait 5 minutes." });
+      saveNow();
+      bump();
+    },
+    [bump]
+  );
+
+  const acceptContractOffer = useCallback(() => {
+    if (!acceptContract(stateRef.current, Date.now())) return;
+    saveNow();
+    bump();
+  }, [bump]);
+
+  const skipContractOffer = useCallback(() => {
+    if (!skipContract(stateRef.current, Date.now())) return;
+    toast("Contract skipped", { description: "Nothing lost. The office will ask again later." });
+    saveNow();
+    bump();
+  }, [bump]);
+
   const cashOut = useCallback(() => {
     const result = cashOutBubble(stateRef.current, Date.now());
     if (!result) return;
@@ -1284,6 +1328,9 @@ export function useGame() {
     reset,
     dismissOffline,
     dismissArrivalCard,
+    chooseStoryEvent,
+    acceptContractOffer,
+    skipContractOffer,
     purchaseUpgrade,
     upgradeStorage,
     openEraAt,

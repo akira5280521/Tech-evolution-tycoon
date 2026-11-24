@@ -29,7 +29,7 @@ function canAfford(state, id) {
   const index = indexOf(id);
   const cfg = BUSINESSES[index];
   if (!cfg) return false;
-  const cost = costOf(cfg, ownedOf(state, id), 1);
+  const cost = costOf(cfg, ownedOf(state, id), 1, state);
   return Number.isFinite(cost) && (state?.cash || 0) >= cost;
 }
 

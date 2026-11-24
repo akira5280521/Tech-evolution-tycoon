@@ -1024,8 +1024,21 @@ export function count(n) {
 // into Infinity and a MAX purchase would poison cash with NaN.
 export const MAX_BUY = 1000;
 
+// Moore's Law (1965): once researched, later eras cost 15% less to buy.
+// The figure is a design call; eras dated 1965 or later are "newer".
+export const MOORE_ID = "moore";
+export const MOORE_MULT = 0.85;
+export const MOORE_YEAR = 1965;
+
+export function mooreMult(state, cfg) {
+  if (!state || !(state.eventsDone || []).includes(MOORE_ID)) return 1;
+  const year = eraYear(cfg);
+  if (year == null || year < MOORE_YEAR) return 1;
+  return MOORE_MULT;
+}
+
 // Total price of buying `count` units, geometric scaling per unit owned.
-export function costOf(cfg, owned, count) {
+export function costOf(cfg, owned, count, state) {
   const r = cfg.coef;
   if (!Number.isFinite(r) || r <= 1) return Infinity;
   if (!Number.isFinite(owned) || owned < 0 || !Number.isFinite(count) || count < 1 || count > MAX_BUY) {
@@ -1033,17 +1046,19 @@ export function costOf(cfg, owned, count) {
   }
   const start = cfg.baseCost * Math.pow(r, owned);
   const total = (start * (Math.pow(r, count) - 1)) / (r - 1);
-  return Number.isFinite(total) ? total : Infinity;
+  const priced = total * mooreMult(state, cfg);
+  return Number.isFinite(priced) ? priced : Infinity;
 }
 
-export function maxAffordable(cfg, owned, cash) {
+export function maxAffordable(cfg, owned, cash, state) {
   const r = cfg.coef;
   if (!Number.isFinite(r) || r <= 1) return 0;
   const start = cfg.baseCost * Math.pow(r, owned);
-  if (!Number.isFinite(cash) || cash <= 0 || !Number.isFinite(start) || start <= 0 || !Number.isFinite(owned) || owned < 0) {
+  const budget = Number(cash) / mooreMult(state, cfg);
+  if (!Number.isFinite(budget) || budget <= 0 || !Number.isFinite(start) || start <= 0 || !Number.isFinite(owned) || owned < 0) {
     return 0;
   }
-  const n = Math.floor(Math.log((cash * (r - 1)) / start + 1) / Math.log(r));
+  const n = Math.floor(Math.log((budget * (r - 1)) / start + 1) / Math.log(r));
   if (!Number.isFinite(n)) return 0;
   return Math.max(0, Math.min(MAX_BUY, n));
 }
@@ -1074,9 +1089,9 @@ export function buyModeLabel(mode) {
 
 // Each amount buys exactly that many. MAX buys as many as you can afford.
 // Buying past a milestone still gives its bonus (bonuses come from the owned count).
-export function buyCount(mode, cfg, owned, cash) {
+export function buyCount(mode, cfg, owned, cash, state) {
   const id = normalizeBuyMode(mode);
-  if (id === "MAX") return Math.min(MAX_BUY, Math.max(maxAffordable(cfg, owned, cash), 1));
+  if (id === "MAX") return Math.min(MAX_BUY, Math.max(maxAffordable(cfg, owned, cash, state), 1));
   const n = parseInt(id.slice(1), 10);
   if (!Number.isFinite(n) || n < 1) return 1;
   return Math.min(MAX_BUY, n);
@@ -1201,7 +1216,7 @@ export function nextMove(state) {
     if (!noBoss && !mst.manager && (mst.owned || 0) >= managerNeed(short.maker) && cash >= maker.managerCost) {
       return `${user} is short of ${short.key}. Hire the ${maker.managerName} so the ${maker.name} keeps making it.`;
     }
-    const cost = costOf(maker, mst.owned || 0, 1);
+    const cost = costOf(maker, mst.owned || 0, 1, state);
     if (Number.isFinite(cost) && cash >= cost) return `${user} is short of ${short.key}. Buy another ${maker.name} for ${money(cost)}.`;
   }
 
@@ -1231,7 +1246,7 @@ export function nextMove(state) {
     if (blockedByGlass(state, i)) continue;
     const st = biz[i];
     if ((st && st.owned > 0) || !eraOpen(state, i)) continue;
-    const cost = costOf(BUSINESSES[i], 0, 1);
+    const cost = costOf(BUSINESSES[i], 0, 1, state);
     if (Number.isFinite(cost) && cash >= cost) {
       return `Buy your first ${BUSINESSES[i].name} for ${money(cost)}.`;
     }
@@ -1243,7 +1258,7 @@ export function nextMove(state) {
   if (front > 0 && !glass) {
     const prevCfg = BUSINESSES[front - 1];
     const have = biz[front - 1]?.owned || 0;
-    const cost = costOf(prevCfg, have, 1);
+    const cost = costOf(prevCfg, have, 1, state);
     if (have < ERA_GATE && Number.isFinite(cost) && cash >= cost) {
       return `Buy another ${prevCfg.name} for ${money(cost)}. Own ${ERA_GATE} ${pluralName(prevCfg.name)} to open the next era (${have}/${ERA_GATE}).`;
     }
@@ -1270,7 +1285,7 @@ export function nextMove(state) {
     const owned = st ? st.owned : 0;
     if (!eraOpen(state, i)) continue;
     const cfg = BUSINESSES[i];
-    const cost = costOf(cfg, owned, 1);
+    const cost = costOf(cfg, owned, 1, state);
     const delta = rateOf(cfg, owned + 1) - rateOf(cfg, owned);
     if (!Number.isFinite(cost) || !(delta > 0) || cash < cost) continue;
     const payback = cost / delta;
@@ -1299,7 +1314,7 @@ export function nextMove(state) {
     if (blockedByGlass(state, i)) continue;
     const st = biz[i];
     if ((st && st.owned > 0) || !eraOpen(state, i)) continue;
-    const cost = costOf(BUSINESSES[i], 0, 1);
+    const cost = costOf(BUSINESSES[i], 0, 1, state);
     const short = cost - cash;
     if (Number.isFinite(short) && short > 0 && (!goal || short < goal.short)) {
       goal = { short, text: `Save ${money(short)} more to open ${BUSINESSES[i].name}.` };

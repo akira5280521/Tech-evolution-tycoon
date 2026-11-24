@@ -118,8 +118,8 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
   const cfg = BUSINESSES[index];
   const st = row;
   const managed = isManaged(st);
-  const count = buyCount(buyMode, cfg, st.owned, cash);
-  const cost = costOf(cfg, st.owned, count);
+  const count = buyCount(buyMode, cfg, st.owned, cash, state);
+  const cost = costOf(cfg, st.owned, count, state);
   const canBuy = cash >= cost;
   const mult = milestoneMult(st.owned);
   const next = nextMilestone(st.owned);

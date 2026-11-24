@@ -39,7 +39,7 @@ export function nextGoal(state) {
       return { id: `open-${BUSINESSES[i].id}`, text: `Open ${BUSINESSES[i].name}`, to: "/", rowId: BUSINESSES[i].id, section: sectionOfId(BUSINESSES[i].id) };
     }
     if (eraOpen(state, i) && !(biz[i]?.owned > 0)) {
-      const cost = costOf(BUSINESSES[i], 0, 1);
+      const cost = costOf(BUSINESSES[i], 0, 1, state);
       if (Number.isFinite(cost) && cash >= cost) {
         return { id: `buy-${BUSINESSES[i].id}`, text: `Buy ${BUSINESSES[i].name}`, ...jumpForRow(BUSINESSES[i].id) };
       }

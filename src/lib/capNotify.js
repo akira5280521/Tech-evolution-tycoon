@@ -1,5 +1,6 @@
 import { readPrefs } from "@/lib/gamePrefs";
 import { offlineCapMs } from "@/lib/empire";
+import { researchFinishTimes } from "@/lib/research";
 
 // One local notification for the moment away-time stops paying. Off unless
 // the player turns it on. Permission is requested only from that switch.
@@ -7,6 +8,9 @@ import { offlineCapMs } from "@/lib/empire";
 
 const NOTE_ID = 22022;
 const CHANNEL_ID = "away-cap";
+// One per research slot.
+const RESEARCH_IDS = [22023, 22024];
+const RESEARCH_CHANNEL = "research-done";
 
 function native() {
   const cap = typeof window !== "undefined" ? window.Capacitor : undefined;
@@ -25,16 +29,16 @@ async function plugin() {
 
 async function ensureChannel(notes) {
   if (typeof notes.createChannel !== "function") return;
-  try {
-    await notes.createChannel({
-      id: CHANNEL_ID,
-      name: "Away time",
-      description: "A reminder when away time fills up",
-      importance: 3,
-      visibility: 1,
-    });
-  } catch {
-    /* the channel already exists, or this platform has no channels */
+  const channels = [
+    { id: CHANNEL_ID, name: "Away time", description: "A reminder when away time fills up" },
+    { id: RESEARCH_CHANNEL, name: "Research done", description: "A reminder when a research project finishes" },
+  ];
+  for (const c of channels) {
+    try {
+      await notes.createChannel({ ...c, importance: 3, visibility: 1 });
+    } catch {
+      /* the channel already exists, or this platform has no channels */
+    }
   }
 }
 
@@ -131,5 +135,46 @@ export async function scheduleCapNotification(state) {
     });
   } catch {
     /* scheduling failed; the game still pays when it opens */
+  }
+}
+
+export async function cancelResearchNotification() {
+  const notes = await plugin();
+  if (!notes) return;
+  try {
+    await notes.cancel({ notifications: RESEARCH_IDS.map((id) => ({ id })) });
+  } catch {
+    /* nothing scheduled */
+  }
+}
+
+// One notification for each project that finishes while away (before the
+// away cap stops research). No permission prompt here.
+export async function scheduleResearchNotification(state) {
+  if (!readPrefs().notifyResearch) {
+    await cancelResearchNotification();
+    return;
+  }
+  const notes = await plugin();
+  if (!notes) return;
+  try {
+    const perm = await notes.checkPermissions();
+    if (perm.display !== "granted") return;
+    await ensureChannel(notes);
+    const from = state?.hiddenAt || Date.now();
+    const soon = researchFinishTimes(state, from, offlineCapMs(state)).filter((x) => x.at > Date.now() + 5000);
+    await notes.cancel({ notifications: RESEARCH_IDS.map((id) => ({ id })) });
+    if (!soon.length) return;
+    await notes.schedule({
+      notifications: soon.slice(0, RESEARCH_IDS.length).map((x, i) => ({
+        id: RESEARCH_IDS[i],
+        channelId: RESEARCH_CHANNEL,
+        title: "Research done",
+        body: `${x.name} research is finished. Open Tech Evolution Tycoon to start the next project.`,
+        schedule: { at: new Date(x.at), allowWhileIdle: true, isExactNotification: false },
+      })),
+    });
+  } catch {
+    /* scheduling failed; the research still finishes when the game opens */
   }
 }

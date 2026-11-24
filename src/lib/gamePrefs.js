@@ -23,6 +23,7 @@ export function normalizePrefs(raw) {
     effectsMuted: src.effectsMuted === true,
     haptics: src.haptics !== false,
     notifyCap: src.notifyCap === true,
+    notifyResearch: src.notifyResearch === true,
     numberFormat,
     textSize,
     contrast: src.contrast === true,

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { WEB_VERSION_CODE, WEB_VERSION_NAME } from "@/lib/appVersion";
 import { PREFS_EVENT, readPrefs, writePrefs } from "@/lib/gamePrefs";
 import { applyAudioPrefs } from "@/lib/sfx";
-import { cancelCapNotification, notificationPermission, openNotificationSettings, requestNotifyPermission } from "@/lib/capNotify";
+import { cancelCapNotification, cancelResearchNotification, notificationPermission, openNotificationSettings, requestNotifyPermission } from "@/lib/capNotify";
 import { achievementsLive, openAchievements } from "@/lib/achievements";
 import { WhatsNewDialog } from "./WhatsNew";
 import { useCloud } from "./CloudSync";
@@ -137,44 +137,49 @@ export function DisplaySettings() {
   );
 }
 
+// Optional notifications: the away-time cap and research done. Each is off
+// unless turned on; turning one on asks Android for permission if needed.
 export function AwayReminder() {
   const [prefs, set] = usePrefs();
   const [help, setHelp] = useState("");
-  const waiting = useRef(false);
-  const turnOn = async () => {
+  // The switch to turn on once permission arrives from Android's settings.
+  const waiting = useRef(null);
+  const cancel = { notifyCap: cancelCapNotification, notifyResearch: cancelResearchNotification };
+  const turnOn = async (key) => {
     const result = await requestNotifyPermission();
     if (result === "granted") {
-      waiting.current = false;
+      waiting.current = null;
       setHelp("");
-      set({ notifyCap: true });
+      set({ [key]: true });
       return;
     }
-    waiting.current = true;
-    set({ notifyCap: false });
+    waiting.current = key;
+    set({ [key]: false });
     if (result === "denied") {
       setHelp("Android isn't showing the allow prompt. Open notification settings, allow notifications for this app, then come back.");
       return;
     }
     setHelp("This install can't post notifications yet.");
   };
-  const toggle = () => {
-    if (prefs.notifyCap) {
-      waiting.current = false;
+  const toggle = (key) => {
+    if (prefs[key]) {
+      waiting.current = null;
       setHelp("");
-      set({ notifyCap: false });
-      void cancelCapNotification();
+      set({ [key]: false });
+      void cancel[key]();
       return;
     }
-    void turnOn();
+    void turnOn(key);
   };
   useEffect(() => {
     const onShow = () => {
       if (document.hidden || !waiting.current) return;
+      const key = waiting.current;
       void notificationPermission().then((status) => {
         if (status !== "granted") return;
-        waiting.current = false;
+        waiting.current = null;
         setHelp("");
-        set({ notifyCap: true });
+        set({ [key]: true });
       });
     };
     document.addEventListener("visibilitychange", onShow);
@@ -182,13 +187,18 @@ export function AwayReminder() {
   }, [set]);
   return (
     <Panel>
-      <h2 className="font-pixel text-[0.6rem]">AWAY TIME</h2>
+      <h2 className="font-pixel text-[0.6rem]">NOTIFICATIONS</h2>
       <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
-        Optional. A notification when managers hit the away-time cap. Off unless you turn it on. Opening the game clears the reminder.
+        Optional, and off unless you turn them on. Opening the game clears them.
       </p>
-      <button type="button" data-notify-cap onClick={toggle} className={`${choice} mt-3 w-full ${prefs.notifyCap ? on : off}`}>
+      <button type="button" data-notify-cap onClick={() => toggle("notifyCap")} className={`${choice} mt-3 w-full ${prefs.notifyCap ? on : off}`}>
         CAP REMINDER: {prefs.notifyCap ? "ON" : "OFF"}
       </button>
+      <p className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">When managers hit the away-time cap.</p>
+      <button type="button" data-notify-research onClick={() => toggle("notifyResearch")} className={`${choice} mt-3 w-full ${prefs.notifyResearch ? on : off}`}>
+        RESEARCH DONE: {prefs.notifyResearch ? "ON" : "OFF"}
+      </button>
+      <p className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">When a research project finishes while you're away.</p>
       {help ? (
         <div className="mt-2">
           <p data-notify-help className="font-term text-base leading-5 text-[var(--game-fg)]">{help}</p>

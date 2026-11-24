@@ -296,6 +296,27 @@ export function researchSpeed(state, now = Date.now()) {
   return Math.min(8, 1 + out.work * out.speed * 0.08) * clean;
 }
 
+// When each running project will finish, counting from `from` (when the app
+// went to the background): [{ id, name, at }], soonest first. The clean room
+// runs faster until it ends. Away research stops at the away cap, so a
+// project past `capMs` isn't listed.
+export function researchFinishTimes(state, from, capMs = Infinity) {
+  const base = researchSpeed(state, 0);
+  const cleanUntil = state?.lab?.cleanUntil || 0;
+  const out = [];
+  for (const job of techJobs(state).map(readTechJob).filter(Boolean)) {
+    const need = Math.max(0, job.durationMs - job.progressMs);
+    let ms;
+    if (cleanUntil > from) {
+      const span = cleanUntil - from;
+      const inClean = span * base * 1.25;
+      ms = need <= inClean ? need / (base * 1.25) : span + (need - inClean) / base;
+    } else ms = need / base;
+    if (ms <= capMs) out.push({ id: job.id, name: byId[job.id]?.name || job.id, at: from + Math.ceil(ms) });
+  }
+  return out.sort((a, b) => a.at - b.at);
+}
+
 export function researchRows(tab) {
   return RESEARCH.filter((entry) => entry.tab === tab).slice().sort((a, b) => a.year - b.year || a.name.localeCompare(b.name));
 }

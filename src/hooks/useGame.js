@@ -83,7 +83,7 @@ import { encodeSave } from "@/lib/saveCode";
 import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
 import { buzzLight, buzzStrong } from "@/lib/haptics";
-import { cancelCapNotification, scheduleCapNotification } from "@/lib/capNotify";
+import { cancelCapNotification, cancelResearchNotification, scheduleCapNotification, scheduleResearchNotification } from "@/lib/capNotify";
 import { COMPUTE_RECORD_TOKENS, flopsLabel, noteComputeRecords, readComputeRecords } from "@/lib/compute";
 import { aheadLabel, noteCalendar, readCalendar, readHistoryBest } from "@/lib/calendar";
 import { ERA_YEAR } from "@/lib/eraYear";
@@ -520,6 +520,7 @@ export function useGame() {
     restoredRef.current = true;
     setReady(true);
     void cancelCapNotification();
+    void cancelResearchNotification();
     bump();
   }, [bump]);
 
@@ -631,9 +632,11 @@ export function useGame() {
       if (isPageHidden()) {
         if (!s.hiddenAt) s.hiddenAt = Date.now();
         void scheduleCapNotification(s);
+        void scheduleResearchNotification(s);
         return;
       }
       void cancelCapNotification();
+      void cancelResearchNotification();
       if (!s.hiddenAt) return;
       const now = Date.now();
       const away = Math.min(Math.max(0, now - s.hiddenAt), offlineCapMs(s));

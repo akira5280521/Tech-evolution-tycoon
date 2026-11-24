@@ -124,6 +124,12 @@ export function aheadLabel(n) {
   return `${y} ${y === 1 ? "YEAR" : "YEARS"} ${n > 0 ? "AHEAD OF" : "BEHIND"} HISTORY`;
 }
 
+// A new best on an era you'd reached before pays this many era tokens, up to
+// HISTORY_TOKENS_PER_RUN in one run. The calendar speeds up with run
+// strength, so a best has to be earned, not just waited for.
+export const HISTORY_TOKEN = 1;
+export const HISTORY_TOKENS_PER_RUN = 10;
+
 // Record each era the first time this run owns it. `state.calendar` is per
 // run (era id -> years ahead, or null for eras owned when the run began);
 // `state.historyBest` keeps the best for each era through prestige.
@@ -147,7 +153,14 @@ export function noteCalendar(state, now = Date.now()) {
     const prev = state.historyBest?.[id];
     const best = typeof prev === "number" && prev >= ahead ? prev : ahead;
     state.historyBest = { ...(state.historyBest || {}), [id]: best };
-    out.push({ id, ahead, best, newBest: best === ahead && prev !== ahead });
+    // Beating a best you already had pays an era token, a few per run.
+    let tokens = 0;
+    if (typeof prev === "number" && ahead > prev && (state.calendarTokens || 0) < HISTORY_TOKENS_PER_RUN) {
+      tokens = HISTORY_TOKEN;
+      state.tokens = (state.tokens || 0) + tokens;
+      state.calendarTokens = (state.calendarTokens || 0) + tokens;
+    }
+    out.push({ id, ahead, best, newBest: best === ahead && prev !== ahead, tokens });
   }
   return out;
 }

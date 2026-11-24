@@ -201,6 +201,7 @@ function applySavedMeta(state, raw) {
   state.computeRecords = readComputeRecords(m.computeRecords);
   state.calendar = readCalendar(m.calendar);
   state.historyBest = readHistoryBest(m.historyBest);
+  state.calendarTokens = Math.max(0, Math.floor(num(m.calendarTokens)));
   state.lastPlants = migrateFacilities(m.lastPlants).facilities;
   state.trackedSince = m.trackedSince == null ? 0 : num(m.trackedSince);
   state.trackedFromStart = !!m.trackedFromStart;
@@ -310,6 +311,7 @@ function pack(s) {
     computeRecords: s.computeRecords || [],
     calendar: s.calendar || null,
     historyBest: s.historyBest || {},
+    calendarTokens: s.calendarTokens || 0,
     lastPlants: s.lastPlants || undefined,
     trackedSince: s.trackedSince || 0,
     trackedFromStart: !!s.trackedFromStart,
@@ -478,7 +480,7 @@ function announce(notes) {
       const cfg = BUSINESSES.find((b) => b.id === note.id);
       const year = ERA_YEAR[note.id];
       toast(`${cfg?.name || note.id}: ${aheadLabel(note.ahead).toLowerCase()}`, {
-        description: `Your calendar: ${year - note.ahead}. History got there in ${year}.${note.newBest ? " A new best." : ` Best: ${aheadLabel(note.best).toLowerCase()}.`}`,
+        description: `Your calendar: ${year - note.ahead}. History got there in ${year}.${note.newBest ? " A new best." : ` Best: ${aheadLabel(note.best).toLowerCase()}.`}${note.tokens ? ` +${note.tokens} era token.` : ""}`,
       });
     }
     if (note.type === "bubble") toast("DOT-COM BUBBLE!", { description: "Your web stock is soaring. The banner counts down to the pop." });

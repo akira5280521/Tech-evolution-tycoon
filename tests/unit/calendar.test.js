@@ -153,3 +153,33 @@ test("the Runs table lists eras reached this run or before, oldest first", () =>
   assert.deepEqual(rows[0], { id: "loom", name: BUSINESSES[idx("loom")].name, year: 1804, run: 4, best: 9 });
   assert.equal(rows[1].run, null);
 });
+
+test("beating a best you already had pays an era token, at most ten a run", async () => {
+  const { HISTORY_TOKENS_PER_RUN } = await import("../../src/lib/calendar.js");
+  const eras = BUSINESSES.map((b) => b.id).filter((id) => HISTORY_PACE_MS[id] != null).slice(0, 14);
+  // First time: no bests yet, so no tokens even far ahead.
+  const first = run({ owned: ["timber"] });
+  noteCalendar(first, T0);
+  for (const id of eras) own(first, id);
+  const got = noteCalendar(first, T0 + 1000);
+  assert.ok(got.length >= 12);
+  assert.ok(got.every((r) => r.tokens === 0));
+  assert.equal(first.tokens, undefined);
+  // A later run beats every one: tokens stop at the cap.
+  const meta = snapshotMeta(first, { resetRunUpgrades: true });
+  assert.equal(meta.calendarTokens, undefined, "the count starts over each run");
+  const worse = { ...run({ owned: ["timber"], start: T0 + 1e9 }), historyBest: Object.fromEntries(eras.map((id) => [id, -50])) };
+  noteCalendar(worse, T0 + 1e9);
+  for (const id of eras) own(worse, id);
+  const paid = noteCalendar(worse, T0 + 1e9 + 1000);
+  assert.equal(paid.filter((r) => r.tokens > 0).length, HISTORY_TOKENS_PER_RUN);
+  assert.equal(worse.tokens, HISTORY_TOKENS_PER_RUN);
+  assert.equal(worse.calendarTokens, HISTORY_TOKENS_PER_RUN);
+  // Matching a best isn't beating it.
+  const same = { ...run({ owned: ["timber"], start: T0 + 2e9 }), historyBest: { loom: yearsAhead(run({ start: T0 + 2e9 }), "loom", T0 + 2e9 + 1000) } };
+  noteCalendar(same, T0 + 2e9);
+  own(same, "paper");
+  own(same, "loom");
+  const [r] = noteCalendar(same, T0 + 2e9 + 1000).filter((x) => x.id === "loom");
+  assert.equal(r.tokens, 0);
+});

@@ -111,7 +111,7 @@ export const PARTS = [
   // --- Research servers: the starter machine. Open from the first era (the
   // only server part that is), cheap, plugs into the wall (no generator or
   // air conditioner), and makes a small flat R&D rate.
-  { id: "tab601", kind: "tabulator", group: "room", starter: true, name: "Inland 601 Multiplying Punch", icon: "/icons/parts/tab601.png", fits: ["servers"], year: 1931, research: null, cost: 5, coef: 2.5, max: 6, watts: 0, rd: 0.001, spec: "1931: reads two 8-digit numbers from a punched card, multiplies them with relays and punches the product onto the same card. Plugs into the wall: no generator or air conditioner." },
+  { id: "tab601", kind: "tabulator", group: "room", starter: true, name: "Inland 601 Multiplying Punch", icon: "/icons/parts/tab601.png", fits: ["servers"], year: 1931, research: null, cost: 5, coef: 2.5, max: 6, watts: 0, rd: 0.005, spec: "1931: reads two 8-digit numbers from a punched card, multiplies them with relays and punches the product onto the same card. Plugs into the wall: no generator or air conditioner." },
 
   // --- Research servers: machine room (one generator and one air conditioner each)
   { id: "mark1", kind: "server", group: "room", name: "Irwell Mark 1", icon: "/icons/parts/mark1.png", fits: ["servers"], year: 1951, research: "srv-mark1", cost: 30_000, coef: 5, watts: 1, work: 2, diskGb: 0.001, spec: "1951: about 4,000 valves, the first commercial computer to be installed." },

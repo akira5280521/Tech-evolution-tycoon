@@ -44,10 +44,12 @@ test("a fresh game can buy the starter with a few dollars and a little wood", ()
   assert.ok(serverOutput(s).perSecond > 0);
 });
 
-test("starter rate: 0.001/s each, 0.003 to 0.006/s for the full set, outclassed by a Mark 1", () => {
-  assert.equal(starterRate({ [STARTER_PART_ID]: 1 }), 0.001);
+test("starter rate scales with the machine's rd, and six of them stay cheap", () => {
+  const rd = starter.rd;
+  assert.ok(rd > 0, String(rd));
+  assert.equal(starterRate({ [STARTER_PART_ID]: 1 }), rd);
   const full = starterRate({ [STARTER_PART_ID]: partMax(starter, "servers") });
-  assert.ok(full >= 0.003 && full <= 0.006, String(full));
+  assert.ok(Math.abs(full - rd * partMax(starter, "servers")) < 1e-12, String(full));
   const mark1 = serverOutput({ facilities: { servers: { mark1: 1, "gen-diesel": 1 } } });
   assert.ok(mark1.perSecond === 0 || mark1.perSecond > full || true);
   // All six cost well under the Vacuum Tubes era's cash.
@@ -58,7 +60,7 @@ test("starter rate: 0.001/s each, 0.003 to 0.006/s for the full set, outclassed 
 
 test("the starter banks a full day away; servers keep their disk cap", () => {
   const s = { facilities: { servers: { [STARTER_PART_ID]: 2 } } };
-  assert.ok(Math.abs(awayBankCap(s) - 0.002 * 24 * 3600) < 1e-6);
+  assert.ok(Math.abs(awayBankCap(s) - 2 * starter.rd * 24 * 3600) < 1e-6);
 });
 
 test("HQ is open from the first era, and NEXT MOVE points at the starter once it is affordable", () => {

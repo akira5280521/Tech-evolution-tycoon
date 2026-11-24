@@ -999,22 +999,27 @@ export function creditBatch(state, due, now, rate = 1, stats = null) {
 // moment. Pays `rate` of the normal amount. Returns the total and per-row
 // earnings for the welcome-back report.
 const AWAY_SLICES = 720;
-export function replayAway(state, elapsed, end, rate = 1) {
+export function replayAway(state, elapsed, end, rate = 1, options = {}) {
   const gains = new Array(BUSINESSES.length).fill(0);
   let facilityGain = 0;
   if (!(elapsed > 0)) return { gain: 0, rows: [] };
   const start = end - elapsed;
-  const step = elapsed / AWAY_SLICES;
+  const slices = Math.max(1, Math.min(AWAY_SLICES, Math.floor(Number(options.slices)) || AWAY_SLICES));
+  const step = elapsed / slices;
+  // alsoManual: an active player keeps tapping unmanaged rows. Away
+  // catch-up leaves this off, so only hired managers run while you're gone.
+  const alsoManual = options.alsoManual === true;
   // How long each material ran short (rows using it paid less) or sat FULL
   // (new output lost), for the Welcome Back report.
   const shortMs = {};
   const fullMs = {};
   const shortRows = {};
-  for (let k = 0; k < AWAY_SLICES; k++) {
+  for (let k = 0; k < slices; k++) {
     const mid = start + step * (k + 0.5);
     finishTimedWork(state, mid);
     const due = state.biz.map((st, i) => {
-      if (!isManaged(st) || st.owned <= 0) return 0;
+      const tapping = alsoManual && st.owned > 0 && !st.managerOff;
+      if ((!isManaged(st) && !tapping) || st.owned <= 0) return 0;
       const cycle = effectiveCycleMs(BUSINESSES[i], state);
       if (!(cycle > 0)) return 0;
       st.activeMs = (st.activeMs || 0) + step;

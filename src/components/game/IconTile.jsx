@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Image } from "@/components/ui/image";
 import { isManaged, money } from "@/lib/gameConfig";
 
@@ -7,19 +7,26 @@ export default function IconTile({ cfg, st, onRun, tapHint = false }) {
   const ref = useRef(null);
   const commissioning = (st.commissionUntil || 0) > Date.now();
   const ready = st.owned > 0 && !isManaged(st) && !st.running && !commissioning;
-  useEffect(() => {
+  // A tap on a row that's already running just shakes the picture. It's done
+  // right here on the button, so it doesn't redraw the game screen or force
+  // the page to lay out again (fast repeat taps used to stutter, worst while
+  // a popup was animating).
+  const shake = () => {
     const el = ref.current;
-    if (!el || !st.shake) return undefined;
-    el.classList.remove("tile-shake");
-    void el.offsetWidth;
-    el.classList.add("tile-shake");
-    return undefined;
-  }, [st.shake]);
+    if (!el || typeof el.animate !== "function") return;
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    el.animate([{ transform: "translateX(0)" }, { transform: "translateX(-3px)" }, { transform: "translateX(3px)" }, { transform: "translateX(0)" }], { duration: 180, easing: "linear" });
+  };
+  const busy = st.owned > 0 && !isManaged(st) && st.running;
+  const tap = () => {
+    if (busy) shake();
+    else onRun();
+  };
   return (
     <button
       ref={ref}
       type="button"
-      onClick={onRun}
+      onClick={tap}
       aria-label={ready ? `Tap to run ${cfg.name}` : cfg.name}
       data-tile={cfg.id}
       title={ready ? `Tap to run ${cfg.name}` : cfg.name}

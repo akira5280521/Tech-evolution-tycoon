@@ -227,17 +227,6 @@
   animation: tile-pulse 1.6s ease-in-out infinite;
 }
 
-@keyframes tile-shake {
-  0%,
-  100% { transform: translateX(0); }
-  25% { transform: translateX(-3px); }
-  75% { transform: translateX(3px); }
-}
-
-.tile-shake {
-  animation: tile-shake 0.18s linear;
-}
-
 /* --- Mobile safe areas: notch / home-indicator insets --- */
 /* max() keeps the headers' normal 12px spacing when no inset exists. */
 .safe-top {
@@ -328,16 +317,14 @@
 @media (prefers-reduced-motion: reduce) {
   .news-ticker-track { animation: none; }
   .cycle-fill,
-  .cycle-shimmer,
-  .tile-shake { animation: none; }
+  .cycle-shimmer { animation: none; }
 }
 
 /* The page sets this while the app is backgrounded or the screen is off. */
 html[data-paused] .news-ticker-track,
 html[data-paused] .cycle-shimmer,
 html[data-paused] .cycle-fill,
-html[data-paused] .tile-run,
-html[data-paused] .tile-shake {
+html[data-paused] .tile-run {
   animation-play-state: paused;
 }
 

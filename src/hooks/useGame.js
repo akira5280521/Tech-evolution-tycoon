@@ -875,11 +875,9 @@ export function useGame() {
       const s = stateRef.current;
       const st = s.biz[i];
       if ((st.commissionUntil || 0) > Date.now()) return;
-      if (st.owned > 0 && !isManaged(st) && st.running) {
-        s.biz = s.biz.map((b, j) => (j === i ? { ...b, shake: (b.shake || 0) + 1 } : b));
-        bump();
-        return;
-      }
+      // Already running: the picture shakes by itself (IconTile); nothing
+      // in the game changes, so nothing redraws.
+      if (st.owned > 0 && !isManaged(st) && st.running) return;
       if (st.owned > 0 && !isManaged(st) && !st.running) {
         s.sawPit = true;
         const goalPay = settleGoals(s, { pay: true });

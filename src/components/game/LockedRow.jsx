@@ -20,7 +20,7 @@ export default function LockedRow({ index, id, state, onOpen }) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-1">
-          <h3 className="font-pixel text-sm text-[var(--game-dim)]">??? — NEXT ERA LOCKED</h3>
+          <h3 className="font-pixel text-sm text-[var(--game-dim)]">{state.eraBuild?.id === id ? "??? — NEXT ERA OPENING" : "??? — NEXT ERA LOCKED"}</h3>
           {id && <ItemHelp kind="locked-era" id={id} state={state} name="the next era" className="-mr-2 -mt-2.5" />}
         </div>
         {cal != null && real != null && (

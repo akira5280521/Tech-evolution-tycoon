@@ -597,6 +597,33 @@ html[data-contrast="high"] {
   --game-violet-bg-hover: #241040;
   --game-violet-border: #ffffff;
 }
+/* Colorblind mode: good and bad stop being green and red. Good is blue and
+   bad is a red-orange (the Okabe-Ito pair, readable with the common kinds
+   of colour blindness). Every pairing keeps at least 4.5:1 contrast. */
+html[data-colorblind="on"] {
+  --game-success: #0a5aa8;
+  --game-success-border: #3d86cc;
+  --game-success-bg: #e1eefb;
+  --game-success-panel: #cfe3f7;
+  --game-success-bg-hover: #b9d6f3;
+  --game-danger: #a33f00;
+}
+html.dark[data-colorblind="on"] {
+  --game-success: #6ab8ff;
+  --game-success-border: #3a86d4;
+  --game-success-bg: #0f2238;
+  --game-success-panel: #142a45;
+  --game-success-bg-hover: #1c3a5e;
+  --game-danger: #ff7a4d;
+}
+html[data-contrast="high"][data-colorblind="on"] {
+  --game-success: #7cc8ff;
+  --game-success-border: #c4e6ff;
+  --game-success-bg: #04182b;
+  --game-success-panel: #04182b;
+  --game-success-bg-hover: #062540;
+  --game-danger: #ff9466;
+}
 .hud-sticky[data-hud-fits="no"] {
   position: static;
 }

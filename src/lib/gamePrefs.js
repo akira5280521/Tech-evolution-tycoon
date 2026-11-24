@@ -26,6 +26,7 @@ export function normalizePrefs(raw) {
     numberFormat,
     textSize,
     contrast: src.contrast === true,
+    colorblind: src.colorblind === true,
     goalsHidden: src.goalsHidden === true,
     // The game screen section last shown: "tech" (default) or "supply".
     gameSection: src.gameSection === "supply" ? "supply" : "tech",

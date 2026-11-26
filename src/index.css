@@ -227,15 +227,13 @@
   animation: tile-pulse 1.6s ease-in-out infinite;
 }
 
-@keyframes tile-shake {
-  0%,
-  100% { transform: translateX(0); }
-  25% { transform: translateX(-3px); }
-  75% { transform: translateX(3px); }
+@keyframes yield-flash {
+  0% { color: var(--game-accent); }
+  100% { color: var(--game-muted); }
 }
 
-.tile-shake {
-  animation: tile-shake 0.18s linear;
+.yield-flash {
+  animation: yield-flash 0.7s ease-out;
 }
 
 /* --- Mobile safe areas: notch / home-indicator insets --- */
@@ -328,16 +326,14 @@
 @media (prefers-reduced-motion: reduce) {
   .news-ticker-track { animation: none; }
   .cycle-fill,
-  .cycle-shimmer,
-  .tile-shake { animation: none; }
+  .cycle-shimmer { animation: none; }
 }
 
 /* The page sets this while the app is backgrounded or the screen is off. */
 html[data-paused] .news-ticker-track,
 html[data-paused] .cycle-shimmer,
 html[data-paused] .cycle-fill,
-html[data-paused] .tile-run,
-html[data-paused] .tile-shake {
+html[data-paused] .tile-run {
   animation-play-state: paused;
 }
 
@@ -376,7 +372,7 @@ img[src*="/icons/"] {
 }
 
 .game-modal {
-  max-height: calc(100dvh - 1.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  max-height: calc(100dvh - 1.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - var(--tabbar-h, 0px));
   overflow: auto;
 }
 
@@ -386,6 +382,20 @@ img[src*="/icons/"] {
 .game-root,
 .screen-shell {
   padding-bottom: calc(var(--tabbar-h, 8rem) + 1rem);
+}
+
+.game-root.has-buybar {
+  padding-bottom: calc(var(--tabbar-h, 8rem) + var(--buybar-h, 3.5rem) + 1rem);
+}
+
+/* Slim buy-amount bar, parked just above the tab bar (or at the bottom
+   edge in landscape, inset so it clears the side tab rail). */
+.buy-bar {
+  position: fixed;
+  z-index: 29;
+  left: 0;
+  right: 0;
+  bottom: var(--tabbar-h, 8rem);
 }
 
 /* Hide sideways overflow without making a scroll container ("hidden" would
@@ -450,6 +460,15 @@ img[src*="/icons/"] {
     padding-left: calc(5.75rem + var(--safe-area-inset-left, env(safe-area-inset-left, 0px)));
   }
 
+  .game-root.has-buybar {
+    padding-bottom: calc(var(--buybar-h, 3.5rem) + 0.75rem);
+  }
+
+  .buy-bar {
+    left: calc(5.75rem + var(--safe-area-inset-left, env(safe-area-inset-left, 0px)));
+    bottom: 0;
+  }
+
   .update-banner {
     left: calc(5.75rem + var(--safe-area-inset-left, env(safe-area-inset-left, 0px))) !important;
     max-width: none;
@@ -512,7 +531,9 @@ img[src*="/icons/"] {
   left: 0.75rem;
   right: 0.75rem;
   bottom: calc(var(--tabbar-h, 8rem) + 0.5rem);
-  max-height: 60vh;
+  /* Stay in the space above the tab bar (60vh was too tall on a short
+     phone and clipped CLOSE when the sheet had no scroll body). */
+  max-height: calc(100dvh - var(--tabbar-h, 8rem) - 1rem - var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
   /* Only the words scroll; the buttons stay in view at any text size. */
   display: flex;
   flex-direction: column;
@@ -597,6 +618,33 @@ html[data-contrast="high"] {
   --game-violet-bg-hover: #241040;
   --game-violet-border: #ffffff;
 }
+/* Colorblind mode: good and bad stop being green and red. Good is blue and
+   bad is a red-orange (the Okabe-Ito pair, readable with the common kinds
+   of colour blindness). Every pairing keeps at least 4.5:1 contrast. */
+html[data-colorblind="on"] {
+  --game-success: #0a5aa8;
+  --game-success-border: #3d86cc;
+  --game-success-bg: #e1eefb;
+  --game-success-panel: #cfe3f7;
+  --game-success-bg-hover: #b9d6f3;
+  --game-danger: #a33f00;
+}
+html.dark[data-colorblind="on"] {
+  --game-success: #6ab8ff;
+  --game-success-border: #3a86d4;
+  --game-success-bg: #0f2238;
+  --game-success-panel: #142a45;
+  --game-success-bg-hover: #1c3a5e;
+  --game-danger: #ff7a4d;
+}
+html[data-contrast="high"][data-colorblind="on"] {
+  --game-success: #7cc8ff;
+  --game-success-border: #c4e6ff;
+  --game-success-bg: #04182b;
+  --game-success-panel: #04182b;
+  --game-success-bg-hover: #062540;
+  --game-danger: #ff9466;
+}
 .hud-sticky[data-hud-fits="no"] {
   position: static;
 }
@@ -652,4 +700,78 @@ html[data-contrast="high"] {
   *::-webkit-scrollbar {
     display: none;
   }
+}
+
+
+/* Hardware Museum: scrolling chip rows, silhouettes of the real icon, a New
+   gold square on unviewed found exhibits. */
+.museum-chip-row {
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 20px), transparent 100%);
+  scrollbar-width: none;
+}
+.museum-chip-row::-webkit-scrollbar {
+  display: none;
+}
+.museum-sil {
+  filter: grayscale(1) invert(1) contrast(1.15);
+  opacity: 0.38;
+}
+.museum-new-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 6px;
+  height: 6px;
+  background: #e6c15a;
+  box-shadow: 1px 1px 0 0 #000;
+  z-index: 1;
+  pointer-events: none;
+}
+.museum-progress {
+  image-rendering: pixelated;
+}
+
+/* Facility room banners: native 360×200 art, full width, nearest-neighbor. */
+.facility-room {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  /* Keep every sprite inside the banner: its own stacking context, so layer
+     z-indexes can't rise above the HUD, tab bar or pop-ups, and paint is
+     clipped to the box (item 50). */
+  isolation: isolate;
+  z-index: 0;
+  contain: paint;
+  clip-path: inset(0);
+  border: 2px solid var(--game-border-strong);
+  background: #0b0a12;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.facility-room-layer {
+  position: absolute;
+  display: block;
+  max-width: none;
+  pointer-events: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.facility-room-strip {
+  background-repeat: no-repeat;
+  background-origin: border-box;
+}
+.facility-room-soon {
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  border: 2px solid var(--game-border);
+  background: var(--game-bg-deep);
+  color: var(--game-dim, var(--game-muted));
+  font-family: var(--font-pixel, inherit);
+  font-size: 0.5rem;
+  line-height: 1rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  text-align: center;
 }

@@ -99,25 +99,6 @@ export const BUSINESSES = [
     upgrades: ["Steel Hoppers", "The card path stops jamming. Every stack pays triple.", "Gang Punch", "One stroke copies a whole card. Cycles run twice as fast."],
   },
   {
-    id: "relay",
-    name: "Relay Computers",
-    era: "c. 1941",
-    tagline: "Crossbar Works model 3 clicks through a sum. Thousands of relays, a few times a second.",
-    icon: "/icons/eras/relay.png",
-    baseCost: 550,
-    revenue: 22,
-    cycleMs: 3200,
-    coef: 1.11,
-    managerName: "Relay Clerk",
-    managerCost: 9000,
-    revCost: 45000,
-    spdCost: 450000,
-    speedNeed: 50,
-    masteryNeed: 125,
-    badgeOwned: 25,
-    upgrades: ["Sealed Relays", "The contacts stop sticking. Every rack pays triple.", "Cam Shaft", "One motor clocks the whole machine. Twice the speed."],
-  },
-  {
     id: "sand",
     name: "Sand Quarry",
     era: "Raw stock",
@@ -141,7 +122,7 @@ export const BUSINESSES = [
     id: "copper",
     name: "Copper Seam",
     era: "Raw stock",
-    tagline: "Wire starts in the rock. Pull copper before the tube works ask.",
+    tagline: "Wire starts in the rock. Pull copper before the valve works ask.",
     icon: "/icons/copper.png",
     baseCost: 1700,
     revenue: 9,
@@ -197,6 +178,45 @@ export const BUSINESSES = [
     masteryNeed: 75,
     badgeOwned: 15,
     upgrades: ["Ductile Tungsten", "Tungsten that bends into wire. Triple the filament, and each spool pays triple.", "Diamond Dies", "Wire pulled through diamond dies runs twice as fast."],
+  },
+  {
+    id: "radios",
+    name: "Radio Valves",
+    era: "c. 1920",
+    tagline: "Arcea Radiola III and a Stillwater Kett Model 20 fill the parlour. UX-201A valves glow behind the grille.",
+    icon: "/icons/eras/radios.png",
+    baseCost: 5000,
+    revenue: 80,
+    cycleMs: 3000,
+    coef: 1.11,
+    managerName: "Valve Tester",
+    managerCost: 80000,
+    revCost: 400000,
+    spdCost: 4000000,
+    uses: { glass: 1, copper: 1, filament: 1 },
+    speedNeed: 50,
+    masteryNeed: 125,
+    badgeOwned: 25,
+    upgrades: ["UX-201A Valves", "The bright-emitter triode holds a charge longer. Every set pays triple.", "Superhet Circuit", "One tuner finds the station. Cycles run twice as fast."],
+  },
+  {
+    id: "relay",
+    name: "Relay Computers",
+    era: "c. 1941",
+    tagline: "Crossbar Works model 3 clicks through a sum. Thousands of relays, a few times a second.",
+    icon: "/icons/eras/relay.png",
+    baseCost: 550,
+    revenue: 22,
+    cycleMs: 3200,
+    coef: 1.11,
+    managerName: "Relay Clerk",
+    managerCost: 9000,
+    revCost: 45000,
+    spdCost: 450000,
+    speedNeed: 50,
+    masteryNeed: 125,
+    badgeOwned: 25,
+    upgrades: ["Sealed Relays", "The contacts stop sticking. Every rack pays triple.", "Cam Shaft", "One motor clocks the whole machine. Twice the speed."],
   },
   {
     id: "tubes",
@@ -698,6 +718,44 @@ export const BUSINESSES = [
 
 ];
 
+// The year an era is set in, from its era label ("c. 1946" or "1982").
+// Material rows have no year of their own.
+export function eraYear(cfg) {
+  const m = String(cfg?.era || "").match(/(\d{4})/);
+  return m ? Number(m[1]) : null;
+}
+
+// Compact decade for the header, e.g. "1940s". An undated material row
+// uses the next dated era (sand, copper, glass and filament → 1940s).
+export function eraDecadeLabel(index) {
+  if (!Number.isInteger(index) || index < 0 || index >= BUSINESSES.length) return "";
+  let year = eraYear(BUSINESSES[index]);
+  if (year == null) {
+    for (let i = index + 1; i < BUSINESSES.length; i++) {
+      year = eraYear(BUSINESSES[i]);
+      if (year != null) break;
+    }
+  }
+  if (year == null) {
+    for (let i = index - 1; i >= 0; i--) {
+      year = eraYear(BUSINESSES[i]);
+      if (year != null) break;
+    }
+  }
+  if (year == null) return "";
+  return `${Math.floor(year / 10) * 10}s`;
+}
+
+// The newest era the player owns, as a decade label. An empty run uses
+// the first row's decade.
+export function reachedEraLabel(state) {
+  let at = 0;
+  (state?.biz || []).forEach((st, i) => {
+    if ((st?.owned || 0) > 0) at = i;
+  });
+  return eraDecadeLabel(at);
+}
+
 // Ordered by owned count. The product tops out at ×96 (2^5 × 3) once a
 // business reaches 200 — there is no milestone past that, so this multiplier
 // cannot grow forever.
@@ -771,8 +829,13 @@ export const ERA_EARN = {
   ics: 1.1e8, minis: 1.2e8, cpu: 1.4e8, homepc: 5.0e8, consoles: 3.1e9, supercomputers: 2.5e10,
   workstations: 9.0e10, laptops: 1.3e11, dialup: 1.7e11, multimedia: 1.9e11, accel3d: 3.2e11, gpu: 4.3e11,
   cloud: 5.8e11, phones: 1.4e12, tablets: 3.1e12, rgb: 5.7e12, ai: 9.8e12, quantum: 5.2e13, vr: 1.6e15,
-  chatbots: 6.1e16, supercluster: 5.8e18,
+  chatbots: 6.1e16, supercluster: 6.0e17,
 };
+// 0.0.31: Superclusters was 5.8e18, 95 times Chatbots. A 0.0.30 tester with
+// a run bonus near 21 needed $265.45Qi at about $713T a second, about 97
+// hours; it is now about $27.5Qi, roughly ten hours from arriving at that
+// income. The gate is worked out live from this table, so old saves just see
+// the lower number.
 export function runBonus(state) {
   const forks = Math.max(0, Math.floor(Number(state?.singularities) || 0));
   return prestigeMult(state?.investors || 0) * Math.min(4, 1 + forks * 0.2);
@@ -1001,8 +1064,21 @@ export function count(n) {
 // into Infinity and a MAX purchase would poison cash with NaN.
 export const MAX_BUY = 1000;
 
+// Moore's Law (1965): once researched, later eras cost 15% less to buy.
+// The figure is a design call; eras dated 1965 or later are "newer".
+export const MOORE_ID = "moore";
+export const MOORE_MULT = 0.85;
+export const MOORE_YEAR = 1965;
+
+export function mooreMult(state, cfg) {
+  if (!state || !(state.eventsDone || []).includes(MOORE_ID)) return 1;
+  const year = eraYear(cfg);
+  if (year == null || year < MOORE_YEAR) return 1;
+  return MOORE_MULT;
+}
+
 // Total price of buying `count` units, geometric scaling per unit owned.
-export function costOf(cfg, owned, count) {
+export function costOf(cfg, owned, count, state) {
   const r = cfg.coef;
   if (!Number.isFinite(r) || r <= 1) return Infinity;
   if (!Number.isFinite(owned) || owned < 0 || !Number.isFinite(count) || count < 1 || count > MAX_BUY) {
@@ -1010,23 +1086,26 @@ export function costOf(cfg, owned, count) {
   }
   const start = cfg.baseCost * Math.pow(r, owned);
   const total = (start * (Math.pow(r, count) - 1)) / (r - 1);
-  return Number.isFinite(total) ? total : Infinity;
+  const priced = total * mooreMult(state, cfg);
+  return Number.isFinite(priced) ? priced : Infinity;
 }
 
-export function maxAffordable(cfg, owned, cash) {
+export function maxAffordable(cfg, owned, cash, state) {
   const r = cfg.coef;
   if (!Number.isFinite(r) || r <= 1) return 0;
   const start = cfg.baseCost * Math.pow(r, owned);
-  if (!Number.isFinite(cash) || cash <= 0 || !Number.isFinite(start) || start <= 0 || !Number.isFinite(owned) || owned < 0) {
+  const budget = Number(cash) / mooreMult(state, cfg);
+  if (!Number.isFinite(budget) || budget <= 0 || !Number.isFinite(start) || start <= 0 || !Number.isFinite(owned) || owned < 0) {
     return 0;
   }
-  const n = Math.floor(Math.log((cash * (r - 1)) / start + 1) / Math.log(r));
+  const n = Math.floor(Math.log((budget * (r - 1)) / start + 1) / Math.log(r));
   if (!Number.isFinite(n)) return 0;
   return Math.max(0, Math.min(MAX_BUY, n));
 }
 
 // One button cycles these in order, then wraps back to X1.
 export const BUY_MODE_CYCLE = ["x1", "x10", "x25", "x50", "x75", "x100", "MAX"];
+export const QUICK_BUY_MODES = ["x1", "x10", "x100", "MAX"];
 
 // NEXT was the old "buy up to the next goal" switch. Anything that is not a
 // current amount, including NEXT, comes back as X1. x1, x10, x100 and max stay.
@@ -1050,9 +1129,9 @@ export function buyModeLabel(mode) {
 
 // Each amount buys exactly that many. MAX buys as many as you can afford.
 // Buying past a milestone still gives its bonus (bonuses come from the owned count).
-export function buyCount(mode, cfg, owned, cash) {
+export function buyCount(mode, cfg, owned, cash, state) {
   const id = normalizeBuyMode(mode);
-  if (id === "MAX") return Math.min(MAX_BUY, Math.max(maxAffordable(cfg, owned, cash), 1));
+  if (id === "MAX") return Math.min(MAX_BUY, Math.max(maxAffordable(cfg, owned, cash, state), 1));
   const n = parseInt(id.slice(1), 10);
   if (!Number.isFinite(n) || n < 1) return 1;
   return Math.min(MAX_BUY, n);
@@ -1177,7 +1256,7 @@ export function nextMove(state) {
     if (!noBoss && !mst.manager && (mst.owned || 0) >= managerNeed(short.maker) && cash >= maker.managerCost) {
       return `${user} is short of ${short.key}. Hire the ${maker.managerName} so the ${maker.name} keeps making it.`;
     }
-    const cost = costOf(maker, mst.owned || 0, 1);
+    const cost = costOf(maker, mst.owned || 0, 1, state);
     if (Number.isFinite(cost) && cash >= cost) return `${user} is short of ${short.key}. Buy another ${maker.name} for ${money(cost)}.`;
   }
 
@@ -1207,7 +1286,7 @@ export function nextMove(state) {
     if (blockedByGlass(state, i)) continue;
     const st = biz[i];
     if ((st && st.owned > 0) || !eraOpen(state, i)) continue;
-    const cost = costOf(BUSINESSES[i], 0, 1);
+    const cost = costOf(BUSINESSES[i], 0, 1, state);
     if (Number.isFinite(cost) && cash >= cost) {
       return `Buy your first ${BUSINESSES[i].name} for ${money(cost)}.`;
     }
@@ -1219,7 +1298,7 @@ export function nextMove(state) {
   if (front > 0 && !glass) {
     const prevCfg = BUSINESSES[front - 1];
     const have = biz[front - 1]?.owned || 0;
-    const cost = costOf(prevCfg, have, 1);
+    const cost = costOf(prevCfg, have, 1, state);
     if (have < ERA_GATE && Number.isFinite(cost) && cash >= cost) {
       return `Buy another ${prevCfg.name} for ${money(cost)}. Own ${ERA_GATE} ${pluralName(prevCfg.name)} to open the next era (${have}/${ERA_GATE}).`;
     }
@@ -1246,7 +1325,7 @@ export function nextMove(state) {
     const owned = st ? st.owned : 0;
     if (!eraOpen(state, i)) continue;
     const cfg = BUSINESSES[i];
-    const cost = costOf(cfg, owned, 1);
+    const cost = costOf(cfg, owned, 1, state);
     const delta = rateOf(cfg, owned + 1) - rateOf(cfg, owned);
     if (!Number.isFinite(cost) || !(delta > 0) || cash < cost) continue;
     const payback = cost / delta;
@@ -1275,7 +1354,7 @@ export function nextMove(state) {
     if (blockedByGlass(state, i)) continue;
     const st = biz[i];
     if ((st && st.owned > 0) || !eraOpen(state, i)) continue;
-    const cost = costOf(BUSINESSES[i], 0, 1);
+    const cost = costOf(BUSINESSES[i], 0, 1, state);
     const short = cost - cash;
     if (Number.isFinite(short) && short > 0 && (!goal || short < goal.short)) {
       goal = { short, text: `Save ${money(short)} more to open ${BUSINESSES[i].name}.` };

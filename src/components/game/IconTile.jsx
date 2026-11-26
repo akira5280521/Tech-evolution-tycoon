@@ -2,28 +2,93 @@ import { useEffect, useRef } from "react";
 import { Image } from "@/components/ui/image";
 import { isManaged, money } from "@/lib/gameConfig";
 
-// tapHint: the TAP TO RUN label, shown only while the tutorial runs.
+// Start a run from pointerup (each finger has its own pointerId) rather than
+// click. Mobile browsers only synthesize click for the first finger, so two
+// tiles tapped at once would start only one. A move of more than 14px is a
+// scroll, not a tap. click is kept for keyboards, and ignored just after a
+// pointer tap so a single press does not run twice.
+const TAP_PX = 14;
+const CLICK_GUARD_MS = 500;
+
 export default function IconTile({ cfg, st, onRun, tapHint = false }) {
   const ref = useRef(null);
+  const gestures = useRef(new Map());
+  const ignoreClickUntil = useRef(0);
   const commissioning = (st.commissionUntil || 0) > Date.now();
   const ready = st.owned > 0 && !isManaged(st) && !st.running && !commissioning;
-  useEffect(() => {
+  // A tap on a row that's already running just shakes the picture. It's done
+  // right here on the button, so it doesn't redraw the game screen or force
+  // the page to lay out again (fast repeat taps used to stutter, worst while
+  // a popup was animating).
+  const shake = () => {
     const el = ref.current;
-    if (!el || !st.shake) return undefined;
-    el.classList.remove("tile-shake");
-    void el.offsetWidth;
-    el.classList.add("tile-shake");
-    return undefined;
-  }, [st.shake]);
+    if (!el || typeof el.animate !== "function") return;
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    el.animate([{ transform: "translateX(0)" }, { transform: "translateX(-3px)" }, { transform: "translateX(3px)" }, { transform: "translateX(0)" }], { duration: 180, easing: "linear" });
+  };
+  const busy = st.owned > 0 && !isManaged(st) && st.running;
+  const tap = () => {
+    if (busy) shake();
+    else onRun();
+  };
+  useEffect(() => () => {
+    for (const gesture of gestures.current.values()) gesture.stop();
+    gestures.current.clear();
+  }, []);
+
+  const suppressClick = () => {
+    ignoreClickUntil.current = Date.now() + CLICK_GUARD_MS;
+  };
+  const startTap = (event) => {
+    if (event.button) return;
+    const id = event.pointerId;
+    if (gestures.current.has(id)) return;
+    const origin = { x: event.clientX, y: event.clientY };
+    const stop = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onCancel);
+      gestures.current.delete(id);
+    };
+    const onMove = (move) => {
+      if (move.pointerId !== id) return;
+      if (Math.hypot(move.clientX - origin.x, move.clientY - origin.y) > TAP_PX) {
+        stop();
+        suppressClick();
+      }
+    };
+    const onUp = (up) => {
+      if (up.pointerId !== id) return;
+      const moved = Math.hypot(up.clientX - origin.x, up.clientY - origin.y) > TAP_PX;
+      stop();
+      suppressClick();
+      if (!moved) tap();
+    };
+    const onCancel = (cancel) => {
+      if (cancel.pointerId !== id) return;
+      stop();
+      suppressClick();
+    };
+    gestures.current.set(id, { stop });
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onCancel);
+  };
+  const onClick = () => {
+    if (Date.now() < ignoreClickUntil.current) return;
+    tap();
+  };
+
   return (
     <button
       ref={ref}
       type="button"
-      onClick={onRun}
+      onPointerDown={startTap}
+      onClick={onClick}
       aria-label={ready ? `Tap to run ${cfg.name}` : cfg.name}
       data-tile={cfg.id}
       title={ready ? `Tap to run ${cfg.name}` : cfg.name}
-      className={`relative h-[64px] w-[64px] shrink-0 select-none border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] p-0.5 ${
+      className={`relative h-[64px] w-[64px] shrink-0 touch-manipulation select-none border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] p-0.5 ${
         ready ? "tile-run cursor-pointer" : "cursor-default"
       }`}
     >

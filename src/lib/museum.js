@@ -32,6 +32,17 @@ export const PERIPHERALS = [
 
 const benchKinds = (...kinds) => (p) => (p.fits || []).includes("bench") && kinds.includes(p.kind);
 
+// Compact section-bar labels. PERIPHERALS is abbreviated so four tabs fit
+// a 360px phone without clipping (COMPUTERS and PERIPHERALS both
+// abbreviate); room names stay full and scroll.
+export const WING_TAB = {
+  computers: "COMP.",
+  parts: "PARTS",
+  peripherals: "PERIPH.",
+  history: "HISTORY",
+};
+
+
 export const WINGS = [
   {
     id: "computers",
@@ -49,16 +60,17 @@ export const WINGS = [
     id: "parts",
     name: "PC PARTS",
     rooms: [
-      { id: "boards", name: "BOARDS", match: benchKinds("board") },
+      { id: "boards", name: "MOTHERBOARDS", match: benchKinds("board") },
       { id: "cpus", name: "CPUS", match: benchKinds("cpu", "fpu") },
       { id: "memory", name: "MEMORY", match: benchKinds("stick", "cache") },
       { id: "graphics", name: "GRAPHICS", match: benchKinds("video", "bridge", "accel") },
       { id: "displays", name: "DISPLAYS", match: benchKinds("monitor") },
       { id: "sound", name: "SOUND", match: benchKinds("sound") },
-      { id: "cards", name: "CARDS", match: benchKinds("addin") },
-      { id: "power", name: "POWER", match: benchKinds("psu") },
+      { id: "cards", name: "EXPANSION CARDS", match: benchKinds("addin") },
+      { id: "power", name: "POWER SUPPLIES", match: benchKinds("psu") },
       { id: "cases", name: "CASES", match: benchKinds("case") },
-      { id: "drives", name: "DRIVES", match: benchKinds("drive", "media") },
+      { id: "drives", name: "DRIVES", match: benchKinds("drive") },
+      { id: "media", name: "STORAGE MEDIA", match: benchKinds("media") },
       { id: "network", name: "NETWORK", match: benchKinds("net", "modem") },
       { id: "cooling", name: "COOLING", match: benchKinds("cooler") },
     ],
@@ -117,19 +129,69 @@ export function roomExhibits(state, roomId, { decade = null, maker = null } = {}
     .filter((e) => (decade == null || e.decade === decade) && (maker == null || e.maker === maker));
 }
 
-export function roomCounts(state, roomId) {
-  const all = roomExhibits(state, roomId);
+export function roomCounts(state, roomId, { decade = null } = {}) {
+  const all = roomExhibits(state, roomId, { decade });
   return { found: all.filter((e) => e.status !== "locked").length, total: all.length };
 }
 
-export function wingCounts(state, wing) {
+export function wingCounts(state, wing, { decade = null } = {}) {
   return wing.rooms.reduce(
     (sum, room) => {
-      const c = roomCounts(state, room.id);
+      const c = roomCounts(state, room.id, { decade });
       return { found: sum.found + c.found, total: sum.total + c.total };
     },
     { found: 0, total: 0 },
   );
+}
+
+// Every hardware exhibit (parts and peripherals, nothing still "coming soon").
+export function allExhibits() {
+  return [...PARTS.filter((p) => !p.soon), ...PERIPHERALS];
+}
+
+// Decade chips run from the earliest exhibit through the latest, inclusive,
+// so empty decades in the middle (the 1940s today) stay visible as gaps.
+export function museumDecades() {
+  const years = allExhibits().map((p) => p.year).filter((y) => Number.isFinite(y));
+  if (!years.length) return [];
+  const min = Math.floor(Math.min(...years) / 10) * 10;
+  const max = Math.floor(Math.max(...years) / 10) * 10;
+  const out = [];
+  for (let d = min; d <= max; d += 10) out.push(d);
+  return out;
+}
+
+export function decadeOf(year) {
+  return Math.floor(year / 10) * 10;
+}
+
+export function exhibitsInDecade(decade) {
+  return allExhibits().filter((p) => decadeOf(p.year) === decade);
+}
+
+export function decadeCounts(state, decade) {
+  const items = exhibitsInDecade(decade);
+  return { found: items.filter((p) => exhibitStatus(state, p) !== "locked").length, total: items.length };
+}
+
+// YEAR (oldest first, the default) or OWNED FIRST (found, then locked).
+export function sortExhibits(exhibits, sort = "year") {
+  const list = [...exhibits];
+  if (sort === "owned") {
+    list.sort((a, b) => Number(a.status === "locked") - Number(b.status === "locked") || a.item.year - b.item.year || a.item.name.localeCompare(b.item.name));
+  } else {
+    list.sort((a, b) => a.item.year - b.item.year || a.item.name.localeCompare(b.item.name));
+  }
+  return list;
+}
+
+export function roomHasNew(state, roomId, viewed, { decade = null } = {}) {
+  const seen = new Set(viewed || []);
+  return roomExhibits(state, roomId, { decade }).some((e) => e.status !== "locked" && !seen.has(e.item.id));
+}
+
+export function wingHasNew(state, wing, viewed, { decade = null } = {}) {
+  return (wing.rooms || []).some((room) => roomHasNew(state, room.id, viewed, { decade }));
 }
 
 // Decades and makers in a room, for the filter chips. Makers come only from

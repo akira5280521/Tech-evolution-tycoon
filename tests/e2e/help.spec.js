@@ -10,7 +10,7 @@ const VIEWPORTS = [
 ];
 
 for (const vp of VIEWPORTS) {
-  for (const path of ["/", "/boost", "/tech", "/facilities", "/board", "/runs", "/research"]) {
+  for (const path of ["/", "/boost", "/tech", "/facilities/servers", "/board", "/runs", "/research"]) {
     test(`"?" buttons on ${path}, ${vp.name}`, async ({ page }) => {
       test.setTimeout(180_000);
       await page.setViewportSize(vp);
@@ -38,7 +38,11 @@ for (const vp of VIEWPORTS) {
         if (!box || box.width < 44 || box.height < 44) problems.push(`${key}: tap target ${box?.width}x${box?.height}`);
         await btn.click();
         const sheet = page.locator("[data-help-sheet]");
-        if (!(await sheet.count())) {
+        // Wait for the sheet rather than checking once: on a busy machine it
+        // can take a moment to open. Only a sheet that never opens counts.
+        try {
+          await expect.poll(() => sheet.count(), { timeout: 3000 }).toBeGreaterThan(0);
+        } catch {
           problems.push(`${key}: no sheet`);
           continue;
         }
@@ -68,9 +72,14 @@ for (const vp of VIEWPORTS) {
         if (g.nav > 0) problems.push(`${key}: sheet over the tab bar`);
         const s = await sheet.boundingBox();
         await page.mouse.click(s.x > 20 ? 5 : vp.width - 5, s.y > 60 ? 5 : vp.height - 5);
-        if (await sheet.count()) {
+        // Same for closing: give it time under load, and only record a sheet
+        // that is still up after that.
+        try {
+          await expect(sheet).toHaveCount(0, { timeout: 3000 });
+        } catch {
           problems.push(`${key}: didn't close on an outside tap`);
           await page.keyboard.press("Escape");
+          await expect(sheet).toHaveCount(0, { timeout: 3000 }).catch(() => {});
         }
       }
       expect(problems).toEqual([]);

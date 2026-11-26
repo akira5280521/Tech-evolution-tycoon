@@ -78,3 +78,27 @@ test("an era being set up opens when its bar fills, with a toast", async ({ page
   await expect.poll(async () => page.evaluate(() => JSON.parse(localStorage.getItem("pc-tycoon-save-v1")).erasOpened || [])).toContain("cpu");
   expectClean(seen);
 });
+
+test("the top bar shows the decade of the newest era owned, not ERA n/37", async ({ page }) => {
+  const far = () => Date.now() + 9e9;
+  const glass = BUSINESSES.findIndex((b) => b.id === "glass");
+  const save = {
+    version: 12, cash: 1e6, lifetime: 10, investors: 0, lastSeen: Date.now(),
+    sawPit: true, starterGranted: true, hubSeen: true,
+    tutorial: { seen: [], tips: [], tipsOff: true, done: true, skipped: false, replay: false },
+    nextWindfallAt: far(), nextDilemmaAt: far(), nextBubbleAt: far(), nextShortageAt: far(),
+    biz: BUSINESSES.map((b, i) => ({
+      id: b.id,
+      owned: i <= glass ? 1 : 0,
+      manager: false, running: false, progress: 0, commissionUntil: 0,
+    })),
+  };
+  const seen = await open(page, "/", save, { extra: { "pc-tycoon-prefs-v1": JSON.stringify({ gameSection: "supply" }) } });
+  await tipsOff(page);
+  const header = page.locator("[data-era-progress]");
+  await expect(header).toHaveText("1920s");
+  await expect(header).not.toContainText("ERA");
+  await expect(header).not.toContainText("/36");
+  await expect(header).not.toContainText("/37");
+  expectClean(seen);
+});

@@ -7,7 +7,7 @@ import { HUB_LABEL } from "./hub.js";
 export const GLOSSARY = {
   bench: {
     term: "PC BUILD BENCH",
-    text: "A plant on RIGS from Home Computers: the lab builds one PC from real parts. The CPU must match the board's socket and chipset, memory its slots, cards its slots (ISA, PCI, AGP, PCI Express), and the supply its plugs. The PC makes R&D points; a four-core CPU lets two Tech projects run at once.",
+    text: "A plant in HQ from Home Computers: the lab builds one PC from real parts. The CPU must match the board's socket and chipset, memory its slots, cards its slots (ISA, PCI, AGP, PCI Express), and the supply its plugs. The PC makes R&D points.",
   },
   bottleneck: {
     term: "BOTTLENECK",
@@ -71,7 +71,7 @@ export const GLOSSARY = {
   },
   research: {
     term: "R&D POINTS",
-    text: `The one research currency, made only by research machines in ${HUB_LABEL} (beside TECH), then RIGS: a punch-card multiplier from the start, then research servers from Mainframes. Earned at half rate while the game is closed; the servers only bank what their disks hold then (1 hour of output, plus 1 per TB), while the punch-card machine banks all day. Never lost, even when you prestige. Spend them on the R&D tab and the TECH timeline.`
+    text: `The one research currency, made only by research machines in ${HUB_LABEL} (beside TECH), then RESEARCH SERVERS: a punch-card multiplier from the start, then research servers from Mainframes. Earned at half rate while the game is closed; the servers only bank what their disks hold then (1 hour of output, plus 1 per TB), while the punch-card machine banks all day. Never lost, even when you prestige. Spend them on the R&D tab and the TECH timeline.`
   },
   lab: {
     term: "LAB PROJECTS",

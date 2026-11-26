@@ -11,9 +11,12 @@
 // stays free so a new microprocessor works before any project.
 
 import { BUSINESSES } from "./gameConfig.js";
+import { companyCaps } from "./company.js";
 import { GENERATIONS } from "./generations.js";
 import { PARTS, benchStock, pushHeadline, readFacilities, serverStock, starterRate } from "./facilities.js";
 import { playerYear } from "./eraYear.js";
+import { calendarYearAt } from "./calendar.js";
+import { RELEASE_MONTH, monthName } from "./releaseMonths.js";
 
 export { playerYear };
 
@@ -48,6 +51,9 @@ const RD_DOUBLING_YEARS = 15;
 
 export function researchCost(entry) {
   if (!entry) return 0;
+  // A few early teaching projects set a fixed cost so the first research
+  // is reachable with the starter machine, instead of the later-year curve.
+  if (Number.isFinite(entry.fixedCost) && entry.fixedCost > 0) return Math.round(entry.fixedCost);
   const year = Number(entry.year) || RD_BASE_YEAR;
   return Math.round((entry.rd || 0) * RD_COST_SCALE * Math.pow(2, (year - RD_BASE_YEAR) / RD_DOUBLING_YEARS));
 }
@@ -99,11 +105,13 @@ export const RESEARCH = [
   item({ id: "mem-ddr5-128", tab: "memory", year: 2024, name: "128 GB DDR5-6400", spec: "Registered DDR5 at 6400 MT/s", rd: 72, durationMs: 130_000, prereq: "mem-ddr5-64" }),
   item({ id: "mem-ddr6", tab: "memory", year: 2024, name: "DDR6", spec: "Next memory module", rd: 0, durationMs: 0, prereq: "mem-ddr5", soon: true }),
 
-  item({ id: "store-hdd", tab: "storage", year: 1956, name: "5 MB disk", spec: "The first commercial disk drive: fifty platters, 5 million characters", rd: 8, durationMs: 25_000, prereq: null }),
+  item({ id: "tab-hollerith", tab: "storage", year: 1, name: "Hollerith tabulator", spec: "1890: punched cards count a census in months, not years.", rd: 1, fixedCost: 1, durationMs: 20_000, prereq: null }),
+  item({ id: "store-tape", tab: "storage", year: 1951, name: "Magnetic tape", spec: "Half-inch metal tape on a reel, about a megabyte a reel.", rd: 4, durationMs: 25_000, prereq: null }),
+  item({ id: "store-hdd", tab: "storage", year: 1956, name: "5 MB disk", spec: "The first commercial disk drive: fifty platters, 5 million characters", rd: 8, durationMs: 25_000, prereq: "store-tape" }),
   item({ id: "store-pack", tab: "storage", year: 1964, name: "Disk pack", spec: "Inland 2311: a stack of six platters you lift out, 7.25 MB", rd: 5, durationMs: 25_000, prereq: "store-hdd" }),
   item({ id: "store-3330", tab: "storage", year: 1970, name: "100 MB disk pack", spec: "Inland 3330: eleven platters, 100 MB a pack", rd: 6, durationMs: 30_000, prereq: "store-pack" }),
   item({ id: "store-3380", tab: "storage", year: 1980, name: "2.5 GB disk", spec: "Inland 3380: the first disk to hold gigabytes, 2.52 GB a unit", rd: 14, durationMs: 35_000, prereq: "store-3330" }),
-  item({ id: "store-floppy", tab: "storage", year: 1971, name: "8-inch floppy", spec: "About 80 KB on the first disks", rd: 12, durationMs: 30_000, prereq: "store-hdd" }),
+  item({ id: "store-floppy", tab: "storage", year: 1971, name: "8-inch floppy", spec: "About 80 KB on the first disks", rd: 12, durationMs: 30_000, prereq: "store-3330" }),
   item({ id: "store-scsi", tab: "storage", year: 1986, name: "SCSI", spec: "Parallel bus for disks, later 5–10 MB/s", rd: 16, durationMs: 40_000, prereq: "store-floppy" }),
   item({ id: "store-10k", tab: "storage", year: 1996, name: "10,000 rpm disk", spec: "9 GB SCSI, the first 10,000 rpm drive", rd: 20, durationMs: 45_000, prereq: "store-scsi" }),
   item({ id: "store-sata", tab: "storage", year: 2003, name: "SATA", spec: "Serial ATA, 1.5 Gbit/s at launch", rd: 24, durationMs: 50_000, prereq: "store-scsi" }),
@@ -112,20 +120,25 @@ export const RESEARCH = [
   item({ id: "store-ssd2t", tab: "storage", year: 2015, name: "2 TB SSD", spec: "2 TB of NAND flash on SATA", rd: 36, durationMs: 65_000, prereq: "store-ssd" }),
   item({ id: "store-nvme", tab: "storage", year: 2013, name: "NVMe", spec: "Flash on PCI Express, not a SATA bridge", rd: 40, durationMs: 70_000, prereq: "store-ssd" }),
 
+  item({ id: "cool-crac", tab: "cooling", year: 1970, name: "Computer-room air unit", spec: "A floor-standing air conditioner built for machine rooms, cooling several computers", rd: 5, durationMs: 25_000, prereq: null }),
   item({ id: "cool-sink", tab: "cooling", year: 1982, name: "Clip heatsink", spec: "Aluminium block clipped to a 286-class chip", rd: 8, durationMs: 20_000, prereq: null }),
+  item({ id: "cool-labfan", tab: "cooling", year: 1989, name: "Rack fan", spec: "A 120 mm fan for a server rack, about 300 W of airflow.", rd: 10, durationMs: 25_000, prereq: "cool-sink" }),
   item({ id: "cool-fan", tab: "cooling", year: 1994, name: "Case fan", spec: "80 mm fan, a few watts of airflow", rd: 12, durationMs: 30_000, prereq: "cool-sink" }),
   item({ id: "cool-pipe", tab: "cooling", year: 2001, name: "Heatpipe tower", spec: "Heatpipes into a fin stack", rd: 20, durationMs: 45_000, prereq: "cool-fan" }),
   item({ id: "cool-liquid", tab: "cooling", year: 2008, name: "360 mm loop", spec: "External radiator, about 700 W of heat", rd: 28, durationMs: 60_000, prereq: "cool-pipe" }),
   item({ id: "cool-immersion", tab: "cooling", year: 2022, name: "Immersion bath", spec: "The rack sits in a dielectric bath", rd: 64, durationMs: 100_000, prereq: "cool-liquid" }),
 
-  item({ id: "pwr-at", tab: "power", year: 1984, name: "AT supply", spec: "Hard-switched AT box, typically under 200 W", rd: 8, durationMs: 20_000, prereq: null }),
+  item({ id: "pwr-ups", tab: "power", year: 1967, name: "Battery UPS", spec: "Rectifier, batteries and inverter: the machine room rides through a power cut", rd: 4, durationMs: 25_000, prereq: null }),
+  item({ id: "pwr-switch", tab: "power", year: 1977, name: "Switch-mode supply", spec: "A small switching supply that runs cool, as in the first home computers", rd: 5, durationMs: 25_000, prereq: "pwr-ups" }),
+  item({ id: "pwr-at", tab: "power", year: 1984, name: "AT supply", spec: "Hard-switched AT box, typically under 200 W", rd: 8, durationMs: 20_000, prereq: "pwr-switch" }),
   item({ id: "pwr-atx", tab: "power", year: 1995, name: "ATX supply", spec: "Soft power, 20-pin then 24-pin", rd: 14, durationMs: 35_000, prereq: "pwr-at" }),
   item({ id: "pwr-80", tab: "power", year: 2004, name: "80 Plus", spec: "80% efficient at 20, 50 and 100% load", rd: 20, durationMs: 45_000, prereq: "pwr-atx" }),
   item({ id: "pwr-gold", tab: "power", year: 2008, name: "80 Plus Gold", spec: "87–90% efficient", rd: 28, durationMs: 55_000, prereq: "pwr-80" }),
   item({ id: "pwr-plat", tab: "power", year: 2009, name: "80 Plus Platinum", spec: "90–94% efficient", rd: 36, durationMs: 65_000, prereq: "pwr-gold" }),
   item({ id: "pwr-titan", tab: "power", year: 2015, name: "80 Plus Titanium", spec: "Up to 96% efficient, a rating set in 2012", rd: 44, durationMs: 75_000, prereq: "pwr-plat" }),
 
-  item({ id: "net-eth", tab: "network", year: 1980, name: "10BASE5", spec: "10 Mbit/s over thick coaxial", rd: 8, durationMs: 25_000, prereq: null }),
+  item({ id: "net-imp", tab: "network", year: 1969, name: "ARPANET IMP", spec: "A packet switch the size of a refrigerator links the first computers on the network", rd: 4, durationMs: 25_000, prereq: null }),
+  item({ id: "net-eth", tab: "network", year: 1980, name: "10BASE5", spec: "10 Mbit/s over thick coaxial", rd: 8, durationMs: 25_000, prereq: "net-imp" }),
   item({ id: "net-10baset", tab: "network", year: 1990, name: "10BASE-T", spec: "10 Mbit/s Ethernet over twisted pair", rd: 10, durationMs: 30_000, prereq: "net-eth" }),
   item({ id: "net-100", tab: "network", year: 1995, name: "100BASE-TX", spec: "100 Mbit/s over twisted pair", rd: 14, durationMs: 35_000, prereq: "net-eth" }),
   item({ id: "net-wifi", tab: "network", year: 1997, name: "802.11", spec: "First Wi-Fi, 1–2 Mbit/s", rd: 18, durationMs: 40_000, prereq: "net-100" }),
@@ -143,7 +156,8 @@ export const RESEARCH = [
 
   // Research servers, from the machine room to the rack. The Irwell Mark 1
   // (1951) needs no research; each later machine does.
-  item({ id: "srv-7090", tab: "servers", year: 1959, name: "Inland 7090", spec: "Transistors instead of valves, about six times the speed", rd: 4, durationMs: 25_000, prereq: null }),
+  item({ id: "srv-mark1", tab: "servers", year: 1951, name: "Irwell Mark 1", spec: "A stored-program machine, 1951: about 3,500 valves, a 17-foot-long cabinet, your first research server.", rd: 3, fixedCost: 2, durationMs: 25_000, prereq: null }),
+  item({ id: "srv-7090", tab: "servers", year: 1959, name: "Inland 7090", spec: "Transistors instead of valves, about six times the speed", rd: 4, durationMs: 25_000, prereq: "srv-mark1" }),
   item({ id: "srv-360", tab: "servers", year: 1965, name: "Inland 360/50", spec: "One family of compatible machines, from small to large", rd: 5, durationMs: 30_000, prereq: "srv-7090" }),
   item({ id: "srv-1120", tab: "servers", year: 1970, name: "Maynard 11/20", spec: "A 16-bit minicomputer that fits in one cabinet", rd: 6, durationMs: 35_000, prereq: "srv-360" }),
   item({ id: "srv-780", tab: "servers", year: 1977, name: "Maynard 11/780", spec: "32-bit, the yardstick for '1 MIPS'", rd: 8, durationMs: 40_000, prereq: "srv-1120" }),
@@ -175,11 +189,20 @@ export const RESEARCH = [
   item({ id: "arm-n1", tab: "cpu", year: 2019, name: "Arem Neoverse N1", spec: "An ARM core designed for data centres", rd: 46, durationMs: 95_000, prereq: "arm-a15" }),
   item({ id: "srv-calx", tab: "servers", year: 2012, name: "Calxedon EnergyCore box", spec: "Low-power ARM servers by the dozen in one box", rd: 38, durationMs: 80_000, prereq: "arm-a9" }),
   item({ id: "srv-altra", tab: "servers", year: 2020, name: "Amperion Altra 1U", spec: "80 ARM cores in one server socket", rd: 50, durationMs: 100_000, prereq: "arm-n1" }),
+  item({ id: "case-s100", tab: "cases", year: 1975, name: "S-100 cabinet", spec: "A blue steel box with a card cage and a front panel of switches", rd: 4, durationMs: 25_000, prereq: null }),
+  item({ id: "case-plastic", tab: "cases", year: 1977, name: "Moulded plastic case", spec: "A home computer in one light plastic shell, keyboard built in", rd: 5, durationMs: 25_000, prereq: "case-s100" }),
   item({ id: "store-symm", tab: "storage", year: 1990, name: "EMZ Symmetrix 4200", spec: "A cabinet of small disks working as one, with a big cache", rd: 18, durationMs: 45_000, prereq: "store-scsi" }),
   item({ id: "store-thumper", tab: "storage", year: 2006, name: "Sunrise Fire X4500", spec: "48 disks in one 4U server", rd: 28, durationMs: 55_000, prereq: "store-sata" }),
   item({ id: "store-pod", tab: "storage", year: 2009, name: "Backblayz Storage Pod", spec: "45 cheap disks in a box anyone could build", rd: 30, durationMs: 60_000, prereq: "store-thumper" }),
   item({ id: "store-flasharray", tab: "storage", year: 2015, name: "Purely FlashArray//m", spec: "A whole array of flash in 3U", rd: 38, durationMs: 70_000, prereq: "store-pod" }),
 ];
+
+// Year and month as one number, for putting projects in date order.
+function dateKey(id, year) {
+  return (Number(year) || 0) * 12 + ((RELEASE_MONTH[id] || 6) - 1);
+}
+// The first part of a kind builds on a project from the main table.
+const CHAIN_START = { "board-altair": "case-s100", "case-atdesk": "case-plastic", "mod-300": "net-imp", "net-3c501": "net-eth", "drv-st506": "store-3380", "mem-4116": "mem-dram", "vid-cga": "cpu-8088", "mon-5151": "cpu-8088", "snd-covox": "cpu-286", "cool-clip": "cool-sink", "pwr-at230": "pwr-at" };
 
 // Bench parts that need a project of their own get one: CPUs on the CPU tab
 // (each after the last chip of its maker), boards on BOARDS, sticks on MEMORY.
@@ -193,9 +216,19 @@ export const RESEARCH = [
     if (have.has(part.research)) continue;
     const tab = tabOf[part.kind];
     let prereq = null;
+    const at = dateKey(part.research, part.year);
     if (tab === "cpu") {
-      const earlier = RESEARCH.filter((e) => e.tab === "cpu" && e.year <= part.year && brand(e.name) === brand(part.name));
-      prereq = earlier.sort((a, b) => b.year - a.year)[0]?.id || null;
+      const earlier = RESEARCH.filter((e) => e.tab === "cpu" && dateKey(e.id, e.year) <= at && brand(e.name) === brand(part.name));
+      prereq = earlier.sort((a, b) => dateKey(b.id, b.year) - dateKey(a.id, a.year))[0]?.id || null;
+    } else {
+      // Every other part follows the last earlier part of its kind, so a
+      // 5.25-inch drive comes after the 8-inch one, never before it.
+      // Same-month parts go in name order so the chain never loops.
+      const order = (q) => [dateKey(q.research, q.year), q.research];
+      const before = (a, b) => order(a)[0] - order(b)[0] || (order(a)[1] < order(b)[1] ? -1 : order(a)[1] > order(b)[1] ? 1 : 0);
+      const earlier = PARTS.filter((q) => q.kind === part.kind && q.fits.includes("bench") && q.research && q.research !== part.research && before(q, part) < 0)
+        .sort((a, b) => before(b, a));
+      prereq = earlier[0]?.research || CHAIN_START[part.research] || null;
     }
     RESEARCH.push(item({
       id: part.research,
@@ -211,6 +244,9 @@ export const RESEARCH = [
   }
 }
 
+// Each project's real month.
+for (const entry of RESEARCH) entry.month = RELEASE_MONTH[entry.id] || 6;
+
 const byId = Object.fromEntries(RESEARCH.map((entry) => [entry.id, entry]));
 
 // The Facilities parts a project opens.
@@ -224,10 +260,15 @@ export function researchItem(id) {
 
 
 // The tech timeline opens once the first project's year is reached.
+export const FIRST_RESEARCH_ID = "tab-hollerith";
+
 export const TECH_OPENS = Math.min(...RESEARCH.filter((entry) => !entry.soon).map((entry) => entry.year));
 
+// The TECH page is reachable from the first era so the parts tree is
+// always browsable. Individual projects still lock with researchLock
+// until their year (the earliest open at TECH_OPENS).
 export function techOpen(state) {
-  return playerYear(state) >= TECH_OPENS;
+  return !!state;
 }
 
 export function readTechDone(raw) {
@@ -300,10 +341,33 @@ export function researchRows(tab) {
   return RESEARCH.filter((entry) => entry.tab === tab).slice().sort((a, b) => a.year - b.year || a.name.localeCompare(b.name));
 }
 
-export function researchLock(state, entry) {
+// The in-game month. The company year comes from the newest era owned; its
+// months then pass at a minute each of play (or faster when the run
+// calendar is already past them). A save with no record has the whole year.
+export const MONTH_MS = 60_000;
+export function noteCompanyYear(state, now = Date.now()) {
+  if (!state) return;
+  const year = playerYear(state);
+  const rec = state.companyYear;
+  if (!rec || typeof rec !== "object" || !Number.isFinite(rec.at)) state.companyYear = { year, at: 0 };
+  else if (rec.year !== year) state.companyYear = { year, at: now };
+}
+export function inGameMonth(state, now = Date.now()) {
+  const year = playerYear(state);
+  const rec = state?.companyYear;
+  const since = rec && rec.year === year && Number.isFinite(rec.at) ? Math.max(0, now - rec.at) : Infinity;
+  let month = 1 + Math.floor(since / MONTH_MS);
+  const cal = calendarYearAt(state, now);
+  if (cal != null && Math.floor(cal) > year) month = 12;
+  else if (cal != null && Math.floor(cal) === year) month = Math.max(month, 1 + Math.floor((cal - year) * 12));
+  return { year, month: Math.min(12, Math.max(1, month)) };
+}
+
+export function researchLock(state, entry, now = Date.now()) {
   if (!entry || entry.soon) return entry?.soon ? "Coming soon" : "Locked";
   const year = playerYear(state);
   if (year < entry.year) return `Requires ${entry.year}`;
+  if (year === entry.year && (entry.month || 1) > 1 && inGameMonth(state, now).month < entry.month) return `Opens in ${monthName(entry.month)} ${entry.year}`;
   if (entry.prereq && !(state?.techDone || []).includes(entry.prereq)) {
     const prior = byId[entry.prereq];
     return prior ? `Research ${prior.name} first` : "Locked";
@@ -313,9 +377,10 @@ export function researchLock(state, entry) {
 
 // A second project can run beside the first once the PC build bench has a
 // CPU with four or more cores (and it's running).
-export function secondTechSlot(state) {
-  const b = benchStock(readFacilities(state?.facilities).bench);
-  return b.perf > 0 && (b.cpu?.cores || 1) >= 4;
+// Since 0.0.31 only one project runs at a time (a save with two running
+// lets both finish).
+export function secondTechSlot() {
+  return false;
 }
 
 export function techJobs(state) {
@@ -365,7 +430,7 @@ export function startResearch(state, id) {
   const job = { id: entry.id, progressMs: 0, durationMs: entry.durationMs };
   if (!state.techJob) state.techJob = job;
   else state.techJob2 = job;
-  pushHeadline(state, `rd-start-${entry.id}`, `R&D: ${entry.name.toUpperCase()} RESEARCH STARTS`);
+  pushHeadline(state, `rd-start-${entry.id}`, `${companyCaps(state)} R&D: ${entry.name.toUpperCase()} RESEARCH STARTS`);
   return { ok: true };
 }
 
@@ -377,7 +442,7 @@ function finishResearch(state, id) {
   state.techDone = done;
   if (state.techJob?.id === id) state.techJob = null;
   if (state.techJob2?.id === id) state.techJob2 = null;
-  pushHeadline(state, `rd-done-${id}`, `R&D: ${entry.name.toUpperCase()} RESEARCH COMPLETE`);
+  pushHeadline(state, `rd-done-${id}`, `${companyCaps(state)} R&D: ${entry.name.toUpperCase()} RESEARCH COMPLETE`);
 }
 
 // ms of real time. Servers make the bar move faster than the wall clock.
@@ -386,6 +451,7 @@ function finishResearch(state, id) {
 // cap: the most R&D this call may add (awayBankCap for a stretch away).
 export function advanceResearch(state, ms, rate = 1, cap = Infinity) {
   if (!state || !(ms > 0) || !Number.isFinite(ms)) return false;
+  noteCompanyYear(state);
   const made = serverOutput(state).perSecond * (ms / 1000) * (rate > 0 ? rate : 0);
   const gain = Math.min(made, cap >= 0 ? cap : 0);
   if (gain > 0) state.data = Math.min(RD_CAP, (Number(state.data) || 0) + gain);
@@ -439,4 +505,23 @@ export function fillResearchGaps(state) {
     }
   }
   state.techDone = [...done];
+}
+
+// A save well past 1951 that never built a research server is stuck on the
+// punch-card machine. Give it the Irwell Mark 1 project and one Mark 1 with
+// its generator and air conditioner, free.
+export function rescuePunchCardSave(state) {
+  if (!state || playerYear(state) < 1965) return false;
+  const facilities = readFacilities(state.facilities);
+  const servers = facilities.servers || {};
+  const hasServer = PARTS.some((part) => part.kind === "server" && (Number(servers[part.id]) || 0) > 0);
+  if (hasServer) return false;
+  const done = new Set(readTechDone(state.techDone));
+  done.add(FIRST_RESEARCH_ID);
+  done.add("srv-mark1");
+  state.techDone = [...done];
+  facilities.servers = { ...servers, mark1: 1, mgset: Math.max(1, Number(servers.mgset) || 0), roomac: Math.max(1, Number(servers.roomac) || 0) };
+  state.facilities = facilities;
+  pushHeadline(state, "rescue-mark1", "R&D: YOUR FIRST RESEARCH SERVER, AN IRWELL MARK 1, IS RUNNING");
+  return true;
 }

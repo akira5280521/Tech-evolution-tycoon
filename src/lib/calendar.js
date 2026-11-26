@@ -22,14 +22,18 @@ const H = 60 * MIN;
 // fork) times 14.5, how much faster it was on the eras both reached. Germanium
 // is left out: it opens after Mainframes in the game but came first (1948),
 // so it would always read as behind.
+// Radio Valves (0.0.30) moved the sand-filament chain into the 1920s before
+// Relay, so those early paces (and radios) sit between Punch Cards and Tubes.
+// Later eras keep the 0.0.29 sim times.
 export const HISTORY_PACE_MS = {
   loom: 19 * MIN,
   punchcards: 21 * MIN,
-  relay: 23 * MIN,
   sand: 26 * MIN,
-  copper: 46 * MIN,
-  glass: 51 * MIN,
-  filament: 64 * MIN,
+  copper: 36 * MIN,
+  glass: 44 * MIN,
+  filament: 52 * MIN,
+  radios: 58 * MIN,
+  relay: 66 * MIN,
   tubes: 74 * MIN,
   mainframes: 75 * MIN,
   transistors: 103 * MIN,
@@ -124,6 +128,12 @@ export function aheadLabel(n) {
   return `${y} ${y === 1 ? "YEAR" : "YEARS"} ${n > 0 ? "AHEAD OF" : "BEHIND"} HISTORY`;
 }
 
+// A new best on an era you'd reached before pays this many era tokens, up to
+// HISTORY_TOKENS_PER_RUN in one run. The calendar speeds up with run
+// strength, so a best has to be earned, not just waited for.
+export const HISTORY_TOKEN = 1;
+export const HISTORY_TOKENS_PER_RUN = 10;
+
 // Record each era the first time this run owns it. `state.calendar` is per
 // run (era id -> years ahead, or null for eras owned when the run began);
 // `state.historyBest` keeps the best for each era through prestige.
@@ -147,7 +157,14 @@ export function noteCalendar(state, now = Date.now()) {
     const prev = state.historyBest?.[id];
     const best = typeof prev === "number" && prev >= ahead ? prev : ahead;
     state.historyBest = { ...(state.historyBest || {}), [id]: best };
-    out.push({ id, ahead, best, newBest: best === ahead && prev !== ahead });
+    // Beating a best you already had pays an era token, a few per run.
+    let tokens = 0;
+    if (typeof prev === "number" && ahead > prev && (state.calendarTokens || 0) < HISTORY_TOKENS_PER_RUN) {
+      tokens = HISTORY_TOKEN;
+      state.tokens = (state.tokens || 0) + tokens;
+      state.calendarTokens = (state.calendarTokens || 0) + tokens;
+    }
+    out.push({ id, ahead, best, newBest: best === ahead && prev !== ahead, tokens });
   }
   return out;
 }

@@ -4,6 +4,7 @@ import { count, money } from "@/lib/gameConfig";
 import { decodeSave } from "@/lib/saveCode";
 import { Panel } from "./chrome";
 import { copyText } from "@/lib/clipboard";
+import { readBackups } from "@/lib/saveBackups";
 
 const smallButton =
   "min-h-11 border-2 px-3 font-pixel text-[0.55rem] shadow-[2px_2px_0_0_#000] disabled:cursor-not-allowed disabled:opacity-60";
@@ -27,6 +28,18 @@ export default function SaveBackup({ state, onExport, onImport }) {
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(null);
+  const [backups, setBackups] = useState(() => readBackups());
+  const [restoreAt, setRestoreAt] = useState(null);
+
+  const restoreBackup = (b) => {
+    if (onImport(b.data)) {
+      toast("Backup restored", { description: `From ${savedLabel(b.at)}.` });
+      setRestoreAt(null);
+      setBackups(readBackups());
+    } else {
+      toast("That backup couldn't be loaded");
+    }
+  };
 
   const makeCode = async () => {
     setExporting(true);
@@ -106,6 +119,38 @@ export default function SaveBackup({ state, onExport, onImport }) {
               </span>
             </div>
           </>
+        )}
+      </div>
+
+      <div className="mt-4 space-y-2 border-t-2 border-[var(--game-border)] pt-3" data-save-backups>
+        <h3 className="font-pixel text-[0.55rem]">AUTO BACKUPS</h3>
+        <p className="font-term text-base leading-5 text-[var(--game-muted)]">
+          The last 3 saves on this device, about 10 minutes apart, plus one taken before any restore or reset.
+        </p>
+        {backups.length === 0 ? (
+          <p data-backup-none className="font-term text-base leading-5 text-[var(--game-dim)]">No backups yet. One is made after about 10 minutes of play.</p>
+        ) : (
+          backups.map((b) => (
+            <div key={b.at} data-backup={b.at} className="border-2 border-[var(--game-border)] p-2">
+              <p className="font-term text-base leading-5">
+                {savedLabel(b.at)}: {money(b.lifetime)} career, {count(b.investors)} investors, {b.eras} eras
+              </p>
+              {restoreAt === b.at ? (
+                <div className="mt-2 flex gap-2">
+                  <button type="button" data-backup-confirm onClick={() => restoreBackup(b)} className={`${smallButton} flex-1 border-[var(--game-danger)] text-[var(--game-danger)]`}>
+                    REPLACE MY SAVE
+                  </button>
+                  <button type="button" onClick={() => setRestoreAt(null)} className={`${smallButton} flex-1 border-[var(--game-border-strong)] text-[var(--game-fg)]`}>
+                    CANCEL
+                  </button>
+                </div>
+              ) : (
+                <button type="button" data-backup-restore onClick={() => setRestoreAt(b.at)} className={`${smallButton} mt-2 w-full border-[var(--game-border-strong)] text-[var(--game-fg)]`}>
+                  RESTORE THIS BACKUP
+                </button>
+              )}
+            </div>
+          ))
         )}
       </div>
 

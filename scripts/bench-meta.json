@@ -1,0 +1,1471 @@
+{
+  "boards": [
+    {
+      "id": "b-altair",
+      "name": "Mitts Altair 8800 board",
+      "year": 1975,
+      "socket": "8080",
+      "mem": "dip",
+      "slots": 4,
+      "gpuSlot": "s100",
+      "pcie": 0,
+      "spec": "1975: the kit computer on the S-100 bus that started the hobby."
+    },
+    {
+      "id": "b-orchard2",
+      "name": "Orchard II board",
+      "year": 1977,
+      "socket": "6502",
+      "mem": "dip",
+      "slots": 3,
+      "gpuSlot": "apple",
+      "pcie": 0,
+      "spec": "1977: three banks of 16 KB chips, 48 KB at most, and eight card slots."
+    },
+    {
+      "id": "b-trs80",
+      "name": "Radio Shed Model I board",
+      "year": 1977,
+      "socket": "z80",
+      "mem": "dip",
+      "slots": 2,
+      "gpuSlot": "none",
+      "pcie": 0,
+      "spec": "1977: the Z80 board under the Model I's keyboard."
+    },
+    {
+      "id": "b-5150",
+      "name": "Inland PC board",
+      "year": 1981,
+      "socket": "8088",
+      "mem": "dip",
+      "slots": 4,
+      "gpuSlot": "isa8",
+      "pcie": 0,
+      "spec": "1981: the Inland PC's board, five 8-bit ISA slots, four banks of memory chips."
+    },
+    {
+      "id": "b-at",
+      "name": "Inland PC/AT board",
+      "year": 1984,
+      "socket": "286",
+      "mem": "dip",
+      "slots": 2,
+      "gpuSlot": "isa16",
+      "pcie": 0,
+      "spec": "1984: 16-bit ISA slots and 512 KB on the board."
+    },
+    {
+      "id": "b-deskpro",
+      "name": "Compass Deskpro 386 board",
+      "year": 1986,
+      "socket": "386",
+      "mem": "dip",
+      "slots": 4,
+      "gpuSlot": "isa16",
+      "pcie": 0,
+      "spec": "1986: the first 386 PC, beating Inland to the chip."
+    },
+    {
+      "id": "b-vlb",
+      "name": "486 VL-Bus board",
+      "year": 1992,
+      "socket": "486",
+      "mem": "simm30",
+      "slots": 8,
+      "gpuSlot": "vlb",
+      "pcie": 0,
+      "spec": "1992: a 486 socket, eight 30-pin SIMM slots and the VESA local bus."
+    },
+    {
+      "id": "b-430lx",
+      "name": "Chipwright 430LX board",
+      "year": 1993,
+      "socket": "socket4",
+      "mem": "simm72",
+      "slots": 4,
+      "gpuSlot": "pci",
+      "pcie": 0,
+      "spec": "1993: the first 586 boards, PCI slots and 72-pin SIMMs."
+    },
+    {
+      "id": "b-nxvl",
+      "name": "NextGen NxVL board",
+      "year": 1994,
+      "socket": "nx586",
+      "mem": "simm72",
+      "slots": 4,
+      "gpuSlot": "vlb",
+      "pcie": 0,
+      "spec": "1994: NextGen's own chipset, because the Nx586 fit no other board."
+    },
+    {
+      "id": "b-430fx",
+      "name": "Chipwright 430FX board",
+      "year": 1995,
+      "socket": "socket7",
+      "mem": "simm72",
+      "slots": 4,
+      "gpuSlot": "pci",
+      "pcie": 0,
+      "spec": "1995: Socket 7 and EDO, but one CPU voltage only, so no MMX-era chips."
+    },
+    {
+      "id": "b-440fx",
+      "name": "Chipwright 440FX board",
+      "year": 1996,
+      "socket": "socket8",
+      "mem": "simm72",
+      "slots": 4,
+      "gpuSlot": "pci",
+      "pcie": 0,
+      "spec": "1996: Socket 8 for the 586 Pro."
+    },
+    {
+      "id": "b-430tx",
+      "name": "Chipwright 430TX board",
+      "year": 1997,
+      "socket": "socket7",
+      "mem": "sdram",
+      "slots": 3,
+      "gpuSlot": "pci",
+      "pcie": 0,
+      "spec": "1997: split CPU voltage for MMX-era chips, and SDRAM."
+    },
+    {
+      "id": "b-440lx",
+      "name": "Chipwright 440LX board",
+      "year": 1997,
+      "socket": "slot1",
+      "mem": "sdram",
+      "slots": 3,
+      "gpuSlot": "agp-3.3",
+      "pcie": 0,
+      "spec": "1997: Slot 1, SDRAM and the first AGP slot, at a 66 MHz bus."
+    },
+    {
+      "id": "b-mvp3",
+      "name": "Viatek MVP3 board",
+      "year": 1998,
+      "socket": "socket7",
+      "mem": "sdram",
+      "slots": 3,
+      "gpuSlot": "agp-3.3",
+      "pcie": 0,
+      "spec": "1998: Super Socket 7, a 100 MHz bus and AGP."
+    },
+    {
+      "id": "b-440bx",
+      "name": "Chipwright 440BX board",
+      "year": 1998,
+      "socket": "slot1",
+      "mem": "sdram",
+      "slots": 4,
+      "gpuSlot": "agp-3.3",
+      "pcie": 0,
+      "spec": "1998: Slot 1, a 100 MHz bus and PC100 SDRAM."
+    },
+    {
+      "id": "b-be6",
+      "name": "Abacus BE6 board",
+      "year": 1998,
+      "socket": "slot1",
+      "mem": "sdram",
+      "slots": 3,
+      "gpuSlot": "agp-3.3",
+      "pcie": 0,
+      "spec": "1998: a 440BX board known for changing clocks without jumpers."
+    },
+    {
+      "id": "b-amd750",
+      "name": "Alder 750 board",
+      "year": 1999,
+      "socket": "slota",
+      "mem": "sdram",
+      "slots": 3,
+      "gpuSlot": "agp-3.3",
+      "pcie": 0,
+      "spec": "1999: Slot A for the first K7 chips."
+    },
+    {
+      "id": "b-kt7",
+      "name": "Abacus KT7 board",
+      "year": 2000,
+      "socket": "socketa",
+      "mem": "sdram",
+      "slots": 3,
+      "gpuSlot": "agp-1.5",
+      "pcie": 0,
+      "spec": "2000: Socket A with PC133, for chips on a 100 MHz bus."
+    },
+    {
+      "id": "b-845",
+      "name": "Chipwright 845 board",
+      "year": 2001,
+      "socket": "s478",
+      "mem": "sdram",
+      "slots": 3,
+      "gpuSlot": "agp-1.5",
+      "pcie": 0,
+      "spec": "2001: the first Socket 478 board, still on PC133 SDRAM."
+    },
+    {
+      "id": "b-kt266a",
+      "name": "Viatek KT266A board",
+      "year": 2001,
+      "socket": "socketa",
+      "mem": "ddr",
+      "slots": 3,
+      "gpuSlot": "agp-1.5",
+      "pcie": 0,
+      "spec": "2001: Socket A with DDR and a 133 MHz bus."
+    },
+    {
+      "id": "b-8rda",
+      "name": "Epox 8RDA+ board",
+      "year": 2002,
+      "socket": "socketa",
+      "mem": "ddr",
+      "slots": 3,
+      "gpuSlot": "agp-1.5",
+      "pcie": 0,
+      "spec": "2002: nForce2, dual-channel DDR for Socket A."
+    },
+    {
+      "id": "b-875p",
+      "name": "Chipwright 875P board",
+      "year": 2003,
+      "socket": "s478",
+      "mem": "ddr",
+      "slots": 4,
+      "gpuSlot": "agp-1.5",
+      "pcie": 0,
+      "spec": "2003: an 800 MHz bus, dual-channel DDR-400 and AGP 8x."
+    },
+    {
+      "id": "b-ic7",
+      "name": "Abacus IC7-MAX3 board",
+      "year": 2003,
+      "socket": "s478",
+      "mem": "ddr",
+      "slots": 4,
+      "gpuSlot": "agp-1.5",
+      "pcie": 0,
+      "spec": "2003: an 875P board built for overclocking."
+    },
+    {
+      "id": "b-nf3",
+      "name": "Raster nForce3 Ultra board",
+      "year": 2004,
+      "socket": "s939",
+      "mem": "ddr",
+      "slots": 4,
+      "gpuSlot": "agp-1.5",
+      "pcie": 0,
+      "spec": "2004: Socket 939 with an AGP slot."
+    },
+    {
+      "id": "b-nf4",
+      "name": "Raster nForce4 board",
+      "year": 2004,
+      "socket": "s939",
+      "mem": "ddr",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 1,
+      "spec": "2004: Socket 939 with PCI Express graphics."
+    },
+    {
+      "id": "b-lanparty",
+      "name": "DFX LanParty nF4 board",
+      "year": 2005,
+      "socket": "s939",
+      "mem": "ddr",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 1,
+      "spec": "2005: a glowing nForce4 board for overclockers."
+    },
+    {
+      "id": "b-915btx",
+      "name": "Chipwright D915GUX board",
+      "year": 2004,
+      "socket": "lga775",
+      "mem": "ddr2",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 1,
+      "spec": "2004: a BTX board, built for the layout that was meant to replace ATX."
+    },
+    {
+      "id": "b-945p",
+      "name": "Chipwright 945P board",
+      "year": 2005,
+      "socket": "lga775",
+      "mem": "ddr2",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 1,
+      "spec": "2005: LGA775 and DDR2 for the first dual cores."
+    },
+    {
+      "id": "b-p965",
+      "name": "Chipwright P965 board",
+      "year": 2006,
+      "socket": "lga775",
+      "mem": "ddr2",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 1,
+      "spec": "2006: DDR2-800 and support for the new two-core chips."
+    },
+    {
+      "id": "b-p35",
+      "name": "Chipwright P35 board",
+      "year": 2007,
+      "socket": "lga775",
+      "mem": "ddr2",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 1,
+      "spec": "2007: the 45 nm chips, but no more NetBurst ones."
+    },
+    {
+      "id": "b-790fx",
+      "name": "Alder 790FX board",
+      "year": 2007,
+      "socket": "am2",
+      "mem": "ddr2",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 2,
+      "spec": "2007: AM2+, DDR2 and PCI Express 2.0."
+    },
+    {
+      "id": "b-x48",
+      "name": "Chipwright X48 board",
+      "year": 2008,
+      "socket": "lga775",
+      "mem": "ddr3",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 2,
+      "spec": "2008: LGA775 with DDR3 and PCI Express 2.0."
+    },
+    {
+      "id": "b-x58",
+      "name": "Chipwright X58 board",
+      "year": 2008,
+      "socket": "lga1366",
+      "mem": "ddr3",
+      "slots": 6,
+      "gpuSlot": "pcie",
+      "pcie": 2,
+      "spec": "2008: LGA1366 and triple-channel DDR3 in six slots."
+    },
+    {
+      "id": "b-x58c",
+      "name": "EVGO X58 Classified",
+      "year": 2009,
+      "socket": "lga1366",
+      "mem": "ddr3",
+      "slots": 6,
+      "gpuSlot": "pcie",
+      "pcie": 2,
+      "spec": "2009: an E-ATX board with room for four graphics cards; it needs a full tower."
+    },
+    {
+      "id": "b-p55",
+      "name": "Chipwright P55 board",
+      "year": 2009,
+      "socket": "lga1156",
+      "mem": "ddr3",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 2,
+      "spec": "2009: LGA1156, the first board with no northbridge."
+    },
+    {
+      "id": "b-890fx",
+      "name": "Alder 890FX board",
+      "year": 2010,
+      "socket": "am3",
+      "mem": "ddr3",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 2,
+      "spec": "2010: AM3 and DDR3; FX chips came later, on the next boards."
+    },
+    {
+      "id": "b-p67",
+      "name": "Chipwright P67 board",
+      "year": 2011,
+      "socket": "lga1155",
+      "mem": "ddr3",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 2,
+      "spec": "2011: LGA1155 for overclocking, with no use for on-chip graphics."
+    },
+    {
+      "id": "b-h67",
+      "name": "Chipwright H67 board",
+      "year": 2011,
+      "socket": "lga1155",
+      "mem": "ddr3",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 2,
+      "spec": "2011: on-chip graphics, no overclocking, memory at rated speed."
+    },
+    {
+      "id": "b-z68",
+      "name": "Chipwright Z68 board",
+      "year": 2011,
+      "socket": "lga1155",
+      "mem": "ddr3",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 2,
+      "spec": "2011: overclocking and on-chip graphics together."
+    },
+    {
+      "id": "b-990fx",
+      "name": "Alder 990FX board",
+      "year": 2011,
+      "socket": "am3",
+      "mem": "ddr3",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 2,
+      "spec": "2011: AM3+ for the FX chips."
+    },
+    {
+      "id": "b-z77",
+      "name": "Chipwright Z77 board",
+      "year": 2012,
+      "socket": "lga1155",
+      "mem": "ddr3",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2012: PCI Express 3.0 with the 3000-series chips."
+    },
+    {
+      "id": "b-z87",
+      "name": "Chipwright Z87 board",
+      "year": 2013,
+      "socket": "lga1150",
+      "mem": "ddr3",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2013: LGA1150, but not the 2014 4790K."
+    },
+    {
+      "id": "b-h87",
+      "name": "Chipwright H87 board",
+      "year": 2013,
+      "socket": "lga1150",
+      "mem": "ddr3",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2013: no overclocking, memory at rated speed."
+    },
+    {
+      "id": "b-z97",
+      "name": "Chipwright Z97 board",
+      "year": 2014,
+      "socket": "lga1150",
+      "mem": "ddr3",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2014: the 4790K, and an M.2 slot."
+    },
+    {
+      "id": "b-z170",
+      "name": "Chipwright Z170 board",
+      "year": 2015,
+      "socket": "lga1151",
+      "mem": "ddr4",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2015: LGA1151, DDR4 and M.2."
+    },
+    {
+      "id": "b-z170i",
+      "name": "Abacus Z170I mini-ITX board",
+      "year": 2015,
+      "socket": "lga1151",
+      "mem": "ddr4",
+      "slots": 2,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2015: the whole board in 17 cm square, two memory slots and one card slot."
+    },
+    {
+      "id": "b-b150",
+      "name": "Chipwright B150 board",
+      "year": 2015,
+      "socket": "lga1151",
+      "mem": "ddr4",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2015: a budget board: no overclocking, memory held at 2133."
+    },
+    {
+      "id": "b-z270",
+      "name": "Chipwright Z270 board",
+      "year": 2017,
+      "socket": "lga1151",
+      "mem": "ddr4",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2017: more lanes for the 7000-series chips."
+    },
+    {
+      "id": "b-a320",
+      "name": "Alder A320 board",
+      "year": 2017,
+      "socket": "am4",
+      "mem": "ddr4",
+      "slots": 2,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2017: the cheapest AM4 board, no overclocking."
+    },
+    {
+      "id": "b-b350",
+      "name": "Alder B350 board",
+      "year": 2017,
+      "socket": "am4",
+      "mem": "ddr4",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2017: AM4 with overclocking at a mid price."
+    },
+    {
+      "id": "b-x370",
+      "name": "Alder X370 board",
+      "year": 2017,
+      "socket": "am4",
+      "mem": "ddr4",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2017: AM4's first top board; later chips came by BIOS update."
+    },
+    {
+      "id": "b-x399",
+      "name": "Alder X399 board",
+      "year": 2017,
+      "socket": "tr4",
+      "mem": "ddr4",
+      "slots": 8,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2017: the 4,094-pin TR4 socket and eight DDR4 slots."
+    },
+    {
+      "id": "b-zenith",
+      "name": "Abacus Zenith Extreme",
+      "year": 2017,
+      "socket": "tr4",
+      "mem": "ddr4",
+      "slots": 8,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2017: an E-ATX X399 board, wider than ATX, for a full tower."
+    },
+    {
+      "id": "b-z370",
+      "name": "Chipwright Z370 board",
+      "year": 2017,
+      "socket": "lga1151v2",
+      "mem": "ddr4",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2017: the same socket shape as Z170, but only 8000-series chips and later."
+    },
+    {
+      "id": "b-b360",
+      "name": "Chipwright B360 board",
+      "year": 2018,
+      "socket": "lga1151v2",
+      "mem": "ddr4",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2018: no overclocking, memory held at 2666."
+    },
+    {
+      "id": "b-z390",
+      "name": "Chipwright Z390 board",
+      "year": 2018,
+      "socket": "lga1151v2",
+      "mem": "ddr4",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2018: the board for the 9900K."
+    },
+    {
+      "id": "b-b450",
+      "name": "Alder B450 board",
+      "year": 2018,
+      "socket": "am4",
+      "mem": "ddr4",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2018: the long-lived budget AM4 board."
+    },
+    {
+      "id": "b-x470",
+      "name": "Alder X470 board",
+      "year": 2018,
+      "socket": "am4",
+      "mem": "ddr4",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 3,
+      "spec": "2018: AM4's top board for the 2000-series."
+    },
+    {
+      "id": "b-x570",
+      "name": "Alder X570 board",
+      "year": 2019,
+      "socket": "am4",
+      "mem": "ddr4",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 4,
+      "spec": "2019: PCI Express 4.0; no 1000-series chips."
+    },
+    {
+      "id": "b-b550",
+      "name": "Alder B550 board",
+      "year": 2020,
+      "socket": "am4",
+      "mem": "ddr4",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 4,
+      "spec": "2020: PCI Express 4.0 for the graphics slot; 3000-series chips and later only."
+    },
+    {
+      "id": "b-b550i",
+      "name": "Alder B550-I mini-ITX board",
+      "year": 2020,
+      "socket": "am4",
+      "mem": "ddr4",
+      "slots": 2,
+      "gpuSlot": "pcie",
+      "pcie": 4,
+      "spec": "2020: a small AM4 board for shoebox cases."
+    },
+    {
+      "id": "b-z690",
+      "name": "Chipwright Z690 board",
+      "year": 2021,
+      "socket": "lga1700",
+      "mem": "ddr5",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 5,
+      "spec": "2021: LGA1700, DDR5 and PCI Express 5.0."
+    },
+    {
+      "id": "b-z690d4",
+      "name": "Chipwright Z690 DDR4 board",
+      "year": 2021,
+      "socket": "lga1700",
+      "mem": "ddr4",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 5,
+      "spec": "2021: the same chipset with DDR4 slots instead."
+    },
+    {
+      "id": "b-b660",
+      "name": "Chipwright B660 board",
+      "year": 2022,
+      "socket": "lga1700",
+      "mem": "ddr5",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 4,
+      "spec": "2022: no CPU overclocking, but memory can run past rated speed."
+    },
+    {
+      "id": "b-h610",
+      "name": "Chipwright H610 board",
+      "year": 2022,
+      "socket": "lga1700",
+      "mem": "ddr4",
+      "slots": 2,
+      "gpuSlot": "pcie",
+      "pcie": 4,
+      "spec": "2022: the cheapest LGA1700 board, two DDR4 slots."
+    },
+    {
+      "id": "b-z790",
+      "name": "Chipwright Z790 board",
+      "year": 2022,
+      "socket": "lga1700",
+      "mem": "ddr5",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 5,
+      "spec": "2022: faster DDR5 for the 13000-series."
+    },
+    {
+      "id": "b-z790i",
+      "name": "Abacus Z790-I mini-ITX board",
+      "year": 2022,
+      "socket": "lga1700",
+      "mem": "ddr5",
+      "slots": 2,
+      "gpuSlot": "pcie",
+      "pcie": 5,
+      "spec": "2022: DDR5 on a mini-ITX board, with M.2 slots stacked on top."
+    },
+    {
+      "id": "b-x670e",
+      "name": "Alder X670E board",
+      "year": 2022,
+      "socket": "am5",
+      "mem": "ddr5",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 5,
+      "spec": "2022: AM5, DDR5 only, PCI Express 5.0 graphics."
+    },
+    {
+      "id": "b-b650",
+      "name": "Alder B650 board",
+      "year": 2022,
+      "socket": "am5",
+      "mem": "ddr5",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 4,
+      "spec": "2022: AM5 with PCI Express 4.0 graphics."
+    },
+    {
+      "id": "b-a620",
+      "name": "Alder A620 board",
+      "year": 2023,
+      "socket": "am5",
+      "mem": "ddr5",
+      "slots": 2,
+      "gpuSlot": "pcie",
+      "pcie": 4,
+      "spec": "2023: the cheapest AM5 board, no CPU overclocking."
+    },
+    {
+      "id": "b-z890",
+      "name": "Chipwright Z890 board",
+      "year": 2024,
+      "socket": "lga1851",
+      "mem": "ddr5",
+      "slots": 4,
+      "gpuSlot": "pcie",
+      "pcie": 5,
+      "spec": "2024: LGA1851."
+    }
+  ],
+  "psus": [
+    {
+      "id": "p-at150",
+      "name": "150 W AT supply",
+      "year": 1984,
+      "form": "at",
+      "supply": 150,
+      "plugs": [
+        "none",
+        "molex"
+      ],
+      "mainPlug": "at",
+      "cpuPlugs": [],
+      "spec": "1984: two 6-pin plugs to the board and a big mains switch."
+    },
+    {
+      "id": "p-at230",
+      "name": "230 W AT supply",
+      "year": 1990,
+      "form": "at",
+      "supply": 230,
+      "plugs": [
+        "none",
+        "molex"
+      ],
+      "mainPlug": "at",
+      "cpuPlugs": [],
+      "spec": "1990: enough for a 486 with a few drives."
+    },
+    {
+      "id": "p-atx250",
+      "name": "250 W ATX supply",
+      "year": 1995,
+      "form": "atx",
+      "supply": 250,
+      "plugs": [
+        "none",
+        "molex"
+      ],
+      "mainPlug": "atx20",
+      "cpuPlugs": [],
+      "spec": "1995: one 20-pin plug, and the PC can switch itself off."
+    },
+    {
+      "id": "p-atx400",
+      "name": "400 W ATX supply",
+      "year": 2002,
+      "form": "atx",
+      "supply": 400,
+      "plugs": [
+        "none",
+        "molex"
+      ],
+      "mainPlug": "atx20",
+      "cpuPlugs": [
+        "p4"
+      ],
+      "spec": "2002: adds the 4-pin 12 V plug Pentium 4-era boards need."
+    },
+    {
+      "id": "p-500",
+      "name": "500 W 80 Plus supply",
+      "year": 2004,
+      "form": "atx",
+      "supply": 500,
+      "plugs": [
+        "none",
+        "molex",
+        "6pin"
+      ],
+      "mainPlug": "atx24",
+      "cpuPlugs": [
+        "p4"
+      ],
+      "spec": "2004: 80% efficient, with a 6-pin plug for PCI Express cards."
+    },
+    {
+      "id": "p-750",
+      "name": "750 W 80 Plus Gold",
+      "year": 2008,
+      "form": "atx",
+      "supply": 750,
+      "plugs": [
+        "none",
+        "molex",
+        "6pin",
+        "8pin"
+      ],
+      "mainPlug": "atx24",
+      "cpuPlugs": [
+        "p4",
+        "eps8"
+      ],
+      "spec": "2008: 87-90% efficient, a 24-pin and an 8-pin CPU plug, 6- and 8-pin card plugs."
+    },
+    {
+      "id": "p-1000",
+      "name": "1000 W 80 Plus Platinum",
+      "year": 2009,
+      "form": "atx",
+      "supply": 1000,
+      "plugs": [
+        "none",
+        "molex",
+        "6pin",
+        "8pin"
+      ],
+      "mainPlug": "atx24",
+      "cpuPlugs": [
+        "p4",
+        "eps8"
+      ],
+      "spec": "2009: 90-94% efficient."
+    },
+    {
+      "id": "p-sfx450",
+      "name": "Silverstoner 450 W SFX supply",
+      "year": 2013,
+      "form": "sfx",
+      "supply": 450,
+      "plugs": [
+        "none",
+        "molex",
+        "6pin",
+        "8pin"
+      ],
+      "mainPlug": "atx24",
+      "cpuPlugs": [
+        "p4",
+        "eps8"
+      ],
+      "spec": "2013: a supply a third smaller than ATX, for mini-ITX cases."
+    },
+    {
+      "id": "p-sf750",
+      "name": "Corsar SF750",
+      "year": 2019,
+      "form": "sfx",
+      "supply": 750,
+      "plugs": [
+        "none",
+        "molex",
+        "6pin",
+        "8pin"
+      ],
+      "mainPlug": "atx24",
+      "cpuPlugs": [
+        "p4",
+        "eps8"
+      ],
+      "spec": "2019: 750 W in the small SFX size, 80 Plus Platinum."
+    },
+    {
+      "id": "p-sf1000",
+      "name": "Corsar SF1000",
+      "year": 2023,
+      "form": "sfx",
+      "supply": 1000,
+      "plugs": [
+        "none",
+        "molex",
+        "6pin",
+        "8pin",
+        "12vhpwr"
+      ],
+      "mainPlug": "atx24",
+      "cpuPlugs": [
+        "p4",
+        "eps8"
+      ],
+      "spec": "2023: 1000 W SFX with the 16-pin card plug."
+    },
+    {
+      "id": "p-1200",
+      "name": "1200 W 80 Plus Titanium",
+      "year": 2015,
+      "form": "atx",
+      "supply": 1200,
+      "plugs": [
+        "none",
+        "molex",
+        "6pin",
+        "8pin"
+      ],
+      "mainPlug": "atx24",
+      "cpuPlugs": [
+        "p4",
+        "eps8"
+      ],
+      "spec": "2015: up to 96% efficient."
+    },
+    {
+      "id": "p-atx3",
+      "name": "1000 W ATX 3.0 supply",
+      "year": 2022,
+      "form": "atx",
+      "supply": 1000,
+      "plugs": [
+        "none",
+        "molex",
+        "6pin",
+        "8pin",
+        "12vhpwr"
+      ],
+      "mainPlug": "atx24",
+      "cpuPlugs": [
+        "p4",
+        "eps8"
+      ],
+      "spec": "2022: the 16-pin plug for 450 W cards, built for their power spikes."
+    },
+    {
+      "id": "p-1600",
+      "name": "1600 W ATX 3.1 supply",
+      "year": 2024,
+      "form": "atx",
+      "supply": 1600,
+      "plugs": [
+        "none",
+        "molex",
+        "6pin",
+        "8pin",
+        "12vhpwr"
+      ],
+      "mainPlug": "atx24",
+      "cpuPlugs": [
+        "p4",
+        "eps8"
+      ],
+      "spec": "2024: the revised 16-pin plug."
+    }
+  ],
+  "drives": [
+    {
+      "id": "d-st506",
+      "name": "Seabird ST-506",
+      "year": 1980,
+      "iface": "mfm",
+      "gb": 0.005,
+      "bus": null,
+      "spec": "1980: the first 5.25-inch hard disk, 5 MB."
+    },
+    {
+      "id": "d-st225",
+      "name": "Seabird ST-225",
+      "year": 1984,
+      "iface": "mfm",
+      "gb": 0.02,
+      "bus": null,
+      "spec": "1984: 20 MB, the common PC drive of the 1980s."
+    },
+    {
+      "id": "d-ro352",
+      "name": "Rodima RO352",
+      "year": 1983,
+      "iface": "mfm",
+      "gb": 0.01,
+      "bus": null,
+      "spec": "1983: the first 3.5-inch hard disk, 10 MB, from a maker gone by 1991."
+    },
+    {
+      "id": "d-cp3044",
+      "name": "Connor CP-3044",
+      "year": 1989,
+      "iface": "ide",
+      "gb": 0.04,
+      "bus": null,
+      "spec": "1989: a 40 MB 3.5-inch IDE drive from a maker that merged away in 1996."
+    },
+    {
+      "id": "d-lps540",
+      "name": "Quanta ProDrive LPS 540",
+      "year": 1994,
+      "iface": "ide",
+      "gb": 0.54,
+      "bus": null,
+      "spec": "1994: 540 MB, from a drive maker sold off in 2001."
+    },
+    {
+      "id": "d-caviar",
+      "name": "Western Data Caviar 21600",
+      "year": 1996,
+      "iface": "ide",
+      "gb": 1.6,
+      "bus": null,
+      "spec": "1996: 1.6 GB on IDE."
+    },
+    {
+      "id": "d-16gp",
+      "name": "Inland Deskstar 16GP",
+      "year": 1997,
+      "iface": "ide",
+      "gb": 16.8,
+      "bus": null,
+      "spec": "1997: 16.8 GB on ATA-33."
+    },
+    {
+      "id": "d-fireball",
+      "name": "Quanta Fireball Plus KA",
+      "year": 1999,
+      "iface": "ide",
+      "gb": 13.6,
+      "bus": null,
+      "spec": "1999: 13.6 GB on ATA-66."
+    },
+    {
+      "id": "d-75gxp",
+      "name": "Inland Deskstar 75GXP",
+      "year": 2000,
+      "iface": "ide",
+      "gb": 75,
+      "bus": null,
+      "spec": "2000: 75 GB on ATA-100, remembered for failing."
+    },
+    {
+      "id": "d-mpg",
+      "name": "Fujitsa MPG3409AT",
+      "year": 2000,
+      "iface": "ide",
+      "gb": 40.9,
+      "bus": null,
+      "spec": "2000: 40 GB on ATA-100, from a maker that left hard disks in 2009."
+    },
+    {
+      "id": "d-dm9",
+      "name": "Maxtel DiamondMax Plus 9",
+      "year": 2003,
+      "iface": "ide",
+      "gb": 200,
+      "bus": null,
+      "spec": "2003: 200 GB on ATA-133, from a maker bought in 2006."
+    },
+    {
+      "id": "d-raptor",
+      "name": "Western Data Raptor",
+      "year": 2003,
+      "iface": "sata",
+      "gb": 36,
+      "bus": null,
+      "spec": "2003: 10,000 rpm on the first SATA, 1.5 Gbit/s."
+    },
+    {
+      "id": "d-7k1000",
+      "name": "Hikari Deskstar 7K1000",
+      "year": 2007,
+      "iface": "sata",
+      "gb": 1000,
+      "bus": null,
+      "spec": "2007: the first 1 TB drive, SATA at 3 Gbit/s."
+    },
+    {
+      "id": "d-spinpoint",
+      "name": "Sunsung SpinPoint F1",
+      "year": 2008,
+      "iface": "sata",
+      "gb": 1000,
+      "bus": null,
+      "spec": "2008: 1 TB on three platters; the maker sold its disk business in 2011."
+    },
+    {
+      "id": "d-vraptor",
+      "name": "Western Data VelociRaptor",
+      "year": 2008,
+      "iface": "sata",
+      "gb": 300,
+      "bus": null,
+      "spec": "2008: a 2.5-inch 10,000 rpm drive in a heatsink frame."
+    },
+    {
+      "id": "d-3tb",
+      "name": "Seabird Barracuda XT 3TB",
+      "year": 2010,
+      "iface": "sata",
+      "gb": 3000,
+      "bus": null,
+      "spec": "2010: 3 TB on SATA at 6 Gbit/s."
+    },
+    {
+      "id": "d-10tb",
+      "name": "Seabird 10TB",
+      "year": 2016,
+      "iface": "sata",
+      "gb": 10000,
+      "bus": null,
+      "spec": "2016: helium-filled, 10 TB."
+    },
+    {
+      "id": "d-18tb",
+      "name": "Seabird Exos 18TB",
+      "year": 2020,
+      "iface": "sata",
+      "gb": 18000,
+      "bus": null,
+      "spec": "2020: 18 TB."
+    },
+    {
+      "id": "d-24tb",
+      "name": "Seabird 24TB",
+      "year": 2023,
+      "iface": "sata",
+      "gb": 24000,
+      "bus": null,
+      "spec": "2023: 24 TB of spinning disk."
+    },
+    {
+      "id": "d-x25m",
+      "name": "Chipwright X25-M",
+      "year": 2008,
+      "iface": "sata",
+      "gb": 80,
+      "bus": null,
+      "spec": "2008: an 80 GB SSD that made spinning disks feel slow."
+    },
+    {
+      "id": "d-vertex",
+      "name": "OXZ Vertex",
+      "year": 2009,
+      "iface": "sata",
+      "gb": 120,
+      "bus": null,
+      "spec": "2009: an early SSD from a maker that went bankrupt in 2016."
+    },
+    {
+      "id": "d-840pro",
+      "name": "Sunsung 840 Pro",
+      "year": 2012,
+      "iface": "sata",
+      "gb": 256,
+      "bus": null,
+      "spec": "2012: as fast as 6 Gbit/s SATA allows."
+    },
+    {
+      "id": "d-850evo",
+      "name": "Sunsung 850 Evo",
+      "year": 2014,
+      "iface": "sata",
+      "gb": 500,
+      "bus": null,
+      "spec": "2014: stacked 3D flash on SATA."
+    },
+    {
+      "id": "d-950pro",
+      "name": "Sunsung 950 Pro",
+      "year": 2015,
+      "iface": "nvme",
+      "gb": 512,
+      "bus": null,
+      "spec": "2015: an M.2 NVMe drive on four PCIe 3.0 lanes."
+    },
+    {
+      "id": "d-900p",
+      "name": "Chipwright Optane 900P",
+      "year": 2017,
+      "iface": "pcie",
+      "gb": 280,
+      "bus": "pcie",
+      "spec": "2017: not flash but a new memory, on a PCIe card; the line ended in 2022."
+    },
+    {
+      "id": "d-mx500",
+      "name": "Critical MX500",
+      "year": 2018,
+      "iface": "sata",
+      "gb": 1000,
+      "bus": null,
+      "spec": "2018: a cheap, popular SATA SSD."
+    },
+    {
+      "id": "d-mp600",
+      "name": "Corsar MP600",
+      "year": 2019,
+      "iface": "nvme",
+      "gb": 1000,
+      "bus": null,
+      "spec": "2019: one of the first PCIe 4.0 drives, out with the X570 boards."
+    },
+    {
+      "id": "d-970evo",
+      "name": "Sunsung 970 Evo Plus",
+      "year": 2019,
+      "iface": "nvme",
+      "gb": 1000,
+      "bus": null,
+      "spec": "2019: 3.5 GB/s, the PCIe 3.0 limit."
+    },
+    {
+      "id": "d-980pro",
+      "name": "Sunsung 980 Pro",
+      "year": 2020,
+      "iface": "nvme",
+      "gb": 1000,
+      "bus": null,
+      "spec": "2020: PCIe 4.0, 7 GB/s."
+    },
+    {
+      "id": "d-sn850",
+      "name": "Western Data Black SN850",
+      "year": 2020,
+      "iface": "nvme",
+      "gb": 1000,
+      "bus": null,
+      "spec": "2020: PCIe 4.0, 7 GB/s."
+    },
+    {
+      "id": "d-990pro",
+      "name": "Sunsung 990 Pro",
+      "year": 2022,
+      "iface": "nvme",
+      "gb": 2000,
+      "bus": null,
+      "spec": "2022: 7.45 GB/s."
+    },
+    {
+      "id": "d-t700",
+      "name": "Critical T700",
+      "year": 2023,
+      "iface": "nvme",
+      "gb": 2000,
+      "bus": null,
+      "spec": "2023: PCIe 5.0, 12.4 GB/s, with a big heatsink."
+    }
+  ],
+  "media": [
+    {
+      "id": "r-8inch",
+      "name": "Inland 8-inch floppy drive",
+      "year": 1971,
+      "iface": "floppy",
+      "spec": "1971: about 80 KB on a floppy disk eight inches across."
+    },
+    {
+      "id": "r-sa400",
+      "name": "Sugart SA-400",
+      "year": 1976,
+      "iface": "floppy",
+      "spec": "1976: the first 5.25-inch floppy drive, from a maker long gone."
+    },
+    {
+      "id": "r-disk2",
+      "name": "Orchard Disk II",
+      "year": 1978,
+      "iface": "floppy",
+      "spec": "1978: a 5.25-inch floppy drive, 140 KB a disk."
+    },
+    {
+      "id": "r-360k",
+      "name": "5.25-inch 360 KB drive",
+      "year": 1982,
+      "iface": "floppy",
+      "spec": "1982: double-sided disks for the Inland PC."
+    },
+    {
+      "id": "r-144",
+      "name": "3.5-inch 1.44 MB drive",
+      "year": 1987,
+      "iface": "floppy",
+      "spec": "1987: a disk in a hard shell with a metal shutter."
+    },
+    {
+      "id": "r-cd2x",
+      "name": "Creatix CD-ROM 2x",
+      "year": 1993,
+      "iface": "isa",
+      "spec": "1993: 650 MB discs, wired to a sound card."
+    },
+    {
+      "id": "r-zip",
+      "name": "Ioma Zip 100",
+      "year": 1995,
+      "iface": "ide",
+      "spec": "1995: 100 MB cartridges, from a maker long gone."
+    },
+    {
+      "id": "r-ez135",
+      "name": "SyQuist EZ135",
+      "year": 1995,
+      "iface": "lpt",
+      "spec": "1995: 135 MB cartridges on the printer port, from a maker bankrupt in 1998."
+    },
+    {
+      "id": "r-jaz",
+      "name": "Ioma Jaz",
+      "year": 1996,
+      "iface": "ide",
+      "spec": "1996: 1 GB removable hard-disk cartridges."
+    },
+    {
+      "id": "r-ls120",
+      "name": "Imagin LS-120",
+      "year": 1997,
+      "iface": "ide",
+      "spec": "1997: 120 MB disks that also read 1.44 MB floppies."
+    },
+    {
+      "id": "r-dvd",
+      "name": "DVD-ROM drive",
+      "year": 1997,
+      "iface": "ide",
+      "spec": "1997: 4.7 GB discs."
+    },
+    {
+      "id": "r-cdrw",
+      "name": "CD-RW drive",
+      "year": 1998,
+      "iface": "ide",
+      "spec": "1998: discs you could write, wipe and write again."
+    },
+    {
+      "id": "r-cd52",
+      "name": "52x CD-ROM drive",
+      "year": 2000,
+      "iface": "ide",
+      "spec": "2000: about as fast as a spinning disc can go."
+    },
+    {
+      "id": "r-dvdrw",
+      "name": "DVD-RW drive",
+      "year": 2003,
+      "iface": "ide",
+      "spec": "2003: writes 4.7 GB discs in both rival formats."
+    },
+    {
+      "id": "r-hddvd",
+      "name": "HD DVD drive",
+      "year": 2006,
+      "iface": "sata",
+      "spec": "2006: the high-definition disc that lost to Blu-ray in 2008."
+    },
+    {
+      "id": "r-bd",
+      "name": "Blu-ray drive",
+      "year": 2006,
+      "iface": "sata",
+      "spec": "2006: 25 GB a layer, read by a blue-violet laser."
+    }
+  ],
+  "addins": [
+    {
+      "id": "x-wintv",
+      "name": "Happaug WinTV",
+      "year": 1993,
+      "spec": "1993: TV in a window on the desktop, from an analog tuner."
+    },
+    {
+      "id": "x-wintvpci",
+      "name": "Happaug WinTV PCI",
+      "year": 1997,
+      "spec": "1997: the TV card moved to PCI and could record to disk."
+    },
+    {
+      "id": "x-fasttrak",
+      "name": "Promys FastTrak66",
+      "year": 1999,
+      "spec": "1999: two IDE disks as one, striped for speed or mirrored for safety."
+    },
+    {
+      "id": "x-physx",
+      "name": "Agea PhysX P1",
+      "year": 2006,
+      "spec": "2006: a chip just for game physics; Raster bought the maker in 2008 and moved it onto graphics cards."
+    },
+    {
+      "id": "x-raid5805",
+      "name": "Adapto RAID 5805",
+      "year": 2008,
+      "spec": "2008: eight SATA disks on one card, with its own cache memory."
+    },
+    {
+      "id": "x-wintvhd",
+      "name": "Happaug WinTV-HVR-2250",
+      "year": 2009,
+      "spec": "2009: two digital TV tuners after the analog shutoff."
+    },
+    {
+      "id": "x-hd60",
+      "name": "Elgatto HD60 Pro",
+      "year": 2015,
+      "spec": "2015: records and streams a console's 1080p picture."
+    },
+    {
+      "id": "x-4k60",
+      "name": "Elgatto 4K60 Pro",
+      "year": 2018,
+      "spec": "2018: captures 4K at 60 frames a second."
+    }
+  ]
+}

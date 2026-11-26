@@ -109,3 +109,22 @@ test("CASH box shows cash and income only, with a fixed height; the locked era s
   expect((await page2.locator("[data-cash-panel]").boundingBox()).height).toBe(h);
   expectClean(seen);
 });
+
+test("the CASH box keeps the same height while an Overclock is running", async ({ page }) => {
+  const base = beforeIcs(1e6);
+  let seen = await go(page, base);
+  const panel = page.locator("[data-cash-panel]");
+  const off = panel.locator("[data-overclock]");
+  await expect(off).toBeVisible();
+  await expect(off).toHaveText(/^\s*$/);
+  const h = (await panel.boundingBox()).height;
+  expectClean(seen);
+  const page2 = await page.context().newPage();
+  seen = await go(page2, { ...base, lab: { ...(base.lab || {}), overclockUntil: Date.now() + 8 * 60 * 1000 } });
+  const panel2 = page2.locator("[data-cash-panel]");
+  await expect(panel2.locator("[data-overclock]")).toContainText("OVERCLOCKED x1.5");
+  await expect(panel2.locator("[data-overclock]")).toContainText("MIN LEFT");
+  expect((await panel2.boundingBox()).height).toBe(h);
+  expectClean(seen);
+});
+

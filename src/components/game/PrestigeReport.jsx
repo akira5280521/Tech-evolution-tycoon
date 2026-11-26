@@ -6,7 +6,8 @@ export default function PrestigeReport({ report, onDismiss }) {
   if (!report) return null;
   return (
     <div role="dialog" aria-label="Your first prestige" className="fixed inset-0 z-40 flex items-center justify-center overscroll-contain bg-black/70 p-4">
-      <div data-prestige-report className="game-modal flex max-h-[90vh] w-full max-w-md flex-col overflow-y-auto border-4 border-[var(--game-violet)] bg-[var(--game-card)] p-4 shadow-[6px_6px_0_0_#000] sm:p-5">
+      <div data-prestige-report className="game-modal flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden border-4 border-[var(--game-violet)] bg-[var(--game-card)] p-4 shadow-[6px_6px_0_0_#000] sm:p-5">
+        <div className="hint-sheet-body">
         <h2 className="title-glow font-pixel text-sm text-[var(--game-violet)]">YOUR FIRST PRESTIGE</h2>
         <p className="mt-3 font-term text-lg leading-6">
           {report.gained} {report.gained === 1 ? "investor" : "investors"} joined your board. Every business now earns
@@ -49,14 +50,17 @@ export default function PrestigeReport({ report, onDismiss }) {
         <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
           Challenges are open now on the RUNS tab. Prestige again when the button glows: that's when it would at least double your investors.
         </p>
+        </div>
+        <div className="hint-sheet-actions mt-4">
         <button
           type="button"
           onClick={onDismiss}
           data-prestige-report-ok
-          className="mt-4 min-h-11 w-full shrink-0 select-none border-2 border-[var(--game-violet)] bg-[var(--game-violet-bg)] px-3 py-2 font-pixel text-sm uppercase text-[var(--game-violet)] shadow-[3px_3px_0_0_#000]"
+          className="min-h-11 w-full shrink-0 select-none border-2 border-[var(--game-violet)] bg-[var(--game-violet-bg)] px-3 py-2 font-pixel text-sm uppercase text-[var(--game-violet)] shadow-[3px_3px_0_0_#000]"
         >
           Let's go
         </button>
+        </div>
       </div>
     </div>
   );

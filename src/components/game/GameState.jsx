@@ -15,6 +15,7 @@ function applyDisplay(prefs) {
   const root = document.documentElement;
   root.dataset.text = prefs.textSize === "large" || prefs.textSize === "xl" ? prefs.textSize : "normal";
   root.dataset.contrast = prefs.contrast ? "high" : "off";
+  root.dataset.colorblind = prefs.colorblind ? "on" : "off";
   setNumberFormat(prefs.numberFormat);
 }
 

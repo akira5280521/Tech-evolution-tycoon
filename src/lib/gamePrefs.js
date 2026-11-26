@@ -37,6 +37,7 @@ export function normalizePrefs(raw) {
     // Facility room monitor glass: era-accurate (default), or a forced phosphor.
     monitorDisplay: src.monitorDisplay === "green" || src.monitorDisplay === "amber" || src.monitorDisplay === "color" ? src.monitorDisplay : "era",
     contrast: src.contrast === true,
+    colorblind: src.colorblind === true,
     goalsHidden: src.goalsHidden === true,
     // The game screen section last shown: "tech" (default) or "supply".
     gameSection: src.gameSection === "supply" ? "supply" : "tech",

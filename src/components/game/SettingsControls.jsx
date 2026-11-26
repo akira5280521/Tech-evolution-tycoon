@@ -150,6 +150,10 @@ export function DisplaySettings() {
       <button type="button" data-contrast onClick={() => set({ contrast: !prefs.contrast })} className={`${choice} mt-3 w-full ${prefs.contrast ? on : off}`}>
         HIGH CONTRAST: {prefs.contrast ? "ON" : "OFF"}
       </button>
+      <button type="button" data-colorblind-toggle onClick={() => set({ colorblind: !prefs.colorblind })} className={`${choice} mt-3 w-full ${prefs.colorblind ? on : off}`}>
+        COLORBLIND COLORS: {prefs.colorblind ? "ON" : "OFF"}
+      </button>
+      <p className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">Good news shows in blue and warnings in orange, in place of green and red.</p>
     </Panel>
   );
 }

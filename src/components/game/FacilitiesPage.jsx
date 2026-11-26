@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "@tanstack/react-router";
+import { Link, Navigate, useLocation, useNavigate } from "@tanstack/react-router";
 import { REFINED, money } from "@/lib/gameConfig";
 import { businessIncomePerSecond, incomePerSecond } from "@/lib/empire";
 import {
@@ -23,15 +23,22 @@ import {
   rebuildReady,
   partMaterials,
   partShort,
+  benchJob,
+  roomJob,
+  stageJobs,
 } from "@/lib/facilities";
 import { extrasText, partValue } from "@/lib/plantValue";
 import { toast } from "sonner";
 import { playerYear, researchItem, serverOutput } from "@/lib/research";
 import { HUB_ROUTE } from "@/lib/hub";
 import { useGameState } from "./GameState";
-import ScreenShell, { GoldButton, Panel } from "./chrome";
+import ScreenShell, { Embedded, GoldButton, Panel, SubTabs } from "./chrome";
+import RigsGarage from "./RigsGarage";
 import { HelpTip, ItemHelp } from "./HintSheet";
 import FacilityRoom from "./FacilityRoom";
+import RoomStatus, { MachineSpecBars } from "./RoomStatus";
+import StageBar from "./StageBar";
+import { machineSpec, specBars } from "@/lib/machineSpecs";
 
 function percent(share) {
   if (!(share > 0)) return "0%";
@@ -49,7 +56,9 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, busi
   const dim = part.soon || !open || !!lock;
   const short = partShort(state, part);
   const mats = partMaterials(part);
-  const affordable = open && !lock && !part.soon && !fit.reason && !short.length && Number.isFinite(cost) && cash >= cost && owned < partMax(part, facilityId);
+  const building = !part.starter && !!roomJob(state, facilityId);
+  const affordable = open && !building && !lock && !part.soon && !fit.reason && !short.length && Number.isFinite(cost) && cash >= cost && owned < partMax(part, facilityId);
+  const installs = stageJobs(state).filter((j) => j.kind === "install" && j.facilityId === facilityId && j.partId === part.id);
   return (
     <div data-part={part.id} data-best-part={best ? "" : undefined} data-help-scope className={`border-2 ${best ? "border-[var(--game-accent)]" : "border-[var(--game-border)]"} bg-[var(--game-bg)] p-2`}>
       {best && <p className="mb-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">BEST NEXT PART</p>}
@@ -72,12 +81,25 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, busi
         <span className="shrink-0 font-term text-base leading-5 text-[var(--game-accent)]">×{owned}</span>
         <ItemHelp kind="part" id={`${facilityId}:${part.id}`} state={state} name={part.name} className="-mr-1 -mt-2.5" />
       </div>
+      {facilityId === "servers" && part.kind === "server" && (
+        <div className={dim ? "opacity-60" : ""}>
+          <MachineSpecBars bars={specBars(part)} real={machineSpec(part.id)?.real} />
+        </div>
+      )}
+      {installs.length > 0 && (
+        <div data-installing={installs.length} className="mt-2 space-y-1">
+          {installs.slice(0, 3).map((job, i) => (
+            <StageBar key={job.id} job={job} kind="install" title={i === 0 ? `COMING ONLINE: ${installs.length} of ${owned}` : undefined} />
+          ))}
+          {installs.length > 3 && <p className="font-term text-base leading-5 text-[var(--game-muted)]">+{installs.length - 3} more being installed</p>}
+        </div>
+      )}
       {part.soon ? (
         <p className="mt-2 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)] opacity-60">COMING SOON</p>
       ) : (
         <div className="mt-2">
           <GoldButton dataAttr={`buy-${part.id}`} disabled={!affordable} onClick={onBuy}>
-            <span className="font-pixel text-[0.55rem]">{lock ? lock : !open ? "LOCKED" : facilityId === "bench" && owned > 0 && part.kind !== "stick" ? "ON THE BENCH" : `BUY ${money(cost)}`}</span>
+            <span className="font-pixel text-[0.55rem]">{lock ? lock : !open ? "LOCKED" : building ? "UNDER CONSTRUCTION" : facilityId === "bench" && owned > 0 && part.kind !== "stick" ? "ON THE BENCH" : `BUY ${money(cost)}`}</span>
             {open && !lock && !(facilityId === "bench" && owned > 0 && part.kind !== "stick") && mats && (
               <span data-part-materials className={`block font-term text-base leading-5 ${short.length ? "text-[var(--game-danger)]" : ""}`}>
                 {short.length
@@ -123,19 +145,6 @@ function PartValue({ state, facilityId, part, business }) {
   );
 }
 
-// Machine room: one generator and one air conditioner per computer. Racks:
-// watts. Disk: what the newest machine needs.
-function serverStockText(row) {
-  const parts = [];
-  const room = row.groups?.room;
-  const rack = row.groups?.rack;
-  if (room?.watts > 0) parts.push(`Machine room: ${room.watts} generator${room.watts === 1 ? "" : "s"} and coolers needed, ${room.power} generator${room.power === 1 ? "" : "s"}, ${room.cool} cooler${room.cool === 1 ? "" : "s"}`);
-  if (rack?.watts > 0) parts.push(`Racks: ${Math.round(rack.watts)} W, ${Math.round(rack.power)} W of supplies, ${Math.round(rack.cool)} W of fans`);
-  parts.push(`Disk: ${diskSize(row.storage)} of the ${diskSize(row.need)} the newest machine needs`);
-  if (rack?.work > 0) parts.push(row.linkCap > 0 ? `Network: carries ${row.linkCap.toLocaleString("en-US")} of ${rack.work.toLocaleString("en-US")} rack work` : "Network: none, so each rack works alone at half speed");
-  return parts.join(" · ");
-}
-
 function Plant({ facility, state, report, business, cash, onBuy, next, onToggleOc }) {
   const open = facilityUnlocked(state, facility.id);
   const row = report[facility.id];
@@ -146,6 +155,9 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
   const bench = facility.id === "bench";
   const counts = state.facilities?.[facility.id] || {};
   const [benchTab, setBenchTab] = useState("cpu");
+  // Research servers (T3 item 52): machines, room equipment, and a pointer to
+  // the Home PC parts on the bench.
+  const [serverTab, setServerTab] = useState("machines");
   const [showAll, setShowAll] = useState(false);
   let parts = PARTS.filter((part) => part.fits.includes(facility.id));
   // The bench has close to a hundred parts across 50 years: show one kind at a
@@ -167,6 +179,15 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
   // Other locked plants show the need, not a wall of greyed parts.
   if (starterOnly) parts = parts.filter((part) => part.starter);
   else if (!open) parts = [];
+  if (research && open) {
+    const kinds = SERVER_TABS.find((t) => t.id === serverTab)?.kinds || [];
+    parts = parts.filter((part) => kinds.includes(part.kind));
+  }
+  const limited = research && open && /^(Power|Cooling) limited$/.test(row.limit || "");
+  const showRoomTab = () => {
+    setServerTab("room");
+    setTimeout(() => document.querySelector("[data-server-tabs]")?.scrollIntoView({ block: "start" }), 50);
+  };
   return (
     <Panel>
       <div id={facility.id} data-facility={facility.id} data-locked={open || starterOnly ? undefined : ""} className="scroll-mt-[var(--hud-h,0px)]">
@@ -186,11 +207,21 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
         </p>
         {open ? (
           <>
-            <p data-facility-limit className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
-              {row.limit}
-              {row.tier ? ` · ${row.tier} model` : ""}
-              {open && (/Bottleneck/.test(row.limit || "") ? <HelpTip term="bottleneck" /> : row.limit === "Network-limited" ? <HelpTip term="network" /> : null)}
-            </p>
+            {bench ? (
+              <p data-facility-limit className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
+                {row.limit}
+                {/Bottleneck/.test(row.limit || "") ? <HelpTip term="bottleneck" /> : null}
+              </p>
+            ) : row.tier ? (
+              <p data-facility-tier className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
+                Training the {row.tier} model
+              </p>
+            ) : null}
+            {limited && serverTab !== "room" && (
+              <button type="button" data-limit-shortcut onClick={showRoomTab} className="mt-1 min-h-12 w-full border-2 border-[var(--game-danger)] px-2 text-left font-pixel text-[0.5rem] leading-4 text-[var(--game-danger)]">
+                ADD ROOM EQUIPMENT &gt;
+              </button>
+            )}
             <p data-facility-hint className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{facilityHint(state, facility.id, business)}</p>
           </>
         ) : (
@@ -220,20 +251,20 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
             {row.board && !row.board.builtin ? ` · Drive: ${row.drive ? `${row.drive.name}, ${row.driveText}, ${Number(row.driveMbs.toFixed(1))} MB/s` : "none"}` : ""}
           </p>
         )}
-        {open && research && row.gpus > 0 && (
-          <p data-server-stock className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
-            {serverStockText(row)}
-          </p>
-        )}
-        {open && !research && row.gpus > 0 && (
-          <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
-            {Math.round(row.watts)} W of cards · {Math.round(row.power)} W power · {Math.round(row.cool)} W cooling · {Math.round(row.vram)} GB on the cards · {Math.round(row.ram)} GB RAM
+        {open && !research && !bench && row.gpus > 0 && (
+          <p data-card-memory className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
+            {Math.round(row.vram)} GB on the cards
           </p>
         )}
         {open && row.board && !bench && (
           <p data-board className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
             Memory: {row.board.used} of {row.board.slots} slots used on the {row.board.name}.
           </p>
+        )}
+        {open && bench && benchJob(state) && (
+          <div data-bench-building className="mt-2">
+            <StageBar job={benchJob(state)} kind="bench" title="SETTING UP THE PC" />
+          </div>
         )}
         {open && bench && row.canOc && (
           <div className="mt-2">
@@ -257,6 +288,40 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
                 {label}
               </button>
             ))}
+          </div>
+        )}
+        {research && open && <h3 data-machines-head className="mt-3 font-status text-lg font-bold leading-6 text-[var(--game-fg)]">MACHINES</h3>}
+        {research && open && (
+          <div data-server-tabs role="tablist" className="mt-2 grid scroll-mt-[var(--hud-h,0px)] grid-cols-3 gap-2">
+            {SERVER_TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={serverTab === t.id}
+                data-server-tab={t.id}
+                onClick={() => setServerTab(t.id)}
+                className={`min-h-12 border-2 px-1 font-pixel text-[0.5rem] leading-4 ${serverTab === t.id ? "border-[var(--game-accent)] text-[var(--game-accent)]" : "border-[var(--game-border-strong)] text-[var(--game-muted)]"}`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {research && open && serverTab === "home" && (
+          <div data-server-home className="mt-2 space-y-2">
+            <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
+              Home PC parts (boards, CPUs, memory, cases, power supplies, sound and video) go on the PC Build Bench. Its PC makes R&amp;D points too.
+            </p>
+            {facilityUnlocked(state, "bench") ? (
+              <Link to="/facilities/$facilityId" params={{ facilityId: "bench" }} data-server-bench-link className="flex min-h-12 items-center justify-center border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.55rem] text-black shadow-[3px_3px_0_0_#000]">
+                PC BUILD BENCH &gt;
+              </Link>
+            ) : (
+              <p aria-disabled="true" data-server-bench-locked className="border-2 border-[var(--game-border)] p-2 font-pixel text-[0.5rem] leading-4 text-[var(--game-dim)] opacity-60">
+                PC BUILD BENCH · {facilityNeed("bench")} · COMING SOON
+              </p>
+            )}
           </div>
         )}
         <div className="mt-2 space-y-2">
@@ -294,6 +359,12 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
     </Panel>
   );
 }
+
+const SERVER_TABS = [
+  { id: "machines", label: "SERVER MACHINES", kinds: ["tabulator", "server"] },
+  { id: "room", label: "ROOM EQUIPMENT", kinds: ["power", "cool", "disk", "link"] },
+  { id: "home", label: "HOME PC PARTS", kinds: [] },
+];
 
 const BENCH_TABS = [
   ["board", "BOARDS", ["board"]],
@@ -353,6 +424,10 @@ export default function FacilitiesPage({ facilityId }) {
   const business = businessIncomePerSecond(state, Date.now());
   const report = facilityReport(state, business);
   const plantsOpen = facilitiesOpen(state);
+  const location = useLocation();
+  const navigate = useNavigate();
+  // The bench's saved PCs (the old RIGS garage) are its SAVED BUILDS tab (T3 item 27).
+  const benchView = facilityId === "bench" && (location.hash || "").replace("#", "") === "saved" ? "saved" : "build";
   const next = plantsOpen ? nextPurchase(state, business) : null;
   useEffect(() => {
     if (facilityId === "servers") noteTutorialPage?.("servers");
@@ -362,8 +437,38 @@ export default function FacilitiesPage({ facilityId }) {
   const showRebuild = facilityId === "mine" || facilityId === "cluster";
   const showNext = showRebuild && plantsOpen && next;
   return (
-    <ScreenShell title={facility.name} subtitle={facility.blurb} backTo={HUB_ROUTE}>
+    <ScreenShell title={facility.name} subtitle={facility.blurb} backTo={HUB_ROUTE} crumbVia="HARDWARE">
+      {facilityId === "bench" && (
+        <SubTabs
+          tabs={[{ id: "build", label: "BUILD" }, { id: "saved", label: "SAVED BUILDS" }]}
+          active={benchView}
+          onPick={(id) => navigate({ to: "/facilities/$facilityId", params: { facilityId: "bench" }, hash: id === "saved" ? "saved" : "", replace: true })}
+          name="bench"
+        />
+      )}
+      {benchView === "saved" ? (
+        <Embedded><RigsGarage /></Embedded>
+      ) : (
+      <>
       <FacilityRoom facilityId={facility.id} state={state} />
+      {roomJob(state, facility.id) && (
+        <div data-room-building className="status-frame p-3">
+          <StageBar job={roomJob(state, facility.id)} kind="room" title={`BUILDING THE ${facility.name.toUpperCase()}`} />
+          <p className="mt-1 font-term text-base leading-5 text-[#9690ac]">The crew keeps working while the app is closed. Parts can go in once it is built.</p>
+        </div>
+      )}
+      <RoomStatus
+        facilityId={facility.id}
+        state={state}
+        locked={!facilityUnlocked(state, facility.id) && facility.id !== "servers"}
+        summary={facility.id === "servers" ? `+${rate(serverOutput(state).perSecond - serverOutput(state).bench)} R&D/s` : facility.id === "bench" ? `+${rate(report.bench.perSecond)} R&D/s` : `${money(report[facility.id]?.perSecond || 0)}/s`}
+      />
+      {facilityId === "servers" && (
+        <Link to="/research" data-servers-rd className="flex min-h-12 items-center justify-between border-2 border-[var(--game-accent)] bg-[var(--game-panel)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]">
+          <span>R&amp;D: SPEND THESE POINTS</span>
+          <span>&gt;</span>
+        </Link>
+      )}
       {showRebuild && plantsOpen && (
         <p className="break-words px-1 font-term text-base leading-5 text-[var(--game-muted)]">
           Both plants together pay {money(report.perSecond)}/s, {percent(report.share)} of the businesses. Short power or cooling throttles the cards. The cluster also needs enough memory for its model.
@@ -376,6 +481,8 @@ export default function FacilitiesPage({ facilityId }) {
       )}
       {showRebuild && <RebuildPanel state={state} onRebuild={rebuildFacilities} />}
       <Plant facility={facility} state={state} report={report} business={business} cash={state.cash || 0} onBuy={buyFacilityPart} next={next} onToggleOc={toggleBenchOc} />
+      </>
+      )}
     </ScreenShell>
   );
 }

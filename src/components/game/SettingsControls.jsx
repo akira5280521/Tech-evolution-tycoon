@@ -10,7 +10,7 @@ import { useCloud } from "./CloudSync";
 import { Panel } from "./chrome";
 import { statsText } from "@/lib/statsText";
 
-const choice = "min-h-11 border-2 px-1 font-pixel text-[0.5rem]";
+const choice = "min-h-12 border-2 px-1 font-pixel text-[0.5rem]";
 const on = "border-[var(--game-accent)] text-[var(--game-accent)]";
 const off = "border-[var(--game-border-strong)] text-[var(--game-muted)]";
 
@@ -47,14 +47,32 @@ export function PlayToggles() {
         <button type="button" data-collapse-maxed onClick={() => set({ collapseMaxed: !prefs.collapseMaxed })} className={`${choice} ${prefs.collapseMaxed ? on : off}`}>
           COLLAPSE MAXED: {prefs.collapseMaxed ? "ON" : "OFF"}
         </button>
+        <button type="button" data-starter-goals onClick={() => set({ goalsHidden: !prefs.goalsHidden })} className={`${choice} ${prefs.goalsHidden ? off : on}`}>
+          STARTER GOALS: {prefs.goalsHidden ? "HIDDEN" : "ON"}
+        </button>
+      </div>
+    </Panel>
+  );
+}
+
+// Sound and touch feel (T4 item 39: the SOUND group).
+export function SoundSettings() {
+  const [prefs, set] = usePrefs();
+  return (
+    <Panel>
+      <h2 className="font-pixel text-[0.6rem]">SOUND AND VIBRATION</h2>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <button type="button" data-sound onClick={() => set({ sound: !prefs.sound })} className={`${choice} ${prefs.sound ? on : off}`}>
           SOUND: {prefs.sound ? "ON" : "OFF"}
         </button>
         <button type="button" data-haptics onClick={() => set({ haptics: !prefs.haptics })} className={`${choice} ${prefs.haptics ? on : off}`}>
           VIBRATION: {prefs.haptics ? "ON" : "OFF"}
         </button>
-        <button type="button" data-starter-goals onClick={() => set({ goalsHidden: !prefs.goalsHidden })} className={`${choice} ${prefs.goalsHidden ? off : on}`}>
-          STARTER GOALS: {prefs.goalsHidden ? "HIDDEN" : "ON"}
+        <button type="button" data-tap-sound aria-pressed={prefs.tapSound} onClick={() => set({ tapSound: !prefs.tapSound })} className={`${choice} ${prefs.tapSound ? on : off}`}>
+          TAP SOUND: {prefs.tapSound ? "ON" : "OFF"}
+        </button>
+        <button type="button" data-tap-haptic aria-pressed={prefs.tapHaptic} onClick={() => set({ tapHaptic: !prefs.tapHaptic })} className={`${choice} ${prefs.tapHaptic ? on : off}`}>
+          TAP VIBRATION: {prefs.tapHaptic ? "ON" : "OFF"}
         </button>
       </div>
       <Volume
@@ -72,9 +90,19 @@ export function PlayToggles() {
         onMute={() => set({ effectsMuted: !prefs.effectsMuted })}
       />
       <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
-        Sound off silences both. Music and effects each have their own volume. Leaving the app or locking the screen pauses them, and they come back if sound is still on.
+        Sound off silences both. Music and effects each have their own volume. Leaving the app or locking the screen pauses them, and they come back if sound is still on. Vibration is for buys and milestones; tap vibration buzzes on every tap.
       </p>
     </Panel>
+  );
+}
+
+// A heading for one group of settings (T4 item 39).
+export function SettingsGroup({ id, title, children }) {
+  return (
+    <section data-settings-group={id} aria-label={title} className="flex flex-col gap-3">
+      <h2 className="mt-2 border-b-2 border-[var(--game-accent)] pb-1 font-pixel text-[0.7rem] text-[var(--game-accent)]">{title}</h2>
+      {children}
+    </section>
   );
 }
 
@@ -117,7 +145,7 @@ export function DisplaySettings() {
   return (
     <Panel>
       <h2 className="font-pixel text-[0.6rem]">DISPLAY</h2>
-      <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">Numbers: 1.20B, 1.2e9, or 1.2 billion.</p>
+      <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">Numbers: 1.20B, 1.2e9, or 1.2 billion. Long-press money or an amount to see the exact value.</p>
       <div className="mt-2 grid grid-cols-3 gap-2">
         {formats.map(([id, label]) => (
           <button key={id} type="button" data-format={id} aria-pressed={prefs.numberFormat === id} onClick={() => set({ numberFormat: id })} className={`${choice} ${prefs.numberFormat === id ? on : off}`}>
@@ -346,7 +374,7 @@ export function ResetProgress({ onReset }) {
       <h2 className="font-pixel text-[0.6rem] text-[var(--game-danger)]">RESET</h2>
       <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">Clears this phone's empire and starts a new game. Sound and display settings stay.</p>
       {step === 0 && (
-        <button type="button" data-reset-start onClick={() => setStep(1)} className="mt-3 min-h-11 w-full border-2 border-[var(--game-danger)] px-3 font-pixel text-[0.55rem] text-[var(--game-danger)]">
+        <button type="button" data-reset-start onClick={() => setStep(1)} className="mt-3 min-h-12 w-full border-2 border-[var(--game-danger)] px-3 font-pixel text-[0.55rem] text-[var(--game-danger)]">
           RESET PROGRESS
         </button>
       )}
@@ -376,7 +404,7 @@ export function ResetProgress({ onReset }) {
                 onReset();
                 close();
               }}
-              className="min-h-11 flex-1 border-2 border-[var(--game-danger)] bg-[var(--game-danger)] px-2 font-pixel text-[0.55rem] text-black disabled:opacity-50"
+              className="min-h-12 flex-1 border-2 border-[var(--game-danger)] bg-[var(--game-danger)] px-2 font-pixel text-[0.55rem] text-black disabled:opacity-50"
             >
               ERASE SAVE
             </button>

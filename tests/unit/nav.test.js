@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { BUSINESSES, QUICK_BUY_MODES } from "../../src/lib/gameConfig.js";
+import { BUSINESSES } from "../../src/lib/gameConfig.js";
 import { blankMeta, snapshotMeta } from "../../src/lib/empire.js";
 import { STARTER_GOALS } from "../../src/lib/goals.js";
 import { eraChipLabel, eraChips } from "../../src/lib/eraChips.js";
@@ -157,7 +157,6 @@ test("R&D summaries and prefs / save packing", () => {
   assert.equal(blank.readySeen.seeded, true);
   const shot = snapshotMeta(base({ readySeen: { seeded: true, boost: ["timber:rev"], research: [], tech: [], hq: [] } }));
   assert.deepEqual(shot.readySeen.boost, ["timber:rev"]);
-  assert.deepEqual(QUICK_BUY_MODES, ["x1", "x10", "x100", "MAX"]);
 });
 
 test("readReadySeen ignores junk", () => {

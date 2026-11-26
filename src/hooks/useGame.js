@@ -63,9 +63,10 @@ import { blankTutorial, readTutorial, TUTORIAL_STEPS, FACILITY_TOURS, tutorialCl
 import { markReadySeen, readReadySeen, seedReadySeen } from "@/lib/ready";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
-import { REBUILD_SECONDS, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants, settleClosedParts, grantStarter } from "@/lib/facilities";
+import { FACILITIES, PARTS, REBUILD_SECONDS, buyFieldEngineers as takeFieldEngineers, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants, settleClosedParts, grantStarter } from "@/lib/facilities";
+import { OPENING, readStages } from "@/lib/stages";
 import { noteHubSeen } from "@/lib/hub";
-import { advanceResearch, fillResearchGaps, grantOwnedResearch, noteCompanyYear, readResearchData, readTechDone, readTechJob, rescuePunchCardSave, startResearch } from "@/lib/research";
+import { advanceResearch, buyAwayShift, buyQueueSlot, fillResearchGaps, grantOwnedResearch, noteCompanyYear, queueResearch, readResearchData, readTechDone, readTechJob, readTechQueue, rescuePunchCardSave, startResearch, unqueueResearch } from "@/lib/research";
 import { readGoalsDone, settleGoals } from "@/lib/goals";
 import { applyOrientation } from "@/lib/orientation";
 import { notesUnseen } from "@/lib/releaseNotes";
@@ -190,6 +191,7 @@ function applySavedMeta(state, raw) {
   state.techDone = readTechDone(m.techDone);
   state.techJob = readTechJob(m.techJob);
   state.techJob2 = readTechJob(m.techJob2);
+  state.techQueue = readTechQueue(m.techQueue);
   state.companyYear = m.companyYear && Number.isFinite(m.companyYear.year) && Number.isFinite(m.companyYear.at) ? { year: m.companyYear.year, at: m.companyYear.at } : null;
   state.goalsDone = readGoalsDone(m.goalsDone);
   state.boughtX10 = !!m.boughtX10;
@@ -258,6 +260,9 @@ function pack(s) {
     materialsSold: s.materialsSold || 0,
     erasOpened: s.erasOpened || [],
     eraBuild: s.eraBuild || null,
+    // Staged timers (T5 items 61 and 62) and the HQ rooms built this run.
+    stages: s.stages || [],
+    roomsBuilt: Array.isArray(s.roomsBuilt) ? s.roomsBuilt : null,
     shortage: s.shortage || null,
     recall: s.recall || null,
     erasPaid: s.erasPaid || [],
@@ -306,6 +311,7 @@ function pack(s) {
     techDone: readTechDone(s.techDone),
     techJob: readTechJob(s.techJob),
     techJob2: readTechJob(s.techJob2),
+    techQueue: readTechQueue(s.techQueue),
     companyYear: s.companyYear || null,
     biz: s.biz.map((b, i) => ({
       id: BUSINESSES[i].id,
@@ -349,7 +355,8 @@ function loadSave() {
       state.biz[i].activeMs = Number.isFinite(b.activeMs) && b.activeMs > 0 ? b.activeMs : 0;
       // A start-up timer can't be longer than a real one (a bad clock or an
       // edited code would otherwise lock the row).
-      state.biz[i].commissionUntil = Number.isFinite(b.commissionUntil) ? Math.min(b.commissionUntil, Date.now() + COMMISSION_MS) : 0;
+      state.biz[i].commissionMs = Number.isFinite(b.commissionMs) && b.commissionMs > 0 ? Math.min(b.commissionMs, OPENING.maxMs) : COMMISSION_MS;
+      state.biz[i].commissionUntil = Number.isFinite(b.commissionUntil) ? Math.min(b.commissionUntil, Date.now() + state.biz[i].commissionMs) : 0;
     });
     // Parts now open by year and research: keep what was bought fairly, refund
     // the rest (see settleClosedParts).
@@ -374,6 +381,8 @@ function loadSave() {
     state.materialsSold = data.materialsSold || 0;
     state.erasOpened = Array.isArray(data.erasOpened) ? data.erasOpened : [];
     state.eraBuild = data.eraBuild || null;
+    state.stages = readStages(data.stages);
+    state.roomsBuilt = Array.isArray(data.roomsBuilt) ? data.roomsBuilt : null;
     state.shortage = data.shortage && typeof data.shortage === "object" && Number.isFinite(data.shortage.until) ? data.shortage : null;
     state.recall = data.recall || null;
     state.foreman = !!data.foreman;
@@ -425,27 +434,36 @@ function loadSave() {
       fillResearchGaps(state);
       rescuePunchCardSave(state);
     }
+    if (prior < 17) {
+      // 0.0.32 (T3): the research queue. Old saves start with no queue and
+      // no queue slots; the slots are earned in LAB PROJECTS.
+      state.techQueue = [];
+      state.lab = { ...(state.lab || {}), queueSlots: 0 };
+    }
     noteCompanyYear(state);
     collectBadges(state);
     if (state.goalsDone == null || prior < 9) {
       state.goalsDone = state.goalsDone || [];
       settleGoals(state, { pay: false, migrate: true });
     }
-    const elapsed = Math.min(Math.max(Date.now() - (data.lastSeen || Date.now()), 0), offlineCapMs(state));
+    const rawAway = Math.max(Date.now() - (data.lastSeen || Date.now()), 0);
+    const elapsed = Math.min(rawAway, offlineCapMs(state));
     let offlineGain = 0;
     let rows = [];
     let short = [];
     let full = [];
+    let dataGain = 0;
     if (elapsed > 0) {
       // Managers, plants and R&D earn at OFFLINE_RATE while the app is closed.
       const rate = elapsed < AWAY_GRACE_MS ? 1 : OFFLINE_RATE;
-      state.data = (state.data || 0) + dataPerSecond(state) * (elapsed / 1000) * rate;
+      dataGain = dataPerSecond(state) * (elapsed / 1000) * rate;
+      state.data = (state.data || 0) + dataGain;
       beginArrivalCatchup(state);
       ({ gain: offlineGain, rows, short, full } = replayAway(state, elapsed, Date.now(), rate));
       endArrivalCatchup(state, elapsed);
     }
     if (offlineGain > 0 && elapsed >= AWAY_MODAL_MS) {
-      state.offlineReport = { amount: offlineGain, awayMs: elapsed, rows, short, full };
+      state.offlineReport = { amount: offlineGain, awayMs: elapsed, rawAwayMs: rawAway, data: dataGain, rows, short, full };
     }
     applyBriefing(state);
     finishTimedWork(state, Date.now());
@@ -472,10 +490,18 @@ function announce(notes) {
     if (note.type === "upgrade") toast("Upgrade installed", { description: "The line is back up." });
     if (note.type === "projectstart") toast("Project started", { description: "Crews are on site. Give them a moment." });
     if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
+    if (note.type === "ladder") toast(`Milestone: ${note.title}`, { description: `+${note.tokens} era tokens. Next rung in PROGRESS > RUNS.` });
+    if (note.type === "stage") {
+      const name = note.partId ? PARTS.find((p) => p.id === note.partId)?.name : null;
+      const room = FACILITIES.find((f) => f.id === note.facilityId)?.name || "The room";
+      if (note.kind === "install") toast(`${name || "A machine"} is online!`, { description: "It makes R&D points now." });
+      else if (note.kind === "room") toast(`${room} is built`, { description: "You can fit it out now." });
+      else if (note.kind === "bench") toast("The bench PC is ready", { description: "Benchmark done. It makes R&D points now." });
+    }
     if (note.type === "refined") toast("Refinery batch done", { description: `${note.amount} ${REFINED[note.id]?.name || note.id} added.` });
     if (note.type === "history") {
-      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum in HQ > HARDWARE MUSEUM." });
-      else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum in HQ > HARDWARE MUSEUM." });
+      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to PROGRESS > MUSEUM." });
+      else toast(`${note.cards.length} history cards found`, { description: "Read them in PROGRESS > MUSEUM." });
     }
     if (note.type === "compute") {
       toast(`Compute record: ${note.record.name}`, {
@@ -650,7 +676,8 @@ export function useGame() {
       void cancelCapNotification();
       if (!s.hiddenAt) return;
       const now = Date.now();
-      const away = Math.min(Math.max(0, now - s.hiddenAt), offlineCapMs(s));
+      const rawAway = Math.max(0, now - s.hiddenAt);
+      const away = Math.min(rawAway, offlineCapMs(s));
       s.hiddenAt = 0;
       // Start every row's clock from where the replay leaves it.
       s.biz = s.biz.map((st) => {
@@ -661,11 +688,12 @@ export function useGame() {
       });
       if (away > 0) {
         const rate = away < AWAY_GRACE_MS ? 1 : OFFLINE_RATE;
-        s.data = (s.data || 0) + dataPerSecond(s) * (away / 1000) * rate;
+        const dataGain = dataPerSecond(s) * (away / 1000) * rate;
+        s.data = (s.data || 0) + dataGain;
         beginArrivalCatchup(s);
         const { gain, rows, short, full } = replayAway(s, away, now, rate);
         endArrivalCatchup(s, away);
-        if (gain > 0 && away >= AWAY_MODAL_MS) s.offlineReport = { amount: gain, awayMs: away, rows, short, full };
+        if (gain > 0 && away >= AWAY_MODAL_MS) s.offlineReport = { amount: gain, awayMs: away, rawAwayMs: rawAway, data: dataGain, rows, short, full };
       }
       lastWall = now;
       awayBudget = OFFLINE_CAP_MS;
@@ -735,7 +763,9 @@ export function useGame() {
       }
       const pending = s.researchJob || s.upgradeJob || s.projectJob || s.refineJob || s.biz.some((row) => (row.commissionUntil || 0) > wall || (row.holdUntil || 0) > wall);
       if (pending) dirty = true;
-      const passive = plant > 0 || researchMoved === "gain";
+      // Long stage bars (installs up to an hour, era set-up) only need a
+      // once-a-second paint, not the 4 Hz one (T5 item 45, battery).
+      const passive = plant > 0 || researchMoved === "gain" || (s.stages || []).length > 0 || !!s.eraBuild;
       // Payouts and finished work paint on the short cadence. A plant or
       // research counter that is merely counting paints about once a second.
       if (dirty && wall - lastRender >= RENDER_MS) {
@@ -890,6 +920,14 @@ export function useGame() {
 
   const buyForeman = useCallback(() => {
     if (!takeForeman(stateRef.current)) return;
+    playBuy();
+    saveNow();
+    bump();
+  }, [bump]);
+
+  // Field engineers (T5 item 61): installs take half as long. R&D points.
+  const buyFieldEngineers = useCallback(() => {
+    if (!takeFieldEngineers(stateRef.current).ok) return;
     playBuy();
     saveNow();
     bump();
@@ -1310,9 +1348,30 @@ export function useGame() {
     runAll,
     toggleManager,
     buyForeman,
+    buyFieldEngineers,
     startTech: (id) => {
       const started = startResearch(stateRef.current, id);
       if (!started.ok) return;
+      saveNow();
+      bump();
+    },
+    queueTech: (id) => {
+      if (!queueResearch(stateRef.current, id).ok) return;
+      saveNow();
+      bump();
+    },
+    unqueueTech: (id) => {
+      if (!unqueueResearch(stateRef.current, id).ok) return;
+      saveNow();
+      bump();
+    },
+    buyQueueSlot: () => {
+      if (!buyQueueSlot(stateRef.current).ok) return;
+      saveNow();
+      bump();
+    },
+    buyAwayShift: () => {
+      if (!buyAwayShift(stateRef.current).ok) return;
       saveNow();
       bump();
     },

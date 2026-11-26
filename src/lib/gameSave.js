@@ -2,6 +2,7 @@
 // (read/write) and the settings screen (read-only analytics).
 
 import { BUSINESSES, ERA_GATE, blankSupply, managerNeed, normalizeBuyMode, readEraBuild } from "./gameConfig.js";
+import { readStages } from "./stages.js";
 import { readRigs } from "./rigs.js";
 import { backupDue, backupSave } from "./saveBackups.js";
 
@@ -32,7 +33,7 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 // v16 puts TECH in date order with release months: older saves fill in the
 // projects now before ones they finished, and a late save still on punch
 // cards gets its first research server.
-export const SAVE_VERSION = 16;
+export const SAVE_VERSION = 17;
 const V1_INVESTOR_DIVISOR = 1000;
 // Row order of each older save version.
 const V4_ORDER = ["sand", "copper", "silicon", "wafers", "tubes", "punchcards", "transistors", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];
@@ -155,6 +156,7 @@ export function migrateSave(data) {
       progress: Math.min(finiteNumber(row.progress, 0), cfg.cycleMs),
       activeMs: finiteNumber(row.activeMs, 0),
       commissionUntil: finiteNumber(row.commissionUntil, 0),
+      commissionMs: Math.min(3 * 60e3, finiteNumber(row.commissionMs, 0)),
     };
   });
   const supply = blankSupply();
@@ -198,6 +200,10 @@ export function migrateSave(data) {
       : BUSINESSES.filter((cfg, i) => i > 0 && (biz[i]?.owned || 0) === 0 && (biz[i - 1]?.owned || 0) >= ERA_GATE).map((cfg) => cfg.id),
     // An era being set up after OPEN ERA: { id, startedAt, readyAt }, or none.
     eraBuild: readEraBuild(data.eraBuild),
+    // Servers being installed, rooms being built, the bench PC being set up
+    // (T5 items 61 and 62). Older saves have none, and every open room built.
+    stages: readStages(data.stages),
+    roomsBuilt: Array.isArray(data.roomsBuilt) ? data.roomsBuilt.filter((id) => typeof id === "string") : null,
     // A historical shortage under way: { key, until }, or none.
     shortage: data.shortage && typeof data.shortage === "object" && typeof data.shortage.key === "string" && Number.isFinite(data.shortage.until) ? { key: data.shortage.key, until: data.shortage.until } : null,
     // A recall being ridden out: { era, until }, or none.

@@ -25,7 +25,7 @@ test("era chips jump to an unlocked era", async ({ page }) => {
   expectClean(seen);
 });
 
-test("next goal chip sits under cash and jumps to a row", async ({ page }) => {
+test("next goal chip sits under the buy-amount row and jumps to a row", async ({ page }) => {
   const { save, opts } = midSave({
     biz: SAVES.mid.biz.map((row, i) => (i === 0 ? { ...row, owned: 20 } : row)),
   });
@@ -34,10 +34,10 @@ test("next goal chip sits under cash and jumps to a row", async ({ page }) => {
   const chip = page.locator("[data-next-goal]");
   await expect(chip).toBeVisible();
   await expect(chip).toContainText("Next:");
-  const cash = page.locator("[data-cash-panel]");
+  const row = page.locator("[data-buy-modes]");
   const chipBox = await chip.boundingBox();
-  const cashBox = await cash.boundingBox();
-  expect(chipBox.y).toBeGreaterThan(cashBox.y + cashBox.height - 1);
+  const rowBox = await row.boundingBox();
+  expect(chipBox.y).toBeGreaterThan(rowBox.y + rowBox.height - 1);
   const goalId = await chip.getAttribute("data-next-goal");
   await chip.click();
   if (goalId && /^(buy|open|ms|hire)-/.test(goalId)) {
@@ -47,20 +47,36 @@ test("next goal chip sits under cash and jumps to a row", async ({ page }) => {
   expectClean(seen);
 });
 
-test("quick-buy bar sets the same buy mode as BUY AMOUNT", async ({ page }) => {
+test("GAME has no second row of buy-amount buttons; BUY AMOUNT cycles the mode", async ({ page }) => {
   const { save, opts } = midSave({ buyMode: "x1" });
   const seen = await open(page, "/", save, opts);
   await tipsOff(page);
-  const bar = page.locator("[data-buy-bar]");
-  await expect(bar).toBeVisible();
-  await page.locator("[data-buy-bar-mode=x10]").click();
+  await expect(page.locator("[data-buy-bar]")).toHaveCount(0);
+  await page.locator("[data-buy-modes]").click();
   await expect(page.locator("[data-buy-modes]")).toHaveAttribute("data-mode", "x10");
-  await page.locator("[data-buy-modes]").click(); // x10 -> x25
-  await expect(page.locator("[data-buy-modes]")).toHaveAttribute("data-mode", "x25");
-  await expect(page.locator("[data-buy-bar-mode=x10]")).toHaveAttribute("aria-pressed", "false");
-  await page.locator("[data-buy-bar-mode=MAX]").click();
-  await expect(page.locator("[data-buy-modes]")).toHaveAttribute("data-mode", "MAX");
-  await expect(page.locator("[data-buy-bar-mode=MAX]")).toHaveAttribute("aria-pressed", "true");
+  expectClean(seen);
+});
+
+test("the status bar shows cash, income, R&D points, era and month on every screen; no game title", async ({ page }) => {
+  const { save, opts } = midSave({ data: 12.34 });
+  const seen = await open(page, "/", save, opts);
+  await tipsOff(page);
+  await expect(page.getByText("TECH EVOLUTION TYCOON", { exact: true })).toHaveCount(0);
+  for (const path of ["/", "/boost", "/research", "/more"]) {
+    if (path !== "/") await page.goto(path);
+    const bar = page.locator("[data-status-bar]");
+    await expect(bar).toHaveCount(1);
+    await expect(bar.locator("[data-cash]")).toBeVisible();
+    await expect(bar.locator("[data-cash-rate]")).toContainText("/s income");
+    await expect(bar.locator("[data-rd-points]")).toHaveText(/^R&D 1\d\.\d$/);
+    await expect(bar.locator("[data-calendar-month]")).toHaveText(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}$/);
+    // Era on the left, month on the right of the same line.
+    const era = await bar.locator("[data-era-progress]").boundingBox();
+    const month = await bar.locator("[data-calendar-month]").boundingBox();
+    expect(era.x).toBeLessThan(month.x);
+    expect(Math.abs(era.y - month.y)).toBeLessThan(4);
+    expect((await bar.boundingBox()).height).toBeLessThan(70);
+  }
   expectClean(seen);
 });
 
@@ -81,7 +97,7 @@ test("collapse maxed rows, expand on tap, and the Settings toggle", async ({ pag
   await expect(page.locator("[data-row=timber][data-row-collapsed]")).toHaveCount(1);
 
   await page.locator("[data-tab=more]").click();
-  await page.getByRole("button", { name: "SETTINGS" }).click();
+  await page.getByRole("tab", { name: "SETTINGS" }).click();
   const toggle = page.locator("[data-collapse-maxed]");
   await expect(toggle).toContainText("ON");
   await toggle.click();
@@ -91,36 +107,65 @@ test("collapse maxed rows, expand on tap, and the Settings toggle", async ({ pag
   expectClean(seen);
 });
 
-test("R&D sub-tabs and collapsible summaries", async ({ page }) => {
+test("R&D sub-tabs: QUEUE first, and SPECIALTY and LAB PROJECTS each show their own content", async ({ page }) => {
   const { save, opts } = midSave();
   const seen = await open(page, "/research", save, opts);
   await tipsOff(page);
-  await expect(page.locator("[data-rd-tabs]")).toBeVisible();
-  await expect.poll(async () => page.locator("[data-rd-section=specialty]").evaluate((el) => el.open)).toBe(true);
-  await expect.poll(async () => page.locator("[data-rd-section=lab]").evaluate((el) => el.open)).toBe(true);
-  await page.locator("[data-rd-tab=lab]").click();
+  const tabs = page.locator("[data-sub-tabs=rd] [data-sub-tab]");
+  await expect(tabs).toHaveText(["QUEUE", "TECH", "SPECIALTY", "LAB PROJECTS"]);
+  await expect(page.locator("[data-rd-queue]")).toBeVisible();
+  // No R&D points card on the queue page: the points are in the status bar.
+  await expect(page.locator("main")).not.toContainText("R&D POINTS");
+  await page.locator("[data-sub-tab=lab]").click();
   await expect(page).toHaveURL(/#lab/);
-  await expect.poll(async () => page.locator("[data-rd-section=lab]").evaluate((el) => el.open)).toBe(true);
-  await page.locator("[data-rd-toggle=lab]").click();
-  await expect.poll(async () => page.locator("[data-rd-section=lab]").evaluate((el) => el.open)).toBe(false);
-  await expect(page.locator("[data-rd-summary=lab]")).toBeVisible();
+  await expect(page.locator("[data-rd-section=lab] [data-rd-summary=lab]")).toBeVisible();
+  await expect(page.locator("[data-lab]").first()).toBeVisible();
+  await expect(page.locator("[data-action^='commit-'], [data-rd-section=specialty]")).toHaveCount(0);
+  await page.locator("[data-sub-tab=specialty]").click();
+  await expect(page).toHaveURL(/#specialty/);
+  await expect(page.locator("[data-rd-section=specialty] [data-rd-summary=specialty]")).toBeVisible();
+  await expect(page.locator("[data-lab]")).toHaveCount(0);
+  await expect(page.locator("[data-rd-section=specialty]")).toContainText("COMPANY SPECIALTY");
   expectClean(seen);
 });
 
-test("More menu is grouped and still has no Museum tab", async ({ page }) => {
+test("More is trimmed to settings and help; Progress holds runs, badges, museum and stats", async ({ page }) => {
   const { save, opts } = midSave();
   const seen = await open(page, "/more", save, opts);
   await tipsOff(page);
-  const tabs = page.locator("[data-more-tabs]");
-  await expect(tabs.locator("[data-more-group=game]")).toHaveText("GAME");
-  await expect(tabs.locator("[data-more-group=help]")).toHaveText("HELP");
-  await expect(tabs.locator("[data-more-group=settings]")).toHaveText("SETTINGS");
-  await expect(tabs).toContainText("HOW TO PLAY");
-  await expect(tabs).toContainText("STATS");
-  await expect(tabs.locator("[data-more-runs]")).toBeVisible();
-  await expect(tabs).not.toContainText("MUSEUM");
-  await page.getByRole("button", { name: "HOW TO PLAY" }).click();
+  const tabs = page.locator("[data-more-tabs] [data-sub-tab]");
+  await expect(tabs).toHaveCount(2);
+  await expect(page.locator("[data-more-tabs]")).toContainText("SETTINGS");
+  await expect(page.locator("[data-more-tabs]")).toContainText("HOW TO PLAY");
+  await expect(page.locator("[data-more-tabs]")).not.toContainText("STATS");
+  await page.locator("[data-more-tabs] [data-sub-tab='howto']").click();
   await expect(page.locator("[data-howto=navigation]")).toBeVisible();
+  await page.locator("nav[aria-label='Main navigation'] [data-tab='progress']").click();
+  await expect(page).toHaveURL(/\/progress/);
+  for (const id of ["runs", "badges", "museum", "stats"]) {
+    await expect(page.locator(`[data-sub-tabs='progress'] [data-sub-tab='${id}']`)).toBeVisible();
+  }
+  await page.locator("[data-sub-tab='stats']").click();
+  await expect(page).toHaveURL(/#stats/);
+  await page.goto("/more#stats");
+  await expect(page).toHaveURL(/\/progress#stats/);
+  expectClean(seen);
+});
+
+test("bottom bar: GAME, HQ, R&D, BOOST, PROGRESS, MORE (at most 6)", async ({ page }) => {
+  const { save, opts } = midSave();
+  const seen = await open(page, "/", save, opts);
+  await tipsOff(page);
+  const nav = page.locator("nav[aria-label='Main navigation'] [data-tab]");
+  await expect(nav).toHaveCount(6);
+  const ids = await nav.evaluateAll((els) => els.map((el) => el.getAttribute("data-tab")));
+  expect(ids).toEqual(["game", "hq", "research", "boost", "progress", "more"]);
+  await page.goto("/board");
+  await expect(page).toHaveURL(/\/boost#bonuses/);
+  await page.goto("/runs");
+  await expect(page).toHaveURL(/\/progress#runs/);
+  await page.goto("/garage");
+  await expect(page).toHaveURL(/\/facilities\/bench#saved/);
   expectClean(seen);
 });
 
@@ -139,7 +184,7 @@ test("TECH search filters by visible name", async ({ page }) => {
 
 test("Museum search does not leak locked names", async ({ page }) => {
   const { save, opts } = midSave();
-  const seen = await open(page, "/museum", save, opts);
+  const seen = await open(page, "/progress#museum", save, opts);
   await tipsOff(page);
   const box = page.locator("[data-search=museum]");
   await expect(box).toBeVisible();

@@ -40,7 +40,10 @@ function pageKey(pathname, hash) {
   const path = (pathname || "/").replace(/\/+$/, "") || "/";
   if (path === "/") return "game";
   const name = path.slice(1).split("/")[0];
-  if (name === "more") return `more#${(hash || "").replace("#", "") || "settings"}`;
+  const tab = (hash || "").replace("#", "");
+  if (name === "more") return `more#${tab || "settings"}`;
+  if (name === "progress") return `progress#${["badges", "museum", "stats"].includes(tab) ? tab : "runs"}`;
+  if (name === "boost" && ["now", "bonuses", "prestige"].includes(tab)) return `boost#${tab}`;
   return name;
 }
 
@@ -117,7 +120,7 @@ export function TipCard() {
           type="button"
           data-tips-off
           onClick={() => setTipsOff(true)}
-          className="min-h-11 px-1 font-term text-base leading-5 text-[var(--game-muted)] underline"
+          className="min-h-12 px-1 font-term text-base leading-5 text-[var(--game-muted)] underline"
         >
           No more tips
         </button>
@@ -125,7 +128,7 @@ export function TipCard() {
           type="button"
           data-tip-ok
           onClick={() => tipSeen(tip.id)}
-          className="min-h-11 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent-fg)] shadow-[3px_3px_0_0_#000]"
+          className="min-h-12 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent-fg)] shadow-[3px_3px_0_0_#000]"
         >
           GOT IT
         </button>
@@ -289,7 +292,7 @@ function HelpSheet({ id, info, anchor, onClose }) {
             type="button"
             data-help-close
             onClick={onClose}
-            className="min-h-11 min-w-11 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent-fg)] shadow-[3px_3px_0_0_#000]"
+            className="min-h-12 min-w-11 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent-fg)] shadow-[3px_3px_0_0_#000]"
           >
             OK
           </button>
@@ -322,7 +325,7 @@ export function HelpButton({ id, get, label, className = "" }) {
           e.stopPropagation();
           setOpen((v) => !v);
         }}
-        className={`help-btn -my-2.5 inline-flex h-11 w-11 shrink-0 items-center justify-center align-middle text-[var(--game-accent)] ${className}`}
+        className={`help-btn -mx-0.5 -my-3 inline-flex h-12 w-12 shrink-0 items-center justify-center align-middle text-[var(--game-accent)] ${className}`}
       >
         <span aria-hidden="true" className="inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-current font-pixel text-[0.5rem] leading-none">
           ?

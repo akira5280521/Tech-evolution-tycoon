@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import EmptyHint from "./EmptyHint";
+import MuseumIcon from "./MuseumIcon";
 import { partLock } from "@/lib/facilities";
 import { museumRows } from "@/lib/history";
 import {
@@ -21,14 +23,14 @@ import {
 import { readPrefs, writePrefs } from "@/lib/gamePrefs";
 import { useGameState } from "./GameState";
 import ScreenShell from "./chrome";
-import { HUB_ITEMS } from "@/lib/hub";
+import { MUSEUM_TITLE_ICON } from "@/lib/hub";
 import MuseumSection from "./MuseumSection";
 import { SearchBox } from "./SearchBox";
 import { matchesSearch, revealedHaystack } from "@/lib/searchText";
 import RecordsSection from "./RecordsSection";
 
 function chipClass({ on, gold, grey }) {
-  return `relative shrink-0 min-h-11 overflow-visible whitespace-nowrap border-2 px-2 py-1 text-center font-pixel text-[8px] leading-4 shadow-[3px_3px_0_0_#000] ${
+  return `relative shrink-0 min-h-12 overflow-visible whitespace-nowrap border-2 px-2 py-1 text-center font-pixel text-[8px] leading-4 shadow-[3px_3px_0_0_#000] ${
     grey
       ? "border-[var(--game-border)] text-[var(--game-dim)] opacity-60"
       : gold
@@ -119,7 +121,7 @@ export default function MuseumPage({ top = null, backTo } = {}) {
   }, [open, roomId, state, viewed]);
 
   return (
-    <ScreenShell title={"HARDWARE\nMUSEUM"} subtitle="" backTo={backTo} titleIcon={HUB_ITEMS.find((item) => item.id === "museum")?.titleIcon}>
+    <ScreenShell title={"HARDWARE\nMUSEUM"} subtitle="" backTo={backTo} titleIcon={MUSEUM_TITLE_ICON}>
       {top}
       <section data-hw-museum className="space-y-3">
         <div data-museum-decades className="museum-chip-row flex flex-nowrap gap-2 overflow-x-auto pb-1">
@@ -171,9 +173,9 @@ export default function MuseumPage({ top = null, backTo } = {}) {
                     type="button"
                     data-today-item={e.id}
                     onClick={() => visit(e.item)}
-                    className="mt-1 flex w-full min-h-11 items-center gap-2 text-left"
+                    className="mt-1 flex w-full min-h-12 items-center gap-2 text-left"
                   >
-                    <img src={e.item.icon} alt="" className={`h-10 w-10 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain ${e.found ? "" : "museum-sil"}`} />
+                    <MuseumIcon src={e.item.icon} shade={e.found ? "" : "museum-sil"} className="h-10 w-10 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain" />
                     <span className="min-w-0 break-words font-term text-lg leading-6 text-[var(--game-fg)]">
                       {new Date(Date.UTC(2000, e.month - 1, e.day)).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}, {e.year}:{" "}
                       {e.found ? e.text : "a piece you haven't found yet came out"}.
@@ -240,7 +242,7 @@ export default function MuseumPage({ top = null, backTo } = {}) {
                   data-museum-maker
                   value={maker || ""}
                   onChange={(e) => setMaker(e.target.value || null)}
-                  className="min-h-11 min-w-0 flex-1 border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] px-2 font-term text-lg text-[var(--game-fg)]"
+                  className="min-h-12 min-w-0 flex-1 border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] px-2 font-term text-lg text-[var(--game-fg)]"
                 >
                   <option value="">Every maker</option>
                   {filters.makers.map((m) => (
@@ -250,6 +252,11 @@ export default function MuseumPage({ top = null, backTo } = {}) {
               </label>
             )}
             <SearchBox value={query} onChange={setQuery} placeholder="Search museum" testId="museum" />
+            {roomId && !query.trim() && exhibits.length > 0 && exhibits.every((e) => e.status === "locked") && (
+              <EmptyHint id="museum-room" title="NOTHING FOUND HERE YET">
+                Pieces join this room when you research them on R&amp;D &gt; TECH or buy them for a facility. Dark ones are still to find.
+              </EmptyHint>
+            )}
             <div data-museum-grid className="grid grid-cols-4 gap-2 min-[480px]:grid-cols-6">
               {exhibits.map(({ item, status }) => {
                 const locked = status === "locked";
@@ -265,13 +272,13 @@ export default function MuseumPage({ top = null, backTo } = {}) {
                     className={`relative min-w-0 border-2 bg-black p-1 ${locked ? "border-[var(--game-border)]" : status === "owned" ? "border-[#e6c15a]" : "border-[var(--game-border-strong)]"}`}
                   >
                     {fresh ? <span data-new-dot className="museum-new-dot" /> : null}
-                    <img src={item.icon} alt="" className={`aspect-square w-full object-contain ${locked ? "museum-sil" : status === "retired" ? "grayscale" : ""}`} />
+                    <MuseumIcon src={item.icon} shade={locked ? "museum-sil" : status === "owned" || status === "seen" ? "" : "museum-shadow"} className="aspect-square w-full object-contain" />
                     <span className="block font-pixel text-[0.4rem] leading-3 text-[var(--game-muted)]">{locked ? `${Math.floor(item.year / 10) * 10}s` : item.year}</span>
                   </button>
                 );
               })}
             </div>
-            {!exhibits.length && <p className="font-term text-lg text-[var(--game-muted)]">{decade != null ? "Coming soon." : "Nothing here for that filter."}</p>}
+            {!exhibits.length && <p className="font-term text-lg text-[var(--game-muted)]">{decade != null ? "Coming soon." : query.trim() ? "No match. Try a maker, a model or a year, or clear the search." : "Nothing here for that filter. Pick ALL or another maker."}</p>}
           </>
         )}
       </section>
@@ -295,7 +302,7 @@ function ExhibitSheet({ state, id, roomId, onClose }) {
     >
       <div className="hint-sheet-body">
       <div className="flex gap-3">
-        <img src={item.icon} alt="" className={`h-24 w-24 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain ${locked ? "museum-sil" : status === "retired" ? "grayscale" : ""}`} />
+        <MuseumIcon src={item.icon} shade={locked ? "museum-sil" : status === "owned" || status === "seen" ? "" : "museum-shadow"} className="h-24 w-24 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain" />
         <div className="min-w-0">
           <p className={`inline-block border-2 px-1 font-pixel text-[0.45rem] leading-4 ${STATUS_COLOR[status]}`}>{STATUS_LABEL[status]}</p>
           <h2 className="mt-1 break-words font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">{locked ? "???" : item.name}</h2>
@@ -308,7 +315,7 @@ function ExhibitSheet({ state, id, roomId, onClose }) {
       <p className="mt-2 break-words font-term text-lg leading-6 text-[var(--game-fg)]">{locked ? why : item.spec.replace(/^\d{4}: /, "").replace(/^./, (c) => c.toUpperCase())}</p>
       </div>
       <div className="hint-sheet-actions mt-2 flex justify-end">
-        <button type="button" data-exhibit-close onClick={onClose} className="min-h-11 border-2 border-[var(--game-border-strong)] px-3 font-pixel text-[0.5rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]">
+        <button type="button" data-exhibit-close onClick={onClose} className="min-h-12 border-2 border-[var(--game-border-strong)] px-3 font-pixel text-[0.5rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]">
           CLOSE
         </button>
       </div>

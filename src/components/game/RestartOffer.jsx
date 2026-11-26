@@ -42,14 +42,14 @@ export function RestartOfferGate({ game }) {
           )}
         </div>
         <div className="space-y-2 border-t-2 border-[var(--game-border-strong)] p-3">
-          <button type="button" data-restart-keep onClick={keep} className="min-h-11 w-full border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-2 font-pixel text-[0.55rem] text-black">
+          <button type="button" data-restart-keep onClick={keep} className="min-h-12 w-full border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-2 font-pixel text-[0.55rem] text-black">
             KEEP PLAYING
           </button>
           <button
             type="button"
             data-restart-fresh
             onClick={confirm ? fresh : () => setConfirm(true)}
-            className="min-h-11 w-full border-2 border-[var(--game-danger)] px-2 font-pixel text-[0.55rem] text-[var(--game-danger)]"
+            className="min-h-12 w-full border-2 border-[var(--game-danger)] px-2 font-pixel text-[0.55rem] text-[var(--game-danger)]"
           >
             {confirm ? "YES, ERASE AND START FRESH" : "START FRESH"}
           </button>

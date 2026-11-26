@@ -64,8 +64,8 @@ export default function RigsGarage() {
     : !benchHasParts(onBench)
       ? "Build a PC on the Bench first."
       : builds.length >= RIGS_CAP
-        ? `Garage is full (${RIGS_CAP}). Delete a rig to save another.`
-        : "Stores a copy of the current build in this garage.";
+        ? `SAVED BUILDS is full (${RIGS_CAP}). Delete one to save another.`
+        : "Stores a copy of the current build in SAVED BUILDS.";
 
   const onSave = () => {
     saveBenchRig?.();
@@ -116,7 +116,7 @@ export default function RigsGarage() {
                     type="button"
                     data-rigs-delete={build.id}
                     onClick={() => onDelete(build.id, build.name)}
-                    className="inline-flex min-h-11 shrink-0 self-center items-center border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-2 font-pixel text-[0.5rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]"
+                    className="inline-flex min-h-12 shrink-0 self-center items-center border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-2 font-pixel text-[0.5rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]"
                   >
                     DELETE
                   </button>

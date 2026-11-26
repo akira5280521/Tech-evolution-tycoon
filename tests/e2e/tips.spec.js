@@ -61,6 +61,8 @@ for (const [path, want] of [
   ["/board", "page-board"],
   ["/runs", "page-runs"],
   ["/research", "page-research"],
+  ["/rigs", "page-hq"],
+  ["/boost#prestige", "page-prestige"],
 ]) {
   test(`${path} shows its page tip`, async ({ page }) => {
     await open(page, path, "mid");

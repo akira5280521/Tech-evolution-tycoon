@@ -3,13 +3,14 @@
 // singularity. Every Empire Bonuses source multiplies, then a soft ceiling
 // that rises with singularity points keeps the product finite.
 
-import { blankFacilities, facilityReport, noteFacilityNews, plantsHaveParts, readFacilities, recentNews } from "./facilities.js";
+import { blankFacilities, facilityReport, noteFacilityNews, plantsHaveParts, readFacilities, recentNews, settleStages } from "./facilities.js";
 import { advanceResearch, awayBankCap } from "./research.js";
 import { generationPayMult } from "./generations.js";
 import { anniversaryMult } from "./anniversaries.js";
 import { blankTutorial } from "./tutorial.js";
 import { ROOMS, exhibitStatus, roomComplete } from "./museum.js";
 import { readRigs } from "./rigs.js";
+import { settleLadder } from "./ladder.js";
 import { noteContractProgress } from "./contracts.js";
 import { COMPUTE_RECORDS, computePower, flopsLabel, moorePoints } from "./compute.js";
 import {
@@ -455,8 +456,21 @@ export const LAB_PROJECTS = [
   { id: "cleanroom", name: "CLEAN ROOM", cost: LAB_CLEAN.cost, materials: LAB_CLEAN.materials, blurb: "Line a clean room with 100 polysilicon: TECH research runs 25% faster for 15 minutes." },
 ];
 
+// Away shifts (T4 item 42): Lab Projects, bought with R&D points in their
+// era, that each add hours to how long time away pays for. Earned, never paid.
+export const AWAY_SHIFTS = [
+  { id: "pager", name: "ON-CALL PAGER", year: 1959, cost: 20, hours: 4, blurb: "Someone can be reached overnight: time away pays for 4 more hours." },
+  { id: "operator", name: "NIGHT OPERATOR", year: 1968, cost: 90, hours: 4, blurb: "A night-shift operator keeps the machines fed: 4 more hours away." },
+  { id: "remote", name: "REMOTE MONITORING", year: 1992, cost: 450, hours: 4, blurb: "Dial in and check the plant from home: 4 more hours away." },
+];
+
+export function awayShifts(state) {
+  const n = Math.floor(Number(state?.lab?.awayShifts) || 0);
+  return Math.max(0, Math.min(AWAY_SHIFTS.length, n));
+}
+
 export function blankLab() {
-  return { overclockUntil: 0, coolUntil: 0, patentDay: null, patents: 0, crew: false, fabDay: null, fabs: 0, cleanUntil: 0 };
+  return { overclockUntil: 0, coolUntil: 0, patentDay: null, patents: 0, crew: false, fabDay: null, fabs: 0, cleanUntil: 0, queueSlots: 0, awayShifts: 0, fieldEngineers: false, stagesSeen: [] };
 }
 
 export function cleanLab(raw, now = Date.now()) {
@@ -476,6 +490,14 @@ export function cleanLab(raw, now = Date.now()) {
     fabDay,
     fabs: Math.min(LAB_FAB.perDay, Math.floor(n(l.fabs))),
     cleanUntil: Math.min(n(l.cleanUntil), now + LAB_CLEAN.ms),
+    // Research queue slots earned (0-4), kept for good like the crew.
+    queueSlots: Math.min(4, Math.floor(n(l.queueSlots))),
+    // Away shifts earned (0-3), kept for good. Older saves have none.
+    awayShifts: Math.min(AWAY_SHIFTS.length, Math.floor(n(l.awayShifts))),
+    // Field engineers (T5 item 61), kept for good. Older saves have none.
+    fieldEngineers: !!l.fieldEngineers,
+    // Staged jobs done before (career): a repeat takes half as long.
+    stagesSeen: Array.isArray(l.stagesSeen) ? l.stagesSeen.filter((k) => typeof k === "string").slice(-400) : [],
   };
 }
 
@@ -604,6 +626,7 @@ export function blankMeta() {
     techDone: [],
     techJob: null,
     techJob2: null,
+    techQueue: [],
     goalsDone: [],
     boughtX10: false,
     hubSeen: false,
@@ -1288,6 +1311,10 @@ export function buyUpgrade(state, index, kind, now = Date.now()) {
 export function finishTimedWork(state, now) {
   const notes = [];
   if (!Number.isFinite(now) || now < 1e11) return notes;
+  // Servers coming online, rooms being built, the bench PC being set up.
+  notes.push(...settleStages(state, now));
+  // Mid-game ladder rungs (T5 item 43).
+  for (const rung of settleLadder(state)) notes.push({ type: "ladder", id: rung.id, title: rung.title, tokens: rung.tokens });
   const research = timedJob(state.researchJob);
   state.researchJob = research;
   if (research && jobDone(research, now)) {
@@ -1802,9 +1829,9 @@ export function nextInvestorMilestone(state) {
 
 // How long time away can pay for.
 export function offlineCapMs(state) {
-  if (hasPerk(state, "away-48")) return 48 * 3600e3;
-  if (hasPerk(state, "away-36")) return 36 * 3600e3;
-  return OFFLINE_CAP_MS;
+  const base = hasPerk(state, "away-48") ? 48 * 3600e3 : hasPerk(state, "away-36") ? 36 * 3600e3 : OFFLINE_CAP_MS;
+  const extra = AWAY_SHIFTS.slice(0, awayShifts(state)).reduce((sum, s) => sum + s.hours * 3600e3, 0);
+  return base + extra;
 }
 
 // Lifetime "Managers hired" must be at least how many are hired right now.
@@ -1882,6 +1909,7 @@ export function snapshotMeta(state, options = {}) {
     techDone: [...(state.techDone || [])],
     techJob: state.techJob ? { ...state.techJob } : null,
     techJob2: state.techJob2 ? { ...state.techJob2 } : null,
+    techQueue: [...(state.techQueue || [])],
     news: Array.isArray(state.news) ? state.news.slice(-40) : [],
     specialties: [...(state.specialties || [])],
     upgrades: resetRunUpgrades ? {} : JSON.parse(JSON.stringify(state.upgrades || {})),

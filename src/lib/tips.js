@@ -10,7 +10,7 @@ import { BUSINESSES, FOREMAN_COST, investorsFor, managerNeed, shortMaterial } fr
 import { forkCost, managerPrice, singularityMult, upgradeOffer, upgradesOf } from "./empire.js";
 import { currentCoach, tutorialActive } from "./tutorial.js";
 import { facilitiesOpen, facilityUnlocked } from "./facilities.js";
-import { serverOutput } from "./research.js";
+import { queueSlots, serverOutput } from "./research.js";
 import { HUB_LABEL } from "./hub.js";
 
 const maxOwned = (s) => Math.max(0, ...(s?.biz || []).map((b) => b?.owned || 0));
@@ -40,7 +40,8 @@ function forkReady(s) {
   return (s.investors || 0) >= forkCost(pts) && singularityMult(pts + 1) > singularityMult(pts);
 }
 
-// page: "game", "boost", "board", "runs", "research" or "more#<section>".
+// page: "game", "boost", "boost#<tab>", "progress#<tab>", "research",
+// "facilities", "rigs" (HQ) or "more#<section>".
 // target: optional CSS selector to outline while the tip is up.
 // when: checked against the live game state; omitted means "on first visit".
 export const TIPS = [
@@ -57,16 +58,16 @@ export const TIPS = [
     id: "prestige",
     page: "game",
     title: "YOU CAN PRESTIGE",
-    text: "You can now recruit investors. A prestige starts you over: it wipes your businesses, cash and upgrades, but every investor makes everything earn more, forever. Your next run goes much faster. Waiting a bit longer gets you more investors.",
-    target: '[data-prestige="recruit"]',
+    text: "You can now recruit investors. A prestige starts you over: it wipes your businesses, cash and upgrades, but every investor makes everything earn more, forever. Your next run goes much faster. Waiting a bit longer gets you more investors. It's in BOOST > PRESTIGE.",
+    target: '[data-tab="boost"]',
     when: (s) => !s.challenge && !s.prestiged && investorsFor(s.lifetime) >= 1,
   },
   {
     id: "fork",
     page: "game",
     title: "A BIGGER RESET",
-    text: "You have enough investors to fork the timeline on the BOARD tab. It's like a prestige, but it spends investors to give you a big multiplier that you keep forever, and opens another research slot.",
-    target: '[data-tab="board"]',
+    text: "You have enough investors to fork the timeline in BOOST > BONUSES. It's like a prestige, but it spends investors to give you a big multiplier that you keep forever, and opens another research slot.",
+    target: '[data-tab="boost"]',
     when: (s) => !s.challenge && forkReady(s),
   },
   {
@@ -89,8 +90,8 @@ export const TIPS = [
     id: "foreman",
     page: "game",
     title: "HIRE THE FOREMAN",
-    text: "You can afford the Foreman. He adds a RUN ALL button that starts every business at once, so you don't have to tap each one.",
-    target: "[data-buy-foreman]",
+    text: "You can afford the Foreman, a perk in BOOST > UPGRADES. He adds a RUN ALL button that starts every business at once, so you don't have to tap each one.",
+    target: '[data-tab="boost"]',
     when: (s) => !s.foreman && s.cash >= FOREMAN_COST,
   },
   {
@@ -121,8 +122,8 @@ export const TIPS = [
     id: "tokens",
     page: "game",
     title: "ERA TOKENS",
-    text: "You earned era tokens. You get them for new eras, milestones and finished projects. Spend them in the shop on the BOARD tab. The Daily Crate there is free once a day.",
-    target: '[data-tab="board"]',
+    text: "You earned era tokens. You get them for new eras, milestones and finished projects. Spend them in the shop in BOOST > BONUSES. The Daily Crate there is free once a day.",
+    target: '[data-tab="boost"]',
     when: (s) => (s.tokens || 0) >= 1,
   },
   {
@@ -137,15 +138,15 @@ export const TIPS = [
     id: "tech",
     page: "game",
     title: "THE TECH TIMELINE",
-    text: "TECH lists real inventions to research with R&D points. One runs at a time, on a timer that keeps going while the app is closed. \"Requires 1985\" means your company hasn't reached that year yet. \"Research X first\" means finish the one before it.",
-    target: "[data-open-research]",
+    text: "R&D > TECH lists real inventions to research with R&D points. One runs at a time, on a timer that keeps going while the app is closed. \"Requires 1985\" means your company hasn't reached that year yet. \"Research X first\" means finish the one before it.",
+    target: '[data-tab="research"]',
     when: (s) => (s.data || 0) >= 1,
   },
   {
     id: "servers",
     page: "game",
     title: "RESEARCH SERVERS",
-    text: `Tap ${HUB_LABEL} (beside TECH), then RESEARCH SERVERS, for the punch-card machine and later research servers. Buy a machine, then give it power and cooling.`,
+    text: `Tap ${HUB_LABEL} (beside BUY AMOUNT), then RESEARCH SERVERS, for the punch-card machine and later research servers. Buy a machine, then give it power and cooling.`,
     target: '[data-open-facilities]',
     when: (s) => facilityUnlocked(s, "servers"),
   },
@@ -161,8 +162,8 @@ export const TIPS = [
     id: "challenges",
     page: "game",
     title: "CHALLENGES",
-    text: "Tap RUNS for an optional challenge, one run with special rules. Win it for +10% income forever.",
-    target: '[data-tab="runs"]',
+    text: "Tap PROGRESS, then RUNS, for an optional challenge, one run with special rules. Win it for +10% income forever.",
+    target: '[data-tab="progress"]',
     when: (s) => !!s.prestiged,
   },
   {
@@ -179,31 +180,52 @@ export const TIPS = [
     id: "page-boost",
     page: "boost",
     title: "UPGRADES",
-    text: "Each business has two upgrades. One pays 3 times as much, one runs twice as fast. They cost cash.",
+    text: "Each business has two upgrades. One pays 3 times as much, one runs twice as fast. They cost cash. The Foreman perk is at the top. NOW shows boosts on a timer, BONUSES what you keep for good, PRESTIGE starting over for investors.",
   },
   {
     id: "page-board",
-    page: "board",
+    page: "boost#bonuses",
     title: "YOUR BONUSES",
     text: "This adds up what boosts your income. Tap a ? for any word. The token shop is further down.",
   },
   {
     id: "page-runs",
-    page: "runs",
+    page: "progress#runs",
     title: "CHALLENGES & PROJECTS",
     text: "A challenge is one optional run with special rules. Mega-projects finish on their own when you reach their goal. Both pay a bonus you keep.",
   },
   {
+    id: "queue-slot",
+    page: "research",
+    title: "RESEARCH QUEUE",
+    text: "Your first queue slot is open. On TECH, tap ADD TO QUEUE on a project while another runs: it waits here and starts by itself when the lab is free.",
+    target: "[data-queue-slot='1']",
+    when: (s) => queueSlots(s) >= 1,
+  },
+  {
     id: "page-research",
     page: "research",
-    title: "RESEARCH",
-    text: "Spend R&D points on one bonus you keep. You start with one slot. Spare points go to the lab projects below.",
+    title: "R&D",
+    text: "QUEUE shows what is being researched and what waits next. TECH holds the whole timeline, SPECIALTY a bonus you keep, and LAB PROJECTS ways to spend spare points.",
   },
   {
     id: "page-tech",
-    page: "tech",
+    page: "research",
+    when: (s) => (s.tutorial?.opened || []).includes("tech"),
     title: "RESEARCH, ONE AT A TIME",
     text: "Pick a project and tap START. It costs R&D points and finishes on its own, even with the app closed. More servers make the timer run faster. Processor and graphics projects unlock the next chip generation's pay.",
+  },
+  {
+    id: "page-hq",
+    page: "rigs",
+    title: "HQ",
+    text: "Your company, floor by floor. Each card is a department; tap a room to go there. A red dot means something is ready; grey rooms aren't open yet. The HQ link at the top of every menu brings you back.",
+  },
+  {
+    id: "page-prestige",
+    page: "boost#prestige",
+    title: "PRESTIGE",
+    text: "Prestige starts your run over for investors, and every investor makes everything earn more, forever. The guide says when it would at least double them.",
   },
   {
     id: "page-facilities",
@@ -213,13 +235,13 @@ export const TIPS = [
   },
   {
     id: "page-badges",
-    page: "more#badges",
+    page: "progress#badges",
     title: "BADGES",
-    text: "Badges are goals to aim for. History cards are in the Hardware Museum, in HQ.",
+    text: "Badges are goals to aim for. History cards are in the MUSEUM tab, right here in PROGRESS.",
   },
   {
     id: "page-museum",
-    page: "museum",
+    page: "progress#museum",
     title: "THE MUSEUM",
     text: "Every piece of hardware in the game, room by room. Tap one to read about it; dark ones are still to find. Finish a room for its badge.",
   },
@@ -227,7 +249,7 @@ export const TIPS = [
     id: "page-more",
     page: "more#settings",
     title: "MORE",
-    text: "Change sound and text size here. How to Play explains any word. The Hardware Museum is in HQ.",
+    text: "Change sound and text size here. How to Play explains any word. Stats, badges and the Hardware Museum are in PROGRESS.",
   },
 ];
 

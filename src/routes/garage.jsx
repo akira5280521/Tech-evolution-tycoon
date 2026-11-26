@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import RigsGarage from "@/components/game/RigsGarage";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
+// Rigs moved into the PC Build Bench as its SAVED BUILDS tab (T3 item 27).
 export const Route = createFileRoute("/garage")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Rigs — Tech Evolution Tycoon" }] }),
-  component: RigsGarage,
+  beforeLoad: () => {
+    throw redirect({ to: "/facilities/$facilityId", params: { facilityId: "bench" }, hash: "saved", replace: true });
+  },
 });

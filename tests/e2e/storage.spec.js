@@ -46,6 +46,9 @@ test("selling and swapping from the material sheet", async ({ page }) => {
   await tipsOff(page);
   await page.locator("[data-material='copper']").click();
   await page.locator("[data-sell='copper']").click();
+  // Selling asks once (T4 item 37).
+  await expect(page.locator("[data-sell='copper']")).toHaveAttribute("data-sell-armed", "yes");
+  await page.locator("[data-sell='copper']").click();
   await expect.poll(async () => (await saved(page))?.supply?.copper ?? 999).toBe(400);
   await page.locator("[data-swap-target]").selectOption("sand");
   await page.locator("[data-swap='copper']").click();
@@ -78,3 +81,26 @@ test("the material sheet keeps CLOSE and BINS above the tab bar", async ({ page 
   expectClean(seen);
 });
 
+
+test("the materials panel keeps its size when bins fill up (one fixed slot per material)", async ({ page }) => {
+  const measure = async (pg) => {
+    const grid = pg.locator("[data-supply-grid]");
+    await expect(grid).toBeVisible();
+    const sizes = await grid.locator("[data-material]").evaluateAll((els) => els.map((el) => `${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`));
+    const box = await grid.boundingBox();
+    return { sizes, w: Math.round(box.width), h: Math.round(box.height), full: await grid.locator("[data-full='yes']").count() };
+  };
+  const empty = { ...SAVES.mid, supply: {} };
+  let seen = await open(page, "/", empty);
+  const a = await measure(page);
+  expect(new Set(a.sizes).size).toBe(1);
+  expectClean(seen);
+  const page2 = await page.context().newPage();
+  const keys = Object.keys(SAVES.mid.supply || { wood: 1, paper: 1, sand: 1 });
+  seen = await open(page2, "/", { ...SAVES.mid, supply: Object.fromEntries(["wood", "paper", "sand", "copper", "glass", ...keys].map((k) => [k, 1e15])) });
+  const b = await measure(page2);
+  expect(b.full).toBeGreaterThan(0);
+  expect(b.sizes).toEqual(a.sizes);
+  expect([b.w, b.h]).toEqual([a.w, a.h]);
+  expectClean(seen);
+});

@@ -13,6 +13,7 @@ import {
   eraCanOpen,
   eraNeeds,
   eraOpen,
+  finishEraBuild,
   frontierEra,
   openEra,
   shortMaterial,
@@ -107,7 +108,7 @@ function tryServerRd(state, now) {
   for (const part of parts) {
     const cost = partCost(part, counts[part.id] || 0);
     if (!(cost > 0) || cost > budget) continue;
-    if (purchasePart(state, "servers", part.id).ok) return true;
+    if (purchasePart(state, "servers", part.id, now).ok) return true;
   }
   return false;
 }
@@ -246,7 +247,7 @@ export function act(state, now) {
 
   const front = frontierEra(state);
   if (front > 0) {
-    if (eraCanOpen(state, front) && openEra(state, front)) return true;
+    if (eraCanOpen(state, front) && openEra(state, front, now)) return true;
     const prev = front - 1;
     const have = state.biz[prev]?.owned || 0;
     if (have < ERA_GATE && eraOpen(state, prev) && buyMax(state, prev, now)) return true;
@@ -291,6 +292,10 @@ function applyAct(state, now, result) {
 
 function advance(state, elapsed, end, rate, active) {
   finishTimedWork(state, end);
+  // The OPEN ERA set-up bar is finished by the game's tick (useGame), not by
+  // finishTimedWork, so the sim has to finish it too. Without this the sim's
+  // first run never opened Mainframes (T5 item 29).
+  finishEraBuild(state, end);
   const slices = elapsed <= 2 * 60 * 1000 ? Math.max(12, Math.ceil(elapsed / 2000)) : undefined;
   const opts = active ? { alsoManual: true, slices } : { slices };
   replayAway(state, elapsed, end, rate, opts);

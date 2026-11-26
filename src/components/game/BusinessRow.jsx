@@ -1,4 +1,6 @@
 import { Fragment, memo, useEffect, useRef, useState } from "react";
+import { fullMoney } from "@/lib/fullNumber";
+import { formatLeft, stageAt } from "@/lib/stages";
 import {
   BUSINESSES,
   COMMISSION_MS,
@@ -161,7 +163,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
         data-manager-off={st.manager && st.managerOff ? "1" : undefined}
         aria-expanded="false"
         onClick={() => onToggleCollapse?.()}
-        className="flex min-h-11 w-full items-center gap-2 border-2 border-[var(--game-border)] bg-[var(--game-card)] px-2 py-1 text-left shadow-[3px_3px_0_0_#000]"
+        className="flex min-h-12 w-full items-center gap-2 border-2 border-[var(--game-border)] bg-[var(--game-card)] px-2 py-1 text-left shadow-[3px_3px_0_0_#000]"
       >
         <img src={cfg.icon} alt="" width={16} height={16} className="pixel-art box-content h-8 w-8 shrink-0 border-2 border-[var(--game-border)] bg-[var(--game-bg)]" />
         <span className="min-w-0 flex-1 truncate font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)]">{shownName}</span>
@@ -208,7 +210,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
             type="button"
             data-row-collapse
             onClick={() => onToggleCollapse?.()}
-            className="min-h-11 shrink-0 px-1 font-pixel text-[0.45rem] leading-4 text-[var(--game-muted)] underline"
+            className="min-h-12 shrink-0 px-1 font-pixel text-[0.45rem] leading-4 text-[var(--game-muted)] underline"
           >
             COLLAPSE
           </button>
@@ -217,8 +219,8 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
         {!compact && <p className="font-term text-base leading-5 text-[var(--game-muted)]">{shownTag}</p>}
         {commissioning ? (
           <>
-            <p className="font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">BRINGING THE LINE ONLINE</p>
-            <ProgressTrack cycleMs={COMMISSION_MS} cycleStart={(st.commissionUntil || 0) - COMMISSION_MS} progress={0} active loop={false} />
+            <OpeningLabel st={st} />
+            <ProgressTrack cycleMs={st.commissionMs || COMMISSION_MS} cycleStart={(st.commissionUntil || 0) - (st.commissionMs || COMMISSION_MS)} progress={0} active loop={false} />
           </>
         ) : (
           <ProgressTrack
@@ -283,7 +285,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
                 type="button"
                 data-needs={key}
                 onClick={() => onNeed(key)}
-                className="min-h-[44px] border-2 border-[var(--game-danger)] bg-[var(--game-panel)] px-2 font-pixel text-[0.5rem] leading-4 text-[var(--game-danger)] shadow-[2px_2px_0_0_#000]"
+                className="min-h-12 border-2 border-[var(--game-danger)] bg-[var(--game-panel)] px-2 font-pixel text-[0.5rem] leading-4 text-[var(--game-danger)] shadow-[2px_2px_0_0_#000]"
               >
                 Needs {key} &gt;
               </button>
@@ -319,14 +321,14 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
           disabled={!canBuy}
           aria-label={`Buy ${cfg.name}`}
           data-buy={cfg.id}
-          className={`min-h-[44px] flex-1 select-none border-2 px-2 py-2 text-center shadow-[3px_3px_0_0_#000] sm:w-full ${
+          className={`min-h-12 flex-1 select-none border-2 px-2 py-2 text-center shadow-[3px_3px_0_0_#000] sm:w-full ${
             canBuy
               ? "border-[var(--game-accent)] bg-[var(--game-accent)] text-[var(--game-accent-fg)] hover:bg-[var(--game-accent-hover)]"
               : "cursor-not-allowed border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-dim)]"
           }`}
         >
           <span className="font-pixel text-sm uppercase leading-5">Buy ×{count}</span>
-          <span className="mt-1 block font-term text-lg leading-5">{money(cost)}</span>
+          <span data-exact={fullMoney(cost)} className="mt-1 block font-term text-lg leading-5">{money(cost)}</span>
           {!canBuy && Number.isFinite(cost) && (
             <span data-need className="block font-term text-sm leading-4">need {money(cost - cash)} more</span>
           )}
@@ -342,7 +344,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
             aria-label={`${cfg.managerName}: ${managed ? "on, tap to pause" : "off, tap to switch on"}`}
             data-manager-toggle={cfg.id}
             data-on={managed ? "1" : "0"}
-            className={`min-h-[44px] min-w-0 flex-1 select-none border-2 px-2 py-2 text-center font-term text-base leading-5 shadow-[3px_3px_0_0_#000] sm:w-full ${
+            className={`min-h-12 min-w-0 flex-1 select-none border-2 px-2 py-2 text-center font-term text-base leading-5 shadow-[3px_3px_0_0_#000] sm:w-full ${
               managed
                 ? "border-[var(--game-success-border)] bg-[var(--game-success-bg)] text-[var(--game-success)]"
                 : "border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-dim)]"
@@ -359,7 +361,7 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
             aria-label={`Hire ${cfg.managerName}`}
             data-hire={cfg.id}
             data-hire-blocked={!hireLocked && !affordable ? cfg.id : undefined}
-            className={`min-h-[44px] flex-1 select-none border-2 px-2 py-2 text-center font-term text-base leading-5 shadow-[3px_3px_0_0_#000] sm:w-full ${
+            className={`min-h-12 flex-1 select-none border-2 px-2 py-2 text-center font-term text-base leading-5 shadow-[3px_3px_0_0_#000] sm:w-full ${
               canHire
                 ? "border-[var(--game-success-border)] bg-[var(--game-success-panel)] text-[var(--game-success)] hover:bg-[var(--game-success-bg-hover)]"
                 : "cursor-not-allowed border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-dim)]"
@@ -409,3 +411,16 @@ function arePropsEqual(prev, next) {
 }
 
 export default memo(BusinessRow, arePropsEqual);
+
+// The first opening's stage (T5 item 62): hiring, stocking, grand opening.
+function OpeningLabel({ st }) {
+  const ms = st.commissionMs || COMMISSION_MS;
+  const now = Date.now();
+  const at = stageAt({ set: "opening", startedAt: (st.commissionUntil || 0) - ms, readyAt: st.commissionUntil || 0 }, now);
+  return (
+    <p data-opening-stage={at.stage} className="flex justify-between gap-2 font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">
+      <span>{at.label.toUpperCase()}</span>
+      <span className="tabular-nums">{formatLeft(at.leftMs)}</span>
+    </p>
+  );
+}

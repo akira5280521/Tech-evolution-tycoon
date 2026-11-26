@@ -35,20 +35,24 @@ const earlySave = (throughId = "glass") => {
   };
 };
 
-test("an early save opens TECH from the top bar and shows year-locked hardware", async ({ page }) => {
+test("an early save opens R&D > TECH from the bar and shows year-locked hardware", async ({ page }) => {
   const seen = await open(page, "/", earlySave("glass"));
   await tipsOff(page);
-  const tech = page.locator("[data-open-research]");
-  await expect(tech).toHaveText("TECH");
-  await expect(tech).not.toHaveAttribute("data-locked", "");
-  await tech.click();
-  await expect(page).toHaveURL(/\/tech/);
+  // No TECH button on GAME any more: R&D in the bottom bar, then TECH.
+  await expect(page.locator("[data-open-research]")).toHaveCount(0);
+  await page.locator("[data-tab='research']").click();
+  await page.locator("[data-sub-tab='tech']").click();
+  await expect(page).toHaveURL(/\/research#tech/);
+  await page.locator("[data-tech-section='home']").click();
   await expect(page.locator("[data-research-tab='cpu']")).toBeVisible();
   await expect(page.locator("[data-research-tab='gpu']")).toBeVisible();
   await expect(page.locator("[data-research-tab='memory']")).toBeVisible();
   await expect(page.locator("[data-research-tab='storage']")).toBeVisible();
+  // The Hollerith tabulator goes in the server room.
+  await page.locator("[data-tech-section='room']").click();
   await page.locator("[data-research-tab='storage']").click();
   await expect(page.locator("[data-research-item='tab-hollerith']")).toBeVisible();
+  await expect(page.locator("[data-research-item='tab-hollerith'] [data-research-where]")).toHaveText("USED IN: SERVER ROOM");
   await expect(page.locator("[data-research-item='tab-hollerith']")).toContainText("Hollerith");
   // 1956 is a later era: the card is ???, not a named "Requires 1956" row.
   await expect(page.locator("[data-research-item='store-hdd']")).toHaveCount(0);

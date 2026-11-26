@@ -18,13 +18,16 @@ test("first prestige: guide, report, then challenges open", async ({ page }) => 
   await expect(page.locator("[data-challenges-locked]")).toHaveCount(1);
   await expect(page.getByText("AFTER FIRST PRESTIGE")).toHaveCount(3);
 
-  await page.goto("/");
+  await page.goto("/boost#prestige");
   const guide = page.locator("[data-prestige-guide]");
   await expect(guide).toHaveAttribute("data-prestige-guide", "good");
   await expect(guide).toContainText(/×[\d.]+ now → ×[\d.]+ after/);
   await expect(page.locator('[data-prestige-ready="yes"]')).toHaveCount(1);
 
   await page.click('[data-prestige="recruit"]');
+  // Prestige asks once (T4 item 37).
+  await expect(page.locator("[data-prestige-report]")).toHaveCount(0);
+  await page.click("[data-prestige-go]");
   await expect(page.locator("[data-prestige-report]")).toBeVisible();
   expect(dialogs[0]).toContain("Income: ×");
   await expect(page.locator("[data-prestige-report]")).toContainText("YOU KEPT");
@@ -43,7 +46,7 @@ test("first prestige: guide, report, then challenges open", async ({ page }) => 
 });
 
 test("with 30 investors, 2 more says wait", async ({ page }) => {
-  await open(page, "/", save({ investors: 30, prestiged: true }));
+  await open(page, "/boost#prestige", save({ investors: 30, prestiged: true }));
   await expect(page.locator("[data-prestige-guide]")).toHaveAttribute("data-prestige-guide", "wait");
   await expect(page.locator('[data-prestige-ready="yes"]')).toHaveCount(0);
 });

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useArm } from "./useArm";
 import { MARKET_LOT, STORAGE_STEP, SWAP_FEE, materialPrice, refineAmount, refiningOpen, storageCost, storageLevel, supplyCap, swapQuote } from "@/lib/empire";
 import { REFINED, REFINE_MS, REFINE_RATIO, SUPPLY_KEYS, fmt, money } from "@/lib/gameConfig";
 
@@ -57,7 +58,7 @@ export default function StorageSheet({ state, materialKey, onUpgrade, onRefine, 
             data-storage-upgrade
             disabled={!afford}
             onClick={() => onUpgrade(materialKey)}
-            className="min-h-11 border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000] disabled:border-[var(--game-border)] disabled:text-[var(--game-dim)]"
+            className="min-h-12 border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000] disabled:border-[var(--game-border)] disabled:text-[var(--game-dim)]"
           >
             BINS ×{STORAGE_STEP} · {money(cost)}
             <span className="block font-term text-base leading-5">holds {amount(nextCap)}</span>
@@ -65,7 +66,7 @@ export default function StorageSheet({ state, materialKey, onUpgrade, onRefine, 
         ) : (
           <span className="font-pixel text-[0.45rem] text-[var(--game-muted)]">LARGEST BINS</span>
         )}
-        <button type="button" data-storage-close onClick={onClose} className="min-h-11 border-2 border-[var(--game-border-strong)] px-3 font-pixel text-[0.5rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]">
+        <button type="button" data-storage-close onClick={onClose} className="min-h-12 border-2 border-[var(--game-border-strong)] px-3 font-pixel text-[0.5rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]">
           CLOSE
         </button>
       </div>
@@ -95,7 +96,7 @@ function RefinePanel({ state, grade, onRefine }) {
           data-refine-start={grade}
           disabled={!(can > 0)}
           onClick={() => onRefine?.(grade)}
-          className="mt-1 min-h-11 w-full border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000] disabled:border-[var(--game-border)] disabled:text-[var(--game-dim)]"
+          className="mt-1 min-h-12 w-full border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000] disabled:border-[var(--game-border)] disabled:text-[var(--game-dim)]"
         >
           {can > 0 ? `REFINE ${can} · ${Math.round(REFINE_MS / 1000)}s` : `NEED ${REFINE_RATIO} ${spec.from.toUpperCase()} PER UNIT`}
           <span className="block font-term text-base leading-5">uses {(can * REFINE_RATIO).toLocaleString("en-US")} {spec.from}</span>
@@ -107,6 +108,7 @@ function RefinePanel({ state, grade, onRefine }) {
 
 // Sell spare stock for a little cash, or swap it for another material.
 function MarketPanel({ state, materialKey, shown, onSell, onSwap }) {
+  const [armed, arm, disarm] = useArm();
   const others = shown.filter((k) => k !== materialKey);
   const [target, setTarget] = useState(others[0] || null);
   const now = Date.now();
@@ -123,11 +125,16 @@ function MarketPanel({ state, materialKey, shown, onSell, onSwap }) {
       <button
         type="button"
         data-sell={materialKey}
+        data-sell-armed={armed ? "yes" : "no"}
         disabled={!(lot > 0)}
-        onClick={() => onSell?.(materialKey, MARKET_LOT)}
-        className="mt-1 min-h-11 w-full border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000] disabled:border-[var(--game-border)] disabled:text-[var(--game-dim)]"
+        onClick={() => {
+          if (!armed) return arm();
+          disarm();
+          onSell?.(materialKey, MARKET_LOT);
+        }}
+        className="mt-1 min-h-12 w-full border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000] disabled:border-[var(--game-border)] disabled:text-[var(--game-dim)]"
       >
-        SELL {lot} · {money(lot * price)}
+        {armed ? `TAP AGAIN TO SELL ${lot} · ${money(lot * price)}` : `SELL ${lot} · ${money(lot * price)}`}
       </button>
       {others.length > 0 && (
         <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -137,7 +144,7 @@ function MarketPanel({ state, materialKey, shown, onSell, onSwap }) {
               data-swap-target
               value={target || ""}
               onChange={(e) => setTarget(e.target.value)}
-              className="min-h-11 min-w-0 flex-1 border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] px-2 font-term text-lg text-[var(--game-fg)]"
+              className="min-h-12 min-w-0 flex-1 border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] px-2 font-term text-lg text-[var(--game-fg)]"
             >
               {others.map((k) => (
                 <option key={k} value={k}>
@@ -151,7 +158,7 @@ function MarketPanel({ state, materialKey, shown, onSell, onSwap }) {
             data-swap={materialKey}
             disabled={!(quote.get > 0)}
             onClick={() => onSwap?.(materialKey, target, MARKET_LOT)}
-            className="min-h-11 w-full border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000] disabled:border-[var(--game-border)] disabled:text-[var(--game-dim)]"
+            className="min-h-12 w-full border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000] disabled:border-[var(--game-border)] disabled:text-[var(--game-dim)]"
           >
             {quote.get > 0 ? `SWAP ${quote.give} FOR ${quote.get} ${name(target).toUpperCase()}` : "NOT ENOUGH TO SWAP"}
             <span className="block font-term text-base leading-5">a {Math.round(SWAP_FEE * 100)}% fee</span>

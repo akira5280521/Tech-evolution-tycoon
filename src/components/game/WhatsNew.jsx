@@ -23,7 +23,7 @@ export function WhatsNewDialog({ onClose }) {
             type="button"
             data-notes-close
             onClick={onClose}
-            className="min-h-11 w-full border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-2 font-pixel text-[0.55rem] text-black"
+            className="min-h-12 w-full border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-2 font-pixel text-[0.55rem] text-black"
           >
             GOT IT
           </button>

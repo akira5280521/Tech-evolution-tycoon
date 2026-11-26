@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import RunsPage from "@/components/game/RunsPage";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
+// RUNS moved into PROGRESS (T3 item 26); old links land there.
 export const Route = createFileRoute("/runs")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Challenges — Tech Evolution Tycoon" }] }),
-  component: RunsPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/progress", hash: "runs", replace: true });
+  },
 });

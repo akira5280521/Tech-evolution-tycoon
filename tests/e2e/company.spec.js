@@ -18,10 +18,13 @@ test("a new game names the company before the tutorial, and HQ and Settings show
   await expect.poll(() => coachStep(page)).toBe("run");
   await expect.poll(async () => (await saved(page)).companyName).toBe("Pixel Foundry 3");
   await page.goto("/rigs");
-  await expect(page.getByText("Pixel Foundry 3: your hardware. Pick a section.")).toBeVisible();
+  await expect(page.getByText("Pixel Foundry 3: your company, floor by floor.")).toBeVisible();
   await page.goto("/more#settings");
   await page.locator("[data-company-setting] [data-company-input]").fill("Cathode Works");
-  await page.click("[data-company-rename]");
+  // The tutorial card (still on step 1 here) can sit over the button on a
+  // short Settings page, so press it from the keyboard.
+  await page.locator("[data-company-rename]").focus();
+  await page.keyboard.press("Enter");
   await expect(page.locator("[data-company-rename]")).toHaveText("SAVED");
   await expect.poll(async () => (await saved(page)).companyName).toBe("Cathode Works");
   expectClean(seen);

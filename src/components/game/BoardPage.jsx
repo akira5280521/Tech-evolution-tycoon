@@ -10,6 +10,11 @@ function pct(factor) {
   return `${Math.round((factor - 1) * 100)}%`;
 }
 
+export function forkIsReady(state) {
+  const bill = forkCost(state.singularities || 0);
+  return !state.challenge && (state.investors || 0) >= bill && singularityMult((state.singularities || 0) + 1) > singularityMult(state.singularities || 0);
+}
+
 export default function BoardPage() {
   const { state, purchaseShop, forkTimeline } = useGameState();
   const factors = empireFactors(state, Date.now());
@@ -44,7 +49,7 @@ export default function BoardPage() {
           <span>Income limit: X{factors.ceiling.toFixed(0)}. Forking raises it.</span> <HelpTip term="ceiling" />
         </p>
         <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
-          You have {count(state.investors || 0)} investors. Get more with PRESTIGE on the GAME tab.
+          You have {count(state.investors || 0)} investors. Get more on the PRESTIGE tab.
         </p>
         <div data-help-scope className="mt-3">
           <GoldButton disabled={!ready} onClick={forkTimeline} dataAttr="fork">

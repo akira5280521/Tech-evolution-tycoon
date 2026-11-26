@@ -36,13 +36,13 @@ export default function DilemmaModal({ dilemma, onChoose }) {
             type="button"
             data-dilemma={choice.key}
             onClick={() => onChoose(choice.key)}
-            className={`${n === 0 ? "mt-3" : "mt-2"} min-h-11 w-full border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-3 py-2 text-left`}
+            className={`${n === 0 ? "mt-3" : "mt-2"} min-h-12 w-full border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-3 py-2 text-left`}
           >
             <span className="block font-pixel text-[0.6rem] text-[var(--game-violet)]">{choice.label}</span>
             <span className="font-term text-lg">{describeEffects(choice.effects)}</span>
           </button>
         ))}
-        <button type="button" data-dilemma="defer" onClick={() => onChoose("defer")} className="mt-2 min-h-11 w-full border-2 border-[var(--game-violet-border)] px-3 py-2 font-pixel text-[0.6rem] text-[var(--game-violet)]">
+        <button type="button" data-dilemma="defer" onClick={() => onChoose("defer")} className="mt-2 min-h-12 w-full border-2 border-[var(--game-violet-border)] px-3 py-2 font-pixel text-[0.6rem] text-[var(--game-violet)]">
           DECIDE IN 5 MINUTES
         </button>
         </div>

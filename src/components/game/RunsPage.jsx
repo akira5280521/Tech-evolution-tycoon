@@ -5,19 +5,74 @@ import { aheadLabel, calendarYear, historyRows } from "@/lib/calendar";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel } from "./chrome";
 import { HelpTip, ItemHelp } from "./HintSheet";
+import { LADDER, currentRung, ladderOpen, rungPaid } from "@/lib/ladder";
+
+// Mid-game milestone ladder (T5 item 43): rungs between the first prestige
+// and the first fork, each worth era tokens once.
+function MilestoneLadder({ state }) {
+  const open = ladderOpen(state);
+  const current = currentRung(state);
+  const paid = LADDER.filter((r) => rungPaid(state, r)).length;
+  return (
+    <Panel>
+      <div data-ladder={open ? "open" : "locked"} className={open ? "" : "opacity-60"}>
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="font-pixel text-[0.7rem] text-[var(--game-accent)]">MILESTONE LADDER</h2>
+          <span data-ladder-count className="font-pixel text-[0.5rem] text-[var(--game-muted)]">{paid}/{LADDER.length}</span>
+        </div>
+        <p className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">
+          {open ? "Rungs on the way to your first timeline fork. Each pays era tokens once." : "Opens after your first prestige: rungs on the way to the first timeline fork. COMING SOON."}
+        </p>
+        <ol className="mt-2 space-y-1">
+          {LADDER.map((rung) => {
+            const done = rungPaid(state, rung);
+            const here = open && current?.id === rung.id;
+            const p = Math.min(rung.goal, rung.progress(state));
+            return (
+              <li key={rung.id} data-rung={rung.id} data-rung-state={done ? "done" : here ? "current" : "ahead"} className={`border-2 px-2 py-1 ${here ? "border-[var(--game-accent)]" : "border-[var(--game-border)]"} ${!done && !here ? "opacity-70" : ""}`}>
+                <div className="flex items-center justify-between gap-2 font-pixel text-[0.5rem] leading-4">
+                  <span className={done ? "text-[var(--game-success)]" : "text-[var(--game-fg)]"}>{done ? "✓ " : ""}{rung.title}</span>
+                  <span className="shrink-0 text-[var(--game-accent)]">+{rung.tokens} tokens</span>
+                </div>
+                {here && (
+                  <>
+                    <p className="font-term text-base leading-5 text-[var(--game-muted)]">{rung.detail}</p>
+                    {rung.goal > 1 && (
+                      <div className="status-track mt-1 h-3 overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={rung.goal} aria-valuenow={p}>
+                        <div className="status-fill h-full bg-[var(--game-accent)]" style={{ width: `${(p / rung.goal) * 100}%` }} />
+                      </div>
+                    )}
+                    {rung.goal > 1 && <p className="font-term text-base leading-5 text-[var(--game-muted)]">{p.toLocaleString("en-US")} / {rung.goal.toLocaleString("en-US")}</p>}
+                  </>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </Panel>
+  );
+}
 
 export default function RunsPage() {
   const { state, startChallenge, abandonChallenge } = useGameState();
   const locked = !state.prestiged && !state.challenge;
   const [now, setNow] = useState(0);
+  // A 1 s clock only while a timed challenge or a project is counting down
+  // (T5 item 45, battery).
+  const ticking = !!state.challenge || !!state.projectJob;
   useEffect(() => {
     setNow(Date.now());
+    if (!ticking) return undefined;
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [ticking]);
+  // Otherwise the game's own repaint carries the clock.
+  const clock = ticking ? now : Date.now();
   return (
     <ScreenShell title="RUNS" subtitle="Optional harder runs and big goals. Their rewards are kept forever.">
-      <AheadOfHistory state={state} now={now} />
+      <MilestoneLadder state={state} />
+      <AheadOfHistory state={state} now={clock} />
       <h2 className="flex items-center gap-2 font-pixel text-[0.7rem] text-[var(--game-accent)]">
         CHALLENGE RUNS <HelpTip term="challenge" />
       </h2>
@@ -34,7 +89,7 @@ export default function RunsPage() {
       {CHALLENGES.map((challenge) => {
         const done = (state.challengesDone || []).includes(challenge.id);
         const active = state.challenge?.id === challenge.id;
-        const left = active && challenge.limitMs ? Math.max(0, challenge.limitMs - (now - state.challenge.startedAt)) : 0;
+        const left = active && challenge.limitMs ? Math.max(0, challenge.limitMs - (clock - state.challenge.startedAt)) : 0;
         return (
           <Panel key={challenge.id}>
             <div data-help-scope>
@@ -60,7 +115,7 @@ export default function RunsPage() {
                   type="button"
                   data-abandon-challenge
                   onClick={abandonChallenge}
-                  className="min-h-11 w-full border-2 border-[var(--game-danger)] bg-[var(--game-panel)] px-3 font-pixel text-[0.6rem] text-[var(--game-danger)] shadow-[3px_3px_0_0_#000]"
+                  className="min-h-12 w-full border-2 border-[var(--game-danger)] bg-[var(--game-panel)] px-3 font-pixel text-[0.6rem] text-[var(--game-danger)] shadow-[3px_3px_0_0_#000]"
                 >
                   ABANDON CHALLENGE
                 </button>

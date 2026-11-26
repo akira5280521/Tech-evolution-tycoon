@@ -7,7 +7,7 @@ import { copyText } from "@/lib/clipboard";
 import { readBackups } from "@/lib/saveBackups";
 
 const smallButton =
-  "min-h-11 border-2 px-3 font-pixel text-[0.55rem] shadow-[2px_2px_0_0_#000] disabled:cursor-not-allowed disabled:opacity-60";
+  "min-h-12 border-2 px-3 font-pixel text-[0.55rem] shadow-[2px_2px_0_0_#000] disabled:cursor-not-allowed disabled:opacity-60";
 
 function savedLabel(at) {
   if (!at) return "an unknown date";
@@ -155,7 +155,7 @@ export default function SaveBackup({ state, onExport, onImport }) {
       </div>
 
       <div className="mt-4 space-y-2 border-t-2 border-[var(--game-border)] pt-3" data-save-import>
-        <h3 className="font-pixel text-[0.55rem]">RESTORE FROM A CODE</h3>
+        <h3 className="font-pixel text-[0.55rem]">IMPORT SAVE: RESTORE FROM A CODE</h3>
         <textarea
           value={paste}
           onChange={(event) => {

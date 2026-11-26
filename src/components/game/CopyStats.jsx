@@ -42,7 +42,7 @@ export default function CopyStats({ state }) {
         type="button"
         data-copy-stats
         onClick={copy}
-        className="mt-3 min-h-11 w-full border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.6rem] text-[var(--game-accent-fg)] shadow-[3px_3px_0_0_#000]"
+        className="mt-3 min-h-12 w-full border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.6rem] text-[var(--game-accent-fg)] shadow-[3px_3px_0_0_#000]"
       >
         COPY MY STATS
       </button>

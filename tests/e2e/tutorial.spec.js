@@ -75,7 +75,8 @@ test("a new player walks all 13 steps and the starter goals take over", async ({
   }
   await page.locator("[data-action='buy-tab601']").click();
   await expect.poll(() => coachStep(page), { timeout: 8000 }).toBe("tech");
-  await page.locator("[data-open-research]").click();
+  await page.locator("[data-tab='research']").click();
+      await page.locator("[data-sub-tab='tech']").click();
   await expect.poll(() => coachStep(page), { timeout: 8000 }).toBe("project");
   const startFirst = page.locator("[data-action='research-tab-hollerith']");
   if (!(await startFirst.count())) await page.locator("[data-research-tab='storage']").click();
@@ -87,6 +88,8 @@ test("a new player walks all 13 steps and the starter goals take over", async ({
   await page.click("[data-coach-next]");
   await expect.poll(() => coachStep(page)).toBe(null);
   await expect.poll(async () => (await saved(page))?.tutorial?.done).toBe(true);
+  // The starter goal sits under the buy-amount row on the GAME screen.
+  await page.locator("[data-tab=game]").click();
   await expect(page.locator("[data-starter-goal]")).toHaveCount(1);
   expectClean(seen);
 });

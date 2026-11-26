@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { fullNumber } from "@/lib/fullNumber";
 import { Loader2 } from "lucide-react";
 import { BUSINESSES, ERA_GATE, REFINED, SUPPLY_KEYS, blockedByGlass, eraOpen, frontierEra, isManaged, money, pluralName } from "@/lib/gameConfig";
 import { activeChallengeGoal, incomePerSecond, refiningOpen, shortageOn, supplyCap, supplyFull } from "@/lib/empire";
@@ -11,7 +12,6 @@ import { useGameState } from "./GameState";
 import TopBar from "./TopBar";
 import BusinessRow from "./BusinessRow";
 import LockedRow from "./LockedRow";
-import PrestigeBar from "./PrestigeBar";
 import WelcomeBack from "./WelcomeBack";
 import PrestigeReport from "./PrestigeReport";
 import BottomTabs from "./BottomTabs";
@@ -27,7 +27,6 @@ import { ItemHelp, TipCard } from "./HintSheet";
 import { currentTutorialStep, stepTarget, tutorialActive } from "@/lib/tutorial";
 import { StickyHud } from "./chrome";
 import { EraChipStrip } from "./EraChipStrip";
-import { BuyBar } from "./BuyBar";
 import { shouldCollapseRow, rowFullyUpgraded } from "@/lib/rowCollapse";
 
 // The first-run Timber note stays up until the player has both run a business
@@ -50,7 +49,7 @@ function supplyShown(state, key) {
 
 export default function GameScreen() {
   const game = useGameState();
-  const { state, buyMode, setBuyMode, buy, hire, run, runAll, toggleManager, buyForeman, prestige, dismissOffline,
+  const { state, buyMode, setBuyMode, buy, hire, run, runAll, toggleManager, dismissOffline,
     dismissPrestigeReport, dismissArrivalCard, chooseDilemma, chooseStoryEvent, acceptContractOffer, skipContractOffer, cashOut, tutorialNext, tutorialSkip } = game;
   const [, bumpTick] = useState(0);
   const [pullDist, setPullDist] = useState(0);
@@ -176,9 +175,9 @@ export default function GameScreen() {
   const techOpen = BUSINESSES.some((cfg, i) => rowSection(i) === "tech" && eraOpen(state, i) && !blockedByGlass(state, i));
 
   return (
-    <div className="game-root has-buybar game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
+    <div className="game-root game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
-      <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} />
+      <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} state={state} />
       <PrestigeReport report={state.offlineReport ? null : state.prestigeReport} onDismiss={dismissPrestigeReport} />
       {!state.offlineReport && !state.prestigeReport && !tutorialActive(state) && (
         <ArrivalCard arrival={currentArrival(state)} onDismiss={dismissArrivalCard} />
@@ -215,7 +214,6 @@ export default function GameScreen() {
             }}
             canRunAll={canRunAll}
             onRunAll={runAll}
-            onBuyForeman={buyForeman}
           />
           <div className="safe-x mx-auto max-w-4xl px-3 pt-2">
             <p
@@ -224,25 +222,36 @@ export default function GameScreen() {
                 if (event.target.closest("[data-help]")) return;
                 if (currentTutorialStep(state)?.id === "materials") tutorialNext("materials");
               }}
-              className="flex flex-wrap gap-x-3 gap-y-1 border-2 border-[var(--game-border)] bg-[var(--game-card)] px-2 py-1 font-term text-base leading-5 text-[var(--game-muted)]"
+              className="border-2 border-[var(--game-border)] bg-[var(--game-card)] px-2 py-1 font-term text-[var(--game-muted)]"
             >
+              {/* A fixed grid, one slot per material (T4 item 5): FULL or
+                  SHORT never changes a slot's size, so nothing rewraps. The
+                  panel only grows when a new material unlocks. */}
+              <span className="flex items-center justify-between">
+                <span className="font-pixel text-[0.45rem] leading-4">MATERIALS</span>
+                <ItemHelp kind="materials" id={SUPPLY_KEYS.filter((key) => supplyShown(state, key))} state={state} name="materials" className="my-0" />
+              </span>
+              <span data-supply-grid className="mt-1 grid grid-cols-3 gap-1">
               {SUPPLY_KEYS.filter((key) => supplyShown(state, key)).map((key) => {
                 const full = supplyFull(state, key);
+                const short = shortageOn(state, Date.now()) === key;
                 return (
                   <button
                     key={key}
                     type="button"
                     data-material={key}
+                    data-full={full ? "yes" : "no"}
                     onClick={() => setStorageKey(key)}
-                    className={`min-h-6 text-left tabular-nums ${full ? "text-[var(--game-danger)]" : ""}`}
+                    className={`relative flex min-h-12 min-w-0 flex-col items-start justify-center overflow-hidden border px-1 text-left tabular-nums ${full ? "border-[var(--game-danger)] text-[var(--game-danger)]" : "border-[var(--game-border)]"}`}
                   >
-                    {REFINED[key]?.short || key} {amount(supply[key])}/{amount(supplyCap(state, key))}
-                    {full && <span className="ml-1 font-pixel text-[0.4rem]">FULL</span>}
-                    {shortageOn(state, Date.now()) === key && <span data-short={key} className="ml-1 font-pixel text-[0.4rem] text-[var(--game-violet)]">SHORT</span>}
+                    <span className="w-full truncate text-sm leading-4">{REFINED[key]?.short || key}</span>
+                    <span data-exact={`${fullNumber(supply[key])} / ${fullNumber(supplyCap(state, key))}`} className="w-full truncate text-sm leading-4">{amount(supply[key])}/{amount(supplyCap(state, key))}</span>
+                    {full && <span className="absolute right-0.5 top-0.5 font-pixel text-[0.35rem] leading-none">FULL</span>}
+                    {short && <span data-short={key} className="absolute bottom-0.5 right-0.5 font-pixel text-[0.35rem] leading-none text-[var(--game-violet)]">SHORT</span>}
                   </button>
                 );
               })}
-              <ItemHelp kind="materials" id={SUPPLY_KEYS.filter((key) => supplyShown(state, key))} state={state} name="materials" className="ml-auto" />
+              </span>
             </p>
             <ContractChip contract={state.contract} now={Date.now()} />
             <div data-section-toggle role="group" aria-label="Game section" className="mt-2 grid grid-cols-2 border-2 border-[var(--game-border)] bg-[var(--game-panel)] shadow-[3px_3px_0_0_#000]">
@@ -257,7 +266,7 @@ export default function GameScreen() {
                     aria-pressed={on}
                     disabled={item.id === "tech" && !techOpen}
                     onClick={() => chooseSection(item.id)}
-                    className={`relative min-h-[40px] px-2 font-pixel text-[0.6rem] leading-4 ${
+                    className={`relative min-h-12 px-2 font-pixel text-[0.6rem] leading-4 ${
                       on
                         ? "bg-[var(--game-accent)] text-[var(--game-accent-fg)]"
                         : "text-[var(--game-muted)] disabled:text-[var(--game-dim)]"
@@ -287,7 +296,7 @@ export default function GameScreen() {
               <p data-onboard className="mt-2 border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-2 font-term text-lg leading-6 text-[var(--game-fg)]">
                 Tap the Timber Camp picture to run the business. Then tap BUY. BUY spends cash.
                 {section !== "supply" && (
-                  <button type="button" data-onboard-supply onClick={() => chooseSection("supply")} className="ml-2 font-pixel text-[0.5rem] text-[var(--game-accent)] underline">
+                  <button type="button" data-onboard-supply onClick={() => chooseSection("supply")} className="hit48 relative ml-2 font-pixel text-[0.5rem] text-[var(--game-accent)] underline">
                     SHOW SUPPLY
                   </button>
                 )}
@@ -305,11 +314,7 @@ export default function GameScreen() {
               Challenge running: {state.challenge.id} · {money(state.challenge.earnings)} / {money(activeChallengeGoal(state))} this run.
             </p>
           )}
-          {/* Prestige only matters much later; a brand-new player sees it once
-              the run has earned $100M (a thousandth of the first investor). */}
-          {((state.investors || 0) > 0 || state.prestiged || (state.lifetime || 0) >= 1e8) && (
-            <PrestigeBar state={state} onPrestige={prestige} />
-          )}
+          {/* Prestige moved to BOOST > PRESTIGE (T3 item 10). */}
 
           {BUSINESSES.map((cfg, i) => {
             if (blockedByGlass(state, i)) return null;
@@ -355,13 +360,6 @@ export default function GameScreen() {
           Progress saves on this device. Close the app and managers keep earning at half speed for up to 24 hours.
         </p>
       </footer>
-      <BuyBar
-        buyMode={buyMode}
-        onPick={(mode) => {
-          setBuyMode(mode);
-          if (currentTutorialStep(state)?.id === "modes") tutorialNext("modes");
-        }}
-      />
       <BottomTabs />
       {/* A new game names the company first; the coach waits for it (CoachHost). */}
       <CompanyNameScreen state={state} onName={game.nameCompany} />

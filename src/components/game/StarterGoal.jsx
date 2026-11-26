@@ -33,7 +33,7 @@ export default function StarterGoal({ state }) {
           type="button"
           data-goals-hide
           onClick={() => writePrefs({ goalsHidden: true })}
-          className="min-h-11 shrink-0 px-1 font-pixel text-[0.45rem] leading-4 text-[var(--game-muted)] underline"
+          className="min-h-12 shrink-0 px-1 font-pixel text-[0.45rem] leading-4 text-[var(--game-muted)] underline"
         >
           HIDE
         </button>

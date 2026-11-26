@@ -1,19 +1,22 @@
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { FlaskConical, Flag, Gamepad2, Package, Settings, Zap } from "lucide-react";
+import { Building2, FlaskConical, Gamepad2, Settings, Trophy, Zap } from "lucide-react";
+import { HUB_LABEL, HUB_ROUTE, hubOpen } from "@/lib/hub";
 import { useGameState } from "./GameState";
 import { RESEARCH_MS } from "@/lib/gameConfig";
-import { timedProgress } from "@/lib/progress";
+import { techProgress, timedProgress } from "@/lib/progress";
+import { researchSpeed } from "@/lib/research";
 import { readyDots, tabHasDot } from "@/lib/ready";
 import { ReadyDot } from "./ReadyDot";
 
+// At most 6 buttons (T3 item 32): GAME, HQ, R&D, BOOST, PROGRESS, MORE.
 const TABS = [
   { id: "game", label: "GAME", to: "/", icon: Gamepad2, isActive: (p) => p === "/" },
-  { id: "boost", label: "BOOST", to: "/boost", icon: Zap, isActive: (p) => p.startsWith("/boost") },
-  { id: "board", label: "BOARD", to: "/board", icon: Package, isActive: (p) => p.startsWith("/board") },
-  { id: "runs", label: "RUNS", to: "/runs", icon: Flag, isActive: (p) => p.startsWith("/runs") },
-  { id: "research", label: "R&D", to: "/research", icon: FlaskConical, isActive: (p) => p.startsWith("/research") },
-  { id: "more", label: "MORE", to: "/more", icon: Settings, isActive: (p) => p.startsWith("/more") || p.startsWith("/settings") || p.startsWith("/badges") },
+  { id: "hq", label: HUB_LABEL, to: HUB_ROUTE, icon: Building2, open: hubOpen, isActive: (p) => p.startsWith(HUB_ROUTE) || p.startsWith("/facilities") || p.startsWith("/garage") },
+  { id: "research", label: "R&D", to: "/research", icon: FlaskConical, isActive: (p) => p.startsWith("/research") || p.startsWith("/tech") },
+  { id: "boost", label: "BOOST", to: "/boost", icon: Zap, isActive: (p) => p.startsWith("/boost") || p.startsWith("/board") },
+  { id: "progress", label: "PROGRESS", to: "/progress", icon: Trophy, isActive: (p) => p.startsWith("/progress") || p.startsWith("/runs") || p.startsWith("/badges") || p.startsWith("/museum") },
+  { id: "more", label: "MORE", to: "/more", icon: Settings, isActive: (p) => p.startsWith("/more") || p.startsWith("/settings") },
 ];
 
 const tabScroll = Object.fromEntries(TABS.map((tab) => [tab.id, 0]));
@@ -117,7 +120,8 @@ export default function BottomTabs() {
             );
           }
           // R & D: a thin bar while a specialty is being researched.
-          const job = tab.id === "research" && state?.researchJob?.startedAt ? timedProgress(state.researchJob.startedAt, RESEARCH_MS) : null;
+          // R & D: a thin bar while a specialty or a TECH project is researched.
+          const job = tab.id !== "research" ? null : state?.researchJob?.startedAt ? timedProgress(state.researchJob.startedAt, RESEARCH_MS) : state?.techJob ? techProgress(state.techJob, researchSpeed(state)) : null;
           return (
             <button
               key={tab.id}

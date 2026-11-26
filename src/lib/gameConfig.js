@@ -940,7 +940,7 @@ export function eraNeeds(state, index) {
   const project = ERA_RESEARCH[BUSINESSES[index]?.id];
   if (project) {
     const done = (state?.techDone || []).includes(project.id);
-    needs.push({ kind: "research", have: done ? 1 : 0, need: 1, met: done, research: project.id, label: `Research ${project.name} on TECH` });
+    needs.push({ kind: "research", have: done ? 1 : 0, need: 1, met: done, research: project.id, label: `Research ${project.name} in R&D > TECH` });
   }
   const bill = ERA_MATERIAL[BUSINESSES[index]?.id];
   if (bill) {
@@ -1155,7 +1155,6 @@ export function maxAffordable(cfg, owned, cash, state) {
 
 // One button cycles these in order, then wraps back to X1.
 export const BUY_MODE_CYCLE = ["x1", "x10", "x25", "x50", "x75", "x100", "MAX"];
-export const QUICK_BUY_MODES = ["x1", "x10", "x100", "MAX"];
 
 // NEXT was the old "buy up to the next goal" switch. Anything that is not a
 // current amount, including NEXT, comes back as X1. x1, x10, x100 and max stay.

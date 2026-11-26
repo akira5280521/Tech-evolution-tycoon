@@ -46,3 +46,13 @@ Times are America/Chicago (CT).
 
 - Andrew picked Option B, medium: starter machine R&D 0.005/s each (0.030/s for six). Cherry-picked `balance/starter-rd-medium` onto `feature/core-history`. Local only; not pushed.
 - Expected sim times from the options run: nonstop Quantum about 3d 1h, casual about 7d 7h, first prestige unchanged (6h 28m / 1d 11h), fork still not reached.
+
+## 2026-11-26, 3:45 PM CT — T5 item 29, why the first prestige was 22h 39m
+
+- Cause: a pacing-sim bug, not the game. Since 2e4ef74 (Nov 24, "OPEN ERA starts a setup bar") OPEN ERA takes the material and starts `state.eraBuild`, which the game's tick finishes in `useGame` (`finishEraBuild`). `finishTimedWork` doesn't finish it, and the sim never called `finishEraBuild`. It also called `openEra` without the sim clock, so the bar's `readyAt` was the real wall-clock time.
+- So in the sim's first run, Mainframes stayed "setting up" forever after 200 copper was paid at about 44m. The bot sat at Vacuum Tubes until a prestige (22h 39m). Mainframes then opened on the next run (23h 18m), because a paid era opens by itself in later runs. In the real game the bar finishes after 20 s, so players were not stuck.
+- Fix (sim only): pass `now` to `openEra` and call `finishEraBuild(state, end)` in `advance`. Unit test added. No game balance change.
+- Rerun (`docs/pacing/t5-final-2026-11-26.md`, wall time 819s):
+  - Active: first prestige 6h 7m (was 22h 39m in the T4/T5 runs; 6h 28m on Nov 24 before the set-up bar); Mainframes 47m; Quantum 3d 4h; fork still not reached in 21 days.
+  - Casual: first prestige 1d 11h (was 2d 13h); Quantum 8d 18h; fork not reached.
+- Those are in line with the Option B expectations above (Quantum about 3d 1h nonstop, 7d 7h casual) plus the T4/T5 content. No retune.

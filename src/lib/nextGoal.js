@@ -77,7 +77,7 @@ export function nextGoal(state) {
   // A first TECH project the player can start.
   const first = researchItem(FIRST_RESEARCH_ID);
   if (first && canStartResearch(state, first.id) && !researchLock(state, first)) {
-    return { id: `tech-${first.id}`, text: `Research ${first.name}`, to: "/tech", rowId: null, section: null, hash: first.id };
+    return { id: `tech-${first.id}`, text: `Research ${first.name}`, to: "/research", rowId: null, section: null, hash: `tech-${first.id}` };
   }
 
   return null;

@@ -32,7 +32,7 @@ const through = (id, extra = {}) => {
 test("HQ opens each plant on its own page, and the Museum card leaves More", async ({ page }) => {
   const seen = await open(page, "/rigs", through("tubes"));
   await tipsOff(page);
-  await expect(page.locator("[data-hub-item]")).toHaveCount(6);
+  await expect(page.locator("[data-hub-item]")).toHaveCount(4);
   await page.locator("[data-hub-item='servers']").click();
   await expect(page).toHaveURL(/\/facilities\/servers$/);
   await expect(page.locator("[data-facility='servers']")).toBeVisible();
@@ -42,11 +42,9 @@ test("HQ opens each plant on its own page, and the Museum card leaves More", asy
   await expect(page.getByText("Irwell Mark 1")).toHaveCount(0);
   await page.getByRole("link", { name: "< BACK" }).click();
   await expect(page).toHaveURL(/\/rigs$/);
-  await page.locator("[data-hub-item='museum']").click();
-  await expect(page).toHaveURL(/\/museum/);
+  await page.goto("/museum");
+  await expect(page).toHaveURL(/\/progress#museum/);
   await expect(page.locator("[data-hw-museum]")).toBeVisible();
-  await page.getByRole("link", { name: "< BACK" }).click();
-  await expect(page).toHaveURL(/\/rigs$/);
   await page.goto("/more#settings");
   await page.locator("nav[aria-label='Main navigation']").waitFor();
   await expect(page.locator("[data-more-tabs]")).not.toContainText("MUSEUM");
@@ -56,6 +54,7 @@ test("HQ opens each plant on its own page, and the Museum card leaves More", asy
 test("a tape drive cannot be bought until its TECH project is done", async ({ page }) => {
   const seen = await open(page, "/facilities/servers", through("mainframes", { techDone: [] }));
   await tipsOff(page);
+  await page.locator("[data-server-tab='room']").click();
   const tape = page.locator("[data-part='tape']");
   await expect(tape).toBeVisible();
   await expect(tape.locator("[data-part-lock]")).toContainText(/Research/);
@@ -70,5 +69,47 @@ test("How to Play locks later facility guides until their era", async ({ page })
   await expect(page.locator("[data-howto='howto-museum']")).toBeVisible();
   await expect(page.locator("[data-howto='howto-bench']")).toHaveAttribute("data-howto-locked", "");
   await expect(page.locator("[data-howto='howto-bench']")).toContainText("COMING SOON");
+  expectClean(seen);
+});
+
+test("HQ is a building of department cards with room tiles, and every menu has an HQ breadcrumb", async ({ page }) => {
+  const seen = await open(page, "/rigs", "late");
+  await tipsOff(page);
+  const floors = page.locator("[data-hq-floor]");
+  await expect(floors).toHaveCount(5);
+  const ids = await floors.evaluateAll((els) => els.map((el) => el.getAttribute("data-hq-floor")));
+  expect(ids).toEqual(["boost", "rd", "plants", "progress", "game"]);
+  await expect(page.locator("[data-hq-floor] [data-floor-label]").first()).toHaveText("4F");
+  await expect(page.locator("[data-breadcrumb]")).toHaveCount(0);
+  await page.locator("[data-hub-room='rd-tech']").click();
+  await expect(page).toHaveURL(/\/research#tech/);
+  await expect(page.locator("[data-breadcrumb]")).toContainText("R&D");
+  await page.locator("[data-back-hq]").click();
+  await expect(page).toHaveURL(/\/rigs$/);
+  await page.locator("[data-hub-item='servers']").click();
+  await expect(page.locator("[data-breadcrumb]")).toContainText("HARDWARE");
+  await expect(page.locator("[data-breadcrumb]")).toContainText("RESEARCH SERVERS");
+  await page.locator("[data-back-hq]").click();
+  await page.locator("[data-hub-room='progress-museum']").click();
+  await expect(page).toHaveURL(/\/progress#museum/);
+  expectClean(seen);
+});
+
+test("a locked HQ room is greyed and can't be tapped", async ({ page }) => {
+  const seen = await open(page, "/rigs", "newrich");
+  await tipsOff(page);
+  const prestige = page.locator("[data-hub-room='boost-prestige']");
+  await expect(prestige).toHaveAttribute("data-locked", "");
+  await expect(prestige).toHaveAttribute("aria-disabled", "true");
+  expectClean(seen);
+});
+
+test("every HQ plant card is the same fixed height with one short line", async ({ page }) => {
+  const seen = await open(page, "/rigs", "late");
+  await tipsOff(page);
+  const heights = await page.locator("[data-hub-item]").evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().height)));
+  expect(heights.length).toBe(4);
+  expect(new Set(heights).size).toBe(1);
+  await expect(page.locator("[data-hub-item='servers'] [data-hub-text]")).toHaveText("Makes R&D points for research.");
   expectClean(seen);
 });

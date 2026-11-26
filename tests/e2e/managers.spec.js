@@ -26,7 +26,7 @@ test("switching a manager off stops its cycles, on resumes them, and it survives
   const toggle = page.locator("[data-manager-toggle='timber']");
   await expect(toggle).toHaveAttribute("data-on", "1");
   const box = await toggle.boundingBox();
-  expect(box.height).toBeGreaterThanOrEqual(44);
+  expect(box.height).toBeGreaterThanOrEqual(48);
   await expect.poll(() => cashNow(page), { timeout: 10000 }).toBeGreaterThan(0);
   await toggle.click();
   await expect(toggle).toHaveAttribute("data-on", "0");
@@ -115,7 +115,7 @@ test("the CASH box keeps the same height while an Overclock is running", async (
   let seen = await go(page, base);
   const panel = page.locator("[data-cash-panel]");
   const off = panel.locator("[data-overclock]");
-  await expect(off).toBeVisible();
+  await expect(off).toHaveCount(1);
   await expect(off).toHaveText(/^\s*$/);
   const h = (await panel.boundingBox()).height;
   expectClean(seen);

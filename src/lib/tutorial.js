@@ -110,14 +110,14 @@ export const TUTORIAL_STEPS = [
   {
     id: "hq",
     title: "HEADQUARTERS",
-    text: `Tap ${HUB_LABEL} (beside TECH). It is the menu for research machines, later plants, and the Hardware Museum.`,
+    text: `Tap ${HUB_LABEL} (beside BUY AMOUNT, or in the bar below). ${HUB_LABEL} is your company building: one card per department, floor by floor.`,
     target: "[data-open-facilities]",
     done: (s) => !!(s.tutorial?.opened || []).includes("hq"),
   },
   {
     id: "hq-go",
     title: "GO",
-    text: "These are locations you can visit. Tap GO to go there.",
+    text: "Each card is a floor. The HARDWARE floor holds your plants. Tap GO on RESEARCH SERVERS.",
     target: "[data-action='go-servers']",
     done: (s) => !!(s.tutorial?.opened || []).includes("servers"),
   },
@@ -131,15 +131,15 @@ export const TUTORIAL_STEPS = [
   {
     id: "starter",
     title: "THE PUNCH-CARD MACHINE",
-    text: "Tap BUY on the Inland 601. It is cheap, and it starts making R&D points at once. You need those points to research hardware on TECH.",
+    text: "Tap BUY on the Inland 601. It is cheap, and it starts making R&D points at once. You need those points to research hardware in R&D > TECH.",
     target: "[data-action='buy-tab601']",
     done: (s) => (s.facilities?.servers?.[STARTER_PART_ID] || 0) > 0,
   },
   {
     id: "tech",
     title: "THE TECH TIMELINE",
-    text: "Tap BACK, then TECH (beside HQ). TECH lists real inventions to research with R&D points.",
-    target: "[data-open-research]",
+    text: "Tap R&D in the bar below, then the TECH tab. TECH lists real inventions to research with R&D points.",
+    target: '[data-sub-tab="tech"], [data-tab="research"]',
     done: (s) => !!(s.tutorial?.opened || []).includes("tech"),
   },
   {
@@ -152,8 +152,8 @@ export const TUTORIAL_STEPS = [
   {
     id: "later",
     title: "WHAT'S AHEAD",
-    text: `Other plants open later: the PC Build Bench, the Bitbark Mine and the training cluster. A short guide walks you through each one when it unlocks. You can also read them in MORE > HOW TO PLAY.`,
-    target: "[data-open-research]",
+    text: `Other plants open later: the PC Build Bench, the Bitbark Mine and the training cluster. A short guide walks you through each one when it unlocks. They are on HQ's HARDWARE floor. BOOST holds upgrades and prestige, PROGRESS your runs, badges and the museum, and MORE > HOW TO PLAY explains every word.`,
+    target: '[data-tab="research"]',
     manual: true,
     button: "DONE",
   },
@@ -235,8 +235,9 @@ export const FACILITY_TOURS = [
     when: (s) => facilityUnlocked(s, "servers"),
     route: "/facilities/servers",
     steps: [
-      { id: "servers-room", title: "MACHINE ROOM", text: "Mainframes opened the rest of this room. Research a computer on TECH, then come back here to buy it.", target: "[data-facility='servers']", manual: true },
-      { id: "servers-kit", title: "POWER AND COOLING", text: "Each machine-room computer needs its own motor-generator and air conditioner, and a tape or disk once you have researched one.", target: "[data-facility='servers']", manual: true, button: "DONE" },
+      { id: "servers-room", title: "MACHINE ROOM", text: "Mainframes opened the rest of this room. Research a computer in R&D > TECH, then come back here to buy it. A new computer takes a few minutes to deliver and install before it comes online, even with the app closed.", target: "[data-facility='servers']", manual: true },
+      { id: "servers-kit", title: "POWER AND COOLING", text: "Each machine-room computer needs its own motor-generator and air conditioner, and a tape or disk once you have researched one.", target: "[data-facility='servers']", manual: true },
+      { id: "servers-status", title: "ROOM STATUS", text: "Under the room, ROOM STATUS shows compute, storage, heat and power, each against a white limit marker. A bar past its marker turns red and says what to add.", target: "[data-room-status='servers']", manual: true, button: "DONE" },
     ],
   },
   {
@@ -246,7 +247,8 @@ export const FACILITY_TOURS = [
     route: "/facilities/bench",
     steps: [
       { id: "bench-intro", title: "PC BUILD BENCH", text: "The lab builds one PC at a time. It needs a board, a CPU that fits that board's socket, and memory that fits its slots.", target: "[data-facility='bench']", manual: true },
-      { id: "bench-parts", title: "FIT THE PARTS", text: "Start with a board, then a CPU for its socket, then memory for its slots. The bench tells you if something doesn't fit. The PC makes R&D points.", target: "[data-facility='bench']", manual: true, button: "DONE" },
+      { id: "bench-parts", title: "FIT THE PARTS", text: "Start with a board, then a CPU for its socket, then memory for its slots. The bench tells you if something doesn't fit. The PC makes R&D points.", target: "[data-facility='bench']", manual: true },
+      { id: "bench-status", title: "ROOM STATUS", text: "ROOM STATUS under the bench shows the PC's speed, memory, CPU heat and power against their limits. A red bar says what to add.", target: "[data-room-status='bench']", manual: true, button: "DONE" },
     ],
   },
   {
@@ -256,7 +258,7 @@ export const FACILITY_TOURS = [
     route: "/facilities/mine",
     steps: [
       { id: "mine-intro", title: "BITBARK MINE", text: "Graphics cards here mint Bitbark, a game coin that stays in the game. It adds a little extra income.", target: "[data-facility='mine']", manual: true },
-      { id: "mine-run", title: "POWER AND COOLING", text: "Buy a card, then enough power and cooling. The plant runs slower if either can't keep up, and it tells you what to add next.", target: "[data-facility='mine']", manual: true, button: "DONE" },
+      { id: "mine-run", title: "POWER AND COOLING", text: "Buy a card, then enough power and cooling. The plant runs slower if either can't keep up: ROOM STATUS under the room turns that bar red and says what to add.", target: "[data-room-status='mine']", manual: true, button: "DONE" },
     ],
   },
   {
@@ -266,7 +268,7 @@ export const FACILITY_TOURS = [
     route: "/facilities/cluster",
     steps: [
       { id: "cluster-intro", title: "TRAINING CLUSTER", text: "The cluster trains a model and bills the studio. A bigger model needs more memory.", target: "[data-facility='cluster']", manual: true },
-      { id: "cluster-run", title: "CARDS AND MEMORY", text: "Buy graphics cards, memory, power and cooling. The cluster tells you if it needs more RAM or VRAM for the next model size.", target: "[data-facility='cluster']", manual: true, button: "DONE" },
+      { id: "cluster-run", title: "CARDS AND MEMORY", text: "Buy graphics cards, memory, power and cooling. ROOM STATUS under the room shows each one against its limit and says what to add, including RAM for the next model size.", target: "[data-room-status='cluster']", manual: true, button: "DONE" },
     ],
   },
 ];

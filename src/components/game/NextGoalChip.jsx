@@ -33,7 +33,7 @@ export function NextGoalChip({ state }) {
   };
 
   return (
-    <button type="button" data-next-goal={goal.id} onClick={jump} className="mt-1 flex min-h-11 w-full items-center border-2 border-[var(--game-border)] bg-[var(--game-panel)] px-2 font-pixel text-[0.55rem] text-[var(--game-fg)]">
+    <button type="button" data-next-goal={goal.id} onClick={jump} className="mt-1 flex min-h-12 w-full items-center border-2 border-[var(--game-border)] bg-[var(--game-panel)] px-2 font-pixel text-[0.55rem] text-[var(--game-fg)]">
       <span className="block truncate">{label}</span>
     </button>
   );

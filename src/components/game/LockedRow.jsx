@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { stageAt } from "@/lib/stages";
 import { eraCanOpen, eraNeeds, money } from "@/lib/gameConfig";
 import { HISTORY_PACE_MS, calendarYear } from "@/lib/calendar";
 import { ERA_YEAR } from "@/lib/eraYear";
@@ -59,8 +60,8 @@ export default function LockedRow({ index, id, state, onOpen }) {
                   <button
                     type="button"
                     data-era-research={n.research}
-                    onClick={() => navigate({ to: "/tech", hash: n.research })}
-                    className="mt-1 min-h-11 border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]"
+                    onClick={() => navigate({ to: "/research", hash: `tech-${n.research}` })}
+                    className="mt-1 min-h-12 border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]"
                   >
                     GO TO TECH
                   </button>
@@ -103,7 +104,7 @@ export default function LockedRow({ index, id, state, onOpen }) {
             type="button"
             data-open-era={id}
             onClick={() => onOpen?.(index)}
-            className="mt-2 min-h-11 w-full border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]"
+            className="mt-2 min-h-12 w-full border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]"
           >
             OPEN ERA
           </button>
@@ -124,7 +125,7 @@ function EraBuildBar({ build }) {
   return (
     <div data-era-build={build.id} className="mt-2" role="progressbar" aria-label="Setting up the era" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)}>
       <p className="flex justify-between gap-2 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
-        <span>SETTING UP THE ERA</span>
+        <span>SETTING UP THE ERA: <span data-era-stage>{stageAt({ set: "retool", ...build }, now).label.toUpperCase()}</span></span>
         <span data-era-build-left={left} className="tabular-nums">{time}</span>
       </p>
       <div className="mt-1 h-4 border-2 border-[var(--game-accent)] bg-[var(--game-bg)]">

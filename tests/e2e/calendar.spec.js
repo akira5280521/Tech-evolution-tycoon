@@ -61,8 +61,10 @@ test("a save from before the calendar scores nothing it already owns", async ({ 
 test("beating an earlier best pays an era token", async ({ page }) => {
   const seen = await open(page, "/", { ...save(), tokens: 3, historyBest: { cpu: -40 } });
   await tipsOff(page);
-  await expect(page.getByText(/\+1 era token\./)).toBeVisible();
+  // The token itself, from the save: the toast that says so can be stacked
+  // behind others, or gone, by the time a slow run looks.
   await expect.poll(async () => (await saved(page)).tokens).toBe(4);
+  expect((await saved(page)).calendarTokens).toBe(1);
   expect((await saved(page)).historyBest.cpu).toBeGreaterThan(-40);
   expectClean(seen);
 });

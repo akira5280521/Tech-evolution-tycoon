@@ -89,13 +89,14 @@ test("an old save (format 16) loads with an empty queue and no slots", async ({ 
   expectClean(seen);
 });
 
-test("Research Servers: machines and room equipment tabs, Home PC points to the bench, and Power limited jumps to the room tab", async ({ page }) => {
+test("Research Servers: machines and room equipment tabs, Home PC points to the bench, and a power shortage jumps to the room tab", async ({ page }) => {
   const seen = await open(page, "/facilities/servers", rdSave(1977, { facilities: { servers: { mark1: 1 }, bench: {}, mine: {}, cluster: {} } }));
   await expect(page.locator("[data-server-tab]")).toHaveText(["SERVER MACHINES", "ROOM EQUIPMENT", "HOME PC PARTS"]);
   await expect(page.locator("[data-part='mark1']")).toBeVisible();
   await expect(page.locator("[data-part='mgset']")).toHaveCount(0);
   const shortcut = page.locator("[data-limit-shortcut]");
-  await expect(shortcut).toContainText("POWER LIMITED");
+  await expect(shortcut).toContainText("ADD ROOM EQUIPMENT");
+  await expect(page.locator("[data-status-bar='power'] [data-status-alert]")).toContainText("Power short: add");
   await shortcut.click();
   await expect(page.locator("[data-server-tab='room']")).toHaveAttribute("aria-selected", "true");
   await expect(page.locator("[data-part='mgset']")).toBeVisible();

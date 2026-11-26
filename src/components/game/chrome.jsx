@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
+import { Lightbulb } from "lucide-react";
+import { hintPage, screenHint } from "@/lib/screenHint";
 import { incomePerSecond, overclockOn } from "@/lib/empire";
 import { money, reachedEraLabel } from "@/lib/gameConfig";
 import { inGameMonth } from "@/lib/research";
@@ -33,6 +35,45 @@ export function rdPoints(n) {
 // with the era (left), income, R&D points and the calendar month (right).
 // The parent sticks this block to the top so it stays visible while the page
 // scrolls. The NEXT goal and starter goal live on the GAME screen only.
+// The lightbulb (T3 item 64): tap for one line on what to do next on this
+// screen. It glows softly when nothing is earning, but never opens by itself.
+function HintBulb({ state }) {
+  const location = useLocation();
+  const page = hintPage(location.pathname, location.hash);
+  const [open, setOpen] = useState(false);
+  useEffect(() => { setOpen(false); }, [page]);
+  useEffect(() => {
+    if (!open) return undefined;
+    const t = setTimeout(() => setOpen(false), 8000);
+    return () => clearTimeout(t);
+  }, [open]);
+  const hint = screenHint(state, page);
+  return (
+    <>
+      <button
+        type="button"
+        data-hint-bulb={hint.stuck ? "glow" : "idle"}
+        aria-label="Hint for this screen"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className={`absolute right-9 top-0.5 flex h-6 w-7 items-center justify-center border-2 ${open ? "border-[var(--game-accent)] text-[var(--game-accent)]" : "border-[var(--game-border-strong)] text-[var(--game-muted)]"} ${hint.stuck && !open ? "hint-glow" : ""}`}
+      >
+        <Lightbulb className="h-4 w-4" aria-hidden="true" />
+      </button>
+      {open && hint.text && (
+        <button
+          type="button"
+          data-hint-line
+          onClick={() => setOpen(false)}
+          className="absolute left-0 right-0 top-full z-40 mt-1 border-2 border-[var(--game-accent)] bg-[var(--game-card)] px-2 py-1 text-left font-term text-base leading-5 text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]"
+        >
+          {hint.text}
+        </button>
+      )}
+    </>
+  );
+}
+
 export function CashTicker({ state, cps }) {
   const era = reachedEraLabel(state);
   const when = inGameMonth(state);
@@ -41,11 +82,12 @@ export function CashTicker({ state, cps }) {
     <div data-cash-ticker className="space-y-1">
       <div data-cash-panel data-status-bar className="relative border-2 border-[var(--game-border-strong)] bg-[var(--game-bg-deep)] px-2 py-0.5 shadow-[3px_3px_0_0_#000]">
         <ItemHelp kind="money" state={state} name="the money panel" className="absolute right-0 top-0 my-0" />
-        <div className="flex items-baseline gap-2 pr-8">
+        <HintBulb state={state} />
+        <div className="flex items-baseline gap-2 pr-16">
           <span data-cash-label className="shrink-0 font-pixel text-[8px] leading-[10px] text-[var(--game-muted)]">CASH</span>
-          <span data-cash className="min-w-0 break-all font-term text-2xl leading-none text-[var(--game-success)]">{money(state.cash)}</span>
+          <span data-cash className="shrink-0 whitespace-nowrap font-term text-2xl leading-none text-[var(--game-success)]">{money(state.cash)}</span>
           {/* Fixed slot: an Overclock never changes the bar's height. */}
-          <span data-overclock className="ml-auto shrink-0 font-pixel text-[0.45rem] leading-4 text-[var(--game-accent)]">
+          <span data-overclock className="ml-auto min-w-0 flex-1 truncate whitespace-nowrap text-right font-pixel text-[0.45rem] leading-4 text-[var(--game-accent)]">
             {oc ? `OVERCLOCKED x1.5 · ${Math.ceil((state.lab.overclockUntil - Date.now()) / 60000)} MIN LEFT` : ""}
           </span>
         </div>

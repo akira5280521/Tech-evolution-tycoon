@@ -865,12 +865,13 @@ export const ERA_RESEARCH = {
 // power, and from Microprocessors on a little of the refined grades. Wafers
 // stay the main cost, about two thirds of the old all-wafer amounts.
 export const ERA_MATERIAL = {
-  // Tubes are glass, wiring is copper, programs came on punched paper tape.
-  mainframes: [{ key: "copper", amount: 150 }, { key: "glass", amount: 100 }, { key: "paper", amount: 100 }],
+  // Thousands of glass tubes and their copper wiring. (No paper: looms and
+  // punch cards use every sheet the mills make, so it would stall here.)
+  mainframes: [{ key: "copper", amount: 150 }, { key: "glass", amount: 100 }],
   // The planar process: circuits printed onto silicon wafers.
   ics: [{ key: "silicon", amount: 150 }, { key: "wafers", amount: 100 }],
-  // Wire-wrapped copper backplanes; programs loaded from paper tape.
-  minis: [{ key: "wafers", amount: 150 }, { key: "copper", amount: 100 }, { key: "paper", amount: 100 }],
+  // Wire-wrapped copper backplanes.
+  minis: [{ key: "wafers", amount: 150 }, { key: "copper", amount: 150 }],
   // The 4004 was the first chip made with polysilicon gates.
   cpu: [{ key: "wafers", amount: 200 }, { key: "polysilicon", amount: 20 }],
   // Plugged into a TV: the glass picture tube.

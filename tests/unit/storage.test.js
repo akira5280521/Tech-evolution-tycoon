@@ -70,6 +70,6 @@ test("the bins always hold enough for each material the next era needs", () => {
   for (const m of ERA_MATERIAL.supercluster) assert.ok(supplyCap(s, m.key) >= m.amount, m.key);
   // Before anything's paid, each bin fits the first era that asks for it.
   const fresh = state(0);
-  assert.ok(supplyCap(fresh, "paper") >= 100);
+  assert.ok(supplyCap(fresh, "glass") >= ERA_MATERIAL.mainframes[1].amount);
   assert.ok(supplyCap(fresh, "polysilicon") >= ERA_MATERIAL.cpu[1].amount);
 });

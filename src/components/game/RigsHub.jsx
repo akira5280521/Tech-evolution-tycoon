@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "@tanstack/react-router";
+import { FlaskConical } from "lucide-react";
 import { HUB_ITEMS, HUB_LABEL } from "@/lib/hub";
 import { companyName } from "@/lib/company";
 import { useGameState } from "./GameState";
@@ -33,6 +34,18 @@ export default function RigsHub() {
   const dots = readyDots(state);
   return (
     <ScreenShell title={HUB_LABEL} subtitle={`${companyName(state)}: your hardware. Pick a section.`}>
+      {/* Research lives in R&D (T3 item 19): one tap from HQ. */}
+      <Link
+        to="/research"
+        data-hub-rd
+        className="relative flex min-h-14 items-center gap-3 border-2 border-[var(--game-accent)] bg-[var(--game-card)] p-3 shadow-[3px_3px_0_0_#000]"
+      >
+        <FlaskConical className="h-8 w-8 shrink-0 text-[var(--game-accent)]" aria-hidden="true" />
+        <div className="min-w-0 flex-1">
+          <p className="font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">R&amp;D &gt;</p>
+          <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">The research queue, the TECH timeline, specialties and lab projects. RESEARCH SERVERS below make the points.</p>
+        </div>
+      </Link>
       <div data-hub-menu className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2">
         {HUB_ITEMS.map((item) => {
           const open = item.open(state);

@@ -59,7 +59,7 @@ export default function LockedRow({ index, id, state, onOpen }) {
                   <button
                     type="button"
                     data-era-research={n.research}
-                    onClick={() => navigate({ to: "/tech", hash: n.research })}
+                    onClick={() => navigate({ to: "/research", hash: `tech-${n.research}` })}
                     className="mt-1 min-h-11 border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]"
                   >
                     GO TO TECH

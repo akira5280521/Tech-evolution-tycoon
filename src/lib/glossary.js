@@ -71,7 +71,11 @@ export const GLOSSARY = {
   },
   research: {
     term: "R&D POINTS",
-    text: `The one research currency, made only by research machines in ${HUB_LABEL} (beside TECH), then RESEARCH SERVERS: a punch-card multiplier from the start, then research servers from Mainframes. Earned at half rate while the game is closed; the servers only bank what their disks hold then (1 hour of output, plus 1 per TB), while the punch-card machine banks all day. Never lost, even when you prestige. Spend them on the R&D tab and the TECH timeline.`
+    text: `The one research currency, made only by research machines in ${HUB_LABEL} > RESEARCH SERVERS: a punch-card multiplier from the start, then research servers from Mainframes. Earned at half rate while the game is closed; the servers only bank what their disks hold then (1 hour of output, plus 1 per TB), while the punch-card machine banks all day. Never lost, even when you prestige. Spend them in the R&D menu: the TECH timeline, SPECIALTY and LAB PROJECTS.`
+  },
+  queue: {
+    term: "RESEARCH QUEUE",
+    text: "One TECH project runs at a time. Queue slots let more wait their turn: the next one starts by itself when the running one finishes, and pays its R&D points then. The first slot is the Lab Notebook (1951) in R&D > LAB PROJECTS; more come with later eras, up to 4. They are earned with R&D points, never bought with money.",
   },
   lab: {
     term: "LAB PROJECTS",
@@ -110,6 +114,7 @@ export const GLOSSARY_ORDER = [
   "tokens",
   "research",
   "specialty",
+  "queue",
   "lab",
   "challenge",
   "projects",

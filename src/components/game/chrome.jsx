@@ -7,7 +7,6 @@ import { monthName } from "@/lib/releaseMonths";
 import { PREFS_EVENT } from "@/lib/gamePrefs";
 import { progressLabel } from "@/lib/progress";
 import BottomTabs from "./BottomTabs";
-import { TechHqLinks } from "./TopBar";
 import { ItemHelp, TipCard } from "./HintSheet";
 import NewsTicker from "./NewsTicker";
 import { useGameState } from "./GameState";
@@ -135,14 +134,42 @@ export default function ScreenShell({ title, subtitle, children, backTo = "/", t
             </div>
             <BackButton to={backTo} />
           </div>
-          <div className="mt-2">
-            <TechHqLinks state={state} />
-          </div>
         </div>
       </header>
       <main className="safe-x mx-auto max-w-4xl space-y-3 px-3 py-4">{children}</main>
       <BottomTabs />
       <TipCard />
+    </div>
+  );
+}
+
+// Sub-tabs under a menu's title (T3 item 14: title + BACK, sub-tabs, content).
+// tabs: [{ id, label, dot?, locked? }]. A locked tab is greyed with "Coming soon".
+export function SubTabs({ tabs, active, onPick, name = "menu" }) {
+  return (
+    <div data-sub-tabs={name} role="tablist" className={`grid gap-2 ${tabs.length >= 4 ? "grid-cols-4" : tabs.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          role="tab"
+          aria-selected={active === tab.id}
+          aria-disabled={tab.locked ? "true" : undefined}
+          data-sub-tab={tab.id}
+          onClick={() => !tab.locked && onPick(tab.id)}
+          className={`relative min-h-11 min-w-0 border-2 px-1 py-1 text-center font-pixel text-[0.5rem] leading-4 shadow-[3px_3px_0_0_#000] ${
+            tab.locked
+              ? "cursor-not-allowed border-[var(--game-border)] text-[var(--game-dim)]"
+              : active === tab.id
+              ? "border-[var(--game-accent)] bg-[var(--game-accent)] text-black"
+              : "border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-muted)]"
+          }`}
+        >
+          {tab.label}
+          {tab.locked && <span className="block font-term text-xs leading-4">Coming soon</span>}
+          {tab.dot && <span data-sub-tab-dot aria-label="ready" className="absolute -right-1 -top-1 h-2.5 w-2.5 border border-black bg-[var(--game-danger)]" />}
+        </button>
+      ))}
     </div>
   );
 }

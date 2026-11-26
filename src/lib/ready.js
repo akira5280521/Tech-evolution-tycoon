@@ -3,7 +3,7 @@
 import { BUSINESSES, eraOpen } from "./gameConfig.js";
 import { LAB_PROJECTS, SPECIALTIES, canCommit, labQuote, upgradeOffer, upgradesOf } from "./empire.js";
 import { facilityUnlocked } from "./facilities.js";
-import { researchUnlocks } from "./research.js";
+import { queueSlotQuote, researchUnlocks } from "./research.js";
 
 const BUCKETS = ["boost", "research", "tech", "hq"];
 
@@ -47,6 +47,8 @@ function researchKeys(state, now) {
   for (const item of LAB_PROJECTS) {
     if (labQuote(state, item.id, now).ok) out.push(`lab:${item.id}`);
   }
+  const slot = queueSlotQuote(state);
+  if (slot.ok) out.push(`lab:queue-${slot.slot.id}`);
   return out;
 }
 

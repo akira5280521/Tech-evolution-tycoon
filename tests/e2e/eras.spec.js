@@ -38,9 +38,9 @@ test("a late era names its TECH project and GO TO TECH opens it", async ({ page 
   await tipsOff(page);
   const need = page.locator("[data-locked-era] [data-era-need='research']");
   await need.scrollIntoViewIfNeeded();
-  await expect(need).toContainText("Research Tensor P100 on TECH");
+  await expect(need).toContainText("Research Tensor P100 in R&D > TECH");
   await need.locator("[data-era-research]").click();
-  await expect(page).toHaveURL(/\/tech#card-p100$/);
+  await expect(page).toHaveURL(/\/research#tech-card-p100$/);
   await expect(page.locator("[data-research-item='card-p100']")).toHaveAttribute("data-focus", "1");
   expectClean(seen);
 });

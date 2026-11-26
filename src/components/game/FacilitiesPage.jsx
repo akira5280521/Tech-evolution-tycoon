@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "@tanstack/react-router";
+import { Link, Navigate } from "@tanstack/react-router";
 import { REFINED, money } from "@/lib/gameConfig";
 import { businessIncomePerSecond, incomePerSecond } from "@/lib/empire";
 import {
@@ -146,6 +146,9 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
   const bench = facility.id === "bench";
   const counts = state.facilities?.[facility.id] || {};
   const [benchTab, setBenchTab] = useState("cpu");
+  // Research servers (T3 item 52): machines, room equipment, and a pointer to
+  // the Home PC parts on the bench.
+  const [serverTab, setServerTab] = useState("machines");
   const [showAll, setShowAll] = useState(false);
   let parts = PARTS.filter((part) => part.fits.includes(facility.id));
   // The bench has close to a hundred parts across 50 years: show one kind at a
@@ -167,6 +170,15 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
   // Other locked plants show the need, not a wall of greyed parts.
   if (starterOnly) parts = parts.filter((part) => part.starter);
   else if (!open) parts = [];
+  if (research && open) {
+    const kinds = SERVER_TABS.find((t) => t.id === serverTab)?.kinds || [];
+    parts = parts.filter((part) => kinds.includes(part.kind));
+  }
+  const limited = research && open && /^(Power|Cooling) limited$/.test(row.limit || "");
+  const showRoomTab = () => {
+    setServerTab("room");
+    setTimeout(() => document.querySelector("[data-server-tabs]")?.scrollIntoView({ block: "start" }), 50);
+  };
   return (
     <Panel>
       <div id={facility.id} data-facility={facility.id} data-locked={open || starterOnly ? undefined : ""} className="scroll-mt-[var(--hud-h,0px)]">
@@ -191,6 +203,11 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
               {row.tier ? ` · ${row.tier} model` : ""}
               {open && (/Bottleneck/.test(row.limit || "") ? <HelpTip term="bottleneck" /> : row.limit === "Network-limited" ? <HelpTip term="network" /> : null)}
             </p>
+            {limited && serverTab !== "room" && (
+              <button type="button" data-limit-shortcut onClick={showRoomTab} className="mt-1 min-h-11 w-full border-2 border-[var(--game-danger)] px-2 text-left font-pixel text-[0.5rem] leading-4 text-[var(--game-danger)]">
+                {row.limit.toUpperCase()}: SEE ROOM EQUIPMENT &gt;
+              </button>
+            )}
             <p data-facility-hint className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{facilityHint(state, facility.id, business)}</p>
           </>
         ) : (
@@ -259,6 +276,39 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
             ))}
           </div>
         )}
+        {research && open && (
+          <div data-server-tabs role="tablist" className="mt-2 grid scroll-mt-[var(--hud-h,0px)] grid-cols-3 gap-2">
+            {SERVER_TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={serverTab === t.id}
+                data-server-tab={t.id}
+                onClick={() => setServerTab(t.id)}
+                className={`min-h-12 border-2 px-1 font-pixel text-[0.5rem] leading-4 ${serverTab === t.id ? "border-[var(--game-accent)] text-[var(--game-accent)]" : "border-[var(--game-border-strong)] text-[var(--game-muted)]"}`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {research && open && serverTab === "home" && (
+          <div data-server-home className="mt-2 space-y-2">
+            <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
+              Home PC parts (boards, CPUs, memory, cases, power supplies, sound and video) go on the PC Build Bench. Its PC makes R&amp;D points too.
+            </p>
+            {facilityUnlocked(state, "bench") ? (
+              <Link to="/facilities/$facilityId" params={{ facilityId: "bench" }} data-server-bench-link className="flex min-h-11 items-center justify-center border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.55rem] text-black shadow-[3px_3px_0_0_#000]">
+                PC BUILD BENCH &gt;
+              </Link>
+            ) : (
+              <p aria-disabled="true" data-server-bench-locked className="border-2 border-[var(--game-border)] p-2 font-pixel text-[0.5rem] leading-4 text-[var(--game-dim)] opacity-60">
+                PC BUILD BENCH · {facilityNeed("bench")} · COMING SOON
+              </p>
+            )}
+          </div>
+        )}
         <div className="mt-2 space-y-2">
           {parts.map((part) => (
             <PartRow
@@ -294,6 +344,12 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
     </Panel>
   );
 }
+
+const SERVER_TABS = [
+  { id: "machines", label: "SERVER MACHINES", kinds: ["tabulator", "server"] },
+  { id: "room", label: "ROOM EQUIPMENT", kinds: ["power", "cool", "disk", "link"] },
+  { id: "home", label: "HOME PC PARTS", kinds: [] },
+];
 
 const BENCH_TABS = [
   ["board", "BOARDS", ["board"]],
@@ -364,6 +420,12 @@ export default function FacilitiesPage({ facilityId }) {
   return (
     <ScreenShell title={facility.name} subtitle={facility.blurb} backTo={HUB_ROUTE}>
       <FacilityRoom facilityId={facility.id} state={state} />
+      {facilityId === "servers" && (
+        <Link to="/research" data-servers-rd className="flex min-h-11 items-center justify-between border-2 border-[var(--game-accent)] bg-[var(--game-panel)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]">
+          <span>R&amp;D: SPEND THESE POINTS</span>
+          <span>&gt;</span>
+        </Link>
+      )}
       {showRebuild && plantsOpen && (
         <p className="break-words px-1 font-term text-base leading-5 text-[var(--game-muted)]">
           Both plants together pay {money(report.perSecond)}/s, {percent(report.share)} of the businesses. Short power or cooling throttles the cards. The cluster also needs enough memory for its model.

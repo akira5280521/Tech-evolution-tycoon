@@ -456,7 +456,7 @@ export const LAB_PROJECTS = [
 ];
 
 export function blankLab() {
-  return { overclockUntil: 0, coolUntil: 0, patentDay: null, patents: 0, crew: false, fabDay: null, fabs: 0, cleanUntil: 0 };
+  return { overclockUntil: 0, coolUntil: 0, patentDay: null, patents: 0, crew: false, fabDay: null, fabs: 0, cleanUntil: 0, queueSlots: 0 };
 }
 
 export function cleanLab(raw, now = Date.now()) {
@@ -476,6 +476,8 @@ export function cleanLab(raw, now = Date.now()) {
     fabDay,
     fabs: Math.min(LAB_FAB.perDay, Math.floor(n(l.fabs))),
     cleanUntil: Math.min(n(l.cleanUntil), now + LAB_CLEAN.ms),
+    // Research queue slots earned (0-4), kept for good like the crew.
+    queueSlots: Math.min(4, Math.floor(n(l.queueSlots))),
   };
 }
 
@@ -604,6 +606,7 @@ export function blankMeta() {
     techDone: [],
     techJob: null,
     techJob2: null,
+    techQueue: [],
     goalsDone: [],
     boughtX10: false,
     hubSeen: false,
@@ -1882,6 +1885,7 @@ export function snapshotMeta(state, options = {}) {
     techDone: [...(state.techDone || [])],
     techJob: state.techJob ? { ...state.techJob } : null,
     techJob2: state.techJob2 ? { ...state.techJob2 } : null,
+    techQueue: [...(state.techQueue || [])],
     news: Array.isArray(state.news) ? state.news.slice(-40) : [],
     specialties: [...(state.specialties || [])],
     upgrades: resetRunUpgrades ? {} : JSON.parse(JSON.stringify(state.upgrades || {})),

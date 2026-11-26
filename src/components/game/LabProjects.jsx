@@ -37,17 +37,21 @@ function status(state, id, now) {
 }
 
 // Lab projects: spend spare research data any time, at fixed prices.
-export default function LabProjects({ state, onRun }) {
+export default function LabProjects({ state, onRun, bare = false }) {
   const now = Date.now();
   return (
     <Panel>
-      <h2 className="flex items-center gap-2 font-pixel text-[0.7rem]">
-        <Zap className="h-4 w-4 text-[var(--game-accent)]" aria-hidden="true" />
-        LAB PROJECTS <HelpTip term="lab" />
-      </h2>
-      <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
-        Spend spare R&D points any time. Each price is fixed.
-      </p>
+      {!bare && (
+        <>
+          <h2 className="flex items-center gap-2 font-pixel text-[0.7rem]">
+            <Zap className="h-4 w-4 text-[var(--game-accent)]" aria-hidden="true" />
+            LAB PROJECTS <HelpTip term="lab" />
+          </h2>
+          <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
+            Spend spare R&D points any time. Each price is fixed.
+          </p>
+        </>
+      )}
       {LAB_PROJECTS.map((item) => {
         const quote = labQuote(state, item.id, now);
         const st = status(state, item.id, now);

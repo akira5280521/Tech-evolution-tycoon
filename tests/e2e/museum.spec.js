@@ -38,7 +38,7 @@ test("a new game sees locked pieces as silhouettes with only their decade", asyn
   const sil = locked.first().locator("img.museum-sil");
   await expect(sil).toBeVisible();
   const filter = await sil.evaluate((el) => getComputedStyle(el).filter);
-  expect(filter).toMatch(/grayscale/i);
+  expect(filter).toMatch(/brightness\(0\)/i);
   await locked.first().click();
   await expect(page.locator("[data-exhibit-sheet]")).toContainText("???");
 });
@@ -100,4 +100,13 @@ test("chip labels do not clip at 360px or 412px", async ({ page }) => {
       }
     }
   }
+});
+
+test("pieces you don't own are dark silhouettes; owned ones are in full color", async ({ page }) => {
+  await open(page, "/progress#museum", "late");
+  const owned = page.locator("[data-exhibit][data-status='owned'] img").first();
+  await expect(owned).toBeVisible();
+  expect(await owned.evaluate((el) => getComputedStyle(el).filter)).toBe("none");
+  const other = page.locator("[data-exhibit][data-status='open'] img, [data-exhibit][data-status='retired'] img").first();
+  if (await other.count()) expect(await other.evaluate((el) => getComputedStyle(el).filter)).toMatch(/brightness\(0\)/);
 });

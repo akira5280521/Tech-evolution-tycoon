@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { HUB_ITEMS, HUB_LABEL } from "@/lib/hub";
+import { companyName } from "@/lib/company";
 import { useGameState } from "./GameState";
 import ScreenShell from "./chrome";
 import { hqCardHasDot, readyDots } from "@/lib/ready";
@@ -31,7 +32,7 @@ export default function RigsHub() {
   useEffect(() => { noteTutorialPage?.("hq"); }, [noteTutorialPage]);
   const dots = readyDots(state);
   return (
-    <ScreenShell title={HUB_LABEL} subtitle="Your hardware. Pick a section.">
+    <ScreenShell title={HUB_LABEL} subtitle={`${companyName(state)}: your hardware. Pick a section.`}>
       <div data-hub-menu className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2">
         {HUB_ITEMS.map((item) => {
           const open = item.open(state);

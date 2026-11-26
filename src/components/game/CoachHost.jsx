@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
+import { companyPrompt } from "@/lib/company";
 import { currentCoach } from "@/lib/tutorial";
 import { useGameState } from "./GameState";
 import CoachMark from "./CoachMark";
@@ -25,7 +26,8 @@ export default function CoachHost() {
     }
   }, [coach?.kind, coach?.tourId, coach?.route, location.pathname, navigate]);
 
-  if (!coach) return null;
+  // A new game names the company first.
+  if (!coach || companyPrompt(state) === "screen") return null;
   return (
     <CoachMark
       state={state}

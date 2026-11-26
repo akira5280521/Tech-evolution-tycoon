@@ -15,11 +15,14 @@ export const ROUTES = ["/", "/boost", "/tech", "/rigs", "/facilities/servers", "
 // Put a save in localStorage before the app starts. Only once per tab, so a
 // reload keeps whatever the game saved since. `save` is a fixture name from
 // tests/fixtures/saves.json or a save object.
-export async function seed(page, save, { seenNotes = true, extra = {}, restartOffer = false, prefs = {}, historyEvents = false } = {}) {
+export async function seed(page, save, { seenNotes = true, extra = {}, restartOffer = false, prefs = {}, historyEvents = false, askName = false } = {}) {
   let data = typeof save === "string" ? { ...SAVES[save], lastSeen: Date.now() } : save;
   // The fixtures are older saves; the one-time "start fresh?" offer is tested
   // on its own, so other tests skip it.
   if (data && !restartOffer) data = { ...data, restartSeen: true };
+  // Naming the company is tested on its own (company.spec.js); other tests
+  // start with it already asked.
+  if (data && !askName) data = { companyAsked: true, ...data };
   // History events added in step 1 would otherwise pop over late-era fixtures
   // (Moore's Law once Integrated Circuits are owned, early contracts once
   // Punch Cards / Relay / Tubes are owned) and steal clicks. Tests that want

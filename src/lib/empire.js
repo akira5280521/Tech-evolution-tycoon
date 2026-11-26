@@ -1934,6 +1934,9 @@ export function snapshotMeta(state, options = {}) {
     bestEra: Math.max(0, Math.floor(state.bestEra || 0)),
     runs: Array.isArray(state.runs) ? state.runs.slice(-40) : [],
     milestones: { ...(state.milestones || {}) },
+    // The company's name, and whether the player was asked for one.
+    companyName: state.companyName || null,
+    companyAsked: !!state.companyAsked,
     // Compute records passed (kept forever).
     computeRecords: [...(state.computeRecords || [])],
     // Best "ahead of history" per era; the run calendar itself starts over.

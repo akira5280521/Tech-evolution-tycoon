@@ -21,6 +21,7 @@ import ContractCard, { ContractChip } from "./ContractCard";
 import StoryEventModal from "./StoryEventModal";
 import { currentArrival } from "@/lib/arrivals";
 import BubbleBanner from "./BubbleBanner";
+import { CompanyNameCard, CompanyNameScreen } from "./CompanyName";
 import AnniversaryBanner from "./AnniversaryBanner";
 import { ItemHelp, TipCard } from "./HintSheet";
 import { currentTutorialStep, stepTarget, tutorialActive } from "@/lib/tutorial";
@@ -297,6 +298,7 @@ export default function GameScreen() {
 
         <main className="safe-x mx-auto min-w-0 max-w-4xl space-y-2 overflow-x-hidden px-3 py-2">
           <BubbleBanner state={state} onCashOut={cashOut} />
+          <CompanyNameCard state={state} onName={game.nameCompany} />
           <AnniversaryBanner state={state} />
           {state.challenge && (
             <p className="break-words border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-3 font-term text-lg leading-6 text-[var(--game-accent)]">
@@ -361,6 +363,8 @@ export default function GameScreen() {
         }}
       />
       <BottomTabs />
+      {/* A new game names the company first; the coach waits for it (CoachHost). */}
+      <CompanyNameScreen state={state} onName={game.nameCompany} />
       <TipCard />
     </div>
   );

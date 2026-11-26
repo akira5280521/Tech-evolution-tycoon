@@ -64,12 +64,14 @@ test("the base and the machines both follow the owned machines", () => {
   assert.notDeepEqual(drawnIds(live), first);
 });
 
-test("the Inland 601 machines are drawn at the cabinets' scale, all on the floor", () => {
+// Sized from photos of the real IBM 601 (about 50-52 in tall) against the
+// room's 80 in door (about 85 px): the full 52x63 sprite (T3 extra).
+test("the Inland 601 machines are drawn at the real machine's size, all on the floor", () => {
   const six = serverAt({ tab601: 6 });
   const ctx = { stage: resolveServersStage(six) };
   for (const slot of SERVERS_ROOM.slots.filter((s) => s.unlockId === "tab601")) {
     for (const v of pickPlacements(six, slot, "servers", ctx)) {
-      assert.ok(v.h <= 52 && v.w <= 43, `${slot.id} is ${v.w}x${v.h}`);
+      assert.ok(v.w === 52 && v.h === 63, `${slot.id} is ${v.w}x${v.h}`);
       assert.ok(v.y + v.h >= 140 && v.y + v.h <= 156, `${slot.id} bottom ${v.y + v.h} is on the floor`);
     }
   }

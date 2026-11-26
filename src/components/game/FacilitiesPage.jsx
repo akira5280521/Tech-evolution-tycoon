@@ -423,7 +423,7 @@ export default function FacilitiesPage({ facilityId }) {
   const showRebuild = facilityId === "mine" || facilityId === "cluster";
   const showNext = showRebuild && plantsOpen && next;
   return (
-    <ScreenShell title={facility.name} subtitle={facility.blurb} backTo={HUB_ROUTE}>
+    <ScreenShell title={facility.name} subtitle={facility.blurb} backTo={HUB_ROUTE} crumbVia="HARDWARE">
       {facilityId === "bench" && (
         <SubTabs
           tabs={[{ id: "build", label: "BUILD" }, { id: "saved", label: "SAVED BUILDS" }]}

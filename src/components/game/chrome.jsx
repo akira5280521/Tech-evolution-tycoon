@@ -5,6 +5,7 @@ import { money, reachedEraLabel } from "@/lib/gameConfig";
 import { inGameMonth } from "@/lib/research";
 import { monthName } from "@/lib/releaseMonths";
 import { PREFS_EVENT } from "@/lib/gamePrefs";
+import { HUB_LABEL, HUB_ROUTE } from "@/lib/hub";
 import { progressLabel } from "@/lib/progress";
 import BottomTabs from "./BottomTabs";
 import { ItemHelp, TipCard } from "./HintSheet";
@@ -113,7 +114,21 @@ export function Embedded({ children }) {
   return <EmbedCtx.Provider value={true}>{children}</EmbedCtx.Provider>;
 }
 
-export default function ScreenShell({ title, subtitle, children, backTo = "/", titleIcon } = {}) {
+// Where you are, from HQ (T3 item 32): "HQ > PC BUILD BENCH". HQ is a link
+// back to the hub from any menu.
+function Breadcrumb({ title, via }) {
+  const name = String(title || "").replace(/\s+/g, " ").trim();
+  return (
+    <nav data-breadcrumb aria-label="Where you are" className="mb-1 flex min-w-0 flex-wrap items-center gap-1 font-pixel text-[0.5rem] leading-5 text-[var(--game-muted)]">
+      <Link to={HUB_ROUTE} data-back-hq className="underline decoration-dotted hover:text-[var(--game-accent)]">{HUB_LABEL}</Link>
+      {via && <><span aria-hidden="true">&gt;</span><span>{via}</span></>}
+      <span aria-hidden="true">&gt;</span>
+      <span className="min-w-0 break-words text-[var(--game-fg)]">{name}</span>
+    </nav>
+  );
+}
+
+export default function ScreenShell({ title, subtitle, children, backTo = "/", titleIcon, crumbVia } = {}) {
   const embedded = useContext(EmbedCtx);
   const { state } = useGameState();
   if (embedded) return <div data-embedded className="space-y-3">{children}</div>;
@@ -125,6 +140,7 @@ export default function ScreenShell({ title, subtitle, children, backTo = "/", t
       {/* The page title scrolls away; only money and the ticker stay. */}
       <header className="safe-x border-b-2 border-[var(--game-border)] bg-[var(--game-bg)] px-3 pb-3 pt-2">
         <div className="mx-auto max-w-4xl">
+          {title !== HUB_LABEL && <Breadcrumb title={title} via={crumbVia} />}
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2.5">
               {titleIcon && (

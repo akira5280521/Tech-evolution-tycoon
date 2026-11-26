@@ -33,7 +33,8 @@ import ScreenShell, { Embedded, GoldButton, Panel, SubTabs } from "./chrome";
 import RigsGarage from "./RigsGarage";
 import { HelpTip, ItemHelp } from "./HintSheet";
 import FacilityRoom from "./FacilityRoom";
-import RoomStatus from "./RoomStatus";
+import RoomStatus, { MachineSpecBars } from "./RoomStatus";
+import { machineSpec, specBars } from "@/lib/machineSpecs";
 
 function percent(share) {
   if (!(share > 0)) return "0%";
@@ -74,6 +75,11 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, busi
         <span className="shrink-0 font-term text-base leading-5 text-[var(--game-accent)]">×{owned}</span>
         <ItemHelp kind="part" id={`${facilityId}:${part.id}`} state={state} name={part.name} className="-mr-1 -mt-2.5" />
       </div>
+      {facilityId === "servers" && part.kind === "server" && (
+        <div className={dim ? "opacity-60" : ""}>
+          <MachineSpecBars bars={specBars(part)} real={machineSpec(part.id)?.real} />
+        </div>
+      )}
       {part.soon ? (
         <p className="mt-2 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)] opacity-60">COMING SOON</p>
       ) : (

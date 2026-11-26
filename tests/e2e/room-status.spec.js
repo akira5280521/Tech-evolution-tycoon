@@ -75,3 +75,17 @@ test("room status fits a 360 px phone without sideways scroll", async ({ page })
   expect(wide).toBeLessThanOrEqual(360);
   expectClean(seen);
 });
+
+test("server cards show real-spec bars: speed, memory, storage, power and heat", async ({ page }) => {
+  const seen = await open(page, "/facilities/servers", through("supercomputers", { servers: { s360: 1, mgset: 1, roomac: 1 } }));
+  const card = page.locator("[data-part='s360']");
+  await expect(card.locator("[data-spec-bar]")).toHaveCount(5);
+  await expect(card.locator("[data-spec-bar='speed'] [data-spec-value]")).toHaveText("133kFLOPS");
+  await expect(card.locator("[data-spec-bar='memory'] [data-spec-value]")).toHaveText("256KB");
+  await expect(card.locator("[data-spec-bar='power'] [data-spec-value]")).toHaveText("6.5kW");
+  await expect(card.locator("[data-spec-real]")).toContainText("IBM System/360 Model 50");
+  // Room equipment has no spec bars.
+  await page.locator("[data-server-tab='room']").click();
+  await expect(page.locator("[data-part='mgset'] [data-spec-bars]")).toHaveCount(0);
+  expectClean(seen);
+});

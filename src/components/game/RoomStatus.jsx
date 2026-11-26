@@ -120,3 +120,27 @@ export default function RoomStatus({ facilityId, state, summary, locked = false 
     </section>
   );
 }
+
+// Per-machine spec bars (T5 item 54): log-scale bars from the real model's
+// figures, compact enough for a part card.
+const SPEC_TONES = { speed: TONES.blue, memory: TONES.green, storage: "#9a7ee8", power: TONES.yellow, heat: TONES.orange };
+const SPEC_ICONS = { speed: "cpu", memory: "ram", storage: "disk", power: "bolt", heat: "heat" };
+
+export function MachineSpecBars({ bars, real }) {
+  if (!bars?.length) return null;
+  return (
+    <div data-spec-bars className="status-frame mt-2 px-2 py-1.5">
+      {real && <p data-spec-real className="mb-1 font-status text-xs leading-4 text-[#9690ac]">Real model: {real}</p>}
+      {bars.map((b) => (
+        <div key={b.id} data-spec-bar={b.id} className="flex items-center gap-1.5 py-0.5">
+          <StatIcon kind={SPEC_ICONS[b.id]} color={SPEC_TONES[b.id]} />
+          <span className="w-[4.5rem] shrink-0 font-status text-xs font-bold leading-4">{b.label}</span>
+          <div className="status-track h-3 min-w-0 flex-1 overflow-hidden">
+            <div className="status-fill h-full" style={{ width: `${(b.frac * 100).toFixed(1)}%`, backgroundColor: SPEC_TONES[b.id] }} />
+          </div>
+          <span data-spec-value className="w-[4.75rem] shrink-0 text-right font-status text-xs leading-4 text-[#ece8f6]">{b.text}</span>
+        </div>
+      ))}
+    </div>
+  );
+}

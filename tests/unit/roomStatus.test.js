@@ -75,3 +75,24 @@ test("unit formatting", () => {
   assert.equal(fmtBytes(256e3), "256 KB");
   assert.equal(fmtBytes(7.25e6), "7.25 MB");
 });
+
+test("machine spec bars: five log-scale bars from the real model, newer machines longer", async () => {
+  const { specBars } = await import("../../src/lib/machineSpecs.js");
+  const part = (id) => PARTS.find((p) => p.id === id);
+  const s360 = specBars(part("s360"));
+  assert.deepEqual(s360.map((b) => b.id), ["speed", "memory", "storage", "power", "heat"]);
+  assert.equal(s360[0].text, "133kFLOPS");
+  assert.equal(s360[1].text, "256KB");
+  assert.equal(s360[2].text, "7.25MB");
+  assert.equal(s360[3].text, "6.5kW");
+  assert.equal(s360[4].text, s360[3].text, "heat is the power draw");
+  const ex = specBars(part("crayex"));
+  assert.ok(ex[0].frac > specBars(part("cray1"))[0].frac && specBars(part("cray1"))[0].frac > s360[0].frac);
+  for (const p of PARTS.filter((x) => x.kind === "server")) for (const b of specBars(p)) assert.ok(b.frac > 0 && b.frac <= 1, `${p.id} ${b.id}`);
+  assert.equal(specBars(part("tab601")), null);
+});
+
+test("X-MP/48 draws more room power than the Cray-1 and Cray-2 (345 kW real)", () => {
+  const w = (id) => PARTS.find((p) => p.id === id).watts;
+  assert.ok(w("xmp") > w("cray1") && w("xmp") > w("cray2"));
+});

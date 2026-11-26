@@ -88,3 +88,39 @@ export function fmtBytes(b) {
   if (v >= 1e3) return `${Number((v / 1e3).toPrecision(3))} KB`;
   return `${Math.round(v)} B`;
 }
+
+// Per-machine spec bars (T5 item 54), on a log scale so a 1951 Mark 1 and
+// a 2021 Cray EX cabinet both fit: each bar spans the range below, from the
+// smallest machine of the 1950s to the biggest of the 2020s. A longer bar is
+// more of that quantity. Power and heat are the same number: every watt a
+// computer draws ends up as heat.
+export const SPEC_RANGES = {
+  speed: [1e2, 1e17],
+  memory: [1e3, 1e15],
+  storage: [1e5, 1e13],
+  power: [0.05, 500],
+};
+
+function logFrac(v, [lo, hi]) {
+  if (!(v > 0)) return 0;
+  const f = (Math.log10(v) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo));
+  return Math.max(0.04, Math.min(1, f));
+}
+
+function shortSi(n, unit) {
+  return si(n, unit, 3).replace(" ", "");
+}
+
+// [{ id, label, frac, text }] for a research machine, or null.
+export function specBars(part) {
+  const spec = MACHINE_SPECS[part?.id];
+  if (!spec) return null;
+  const bytes = (part.diskGb || 0) * 1e9;
+  return [
+    { id: "speed", label: "SPEED", frac: logFrac(spec.flops, SPEC_RANGES.speed), text: shortSi(spec.flops, "FLOPS") },
+    { id: "memory", label: "MEMORY", frac: logFrac(spec.memBytes, SPEC_RANGES.memory), text: fmtBytes(spec.memBytes).replace(" ", "") },
+    { id: "storage", label: "STORAGE", frac: logFrac(bytes, SPEC_RANGES.storage), text: bytes > 0 ? fmtBytes(bytes).replace(" ", "") : "none" },
+    { id: "power", label: "POWER", frac: logFrac(spec.kw, SPEC_RANGES.power), text: fmtKw(spec.kw).replace(" ", "") },
+    { id: "heat", label: "HEAT", frac: logFrac(spec.kw, SPEC_RANGES.power), text: fmtKw(spec.kw).replace(" ", "") },
+  ];
+}

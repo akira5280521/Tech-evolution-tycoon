@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import MuseumIcon from "./MuseumIcon";
 import { partLock } from "@/lib/facilities";
 import { museumRows } from "@/lib/history";
 import {
@@ -173,7 +174,7 @@ export default function MuseumPage({ top = null, backTo } = {}) {
                     onClick={() => visit(e.item)}
                     className="mt-1 flex w-full min-h-11 items-center gap-2 text-left"
                   >
-                    <img src={e.item.icon} alt="" className={`h-10 w-10 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain ${e.found ? "" : "museum-sil"}`} />
+                    <MuseumIcon src={e.item.icon} shade={e.found ? "" : "museum-sil"} className="h-10 w-10 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain" />
                     <span className="min-w-0 break-words font-term text-lg leading-6 text-[var(--game-fg)]">
                       {new Date(Date.UTC(2000, e.month - 1, e.day)).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}, {e.year}:{" "}
                       {e.found ? e.text : "a piece you haven't found yet came out"}.
@@ -265,7 +266,7 @@ export default function MuseumPage({ top = null, backTo } = {}) {
                     className={`relative min-w-0 border-2 bg-black p-1 ${locked ? "border-[var(--game-border)]" : status === "owned" ? "border-[#e6c15a]" : "border-[var(--game-border-strong)]"}`}
                   >
                     {fresh ? <span data-new-dot className="museum-new-dot" /> : null}
-                    <img src={item.icon} alt="" className={`aspect-square w-full object-contain ${locked ? "museum-sil" : status === "retired" ? "grayscale" : ""}`} />
+                    <MuseumIcon src={item.icon} shade={locked ? "museum-sil" : status === "owned" || status === "seen" ? "" : "museum-shadow"} className="aspect-square w-full object-contain" />
                     <span className="block font-pixel text-[0.4rem] leading-3 text-[var(--game-muted)]">{locked ? `${Math.floor(item.year / 10) * 10}s` : item.year}</span>
                   </button>
                 );
@@ -295,7 +296,7 @@ function ExhibitSheet({ state, id, roomId, onClose }) {
     >
       <div className="hint-sheet-body">
       <div className="flex gap-3">
-        <img src={item.icon} alt="" className={`h-24 w-24 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain ${locked ? "museum-sil" : status === "retired" ? "grayscale" : ""}`} />
+        <MuseumIcon src={item.icon} shade={locked ? "museum-sil" : status === "owned" || status === "seen" ? "" : "museum-shadow"} className="h-24 w-24 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain" />
         <div className="min-w-0">
           <p className={`inline-block border-2 px-1 font-pixel text-[0.45rem] leading-4 ${STATUS_COLOR[status]}`}>{STATUS_LABEL[status]}</p>
           <h2 className="mt-1 break-words font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">{locked ? "???" : item.name}</h2>

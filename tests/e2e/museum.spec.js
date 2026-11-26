@@ -38,7 +38,7 @@ test("a new game sees locked pieces as silhouettes with only their decade", asyn
   const sil = locked.first().locator("img.museum-sil");
   await expect(sil).toBeVisible();
   const filter = await sil.evaluate((el) => getComputedStyle(el).filter);
-  expect(filter).toMatch(/grayscale/i);
+  expect(filter).toMatch(/brightness\(0\)/i);
   await locked.first().click();
   await expect(page.locator("[data-exhibit-sheet]")).toContainText("???");
 });
@@ -100,4 +100,32 @@ test("chip labels do not clip at 360px or 412px", async ({ page }) => {
       }
     }
   }
+});
+
+test("pieces you don't own are dark silhouettes; owned ones are in full color", async ({ page }) => {
+  await open(page, "/progress#museum", "late");
+  // The first room may own nothing; walk the rooms until one shows an owned piece.
+  const owned = page.locator("[data-exhibit][data-status='owned'] img").first();
+  const wings = page.locator("[data-museum-wings] button");
+  const rooms = page.locator("[data-room]");
+  for (let w = 0; w < (await wings.count()) && !(await owned.count()); w++) {
+    await wings.nth(w).click();
+    for (let i = 0; i < (await rooms.count()) && !(await owned.count()); i++) await rooms.nth(i).click();
+  }
+  await expect(owned).toBeAttached();
+  expect(await owned.evaluate((el) => getComputedStyle(el).filter)).toBe("none");
+  const other = page.locator("[data-exhibit][data-status='open'] img, [data-exhibit][data-status='retired'] img").first();
+  if (await other.count()) expect(await other.evaluate((el) => getComputedStyle(el).filter)).toMatch(/brightness\(0\)/);
+  // The shape is the piece's outline, not a filled square: the backdrop is keyed out.
+  const sil = page.locator("[data-exhibit][data-status='locked'] img[data-sil='ready']").first();
+  await expect(sil).toBeAttached();
+  const clear = await sil.evaluate(async (el) => {
+    const c = document.createElement("canvas");
+    c.width = el.naturalWidth;
+    c.height = el.naturalHeight;
+    const g = c.getContext("2d");
+    g.drawImage(el, 0, 0);
+    return g.getImageData(0, 0, 1, 1).data[3];
+  });
+  expect(clear).toBe(0);
 });

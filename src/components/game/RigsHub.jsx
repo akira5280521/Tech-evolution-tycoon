@@ -120,13 +120,13 @@ function PlantCard({ item, state, dots }) {
         aria-label={`${item.label}, locked`}
         data-hub-item={item.id}
         data-locked=""
-        className="flex min-h-16 gap-3 border-2 border-[var(--game-border)] bg-[var(--game-panel)] p-2 text-[var(--game-dim)] opacity-60"
+        className="flex h-20 items-center gap-3 overflow-hidden border-2 border-[var(--game-border)] bg-[var(--game-panel)] p-2 text-[var(--game-dim)] opacity-60"
       >
         {icon}
         <div className="min-w-0 flex-1">
-          <p className="font-pixel text-[0.55rem] leading-5">??? <span className="text-[var(--game-dim)]">{item.label}</span></p>
-          <p data-hub-need className="break-words font-pixel text-[0.5rem] leading-4">{item.need?.(state) || "Unlocks later in the timeline."}</p>
-          <p className="mt-1 font-pixel text-[0.5rem] leading-4">COMING SOON</p>
+          <p className="truncate font-pixel text-[0.55rem] leading-5">??? <span className="text-[var(--game-dim)]">{item.label}</span></p>
+          <p data-hub-need className="truncate font-pixel text-[0.5rem] leading-4">{item.need?.(state) || "Unlocks later in the timeline."}</p>
+          <p className="font-pixel text-[0.5rem] leading-4">COMING SOON</p>
         </div>
         <GoButton id={item.id} disabled />
       </div>
@@ -137,13 +137,13 @@ function PlantCard({ item, state, dots }) {
       to={item.to}
       params={item.params}
       data-hub-item={item.id}
-      className="relative flex min-h-16 gap-3 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] p-2 hover:border-[var(--game-accent)]"
+      className="relative flex h-20 items-center gap-3 overflow-hidden border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] p-2 hover:border-[var(--game-accent)]"
     >
       <ReadyDot show={hqCardHasDot(dots, item.id)} testId={item.id} />
       {icon}
       <div className="min-w-0 flex-1">
-        <p className="font-pixel text-[0.55rem] leading-5 text-[var(--game-accent)]">{item.label} &gt;</p>
-        <p className="break-words font-term text-base leading-5 text-[var(--game-fg)]">{item.text}</p>
+        <p className="truncate font-pixel text-[0.55rem] leading-5 text-[var(--game-accent)]">{item.label} &gt;</p>
+        <p data-hub-text className="truncate font-term text-base leading-5 text-[var(--game-fg)]">{item.text}</p>
       </div>
       <GoButton id={item.id} />
     </Link>

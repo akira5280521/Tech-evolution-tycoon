@@ -299,19 +299,19 @@ export const SERVERS_ROOM = {
         },
       ],
     },
-    // Inland 601 at full sprite size (52x63). Sized from photos of the real
-    // IBM 601 (Museum fur Kommunikation Bern, Milan science museum): about
-    // 50-52 in tall. The room's door is about 85 px for 80 in (1.06 px/in), so
-    // the ~58 px of machine in the sprite is ~54 in. Bottoms stay where they were.
+    // Inland 601, redrawn after photos of the real IBM 601 (Museum fur
+    // Kommunikation Bern, Milan science museum; scripts/art/tab601.py): wider
+    // than tall, ~66 x 57 px of machine. The room's door is about 85 px for
+    // 80 in (1.06 px/in), so that is ~62 x 54 in, the real machine's size.
     {
       id: "tab601-1",
       flavor: false,
       z: 30,
       unlockId: "tab601",
       variants: [
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 188, "y": 90, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 1, "facilityId": "servers", "stageId": "era-1930s-start"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 176, "y": 84, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 1, "facilityId": "servers", "stageId": "era-1930s-mid"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 108, "y": 84, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 1, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 180, "y": 90, "w": 68, "h": 63, "condition": {"partId": "tab601", "minParts": 1, "facilityId": "servers", "stageId": "era-1930s-start"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 168, "y": 84, "w": 68, "h": 63, "condition": {"partId": "tab601", "minParts": 1, "facilityId": "servers", "stageId": "era-1930s-mid"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 100, "y": 84, "w": 68, "h": 63, "condition": {"partId": "tab601", "minParts": 1, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
       ],
     },
     {
@@ -320,8 +320,8 @@ export const SERVERS_ROOM = {
       z: 30,
       unlockId: "tab601",
       variants: [
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 212, "y": 84, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 2, "facilityId": "servers", "stageId": "era-1930s-mid"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 156, "y": 84, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 2, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 204, "y": 84, "w": 68, "h": 63, "condition": {"partId": "tab601", "minParts": 2, "facilityId": "servers", "stageId": "era-1930s-mid"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 148, "y": 84, "w": 68, "h": 63, "condition": {"partId": "tab601", "minParts": 2, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
       ],
     },
     {
@@ -330,8 +330,8 @@ export const SERVERS_ROOM = {
       z: 30,
       unlockId: "tab601",
       variants: [
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 198, "y": 90, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 3, "facilityId": "servers", "stageId": "era-1930s-mid"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 204, "y": 84, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 3, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 190, "y": 90, "w": 68, "h": 63, "condition": {"partId": "tab601", "minParts": 3, "facilityId": "servers", "stageId": "era-1930s-mid"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 196, "y": 84, "w": 68, "h": 63, "condition": {"partId": "tab601", "minParts": 3, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
       ],
     },
     {
@@ -340,7 +340,7 @@ export const SERVERS_ROOM = {
       z: 30,
       unlockId: "tab601",
       variants: [
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 126, "y": 90, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 4, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 118, "y": 90, "w": 68, "h": 63, "condition": {"partId": "tab601", "minParts": 4, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
       ],
     },
     {
@@ -349,7 +349,7 @@ export const SERVERS_ROOM = {
       z: 30,
       unlockId: "tab601",
       variants: [
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 172, "y": 90, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 5, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 164, "y": 90, "w": 68, "h": 63, "condition": {"partId": "tab601", "minParts": 5, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
       ],
     },
     {
@@ -358,7 +358,7 @@ export const SERVERS_ROOM = {
       z: 30,
       unlockId: "tab601",
       variants: [
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 210, "y": 90, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 6, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 202, "y": 90, "w": 68, "h": 63, "condition": {"partId": "tab601", "minParts": 6, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
       ],
     },
     {

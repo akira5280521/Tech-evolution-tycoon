@@ -103,3 +103,13 @@ test("a locked HQ room is greyed and can't be tapped", async ({ page }) => {
   await expect(prestige).toHaveAttribute("aria-disabled", "true");
   expectClean(seen);
 });
+
+test("every HQ plant card is the same fixed height with one short line", async ({ page }) => {
+  const seen = await open(page, "/rigs", "late");
+  await tipsOff(page);
+  const heights = await page.locator("[data-hub-item]").evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().height)));
+  expect(heights.length).toBe(4);
+  expect(new Set(heights).size).toBe(1);
+  await expect(page.locator("[data-hub-item='servers'] [data-hub-text]")).toHaveText("Makes R&D points for research.");
+  expectClean(seen);
+});

@@ -110,14 +110,14 @@ export const TUTORIAL_STEPS = [
   {
     id: "hq",
     title: "HEADQUARTERS",
-    text: `Tap ${HUB_LABEL} (beside BUY AMOUNT). It is the menu for research machines, later plants, and the Hardware Museum.`,
+    text: `Tap ${HUB_LABEL} (beside BUY AMOUNT, or in the bar below). ${HUB_LABEL} is your company building: one card per department, floor by floor.`,
     target: "[data-open-facilities]",
     done: (s) => !!(s.tutorial?.opened || []).includes("hq"),
   },
   {
     id: "hq-go",
     title: "GO",
-    text: "These are locations you can visit. Tap GO to go there.",
+    text: "Each card is a floor. The HARDWARE floor holds your plants. Tap GO on RESEARCH SERVERS.",
     target: "[data-action='go-servers']",
     done: (s) => !!(s.tutorial?.opened || []).includes("servers"),
   },
@@ -152,7 +152,7 @@ export const TUTORIAL_STEPS = [
   {
     id: "later",
     title: "WHAT'S AHEAD",
-    text: `Other plants open later: the PC Build Bench, the Bitbark Mine and the training cluster. A short guide walks you through each one when it unlocks. You can also read them in MORE > HOW TO PLAY.`,
+    text: `Other plants open later: the PC Build Bench, the Bitbark Mine and the training cluster. A short guide walks you through each one when it unlocks. They are on HQ's HARDWARE floor. BOOST holds upgrades and prestige, PROGRESS your runs, badges and the museum, and MORE > HOW TO PLAY explains every word.`,
     target: '[data-tab="research"]',
     manual: true,
     button: "DONE",

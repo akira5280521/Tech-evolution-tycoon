@@ -40,7 +40,8 @@ function forkReady(s) {
   return (s.investors || 0) >= forkCost(pts) && singularityMult(pts + 1) > singularityMult(pts);
 }
 
-// page: "game", "boost", "board", "runs", "research" or "more#<section>".
+// page: "game", "boost", "boost#<tab>", "progress#<tab>", "research",
+// "facilities", "rigs" (HQ) or "more#<section>".
 // target: optional CSS selector to outline while the tip is up.
 // when: checked against the live game state; omitted means "on first visit".
 export const TIPS = [
@@ -179,7 +180,7 @@ export const TIPS = [
     id: "page-boost",
     page: "boost",
     title: "UPGRADES",
-    text: "Each business has two upgrades. One pays 3 times as much, one runs twice as fast. They cost cash.",
+    text: "Each business has two upgrades. One pays 3 times as much, one runs twice as fast. They cost cash. The Foreman perk is at the top. NOW shows boosts on a timer, BONUSES what you keep for good, PRESTIGE starting over for investors.",
   },
   {
     id: "page-board",
@@ -213,6 +214,18 @@ export const TIPS = [
     when: (s) => (s.tutorial?.opened || []).includes("tech"),
     title: "RESEARCH, ONE AT A TIME",
     text: "Pick a project and tap START. It costs R&D points and finishes on its own, even with the app closed. More servers make the timer run faster. Processor and graphics projects unlock the next chip generation's pay.",
+  },
+  {
+    id: "page-hq",
+    page: "rigs",
+    title: "HQ",
+    text: "Your company, floor by floor. Each card is a department; tap a room to go there. A red dot means something is ready; grey rooms aren't open yet. The HQ link at the top of every menu brings you back.",
+  },
+  {
+    id: "page-prestige",
+    page: "boost#prestige",
+    title: "PRESTIGE",
+    text: "Prestige starts your run over for investors, and every investor makes everything earn more, forever. The guide says when it would at least double them.",
   },
   {
     id: "page-facilities",

@@ -163,7 +163,7 @@ test("the hq-go tutorial step sits after hq, before servers, and is step 8 of 13
   assert.ok(ids.indexOf("hq-go") < ids.indexOf("servers"));
   const step = TUTORIAL_STEPS.find((s) => s.id === "hq-go");
   assert.equal(step.title, "GO");
-  assert.equal(step.text, "These are locations you can visit. Tap GO to go there.");
+  assert.equal(step.text, "Each card is a floor. The HARDWARE floor holds your plants. Tap GO on RESEARCH SERVERS.");
   assert.equal(step.target, "[data-action='go-servers']");
   assert.equal(stepNumber(step), 8);
   assert.equal(TUTORIAL_STEPS.length, 13);

@@ -57,3 +57,12 @@ test("a save from before the calendar scores nothing it already owns", async ({ 
   await expect(page.locator("[data-ahead-table]")).toHaveCount(0);
   expectClean(seen);
 });
+
+test("beating an earlier best pays an era token", async ({ page }) => {
+  const seen = await open(page, "/", { ...save(), tokens: 3, historyBest: { cpu: -40 } });
+  await tipsOff(page);
+  await expect(page.getByText(/\+1 era token\./)).toBeVisible();
+  await expect.poll(async () => (await saved(page)).tokens).toBe(4);
+  expect((await saved(page)).historyBest.cpu).toBeGreaterThan(-40);
+  expectClean(seen);
+});

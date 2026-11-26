@@ -133,7 +133,7 @@ function AheadOfHistory({ state, now }) {
     <section data-ahead className="space-y-2">
       <h2 className="font-pixel text-[0.7rem] text-[var(--game-accent)]">AHEAD OF HISTORY</h2>
       <p className="font-term text-lg leading-6 text-[var(--game-muted)]">
-        Every run has a calendar that moves through history at a steady pace, and faster the more investors and forks you have. Open an era before the calendar reaches the year it really arrived to get ahead of history.
+        Every run has a calendar that moves through history at a steady pace, and faster the more investors and forks you have. Open an era before the calendar reaches the year it really arrived to get ahead of history. Beat your best on an era for +1 era token, up to 10 a run.
       </p>
       {year != null && (
         <p data-calendar-year={year} className="font-pixel text-[0.6rem] text-[var(--game-fg)]">CALENDAR: {year}</p>

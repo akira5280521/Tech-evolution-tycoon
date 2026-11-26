@@ -95,7 +95,8 @@ export default function CloudSync({ game }) {
 
   return (
     <div role="dialog" aria-label="Choose a save" className="fixed inset-0 z-40 flex items-center justify-center overscroll-contain bg-black/70 p-4">
-      <div data-cloud-choice className="game-modal w-full max-w-md border-4 border-[var(--game-accent)] bg-[var(--game-card)] p-4 shadow-[6px_6px_0_0_#000]">
+      <div data-cloud-choice className="game-modal flex w-full max-w-md flex-col overflow-hidden border-4 border-[var(--game-accent)] bg-[var(--game-card)] p-4 shadow-[6px_6px_0_0_#000]">
+        <div className="hint-sheet-body">
         <h2 className="font-pixel text-sm text-[var(--game-accent)]">CLOUD SAVE FOUND</h2>
         <p className="mt-3 font-term text-lg leading-6">
           Your Google Play Games save has more progress than this phone. Which one do you want to play?
@@ -115,7 +116,8 @@ export default function CloudSync({ game }) {
           </p>
         </div>
         <p className="mt-3 font-term text-base leading-5 text-[var(--game-muted)]">The one you don't pick is replaced. To keep both, export this phone's save from Save Backup first.</p>
-        <div className="mt-3 flex flex-col gap-2">
+        </div>
+        <div className="hint-sheet-actions mt-3 flex flex-col gap-2">
           <button type="button" data-cloud-load onClick={loadIt} className="min-h-11 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.6rem] text-black shadow-[3px_3px_0_0_#000]">
             LOAD CLOUD SAVE
           </button>

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { TUTORIAL_STEPS, currentTutorialStep, stepNumber, stepTarget, stepText } from "@/lib/tutorial";
+import { currentCoach, stepTarget, stepText } from "@/lib/tutorial";
 
 const PAD = 6;
 const GAP = 12;
@@ -60,7 +60,8 @@ function placeBubble({ rect, bubbleH, vw, vh, floor, width, minLeft }) {
 // The tutorial's coach mark: dims the screen around one target and explains
 // it in a bubble. Never blocks play: taps go through to the game everywhere.
 export default function CoachMark({ state, onNext, onSkip }) {
-  const step = currentTutorialStep(state);
+  const coach = currentCoach(state);
+  const step = coach?.step;
   const selector = stepTarget(step, state);
   const text = stepText(step, state);
   const [rect, setRect] = useState(null);
@@ -149,7 +150,8 @@ export default function CoachMark({ state, onNext, onSkip }) {
   const placed = placeBubble({ rect, bubbleH, vw, vh, floor, width, minLeft });
   const { top, left } = placed;
 
-  const n = stepNumber(step);
+  const n = coach.index;
+  const total = coach.total;
   return (
     <>
       {rect ? (
@@ -172,7 +174,7 @@ export default function CoachMark({ state, onNext, onSkip }) {
         ref={bubbleRef}
         role="dialog"
         aria-live="polite"
-        aria-label={`Tutorial step ${n} of ${TUTORIAL_STEPS.length}: ${step.title}`}
+        aria-label={`Tutorial step ${n} of ${total}: ${step.title}`}
         data-coach={step.id}
         className="fixed z-40 border-4 border-[var(--game-accent)] bg-[var(--game-card)] p-3 shadow-[6px_6px_0_0_#000]"
         style={{ top, left, width }}
@@ -180,7 +182,7 @@ export default function CoachMark({ state, onNext, onSkip }) {
         <div className="flex items-baseline justify-between gap-2">
           <h2 className="font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">{step.title}</h2>
           <span className="shrink-0 font-term text-base leading-5 text-[var(--game-muted)]">
-            {n}/{TUTORIAL_STEPS.length}
+            {n}/{total}
           </span>
         </div>
         <p className="mt-2 font-term text-lg leading-6 text-[var(--game-fg)]">{text}</p>
@@ -191,7 +193,7 @@ export default function CoachMark({ state, onNext, onSkip }) {
             onClick={onSkip}
             className="min-h-11 px-1 font-term text-base leading-5 text-[var(--game-muted)] underline"
           >
-            Skip tutorial
+            {coach.kind === "tour" ? "Skip" : "Skip tutorial"}
           </button>
           {(step.manual || state.tutorial?.replay) && (
             <button

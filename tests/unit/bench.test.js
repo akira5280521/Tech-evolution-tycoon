@@ -189,17 +189,16 @@ test("losing formats go out of production; a PCIe-card SSD runs at the slot's ge
 
 import { canStartResearch, startResearch, secondTechSlot } from "../../src/lib/research.js";
 
-test("a four-core CPU on the bench lets two Tech projects run at once", () => {
+test("only one Tech project runs at a time, even with a four-core CPU (0.0.31)", () => {
   const s = upTo("supercluster", []);
   s.data = 1e9;
   s.supply = { hpge: 100 };
   s.techDone = RESEARCH.map((e) => e.id).filter((id) => !["net-be", "snd-ae7"].includes(id));
   assert.ok(startResearch(s, "net-be").ok);
-  assert.equal(canStartResearch(s, "snd-ae7"), false, "one slot without a four-core CPU");
   s.facilities.bench = { "b-z690": 1, "c-12900k": 1, "m-ddr5b": 1, "p-750": 1 };
-  assert.ok(secondTechSlot(s));
-  assert.ok(startResearch(s, "snd-ae7").ok);
-  assert.equal(s.techJob2.id, "snd-ae7");
+  assert.equal(secondTechSlot(s), false);
+  assert.equal(canStartResearch(s, "snd-ae7"), false);
+  assert.equal(s.techJob2 || null, null);
 });
 
 test("coolers: socket mounts, case fit, heat and the overclock switch", () => {

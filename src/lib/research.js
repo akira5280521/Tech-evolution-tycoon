@@ -417,6 +417,165 @@ export function canStartResearch(state, id) {
   return (Number(state?.data) || 0) >= researchCost(entry);
 }
 
+// ---- Research queue (T3 item 23/24) ----
+// One project runs at a time. Queue slots let more projects wait their turn;
+// the next one starts by itself (and pays its R&D then) when the running one
+// finishes. Slots are earned as Lab Projects in their era, never paid for
+// with money.
+export const QUEUE_SLOTS = [
+  { id: "notebook", name: "LAB NOTEBOOK", year: 1951, cost: 6, blurb: "Write the next experiment down before this one ends: 1 research queue slot." },
+  { id: "planning", name: "PROJECT PLANNING OFFICE", year: 1962, cost: 40, blurb: "A planning office schedules the lab's work: a 2nd queue slot." },
+  { id: "gantt", name: "GANTT SOFTWARE", year: 1984, cost: 250, blurb: "Project charts on a desktop computer: a 3rd queue slot." },
+  { id: "tracker", name: "ISSUE TRACKER", year: 1998, cost: 700, blurb: "Every task in one shared database: a 4th queue slot." },
+];
+
+export function queueSlots(state) {
+  const n = Math.floor(Number(state?.lab?.queueSlots) || 0);
+  return Math.max(0, Math.min(QUEUE_SLOTS.length, n));
+}
+
+export function readTechQueue(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const id of raw) {
+    const entry = typeof id === "string" ? byId[id] : null;
+    if (entry && !entry.soon && !out.includes(id)) out.push(id);
+  }
+  return out.slice(0, QUEUE_SLOTS.length);
+}
+
+export function techQueue(state) {
+  return readTechQueue(state?.techQueue);
+}
+
+// The next slot to earn, with why it can't be bought yet (or ok).
+export function queueSlotQuote(state) {
+  const slot = QUEUE_SLOTS[queueSlots(state)];
+  if (!slot) return { ok: false, slot: null, reason: "Every queue slot is open." };
+  if (playerYear(state) < slot.year) return { ok: false, slot, reason: `Opens in ${slot.year}.` };
+  if ((Number(state?.data) || 0) < slot.cost) return { ok: false, slot, reason: `Needs ${slot.cost} R&D points.` };
+  return { ok: true, slot };
+}
+
+export function buyQueueSlot(state) {
+  const quote = queueSlotQuote(state);
+  if (!quote.ok) return quote;
+  state.data = Math.max(0, (Number(state.data) || 0) - quote.slot.cost);
+  state.lab = { ...(state.lab || {}), queueSlots: queueSlots(state) + 1 };
+  pushHeadline(state, `rd-queue-${quote.slot.id}`, `${companyCaps(state)} R&D: ${quote.slot.name} OPENS A RESEARCH QUEUE SLOT`);
+  return { ok: true, slot: quote.slot };
+}
+
+// Why a project can't join the queue, or null. A project whose only lock is
+// a prerequisite that is running or queued ahead of it may wait behind it.
+export function queueBlock(state, id) {
+  const entry = byId[id];
+  if (!entry || entry.soon) return "Locked";
+  if (!state?.techJob) return "Nothing is running: start it instead.";
+  if ((state.techDone || []).includes(id)) return "Done";
+  if (techJobs(state).some((job) => job.id === id)) return "Running";
+  const queue = techQueue(state);
+  if (queue.includes(id)) return "Queued";
+  if (queue.length >= queueSlots(state)) return queueSlots(state) ? "Queue full" : "No queue slot yet";
+  const ahead = new Set([...techJobs(state).map((job) => job.id), ...queue]);
+  const lock = researchLock(state, entry);
+  if (lock && !(entry.prereq && ahead.has(entry.prereq) && lock.startsWith("Research "))) return lock;
+  return null;
+}
+
+export function canQueueResearch(state, id) {
+  return queueBlock(state, id) === null;
+}
+
+export function queueResearch(state, id) {
+  if (!canQueueResearch(state, id)) return { ok: false };
+  state.techQueue = [...techQueue(state), id];
+  return { ok: true };
+}
+
+export function unqueueResearch(state, id) {
+  const queue = techQueue(state);
+  if (!queue.includes(id)) return { ok: false };
+  // Anything queued behind it that needed it goes too.
+  const drop = new Set([id]);
+  for (const qid of queue) if (byId[qid]?.prereq && drop.has(byId[qid].prereq)) drop.add(qid);
+  state.techQueue = queue.filter((qid) => !drop.has(qid));
+  return { ok: true };
+}
+
+// With nothing running, start the first queued project that can start. A
+// project that can never start (done, gone) leaves the queue; one waiting on
+// points or materials keeps its place and the queue waits.
+export function startQueued(state) {
+  if (!state || state.techJob) return false;
+  let queue = techQueue(state);
+  while (queue.length) {
+    const id = queue[0];
+    const entry = byId[id];
+    if (!entry || entry.soon || (state.techDone || []).includes(id)) {
+      queue = queue.slice(1);
+      continue;
+    }
+    if (canStartResearch(state, id)) {
+      state.techQueue = queue.slice(1);
+      return startResearch(state, id).ok;
+    }
+    break;
+  }
+  state.techQueue = queue;
+  return false;
+}
+
+// Why the head of the queue is waiting, or null.
+export function queueWait(state) {
+  if (state?.techJob) return null;
+  const id = techQueue(state)[0];
+  const entry = id && byId[id];
+  if (!entry) return null;
+  const lock = researchLock(state, entry);
+  if (lock) return lock;
+  if (!hasResearchMaterials(state, entry)) return "Waiting for materials";
+  const cost = researchCost(entry);
+  if ((Number(state.data) || 0) < cost) return `Waiting for ${cost.toLocaleString("en-US")} R&D`;
+  return null;
+}
+
+// ---- Home PC vs server room (T3 item 57) ----
+// Where a project's hardware is used: the PC Build Bench, the server room,
+// or the mine and cluster plants. Projects that open nothing go by their tab.
+const WHERE_LABEL = { bench: "Bench", servers: "Server room", mine: "Mine", cluster: "Training cluster" };
+const ROOM_TABS = new Set(["servers"]);
+const ROOM_IDS = new Set(["tab-hollerith", "pwr-switch", "net-imp"]);
+export function researchWhere(entry) {
+  if (!entry) return [];
+  const fits = [...new Set(researchUnlocks(entry.id).flatMap((part) => part.fits || []))];
+  if (fits.length) return ["bench", "servers", "mine", "cluster"].filter((id) => fits.includes(id));
+  return ROOM_TABS.has(entry.tab) || ROOM_IDS.has(entry.id) ? ["servers"] : ["bench"];
+}
+export function researchWhereLabel(entry) {
+  return researchWhere(entry).map((id) => WHERE_LABEL[id]).join(" + ");
+}
+// "home": the Home PC section; "room": the server room (and other plants).
+export function researchSection(entry, section) {
+  const where = researchWhere(entry);
+  if (section === "home") return where.includes("bench");
+  return where.some((id) => id !== "bench");
+}
+
+// Server tiers (T3 item 60): mainframes, then minicomputers and servers, and
+// supercomputers as their own line.
+export const SERVER_TIERS = [
+  { id: "mainframe", label: "MAINFRAMES", note: "Valve and transistor machines that fill a room." },
+  { id: "mini", label: "MINIS AND SERVERS", note: "Minicomputers, then rack and blade servers." },
+  { id: "super", label: "SUPERCOMPUTERS", note: "The supercomputer line branches off the Maynard 11/20 minicomputer." },
+];
+export function serverTier(entry) {
+  if (!entry || entry.tab !== "servers") return null;
+  if (["srv-mark1", "srv-7090", "srv-360"].includes(entry.id)) return "mainframe";
+  if (/^Chippewa/.test(entry.name) || entry.id === "srv-cm5") return "super";
+  return "mini";
+}
+
 export function startResearch(state, id) {
   const entry = byId[id];
   if (!canStartResearch(state, id)) return { ok: false };
@@ -471,6 +630,8 @@ export function advanceResearch(state, ms, rate = 1, cap = Infinity) {
     state.techJob = state.techJob2;
     state.techJob2 = null;
   }
+  // The next queued project starts as soon as the lab is free.
+  if (!state.techJob && startQueued(state)) finished = true;
   if (finished) return "done";
   return gain > 0 ? "gain" : false;
 }

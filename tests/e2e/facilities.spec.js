@@ -261,8 +261,12 @@ test("research servers stay locked behind their TECH project, not a BUY button",
   await expect(mark1.locator("[data-part-lock]")).toContainText("Research Irwell Mark 1 in TECH");
   await expect(mark1.locator('[data-action="buy-mark1"]')).toContainText("Research Irwell Mark 1 in TECH");
   await expect(mark1.locator('[data-action="buy-mark1"]')).not.toContainText("BUY");
+  // Generators and air conditioners are on the ROOM EQUIPMENT tab (T3 #52).
+  await expect(page.locator('[data-part="mgset"]')).toHaveCount(0);
+  await page.locator("[data-server-tab='room']").click();
   await expect(page.locator('[data-part="mgset"] [data-action="buy-mgset"]')).toContainText(/Research .+ in TECH/);
   await expect(page.locator('[data-part="roomac"] [data-action="buy-roomac"]')).toContainText(/Research .+ in TECH/);
+  await page.locator("[data-server-tab='machines']").click();
   await expect(page.locator('[data-part="ibm7090"] [data-part-lock]')).toContainText("Requires 1959");
   await expect(page.locator('[data-action="buy-ibm7090"]')).not.toContainText("BUY");
   expectClean(seen);
@@ -297,6 +301,7 @@ test("the 7090 and 360 need their TECH projects once their year is reached", asy
 test("the Tech page shows which part a project opens", async ({ page }) => {
   await open(page, "/tech", { ...ALL_SAVES.late, techDone: [], lastSeen: Date.now() });
   await tipsOff(page);
+  await page.click('[data-tech-section="room"]');
   await page.click('[data-research-tab="servers"]');
   await expect(page.locator('[data-research-item="srv-7090"] [data-research-opens]')).toContainText("Inland 7090");
 });

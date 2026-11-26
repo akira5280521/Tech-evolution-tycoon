@@ -4,10 +4,8 @@ import { FOREMAN_COST, buyModeLabel, money, nextBuyMode } from "@/lib/gameConfig
 import StarterGoal from "./StarterGoal";
 import { NextGoalChip } from "./NextGoalChip";
 import { HUB_LABEL, HUB_ROUTE, hubOpen } from "@/lib/hub";
-import { researchSpeed, techOpen } from "@/lib/research";
-import { techProgress } from "@/lib/progress";
 import { ItemHelp } from "./HintSheet";
-import { hqCardHasDot, readyDots } from "@/lib/ready";
+import { readyDots } from "@/lib/ready";
 import { ReadyDot } from "./ReadyDot";
 
 const SIDE = "relative flex min-h-12 w-[4.5rem] shrink-0 flex-col items-center justify-center border-2 px-1 overflow-hidden break-words text-center font-pixel text-[0.45rem] leading-4 shadow-[2px_2px_0_0_#000]";
@@ -42,18 +40,6 @@ function SideLink({ to, open, data, label, progress = null, dot = false }) {
 
 const on = "border-[var(--game-accent)] bg-[var(--game-accent)] text-black";
 const off = "border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-muted)]";
-
-// TECH and HQ, for any screen so the tutorial and later play can reach them
-// without going all the way back to the game list.
-export function TechHqLinks({ state }) {
-  const dots = readyDots(state);
-  return (
-    <div className="flex items-stretch gap-2">
-      <SideLink to="/tech" open={techOpen(state)} data="research" label="TECH" progress={techProgress(state.techJob, researchSpeed(state))} dot={(dots.tech || []).length > 0} />
-      <SideLink to={HUB_ROUTE} open={hubOpen(state)} data="facilities" label={HUB_LABEL} dot={(dots.hq || []).length > 0} />
-    </div>
-  );
-}
 
 export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll, onBuyForeman }) {
   const unlocked = !!state.foreman;
@@ -102,9 +88,8 @@ export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll
             <span className="font-pixel text-sm leading-5">{buyModeLabel(buyMode)}</span>
             <span className="font-term text-lg leading-5">BUY AMOUNT</span>
           </button>
-          <SideLink to="/tech" open={techOpen(state)} data="research" label="TECH" progress={techProgress(state.techJob, researchSpeed(state))} dot={(readyDots(state).tech || []).length > 0} />
           <SideLink to={HUB_ROUTE} open={hubOpen(state)} data="facilities" label={HUB_LABEL} dot={(readyDots(state).hq || []).length > 0} />
-          <ItemHelp kind="topbar" id={{ tech: techOpen(state), rigs: hubOpen(state) }} state={state} name={`buy amount, TECH and ${HUB_LABEL}`} className="my-0 self-center" />
+          <ItemHelp kind="topbar" id={{ tech: false, rigs: hubOpen(state) }} state={state} name={`buy amount and ${HUB_LABEL}`} className="my-0 self-center" />
         </div>
         {/* The NEXT goal sits under the buy-amount row (GAME only). */}
         <NextGoalChip state={state} />

@@ -158,7 +158,10 @@ test("buying a machine changes the room art at once, with no reopen (items 2 and
   const base = () => room.locator("img").first().getAttribute("src");
   await expect(room.locator("[data-room-unlock='tab601']").first()).toBeVisible();
   expect(await base()).toContain("base-1930s");
-  for (const part of ["mgset", "roomac", "mark1"]) await page.locator(`[data-action="buy-${part}"]`).click();
+  await page.locator("[data-server-tab='room']").click();
+  for (const part of ["mgset", "roomac"]) await page.locator(`[data-action="buy-${part}"]`).click();
+  await page.locator("[data-server-tab='machines']").click();
+  await page.locator('[data-action="buy-mark1"]').click();
   expect(await base()).toContain("base-1950s");
   await expect(room.locator("[data-room-unlock='mark1']")).toBeVisible();
   await expect(room.locator("[data-room-unlock='tab601']")).toHaveCount(0);

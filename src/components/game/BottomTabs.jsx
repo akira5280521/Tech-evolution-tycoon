@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from "@tanstack/react-router";
 import { FlaskConical, Flag, Gamepad2, Package, Settings, Zap } from "lucide-react";
 import { useGameState } from "./GameState";
 import { RESEARCH_MS } from "@/lib/gameConfig";
-import { timedProgress } from "@/lib/progress";
+import { techProgress, timedProgress } from "@/lib/progress";
+import { researchSpeed } from "@/lib/research";
 import { readyDots, tabHasDot } from "@/lib/ready";
 import { ReadyDot } from "./ReadyDot";
 
@@ -117,7 +118,8 @@ export default function BottomTabs() {
             );
           }
           // R & D: a thin bar while a specialty is being researched.
-          const job = tab.id === "research" && state?.researchJob?.startedAt ? timedProgress(state.researchJob.startedAt, RESEARCH_MS) : null;
+          // R & D: a thin bar while a specialty or a TECH project is researched.
+          const job = tab.id !== "research" ? null : state?.researchJob?.startedAt ? timedProgress(state.researchJob.startedAt, RESEARCH_MS) : state?.techJob ? techProgress(state.techJob, researchSpeed(state)) : null;
           return (
             <button
               key={tab.id}

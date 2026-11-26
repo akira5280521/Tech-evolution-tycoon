@@ -895,7 +895,7 @@ export function eraNeeds(state, index) {
   const project = ERA_RESEARCH[BUSINESSES[index]?.id];
   if (project) {
     const done = (state?.techDone || []).includes(project.id);
-    needs.push({ kind: "research", have: done ? 1 : 0, need: 1, met: done, research: project.id, label: `Research ${project.name} on TECH` });
+    needs.push({ kind: "research", have: done ? 1 : 0, need: 1, met: done, research: project.id, label: `Research ${project.name} in R&D > TECH` });
   }
   const material = ERA_MATERIAL[BUSINESSES[index]?.id];
   if (material) {

@@ -96,6 +96,7 @@ capture("servers room, every stage, and a live server change", async ({ browser 
   const slots = () => room.locator("[data-room-slot]").evaluateAll((els) => els.map((e) => e.getAttribute("data-room-slot")));
   let n = 0;
   for (const part of ["mgset", "roomac", "mark1", "ibm7090", "s360", "pdp1120", "vax780"]) {
+    await page.locator(`[data-server-tab="${part === "mgset" || part === "roomac" ? "room" : "machines"}"]`).click();
     await page.locator(`[data-action="buy-${part}"]`).click();
     await page.waitForTimeout(250);
     await room.screenshot({ path: `${DIR}/live-${String(++n).padStart(2, "0")}-${part}.png`, animations: "disabled" });

@@ -56,6 +56,7 @@ test("HQ opens each plant on its own page, and the Museum card leaves More", asy
 test("a tape drive cannot be bought until its TECH project is done", async ({ page }) => {
   const seen = await open(page, "/facilities/servers", through("mainframes", { techDone: [] }));
   await tipsOff(page);
+  await page.locator("[data-server-tab='room']").click();
   const tape = page.locator("[data-part='tape']");
   await expect(tape).toBeVisible();
   await expect(tape.locator("[data-part-lock]")).toContainText(/Research/);

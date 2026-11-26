@@ -10,7 +10,7 @@ import { BUSINESSES, FOREMAN_COST, investorsFor, managerNeed, shortMaterial } fr
 import { forkCost, managerPrice, singularityMult, upgradeOffer, upgradesOf } from "./empire.js";
 import { currentCoach, tutorialActive } from "./tutorial.js";
 import { facilitiesOpen, facilityUnlocked } from "./facilities.js";
-import { serverOutput } from "./research.js";
+import { queueSlots, serverOutput } from "./research.js";
 import { HUB_LABEL } from "./hub.js";
 
 const maxOwned = (s) => Math.max(0, ...(s?.biz || []).map((b) => b?.owned || 0));
@@ -137,15 +137,15 @@ export const TIPS = [
     id: "tech",
     page: "game",
     title: "THE TECH TIMELINE",
-    text: "TECH lists real inventions to research with R&D points. One runs at a time, on a timer that keeps going while the app is closed. \"Requires 1985\" means your company hasn't reached that year yet. \"Research X first\" means finish the one before it.",
-    target: "[data-open-research]",
+    text: "R&D > TECH lists real inventions to research with R&D points. One runs at a time, on a timer that keeps going while the app is closed. \"Requires 1985\" means your company hasn't reached that year yet. \"Research X first\" means finish the one before it.",
+    target: '[data-tab="research"]',
     when: (s) => (s.data || 0) >= 1,
   },
   {
     id: "servers",
     page: "game",
     title: "RESEARCH SERVERS",
-    text: `Tap ${HUB_LABEL} (beside TECH), then RESEARCH SERVERS, for the punch-card machine and later research servers. Buy a machine, then give it power and cooling.`,
+    text: `Tap ${HUB_LABEL} (beside BUY AMOUNT), then RESEARCH SERVERS, for the punch-card machine and later research servers. Buy a machine, then give it power and cooling.`,
     target: '[data-open-facilities]',
     when: (s) => facilityUnlocked(s, "servers"),
   },
@@ -194,14 +194,23 @@ export const TIPS = [
     text: "A challenge is one optional run with special rules. Mega-projects finish on their own when you reach their goal. Both pay a bonus you keep.",
   },
   {
+    id: "queue-slot",
+    page: "research",
+    title: "RESEARCH QUEUE",
+    text: "Your first queue slot is open. On TECH, tap ADD TO QUEUE on a project while another runs: it waits here and starts by itself when the lab is free.",
+    target: "[data-queue-slot='1']",
+    when: (s) => queueSlots(s) >= 1,
+  },
+  {
     id: "page-research",
     page: "research",
-    title: "RESEARCH",
-    text: "Spend R&D points on one bonus you keep. You start with one slot. Spare points go to the lab projects below.",
+    title: "R&D",
+    text: "QUEUE shows what is being researched and what waits next. TECH holds the whole timeline, SPECIALTY a bonus you keep, and LAB PROJECTS ways to spend spare points.",
   },
   {
     id: "page-tech",
-    page: "tech",
+    page: "research",
+    when: (s) => (s.tutorial?.opened || []).includes("tech"),
     title: "RESEARCH, ONE AT A TIME",
     text: "Pick a project and tap START. It costs R&D points and finishes on its own, even with the app closed. More servers make the timer run faster. Processor and graphics projects unlock the next chip generation's pay.",
   },

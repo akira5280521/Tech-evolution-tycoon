@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ResearchPage } from "@/components/game/MorePage";
+import RdPage from "@/components/game/RdPage";
 
 export const Route = createFileRoute("/research")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Research — Tech Evolution Tycoon" }] }),
-  component: ResearchPage,
+  head: () => ({ meta: [{ title: "R&D — Tech Evolution Tycoon" }] }),
+  component: RdPage,
 });

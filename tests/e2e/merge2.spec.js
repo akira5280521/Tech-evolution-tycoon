@@ -60,7 +60,7 @@ test("material badges show under MORE > BADGES and lab projects under R&D", asyn
   const seen = await open(page, "/badges", late());
   await expect(page.locator("[data-badge^='made-']").first()).toBeVisible();
   await expect(page.locator("[data-badge='materials-sold']")).toHaveCount(1);
-  await page.goto("/research");
+  await page.goto("/research#lab");
   await page.locator("nav[aria-label='Main navigation']").waitFor();
   await expect(page.locator("[data-lab-material]").first()).toBeVisible();
   expectClean(seen);

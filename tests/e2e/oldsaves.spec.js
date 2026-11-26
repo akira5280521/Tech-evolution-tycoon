@@ -82,7 +82,8 @@ test("a player partway through the old 6-step tutorial plays on through the new 
       if (await buy.count()) await buy.click();
       else await page.click("[data-coach-next]");
     } else if (step === "tech") {
-      await page.locator("[data-open-research]").click();
+      await page.locator("[data-tab='research']").click();
+      await page.locator("[data-sub-tab='tech']").click();
     } else if (step === "project") {
       const start = page.locator("[data-action='research-tab-hollerith']");
       if (!(await start.count())) {

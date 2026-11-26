@@ -18,8 +18,8 @@ export const HOWTO_GUIDES = [
     title: "RESEARCH MACHINES AND TECH",
     always: true,
     lines: [
-      `Open ${HUB_LABEL} (beside TECH) and tap RESEARCH SERVERS. Buy the Inland 601 Multiplying Punch: it is cheap, and it starts making R&D points at once.`,
-      "TECH (beside HQ) lists real inventions. Use the search box to filter by name or model. Spend R&D points to research one at a time; the timer keeps going while the app is closed. \"Requires 1985\" means your company hasn't reached that year yet. Finished research is kept when you prestige.",
+      `Open ${HUB_LABEL} (beside BUY AMOUNT) and tap RESEARCH SERVERS. Buy the Inland 601 Multiplying Punch: it is cheap, and it starts making R&D points at once.`,
+      "R&D > TECH lists real inventions. Use the search box to filter by name or model. Spend R&D points to research one at a time; the timer keeps going while the app is closed. \"Requires 1985\" means your company hasn't reached that year yet. Finished research is kept when you prestige.",
     ],
   },
   {
@@ -28,7 +28,7 @@ export const HOWTO_GUIDES = [
     facilityId: "servers",
     unlocks: "Mainframes",
     lines: [
-      "Mainframes open the rest of the machine room. Research a computer on TECH, then buy it here with its own motor-generator and air conditioner.",
+      "Mainframes open the rest of the machine room. Research a computer in R&D > TECH, then buy it here with its own motor-generator and air conditioner.",
       "Tape drives and disks also need their TECH project before you can buy them. Machines make far more R&D points than the punch-card starter.",
     ],
   },

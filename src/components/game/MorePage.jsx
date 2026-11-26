@@ -255,7 +255,7 @@ const HOW_TO = [
     id: "rd",
     title: "R&D POINTS",
     lines: [
-      `R&D points are the one research currency, made only by research machines in ${HUB_LABEL} (beside TECH), then RESEARCH SERVERS: a cheap punch-card multiplier from the start, then research servers from Mainframes. They earn at half rate while the game is closed; the servers only bank what their disks hold (1 hour of output, plus another hour per TB of disk), while the punch-card machine banks all day.`,
+      `R&D points are the one research currency, made only by research machines in ${HUB_LABEL} > RESEARCH SERVERS: a cheap punch-card multiplier from the start, then research servers from Mainframes. They earn at half rate while the game is closed; the servers only bank what their disks hold (1 hour of output, plus another hour per TB of disk), while the punch-card machine banks all day.`,
       "Spend them on the R&D tab (specialties and lab projects; use the sub-tabs at the top, or collapse a section to see a short summary) and on the TECH timeline. They are never lost, even when you prestige.",
     ],
   },
@@ -263,7 +263,7 @@ const HOW_TO = [
     id: "tech",
     title: "THE TECH TIMELINE",
     lines: [
-      "TECH (beside the buy button) lists the chips, memory, storage, cooling, power and networking of the eras you have reached, in the order they came out. Later eras stay hidden as ??? and will not match a name search. One project runs at a time and keeps going while the app is closed.",
+      "R&D > TECH lists the chips, memory, storage, cooling, power and networking of the eras you have reached, in the order they came out. Later eras stay hidden as ??? and will not match a name search. One project runs at a time and keeps going while the app is closed.",
       "\"Requires 1985\" means your company hasn't reached that year yet. \"Research X first\" means finish the project before it. Processor and graphics projects unlock each chip generation's extra pay. Finished research is kept when you prestige.",
     ],
   },
@@ -271,7 +271,7 @@ const HOW_TO = [
     id: "facilities",
     title: `FACILITIES (${HUB_LABEL})`,
     lines: [
-      "HQ (beside TECH) is the menu for every area: Research Servers, the PC Build Bench, the Bitbark Mine, the training cluster, and the Hardware Museum. Tap a card to open that area.",
+      "HQ (beside BUY AMOUNT) is the menu for every area: Research Servers, the PC Build Bench, the Bitbark Mine, the training cluster, and the Hardware Museum. Tap a card to open that area.",
       "Each plant has its own page. Research servers make R&D points; later plants add a little income. Parts need their TECH project, and are lost when you prestige.",
     ],
   },
@@ -434,89 +434,11 @@ function Stats({ state, data }) {
 }
 
 // The Research Lab, on its own tab in the main navigation.
-export function ResearchPage() {
-  const { state, chooseSpecialty, runLabProject, markReadyView } = useGameState();
-  useEffect(() => { markReadyView?.("research"); }, [markReadyView, state.data, state.researchJob, state.lab, state.specialties]);
-  return (
-
-    <ScreenShell title="RESEARCH" subtitle="">
-      <ResearchBody state={state} onCommit={chooseSpecialty} onLab={runLabProject} />
-    </ScreenShell>
-  );
-}
-
-export function ResearchBody({ state, onCommit, onLab }) {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const specialtyRef = useRef(null);
-  const labRef = useRef(null);
-  useEffect(() => {
-    if (specialtyRef.current) specialtyRef.current.open = true;
-    if (labRef.current) labRef.current.open = true;
-  }, []);
-  useEffect(() => {
-    const hash = (location.hash || "").replace("#", "");
-    if (hash !== "specialty" && hash !== "lab") return undefined;
-    const el = hash === "lab" ? labRef.current : specialtyRef.current;
-    if (el) el.open = true;
-    const timer = setTimeout(() => el?.scrollIntoView({ block: "start" }), 50);
-    return () => clearTimeout(timer);
-  }, [location.hash]);
-  const pickTab = (id) => {
-    navigate({ to: "/research", hash: id, replace: true });
-  };
-  const rate = serverOutput(state).perSecond;
-  const slots = specialtySlots(state);
+// The specialty picks (R&D > SPECIALTY).
+export function SpecialtyList({ state, onCommit }) {
   const picked = state.specialties || [];
   return (
-    <>
-      <div data-rd-tabs className="grid grid-cols-2 gap-2">
-        {[
-          ["specialty", "SPECIALTY"],
-          ["lab", "LAB PROJECTS"],
-        ].map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            data-rd-tab={id}
-            onClick={() => pickTab(id)}
-            className={`min-h-11 border-2 px-2 font-pixel text-[0.55rem] shadow-[3px_3px_0_0_#000] ${
-              (location.hash || "").replace("#", "") === id
-                ? "border-[var(--game-accent)] text-[var(--game-accent)]"
-                : "border-[var(--game-border-strong)] text-[var(--game-muted)]"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      <Panel>
-        <p className="flex items-center gap-2 font-pixel text-[0.55rem] text-[var(--game-muted)]">
-          R&amp;D POINTS <ItemHelp kind="rd" state={state} name="R&D points" />
-        </p>
-        <p className="font-term text-5xl leading-none text-[var(--game-success)]">{(state.data || 0).toFixed(1)}</p>
-        <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
-          +{rate.toFixed(rate > 0 && rate < 0.1 ? 3 : 2)} a second from your research machines in {HUB_LABEL} &gt; RESEARCH SERVERS. R&D points are never lost, even when you prestige.
-        </p>
-      </Panel>
-      <details
-        ref={specialtyRef}
-        data-rd-section="specialty"
-        defaultOpen
-        className="border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]"
-      >
-        <summary data-rd-toggle="specialty" className="flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">
-          COMPANY SPECIALTY
-          <span data-rd-summary="specialty" className="font-term text-base text-[var(--game-muted)]">{specialtySummary(state)}</span>
-        </summary>
-      <Panel>
-        <h2 className="flex items-center gap-2 font-pixel text-[0.7rem]">
-          <FlaskConical className="h-4 w-4 text-[var(--game-accent)]" aria-hidden="true" />
-          COMPANY SPECIALTY <HelpTip term="specialty" />
-        </h2>
-        <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
-          Pick a bonus to keep forever. You have {slots} {slots === 1 ? "slot" : "slots"} and have used {picked.length}. Forking the timeline opens another.
-        </p>
+    <Panel>
         {SPECIALTIES.map((spec) => {
           const owned = picked.includes(spec.id);
           const job = state.researchJob && state.researchJob.id === spec.id ? state.researchJob : null;
@@ -549,22 +471,6 @@ export function ResearchBody({ state, onCommit, onLab }) {
             </div>
           );
         })}
-      </Panel>
-      </details>
-      {onLab && (
-        <details
-          ref={labRef}
-          data-rd-section="lab"
-          defaultOpen
-          className="border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]"
-        >
-          <summary data-rd-toggle="lab" className="flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">
-            LAB PROJECTS
-            <span data-rd-summary="lab" className="font-term text-base text-[var(--game-muted)]">{labSummary(state)}</span>
-          </summary>
-          <LabProjects state={state} onRun={onLab} />
-        </details>
-      )}
-    </>
+    </Panel>
   );
 }

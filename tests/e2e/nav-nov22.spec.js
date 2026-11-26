@@ -107,19 +107,25 @@ test("collapse maxed rows, expand on tap, and the Settings toggle", async ({ pag
   expectClean(seen);
 });
 
-test("R&D sub-tabs and collapsible summaries", async ({ page }) => {
+test("R&D sub-tabs: QUEUE first, and SPECIALTY and LAB PROJECTS each show their own content", async ({ page }) => {
   const { save, opts } = midSave();
   const seen = await open(page, "/research", save, opts);
   await tipsOff(page);
-  await expect(page.locator("[data-rd-tabs]")).toBeVisible();
-  await expect.poll(async () => page.locator("[data-rd-section=specialty]").evaluate((el) => el.open)).toBe(true);
-  await expect.poll(async () => page.locator("[data-rd-section=lab]").evaluate((el) => el.open)).toBe(true);
-  await page.locator("[data-rd-tab=lab]").click();
+  const tabs = page.locator("[data-sub-tabs=rd] [data-sub-tab]");
+  await expect(tabs).toHaveText(["QUEUE", "TECH", "SPECIALTY", "LAB PROJECTS"]);
+  await expect(page.locator("[data-rd-queue]")).toBeVisible();
+  // No R&D points card on the queue page: the points are in the status bar.
+  await expect(page.locator("main")).not.toContainText("R&D POINTS");
+  await page.locator("[data-sub-tab=lab]").click();
   await expect(page).toHaveURL(/#lab/);
-  await expect.poll(async () => page.locator("[data-rd-section=lab]").evaluate((el) => el.open)).toBe(true);
-  await page.locator("[data-rd-toggle=lab]").click();
-  await expect.poll(async () => page.locator("[data-rd-section=lab]").evaluate((el) => el.open)).toBe(false);
-  await expect(page.locator("[data-rd-summary=lab]")).toBeVisible();
+  await expect(page.locator("[data-rd-section=lab] [data-rd-summary=lab]")).toBeVisible();
+  await expect(page.locator("[data-lab]").first()).toBeVisible();
+  await expect(page.locator("[data-action^='commit-'], [data-rd-section=specialty]")).toHaveCount(0);
+  await page.locator("[data-sub-tab=specialty]").click();
+  await expect(page).toHaveURL(/#specialty/);
+  await expect(page.locator("[data-rd-section=specialty] [data-rd-summary=specialty]")).toBeVisible();
+  await expect(page.locator("[data-lab]")).toHaveCount(0);
+  await expect(page.locator("[data-rd-section=specialty]")).toContainText("COMPANY SPECIALTY");
   expectClean(seen);
 });
 

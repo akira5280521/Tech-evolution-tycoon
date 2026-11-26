@@ -65,7 +65,7 @@ import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { REBUILD_SECONDS, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants, settleClosedParts, grantStarter } from "@/lib/facilities";
 import { noteHubSeen } from "@/lib/hub";
-import { advanceResearch, fillResearchGaps, grantOwnedResearch, noteCompanyYear, readResearchData, readTechDone, readTechJob, rescuePunchCardSave, startResearch } from "@/lib/research";
+import { advanceResearch, buyQueueSlot, fillResearchGaps, grantOwnedResearch, noteCompanyYear, queueResearch, readResearchData, readTechDone, readTechJob, readTechQueue, rescuePunchCardSave, startResearch, unqueueResearch } from "@/lib/research";
 import { readGoalsDone, settleGoals } from "@/lib/goals";
 import { applyOrientation } from "@/lib/orientation";
 import { notesUnseen } from "@/lib/releaseNotes";
@@ -190,6 +190,7 @@ function applySavedMeta(state, raw) {
   state.techDone = readTechDone(m.techDone);
   state.techJob = readTechJob(m.techJob);
   state.techJob2 = readTechJob(m.techJob2);
+  state.techQueue = readTechQueue(m.techQueue);
   state.companyYear = m.companyYear && Number.isFinite(m.companyYear.year) && Number.isFinite(m.companyYear.at) ? { year: m.companyYear.year, at: m.companyYear.at } : null;
   state.goalsDone = readGoalsDone(m.goalsDone);
   state.boughtX10 = !!m.boughtX10;
@@ -306,6 +307,7 @@ function pack(s) {
     techDone: readTechDone(s.techDone),
     techJob: readTechJob(s.techJob),
     techJob2: readTechJob(s.techJob2),
+    techQueue: readTechQueue(s.techQueue),
     companyYear: s.companyYear || null,
     biz: s.biz.map((b, i) => ({
       id: BUSINESSES[i].id,
@@ -424,6 +426,12 @@ function loadSave() {
       // keeps the ones now before it.
       fillResearchGaps(state);
       rescuePunchCardSave(state);
+    }
+    if (prior < 17) {
+      // 0.0.32 (T3): the research queue. Old saves start with no queue and
+      // no queue slots; the slots are earned in LAB PROJECTS.
+      state.techQueue = [];
+      state.lab = { ...(state.lab || {}), queueSlots: 0 };
     }
     noteCompanyYear(state);
     collectBadges(state);
@@ -1313,6 +1321,21 @@ export function useGame() {
     startTech: (id) => {
       const started = startResearch(stateRef.current, id);
       if (!started.ok) return;
+      saveNow();
+      bump();
+    },
+    queueTech: (id) => {
+      if (!queueResearch(stateRef.current, id).ok) return;
+      saveNow();
+      bump();
+    },
+    unqueueTech: (id) => {
+      if (!unqueueResearch(stateRef.current, id).ok) return;
+      saveNow();
+      bump();
+    },
+    buyQueueSlot: () => {
+      if (!buyQueueSlot(stateRef.current).ok) return;
       saveNow();
       bump();
     },

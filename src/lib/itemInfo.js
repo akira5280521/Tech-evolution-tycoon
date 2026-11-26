@@ -192,7 +192,7 @@ function nextChip(cfg, state, owned) {
   const next = list[at + 1];
   if (!next) return { label: "CHIPS", text: `All ${list.length} chips reached: +${Math.round((list.length - 1) * GENERATION_BONUS * 100)}% pay.` };
   const researched = (state?.techDone || []).includes(next.id);
-  const need = researched ? `own ${next.need}` : `own ${next.need} and research it on TECH`;
+  const need = researched ? `own ${next.need}` : `own ${next.need} and research it in R&D > TECH`;
   return { label: "NEXT CHIP", text: `${next.name}: ${need}. Each chip adds +${Math.round(GENERATION_BONUS * 100)}% pay.` };
 }
 
@@ -319,12 +319,12 @@ function moneyInfo(state) {
   return { title: "MONEY PANEL", text: "Your cash and your income each second.", rows };
 }
 
-function topBarInfo(state, { tech, rigs }) {
+function topBarInfo(state, { rigs }) {
   return {
     title: "BUY AMOUNT AND SHORTCUTS",
     text: "Tap the buy-amount button to change how many one BUY gets: X1, X10, X25, X50, X75, X100, then MAX.",
     rows: [
-      { label: "TECH", text: tech ? "The tech timeline: timed research projects paid with R&D points. CPU and GPU projects unlock new chips." : LOCKED_TEXT },
+      { label: "R&D", text: "The tech timeline now lives in the R&D menu (bar below): QUEUE, TECH, SPECIALTY and LAB PROJECTS." },
       { label: HUB_LABEL, text: rigs ? "Your hardware menu. It lists every facility: RESEARCH SERVERS is open from the start (a punch-card machine, then servers from Mainframes). The PC build bench, Bitbark mine and AI training cluster stay listed as locked until their era." : LOCKED_TEXT },
     ],
   };

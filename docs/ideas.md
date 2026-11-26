@@ -730,6 +730,37 @@ matter for the whole game.
 - Needs the full pacing test, including casual and offline players, before
   shipping.
 
+## Sized material costs
+
+**Not on the roadmap yet.** Saved from the era materials discussion
+(November 2026), to go with the per-era bill of materials.
+
+### Idea
+
+Bigger machines cost more to open, the way a datacenter really is far more
+metal than a phone. Each era's material cost gets a size multiplier:
+
+| Size | Multiplier | Eras |
+|---|---|---|
+| Room-sized machines | x1.5 | Mainframes, Supercomputers, Cloud Datacenters, Quantum Servers, AI Superclusters |
+| Office and desk machines | x1.0 | ICs, Minicomputers, Microprocessors, Workstations, Multimedia PCs, 3D Accelerators, Graphics Cards, AI Accelerators, Chatbots, Dial-up Web |
+| Home and handheld | x0.75 | Home Computers, Game Consoles, Laptops, Smartphones, Tablets, VR Headsets, RGB Battlestations |
+
+So Supercomputers asks for noticeably more than Home Computers just before
+it, and Smartphones is a dip after Cloud Datacenters.
+
+### Balance
+
+A small bump, not a pacing change: scale the whole table so the total
+materials over a game stay about the same as without the multiplier. Run
+the pacing sim before and after.
+
+### Later
+
+The same idea could size the RIGS part costs, which today go by part type
+(chips, glass, metal): a server rack would cost more metal than a graphics
+card.
+
 ## Long term
 
 **Roadmap:** items 14-24 (phase 4). Same rules: parody names, real dates, no

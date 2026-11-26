@@ -19,3 +19,22 @@ test("23 minutes away with paper running out: the report names paper and the row
   await dialog.locator("[data-offline-collect]").click();
   expectClean(seen);
 });
+
+test("the welcome back card is one summary: income list with room, the away cap, and Collect", async ({ page }) => {
+  const far = Date.now() + 9e9;
+  const save = {
+    version: 12, cash: 0, lifetime: 1e6, investors: 0, lastSeen: Date.now() - 30 * 3600e3, restartSeen: true, sawPit: true, starterGranted: true, hubSeen: true,
+    tutorial: { seen: [], tips: [], tipsOff: true, done: true }, nextWindfallAt: far, nextDilemmaAt: far, nextBubbleAt: far, nextShortageAt: far,
+    supply: { wood: 3490, paper: 1361 },
+    biz: BUSINESSES.map((b) => ({ id: b.id, owned: COUNTS[b.id] || 0, manager: !!COUNTS[b.id] })),
+  };
+  const seen = await open(page, "/", save);
+  const dialog = page.getByRole("dialog", { name: "Offline earnings" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator("[data-offline-cap]")).toContainText("up to 24h, and you hit it");
+  const rows = dialog.locator("[data-offline-rows]");
+  expect((await rows.boundingBox()).height).toBeGreaterThanOrEqual(100);
+  await expect(dialog.locator("[data-offline-full]")).toHaveCount(0);
+  await dialog.locator("[data-offline-collect]").click();
+  expectClean(seen);
+});

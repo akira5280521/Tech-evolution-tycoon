@@ -176,7 +176,7 @@ export default function GameScreen() {
   return (
     <div className="game-root game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
-      <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} />
+      <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} state={state} />
       <PrestigeReport report={state.offlineReport ? null : state.prestigeReport} onDismiss={dismissPrestigeReport} />
       {!state.offlineReport && !state.prestigeReport && !tutorialActive(state) && (
         <ArrivalCard arrival={currentArrival(state)} onDismiss={dismissArrivalCard} />
@@ -221,25 +221,36 @@ export default function GameScreen() {
                 if (event.target.closest("[data-help]")) return;
                 if (currentTutorialStep(state)?.id === "materials") tutorialNext("materials");
               }}
-              className="flex flex-wrap gap-x-3 gap-y-1 border-2 border-[var(--game-border)] bg-[var(--game-card)] px-2 py-1 font-term text-base leading-5 text-[var(--game-muted)]"
+              className="border-2 border-[var(--game-border)] bg-[var(--game-card)] px-2 py-1 font-term text-[var(--game-muted)]"
             >
+              {/* A fixed grid, one slot per material (T4 item 5): FULL or
+                  SHORT never changes a slot's size, so nothing rewraps. The
+                  panel only grows when a new material unlocks. */}
+              <span className="flex items-center justify-between">
+                <span className="font-pixel text-[0.45rem] leading-4">MATERIALS</span>
+                <ItemHelp kind="materials" id={SUPPLY_KEYS.filter((key) => supplyShown(state, key))} state={state} name="materials" className="my-0" />
+              </span>
+              <span data-supply-grid className="mt-1 grid grid-cols-3 gap-1">
               {SUPPLY_KEYS.filter((key) => supplyShown(state, key)).map((key) => {
                 const full = supplyFull(state, key);
+                const short = shortageOn(state, Date.now()) === key;
                 return (
                   <button
                     key={key}
                     type="button"
                     data-material={key}
+                    data-full={full ? "yes" : "no"}
                     onClick={() => setStorageKey(key)}
-                    className={`min-h-6 text-left tabular-nums ${full ? "text-[var(--game-danger)]" : ""}`}
+                    className={`relative flex min-h-12 min-w-0 flex-col items-start justify-center overflow-hidden border px-1 text-left tabular-nums ${full ? "border-[var(--game-danger)] text-[var(--game-danger)]" : "border-[var(--game-border)]"}`}
                   >
-                    {REFINED[key]?.short || key} {amount(supply[key])}/{amount(supplyCap(state, key))}
-                    {full && <span className="ml-1 font-pixel text-[0.4rem]">FULL</span>}
-                    {shortageOn(state, Date.now()) === key && <span data-short={key} className="ml-1 font-pixel text-[0.4rem] text-[var(--game-violet)]">SHORT</span>}
+                    <span className="w-full truncate text-sm leading-4">{REFINED[key]?.short || key}</span>
+                    <span className="w-full truncate text-sm leading-4">{amount(supply[key])}/{amount(supplyCap(state, key))}</span>
+                    {full && <span className="absolute right-0.5 top-0.5 font-pixel text-[0.35rem] leading-none">FULL</span>}
+                    {short && <span data-short={key} className="absolute bottom-0.5 right-0.5 font-pixel text-[0.35rem] leading-none text-[var(--game-violet)]">SHORT</span>}
                   </button>
                 );
               })}
-              <ItemHelp kind="materials" id={SUPPLY_KEYS.filter((key) => supplyShown(state, key))} state={state} name="materials" className="ml-auto" />
+              </span>
             </p>
             <ContractChip contract={state.contract} now={Date.now()} />
             <div data-section-toggle role="group" aria-label="Game section" className="mt-2 grid grid-cols-2 border-2 border-[var(--game-border)] bg-[var(--game-panel)] shadow-[3px_3px_0_0_#000]">

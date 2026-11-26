@@ -10,6 +10,7 @@ import { anniversaryMult } from "./anniversaries.js";
 import { blankTutorial } from "./tutorial.js";
 import { ROOMS, exhibitStatus, roomComplete } from "./museum.js";
 import { readRigs } from "./rigs.js";
+import { settleLadder } from "./ladder.js";
 import { noteContractProgress } from "./contracts.js";
 import { COMPUTE_RECORDS, computePower, flopsLabel, moorePoints } from "./compute.js";
 import {
@@ -1312,6 +1313,8 @@ export function finishTimedWork(state, now) {
   if (!Number.isFinite(now) || now < 1e11) return notes;
   // Servers coming online, rooms being built, the bench PC being set up.
   notes.push(...settleStages(state, now));
+  // Mid-game ladder rungs (T5 item 43).
+  for (const rung of settleLadder(state)) notes.push({ type: "ladder", id: rung.id, title: rung.title, tokens: rung.tokens });
   const research = timedJob(state.researchJob);
   state.researchJob = research;
   if (research && jobDone(research, now)) {

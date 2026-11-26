@@ -490,6 +490,7 @@ function announce(notes) {
     if (note.type === "upgrade") toast("Upgrade installed", { description: "The line is back up." });
     if (note.type === "projectstart") toast("Project started", { description: "Crews are on site. Give them a moment." });
     if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
+    if (note.type === "ladder") toast(`Milestone: ${note.title}`, { description: `+${note.tokens} era tokens. Next rung in PROGRESS > RUNS.` });
     if (note.type === "stage") {
       const name = note.partId ? PARTS.find((p) => p.id === note.partId)?.name : null;
       const room = FACILITIES.find((f) => f.id === note.facilityId)?.name || "The room";

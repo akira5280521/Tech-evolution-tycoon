@@ -69,6 +69,15 @@ export const HOWTO_GUIDES = [
     ],
   },
   {
+    id: "howto-ladder",
+    title: "MILESTONES AND NEW ERAS",
+    always: true,
+    lines: [
+      "Each new era opens with a full-screen card: the era's picture, its year and one line of history. Tap anywhere to carry on.",
+      "After your first prestige, PROGRESS > RUNS has a MILESTONE LADDER: rungs on the way to your first timeline fork, like 100 investors, reaching Microprocessors or finishing a mega-project. Each rung pays era tokens once.",
+    ],
+  },
+  {
     id: "howto-museum",
     title: "HARDWARE MUSEUM",
     always: true,

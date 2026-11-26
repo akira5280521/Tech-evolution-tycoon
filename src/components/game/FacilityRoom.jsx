@@ -60,25 +60,27 @@ function useRoomFrame(animate, durationMs, frames) {
       setFrame(0);
       return undefined;
     }
-    let raf = 0;
-    let last = performance.now();
+    // Off-screen: no timer at all (T5 item 45, battery). On screen: wake once
+    // per frame step instead of every display frame, and stop while hidden.
+    if (!onScreen) return undefined;
+    let timer = 0;
     let current = 0;
-    const tick = (now) => {
-      if (isPageHidden() || !onScreen) {
-        last = now;
-        raf = requestAnimationFrame(tick);
-        return;
-      }
-      if (now - last >= durationMs) {
-        const steps = Math.floor((now - last) / durationMs);
-        current = (current + steps) % frames;
-        last += steps * durationMs;
-        setFrame(current);
-      }
-      raf = requestAnimationFrame(tick);
+    const step = () => {
+      timer = 0;
+      if (isPageHidden()) return;
+      current = (current + 1) % frames;
+      setFrame(current);
+      timer = setTimeout(step, durationMs);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    const onVis = () => {
+      if (!isPageHidden() && !timer) timer = setTimeout(step, durationMs);
+    };
+    timer = setTimeout(step, durationMs);
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, [animate, durationMs, frames, reduce, onScreen]);
   return { frame, ref, reduce };
 }

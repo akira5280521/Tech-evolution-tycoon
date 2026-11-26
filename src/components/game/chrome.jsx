@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { incomePerSecond, overclockOn } from "@/lib/empire";
-import { money } from "@/lib/gameConfig";
+import { money, reachedEraLabel } from "@/lib/gameConfig";
+import { inGameMonth } from "@/lib/research";
+import { monthName } from "@/lib/releaseMonths";
 import { PREFS_EVENT } from "@/lib/gamePrefs";
 import { progressLabel } from "@/lib/progress";
 import BottomTabs from "./BottomTabs";
 import { TechHqLinks } from "./TopBar";
 import { ItemHelp, TipCard } from "./HintSheet";
 import NewsTicker from "./NewsTicker";
-import StarterGoal from "./StarterGoal";
-import { NextGoalChip } from "./NextGoalChip";
 import { useGameState } from "./GameState";
 
 export function BackButton({ to = "/" }) {
@@ -23,29 +23,39 @@ export function BackButton({ to = "/" }) {
   );
 }
 
-// Cash and the news ticker, shared by the game screen and every other tab.
-// The parent sticks this block to the top so it stays visible while the page scrolls.
+// R&D points, short enough for the status bar.
+export function rdPoints(n) {
+  const v = Number(n) || 0;
+  return v < 1000 ? v.toFixed(1) : money(v).replace(/^\$/, "");
+}
+
+// The one compact status bar at the top of every screen: cash, then one line
+// with the era (left), income, R&D points and the calendar month (right).
+// The parent sticks this block to the top so it stays visible while the page
+// scrolls. The NEXT goal and starter goal live on the GAME screen only.
 export function CashTicker({ state, cps }) {
+  const era = reachedEraLabel(state);
+  const when = inGameMonth(state);
+  const oc = overclockOn(state, Date.now());
   return (
-    <div data-cash-ticker className="space-y-1.5">
-      <div data-cash-panel className="relative border-2 border-[var(--game-border-strong)] bg-[var(--game-bg-deep)] px-2 py-0.5 text-center shadow-[3px_3px_0_0_#000]">
+    <div data-cash-ticker className="space-y-1">
+      <div data-cash-panel data-status-bar className="relative border-2 border-[var(--game-border-strong)] bg-[var(--game-bg-deep)] px-2 py-0.5 shadow-[3px_3px_0_0_#000]">
         <ItemHelp kind="money" state={state} name="the money panel" className="absolute right-0 top-0 my-0" />
-        <div data-cash-label className="font-pixel text-[8px] leading-[10px] text-[var(--game-muted)]">CASH</div>
-        <div data-cash className="break-all font-term text-3xl leading-none text-[var(--game-success)]">{money(state.cash)}</div>
-        {/* One fixed line: cash and income only. What this run earned shows on
-            the locked next-era row and in MORE > STATS. */}
-        <div data-cash-rate className="h-[1.15em] truncate whitespace-nowrap font-term text-[clamp(12px,4.2vw,16px)] leading-[1.15] tabular-nums text-[var(--game-success)]">
-          {money(cps)}/s income
+        <div className="flex items-baseline gap-2 pr-8">
+          <span data-cash-label className="shrink-0 font-pixel text-[8px] leading-[10px] text-[var(--game-muted)]">CASH</span>
+          <span data-cash className="min-w-0 break-all font-term text-2xl leading-none text-[var(--game-success)]">{money(state.cash)}</span>
+          {/* Fixed slot: an Overclock never changes the bar's height. */}
+          <span data-overclock className="ml-auto shrink-0 font-pixel text-[0.45rem] leading-4 text-[var(--game-accent)]">
+            {oc ? `OVERCLOCKED x1.5 · ${Math.ceil((state.lab.overclockUntil - Date.now()) / 60000)} MIN LEFT` : ""}
+          </span>
         </div>
-        {/* Always reserve this line so an Overclock never jumps the box height. */}
-        <div data-overclock className="h-4 overflow-hidden font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
-          {overclockOn(state, Date.now())
-            ? `OVERCLOCKED x1.5 · ${Math.ceil((state.lab.overclockUntil - Date.now()) / 60000)} MIN LEFT`
-            : " "}
+        <div data-status-line className="flex h-[1.15em] items-baseline gap-2 pr-8 whitespace-nowrap font-term text-[clamp(12px,3.8vw,16px)] leading-[1.15] tabular-nums">
+          <span data-era-progress aria-label={era ? `Current era: ${era}` : "Current era"} className="shrink-0 text-[var(--game-muted)]">{era}</span>
+          <span data-cash-rate className="min-w-0 flex-1 truncate text-[var(--game-success)]">{money(cps)}/s income</span>
+          <span data-rd-points aria-label={`R&D points: ${rdPoints(state.data)}`} className="shrink-0 text-[var(--game-accent)]">R&amp;D {rdPoints(state.data)}</span>
+          <span data-calendar-month data-month={when.month} className="shrink-0 text-[var(--game-fg)]">{monthName(when.month)} {when.year}</span>
         </div>
       </div>
-      <NextGoalChip state={state} />
-      <StarterGoal state={state} />
       <NewsTicker state={state} />
     </div>
   );

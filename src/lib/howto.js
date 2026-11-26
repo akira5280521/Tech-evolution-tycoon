@@ -32,6 +32,7 @@ export const HOWTO_GUIDES = [
     lines: [
       "Mainframes open the rest of the machine room. Research a computer in R&D > TECH, then buy it here with its own motor-generator and air conditioner.",
       "Tape drives and disks also need their TECH project before you can buy them. Machines make far more R&D points than the punch-card starter.",
+      "ROOM STATUS, under the room, has a bar each for compute, storage, heat and power (and network once you have racks), with a white marker at the limit. Power and heat are the real machines' kilowatts: every watt a computer draws comes out as heat. A bar past its marker turns red, with a box saying what to add.",
     ],
   },
   {
@@ -42,6 +43,7 @@ export const HOWTO_GUIDES = [
     lines: [
       "The bench builds one PC at a time from parts that fit: a board, a CPU for that board's socket, and memory for its slots.",
       "The bench tells you if a part doesn't fit. The finished PC makes R&D points. TECH runs one project at a time.",
+      "ROOM STATUS under the bench shows the PC's speed, memory, CPU heat against the cooler, and power against the supply. A red bar says what to add.",
     ],
   },
   {
@@ -51,7 +53,7 @@ export const HOWTO_GUIDES = [
     unlocks: "AI Accelerators",
     lines: [
       "Graphics cards in the mine mint Bitbark, a game coin that cannot be traded or taken out of the game. It adds a little extra income.",
-      "Buy a card, then enough power and cooling. The plant runs slower if either can't keep up, and it tells you what to add next. Parts are lost when you prestige.",
+      "Buy a card, then enough power and cooling. The plant runs slower if either can't keep up: ROOM STATUS under the room shows hash, power, heat and memory, and a red bar says what to add. Parts are lost when you prestige.",
     ],
   },
   {
@@ -61,7 +63,7 @@ export const HOWTO_GUIDES = [
     unlocks: "AI Accelerators",
     lines: [
       "The cluster trains a model and bills the studio. A bigger model needs more memory.",
-      "Buy graphics cards, memory, power and cooling. The cluster tells you if it needs more RAM or VRAM for the next model size. Parts are lost when you prestige.",
+      "Buy graphics cards, memory, power and cooling. ROOM STATUS under the room shows compute, power, heat, memory and the card network; a red bar says what to add, including RAM for the next model size. Parts are lost when you prestige.",
     ],
   },
   {

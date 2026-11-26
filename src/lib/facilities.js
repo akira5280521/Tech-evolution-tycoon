@@ -20,13 +20,13 @@ export const MAX_PART = 24;
 const TWIN_ADDINS = ["a-voodoo2", "a-blaster2"];
 const ROOM_UNITS = 60;
 const REFERENCE_WORK = 13;
-const MINE_RAM_GB = 16;
+export const MINE_RAM_GB = 16;
 
 // The cluster trains the biggest model its memory allows. Frontier needs
 // 512 GB of RAM (16 DDR4 sticks, or 8 DDR5); Foundation needs 2 TB, a full
 // DDR5 board like an H100 server (32 x 64 GB), and about 1.4 TB on the cards,
 // like an eight-card B200 server.
-const TIERS = [
+export const TIERS = [
   { id: "foundation", name: "Foundation", vram: 1400, ram: 2048, mult: 3.5 },
   { id: "frontier", name: "Frontier", vram: 400, ram: 512, mult: 3 },
   { id: "mural", name: "Mural", vram: 80, ram: 128, mult: 2.2 },
@@ -534,6 +534,11 @@ export function plantShort(state, facilityId) {
 // The research servers' stock, for research.js.
 export function serverStock(counts) {
   return stock(counts || {}, "servers");
+}
+
+// Any plant's stock, for the room status panels (T5 item 53).
+export function plantStock(counts, facilityId) {
+  return stock(counts || {}, facilityId);
 }
 
 function memoryFactor(facilityId, stocked) {

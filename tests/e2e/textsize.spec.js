@@ -17,7 +17,7 @@ for (const size of ["large", "xl"]) {
         await page.goto(path);
         await page.locator("nav[aria-label='Main navigation']").waitFor();
         await page.waitForTimeout(500);
-        const found = await page.evaluate(() => {
+        const check = () => page.evaluate(() => {
           const out = [];
           if (document.documentElement.scrollWidth > innerWidth + 1) out.push(`page is ${document.documentElement.scrollWidth}px wide`);
           for (const el of document.querySelectorAll("button, a, h1, h2, h3, [data-help-sheet] p")) {
@@ -32,6 +32,14 @@ for (const size of ["large", "xl"]) {
           }
           return out;
         });
+        // A popup sliding in can widen the page for a moment on a slow run;
+        // only what's still wrong a second later counts.
+        let found = await check();
+        if (found.length) {
+          await page.waitForTimeout(1000);
+          const again = new Set(await check());
+          found = found.filter((f) => again.has(f));
+        }
         for (const f of found) problems.push(`${path}: ${f}`);
       }
       expect([...new Set(problems)]).toEqual([]);

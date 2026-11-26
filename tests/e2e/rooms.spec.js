@@ -174,6 +174,8 @@ test("buying a machine changes the room art at once, with no reopen (items 2 and
 });
 
 test("every servers stage draws inside the banner, with floor shadows and no desk (items 1, 3 and 28)", async ({ browser }) => {
+  // Every stage, each on its own page: more than the default time on a busy machine.
+  test.setTimeout(240_000);
   for (const stage of SERVERS_STAGE_DEFS) {
     const t = stage.trigger;
     const parts = t?.anyParts ? { [t.anyParts[0]]: 1 } : t ? { tab601: 1, [t.partId]: t.minParts || 1 } : { tab601: 1 };

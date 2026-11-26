@@ -723,6 +723,13 @@ html[data-contrast="high"] {
   position: relative;
   width: 100%;
   overflow: hidden;
+  /* Keep every sprite inside the banner: its own stacking context, so layer
+     z-indexes can't rise above the HUD, tab bar or pop-ups, and paint is
+     clipped to the box (item 50). */
+  isolation: isolate;
+  z-index: 0;
+  contain: paint;
+  clip-path: inset(0);
   border: 2px solid var(--game-border-strong);
   background: #0b0a12;
   image-rendering: pixelated;

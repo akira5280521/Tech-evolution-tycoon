@@ -3,6 +3,7 @@
 
 import { BUSINESSES, ERA_GATE, blankSupply, managerNeed, normalizeBuyMode } from "./gameConfig.js";
 import { readRigs } from "./rigs.js";
+import { backupDue, backupSave } from "./saveBackups.js";
 
 export const SAVE_KEY = "pc-tycoon-save-v1";
 
@@ -243,7 +244,17 @@ export function getSaveData() {
   }
 }
 
-export function writeSaveData(data) {
+export function writeSaveData(data, { backup = "auto" } = {}) {
+  // Snapshot what is about to be replaced: forced before a restore or reset,
+  // otherwise at most every 10 minutes.
+  if (backup === "force" || (backup === "auto" && backupDue())) {
+    try {
+      const prev = window.localStorage.getItem(SAVE_KEY);
+      if (prev) backupSave(JSON.parse(prev), Date.now(), backup === "force");
+    } catch {
+      /* no previous save to keep */
+    }
+  }
   try {
     window.localStorage.setItem(SAVE_KEY, JSON.stringify(data));
   } catch {
@@ -252,6 +263,12 @@ export function writeSaveData(data) {
 }
 
 export function clearSaveData() {
+  try {
+    const prev = window.localStorage.getItem(SAVE_KEY);
+    if (prev) backupSave(JSON.parse(prev), Date.now(), true);
+  } catch {
+    /* nothing to keep */
+  }
   try {
     window.localStorage.removeItem(SAVE_KEY);
   } catch {

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { WEB_VERSION_CODE, WEB_VERSION_NAME } from "@/lib/appVersion";
 import { PREFS_EVENT, readPrefs, writePrefs } from "@/lib/gamePrefs";
 import { applyAudioPrefs } from "@/lib/sfx";
-import { cancelCapNotification, notificationPermission, openNotificationSettings, requestNotifyPermission } from "@/lib/capNotify";
+import { cancelCapNotification, notificationPermission, notifyFailReason, openNotificationSettings, requestNotifyPermission } from "@/lib/capNotify";
 import { achievementsLive, openAchievements } from "@/lib/achievements";
 import { WhatsNewDialog } from "./WhatsNew";
 import { useCloud } from "./CloudSync";
@@ -156,51 +156,45 @@ export function DisplaySettings() {
 
 export function AwayReminder() {
   const [prefs, set] = usePrefs();
+  const [perm, setPerm] = useState("unknown");
   const [help, setHelp] = useState("");
-  const waiting = useRef(null);
   const anyOn = (next) => !!(next.notifyCap || next.notifyResearch || next.notifyBins);
-  const turnOn = async (key) => {
-    const result = await requestNotifyPermission();
-    if (result === "granted") {
-      waiting.current = null;
-      setHelp("");
-      set({ [key]: true });
-      return;
-    }
-    waiting.current = key;
-    set({ [key]: false });
-    if (result === "denied") {
-      setHelp("Android isn't showing the allow prompt. Open notification settings, allow notifications for this app, then come back.");
-      return;
-    }
-    setHelp("This install can't post notifications yet.");
+  const explain = (status) => {
+    if (status === "granted") return "";
+    if (status === "denied") return "Android is blocking notifications for this app. Your choice is saved; allow notifications in settings and they start working.";
+    const why = notifyFailReason();
+    return `This install can't post notifications yet${why ? ` (${why})` : ""}. Your choice is saved.`;
   };
+  // The switch always saves. Android's permission is asked for separately, so
+  // a missing or slow prompt can't leave the switch stuck on OFF.
   const toggle = (key) => {
-    if (prefs[key]) {
-      waiting.current = null;
-      setHelp("");
-      const next = { [key]: false };
-      const after = { ...prefs, ...next };
-      set(next);
-      if (!anyOn(after)) void cancelCapNotification();
+    const next = { [key]: !prefs[key] };
+    const after = set(next);
+    if (!next[key]) {
+      if (!anyOn(after)) {
+        void cancelCapNotification();
+        setHelp("");
+      }
       return;
     }
-    void turnOn(key);
+    void requestNotifyPermission().then((status) => {
+      setPerm(status);
+      setHelp(explain(status));
+    });
   };
   useEffect(() => {
-    const onShow = () => {
-      if (document.hidden || !waiting.current) return;
-      const key = waiting.current;
+    const check = () => {
+      if (document.hidden) return;
       void notificationPermission().then((status) => {
-        if (status !== "granted") return;
-        waiting.current = null;
-        setHelp("");
-        set({ [key]: true });
+        setPerm(status);
+        setHelp(anyOn(readPrefs()) ? explain(status) : "");
       });
     };
-    document.addEventListener("visibilitychange", onShow);
-    return () => document.removeEventListener("visibilitychange", onShow);
-  }, [set]);
+    check();
+    document.addEventListener("visibilitychange", check);
+    return () => document.removeEventListener("visibilitychange", check);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <Panel>
       <h2 className="font-pixel text-[0.6rem]">NOTIFICATIONS</h2>
@@ -216,6 +210,11 @@ export function AwayReminder() {
       <button type="button" data-notify-bins onClick={() => toggle("notifyBins")} className={`${choice} mt-2 w-full ${prefs.notifyBins ? on : off}`}>
         BINS FULL: {prefs.notifyBins ? "ON" : "OFF"}
       </button>
+      {anyOn(prefs) && perm !== "unknown" ? (
+        <p data-notify-perm={perm} className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
+          Android permission: {perm === "granted" ? "ALLOWED" : "NOT ALLOWED"}
+        </p>
+      ) : null}
       {help ? (
         <div className="mt-2">
           <p data-notify-help className="font-term text-base leading-5 text-[var(--game-fg)]">{help}</p>

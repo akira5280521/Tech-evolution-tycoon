@@ -1251,7 +1251,7 @@ export function useGame() {
   const importSave = useCallback(
     (data) => {
       if (!data || typeof data !== "object") return false;
-      writeSaveData(data);
+      writeSaveData(data, { backup: "force" });
       const { state } = loadSave();
       stateRef.current = state;
       saveNow();

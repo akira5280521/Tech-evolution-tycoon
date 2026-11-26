@@ -15,7 +15,7 @@ import { cloudLabel, useCloud } from "./CloudSync";
 import { Panel } from "./chrome";
 
 const button =
-  "min-h-11 border-2 px-3 font-pixel text-[0.55rem] shadow-[2px_2px_0_0_#000] disabled:cursor-not-allowed disabled:opacity-60";
+  "min-h-12 border-2 px-3 font-pixel text-[0.55rem] shadow-[2px_2px_0_0_#000] disabled:cursor-not-allowed disabled:opacity-60";
 
 function when(at) {
   if (!at) return "never";

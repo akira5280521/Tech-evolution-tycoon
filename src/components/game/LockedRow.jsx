@@ -60,7 +60,7 @@ export default function LockedRow({ index, id, state, onOpen }) {
                     type="button"
                     data-era-research={n.research}
                     onClick={() => navigate({ to: "/research", hash: `tech-${n.research}` })}
-                    className="mt-1 min-h-11 border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]"
+                    className="mt-1 min-h-12 border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]"
                   >
                     GO TO TECH
                   </button>
@@ -103,7 +103,7 @@ export default function LockedRow({ index, id, state, onOpen }) {
             type="button"
             data-open-era={id}
             onClick={() => onOpen?.(index)}
-            className="mt-2 min-h-11 w-full border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]"
+            className="mt-2 min-h-12 w-full border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]"
           >
             OPEN ERA
           </button>

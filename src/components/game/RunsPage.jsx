@@ -60,7 +60,7 @@ export default function RunsPage() {
                   type="button"
                   data-abandon-challenge
                   onClick={abandonChallenge}
-                  className="min-h-11 w-full border-2 border-[var(--game-danger)] bg-[var(--game-panel)] px-3 font-pixel text-[0.6rem] text-[var(--game-danger)] shadow-[3px_3px_0_0_#000]"
+                  className="min-h-12 w-full border-2 border-[var(--game-danger)] bg-[var(--game-panel)] px-3 font-pixel text-[0.6rem] text-[var(--game-danger)] shadow-[3px_3px_0_0_#000]"
                 >
                   ABANDON CHALLENGE
                 </button>

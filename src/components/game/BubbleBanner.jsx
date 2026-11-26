@@ -41,7 +41,7 @@ export default function BubbleBanner({ state, onCashOut }) {
           type="button"
           data-action="cash-out"
           onClick={onCashOut}
-          className="min-h-11 min-w-[8.5rem] flex-1 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.6rem] text-black shadow-[2px_2px_0_0_#000] sm:flex-none"
+          className="min-h-12 min-w-[8.5rem] flex-1 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.6rem] text-black shadow-[2px_2px_0_0_#000] sm:flex-none"
         >
           CASH OUT
         </button>

@@ -191,7 +191,7 @@ export default function CoachMark({ state, onNext, onSkip }) {
             type="button"
             data-coach-skip
             onClick={onSkip}
-            className="min-h-11 px-1 font-term text-base leading-5 text-[var(--game-muted)] underline"
+            className="min-h-12 px-1 font-term text-base leading-5 text-[var(--game-muted)] underline"
           >
             {coach.kind === "tour" ? "Skip" : "Skip tutorial"}
           </button>
@@ -200,7 +200,7 @@ export default function CoachMark({ state, onNext, onSkip }) {
               type="button"
               data-coach-next
               onClick={() => onNext(step.id)}
-              className="min-h-11 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent-fg)] shadow-[3px_3px_0_0_#000]"
+              className="min-h-12 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent-fg)] shadow-[3px_3px_0_0_#000]"
             >
               {step.button || "NEXT"}
             </button>

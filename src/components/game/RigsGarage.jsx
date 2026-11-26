@@ -116,7 +116,7 @@ export default function RigsGarage() {
                     type="button"
                     data-rigs-delete={build.id}
                     onClick={() => onDelete(build.id, build.name)}
-                    className="inline-flex min-h-11 shrink-0 self-center items-center border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-2 font-pixel text-[0.5rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]"
+                    className="inline-flex min-h-12 shrink-0 self-center items-center border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-2 font-pixel text-[0.5rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]"
                   >
                     DELETE
                   </button>

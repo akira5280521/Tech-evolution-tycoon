@@ -43,7 +43,7 @@ export default function ArrivalCard({ arrival, onDismiss }) {
             type="button"
             data-arrival-dismiss
             onClick={onDismiss}
-            className="min-h-11 w-full border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-3 py-2 font-pixel text-[0.6rem] text-[var(--game-fg)]"
+            className="min-h-12 w-full border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-3 py-2 font-pixel text-[0.6rem] text-[var(--game-fg)]"
           >
             TAP TO CONTINUE
           </button>

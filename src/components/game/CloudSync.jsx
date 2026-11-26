@@ -118,10 +118,10 @@ export default function CloudSync({ game }) {
         <p className="mt-3 font-term text-base leading-5 text-[var(--game-muted)]">The one you don't pick is replaced. To keep both, export this phone's save from Save Backup first.</p>
         </div>
         <div className="hint-sheet-actions mt-3 flex flex-col gap-2">
-          <button type="button" data-cloud-load onClick={loadIt} className="min-h-11 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.6rem] text-black shadow-[3px_3px_0_0_#000]">
+          <button type="button" data-cloud-load onClick={loadIt} className="min-h-12 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.6rem] text-black shadow-[3px_3px_0_0_#000]">
             LOAD CLOUD SAVE
           </button>
-          <button type="button" data-cloud-keep onClick={keepIt} className="min-h-11 border-2 border-[var(--game-border-strong)] px-3 font-pixel text-[0.6rem] text-[var(--game-fg)]">
+          <button type="button" data-cloud-keep onClick={keepIt} className="min-h-12 border-2 border-[var(--game-border-strong)] px-3 font-pixel text-[0.6rem] text-[var(--game-fg)]">
             KEEP THIS PHONE&apos;S
           </button>
         </div>

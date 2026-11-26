@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { COMPANY_MAX, DEFAULT_COMPANY, cleanCompanyName, companyName, companyPrompt, randomCompanyName } from "@/lib/company";
 import { notesUnseen } from "@/lib/releaseNotes";
 
-const button = "min-h-11 border-2 px-3 font-pixel text-[0.55rem] shadow-[3px_3px_0_0_#000]";
+const button = "min-h-12 border-2 px-3 font-pixel text-[0.55rem] shadow-[3px_3px_0_0_#000]";
 
 // The name box with a dice button for a made-up name.
 function NameField({ value, onChange, onEnter }) {
@@ -20,7 +20,7 @@ function NameField({ value, onChange, onEnter }) {
         onKeyDown={(e) => {
           if (e.key === "Enter") onEnter?.();
         }}
-        className="min-h-11 min-w-0 flex-1 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] px-2 font-term text-xl text-[var(--game-fg)]"
+        className="min-h-12 min-w-0 flex-1 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)] px-2 font-term text-xl text-[var(--game-fg)]"
       />
       <button
         type="button"
@@ -62,7 +62,7 @@ export function CompanyNameScreen({ state, onName }) {
         <NameField value={value} onChange={setValue} onEnter={start} />
         <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">Shown in the news and on your HQ. You can change it later in Settings.</p>
         <div className="mt-3 flex items-center justify-between gap-2">
-          <button type="button" data-company-skip onClick={() => onName(null)} className="min-h-11 px-2 font-pixel text-[0.5rem] text-[var(--game-muted)] underline">
+          <button type="button" data-company-skip onClick={() => onName(null)} className="min-h-12 px-2 font-pixel text-[0.5rem] text-[var(--game-muted)] underline">
             SKIP
           </button>
           <button type="button" data-company-start onClick={start} className={`${button} border-[var(--game-accent)] bg-[var(--game-accent)] text-[var(--game-accent-fg)]`}>

@@ -10,7 +10,7 @@ import { hqCardHasDot, readyDots } from "@/lib/ready";
 import { ReadyDot } from "./ReadyDot";
 
 function GoButton({ id, disabled }) {
-  const cls = `inline-flex min-h-11 min-w-14 shrink-0 self-center items-center justify-center border-2 px-3 font-pixel text-[0.55rem] shadow-[3px_3px_0_0_#000] ${
+  const cls = `inline-flex min-h-12 min-w-14 shrink-0 self-center items-center justify-center border-2 px-3 font-pixel text-[0.55rem] shadow-[3px_3px_0_0_#000] ${
     disabled
       ? "cursor-not-allowed border-[var(--game-border)] bg-[var(--game-panel)] text-[var(--game-dim)]"
       : "border-[var(--game-accent)] bg-[var(--game-accent)] text-black"
@@ -48,7 +48,7 @@ function RoomTile({ id, label, to, hash, locked, dot, need }) {
 function Floor({ id, floor, title, icon: Icon, to, dot, children, headAttr }) {
   return (
     <section data-hq-floor={id} className="border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] p-2 shadow-[4px_4px_0_0_#000]">
-      <Link to={to} {...headAttr} className="relative flex min-h-11 items-center gap-2 px-1">
+      <Link to={to} {...headAttr} className="relative flex min-h-12 items-center gap-2 px-1">
         <span data-floor-label className="shrink-0 border-2 border-[var(--game-violet-border)] px-1 font-pixel text-[0.5rem] leading-5 text-[var(--game-violet)]">{floor}</span>
         <Icon className="h-5 w-5 shrink-0 text-[var(--game-accent)]" aria-hidden="true" />
         <span className="min-w-0 flex-1 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">{title} &gt;</span>
@@ -85,7 +85,7 @@ export default function RigsHub() {
           <RoomTile id="rd-lab" label="LAB" to="/research" hash="lab" dot={research.some((k) => k.startsWith("lab:"))} />
         </Floor>
         <section data-hq-floor="plants" className="border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] p-2 shadow-[4px_4px_0_0_#000]">
-          <div className="relative flex min-h-11 items-center gap-2 px-1">
+          <div className="relative flex min-h-12 items-center gap-2 px-1">
             <span data-floor-label className="shrink-0 border-2 border-[var(--game-violet-border)] px-1 font-pixel text-[0.5rem] leading-5 text-[var(--game-violet)]">2F</span>
             <span className="min-w-0 flex-1 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">HARDWARE · PLANTS</span>
             <ReadyDot show={plantDot} testId="floor-plants" />

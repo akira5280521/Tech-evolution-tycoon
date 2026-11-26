@@ -161,7 +161,7 @@ export function UpdateCheckProvider({ children }) {
                 type="button"
                 data-action="whats-new"
                 onClick={() => setShowNotes(true)}
-                className="min-h-11 shrink-0 border-2 border-[var(--game-border-strong)] px-2 font-pixel text-[0.5rem] text-[var(--game-fg)]"
+                className="min-h-12 shrink-0 border-2 border-[var(--game-border-strong)] px-2 font-pixel text-[0.5rem] text-[var(--game-fg)]"
               >
                 WHAT'S NEW
               </button>
@@ -171,7 +171,7 @@ export function UpdateCheckProvider({ children }) {
               data-action="open-update"
               disabled={installing}
               onClick={() => startInstall(value.update.apkUrl)}
-              className="min-h-11 shrink-0 border-2 border-[var(--game-accent)] px-2 font-pixel text-[0.5rem] text-[var(--game-accent)] disabled:opacity-60"
+              className="min-h-12 shrink-0 border-2 border-[var(--game-accent)] px-2 font-pixel text-[0.5rem] text-[var(--game-accent)] disabled:opacity-60"
             >
               {installing ? "DOWNLOADING…" : "UPDATE"}
             </button>
@@ -264,7 +264,7 @@ export function ReleaseNotes({ update, installing, onUpdate, onClose }) {
             type="button"
             onClick={onUpdate}
             disabled={installing}
-            className="min-h-11 flex-1 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-2 font-pixel text-[0.55rem] text-black disabled:opacity-60"
+            className="min-h-12 flex-1 border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-2 font-pixel text-[0.55rem] text-black disabled:opacity-60"
           >
             {installing ? "DOWNLOADING…" : "UPDATE NOW"}
           </button>
@@ -272,7 +272,7 @@ export function ReleaseNotes({ update, installing, onUpdate, onClose }) {
             type="button"
             data-notes-close
             onClick={onClose}
-            className="min-h-11 flex-1 border-2 border-[var(--game-border-strong)] px-2 font-pixel text-[0.55rem] text-[var(--game-muted)]"
+            className="min-h-12 flex-1 border-2 border-[var(--game-border-strong)] px-2 font-pixel text-[0.55rem] text-[var(--game-muted)]"
           >
             LATER
           </button>
@@ -305,7 +305,7 @@ export function CheckForUpdatesButton() {
         data-action="check-updates"
         onClick={checkNow}
         disabled={checking}
-        className="min-h-11 border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent)] disabled:opacity-60"
+        className="min-h-12 border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent)] disabled:opacity-60"
       >
         {checking ? "CHECKING…" : "CHECK FOR UPDATES"}
       </button>

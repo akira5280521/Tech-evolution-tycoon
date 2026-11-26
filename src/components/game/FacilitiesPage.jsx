@@ -205,7 +205,7 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
               {open && (/Bottleneck/.test(row.limit || "") ? <HelpTip term="bottleneck" /> : row.limit === "Network-limited" ? <HelpTip term="network" /> : null)}
             </p>
             {limited && serverTab !== "room" && (
-              <button type="button" data-limit-shortcut onClick={showRoomTab} className="mt-1 min-h-11 w-full border-2 border-[var(--game-danger)] px-2 text-left font-pixel text-[0.5rem] leading-4 text-[var(--game-danger)]">
+              <button type="button" data-limit-shortcut onClick={showRoomTab} className="mt-1 min-h-12 w-full border-2 border-[var(--game-danger)] px-2 text-left font-pixel text-[0.5rem] leading-4 text-[var(--game-danger)]">
                 {row.limit.toUpperCase()}: SEE ROOM EQUIPMENT &gt;
               </button>
             )}
@@ -300,7 +300,7 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
               Home PC parts (boards, CPUs, memory, cases, power supplies, sound and video) go on the PC Build Bench. Its PC makes R&amp;D points too.
             </p>
             {facilityUnlocked(state, "bench") ? (
-              <Link to="/facilities/$facilityId" params={{ facilityId: "bench" }} data-server-bench-link className="flex min-h-11 items-center justify-center border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.55rem] text-black shadow-[3px_3px_0_0_#000]">
+              <Link to="/facilities/$facilityId" params={{ facilityId: "bench" }} data-server-bench-link className="flex min-h-12 items-center justify-center border-2 border-[var(--game-accent)] bg-[var(--game-accent)] px-3 font-pixel text-[0.55rem] text-black shadow-[3px_3px_0_0_#000]">
                 PC BUILD BENCH &gt;
               </Link>
             ) : (
@@ -438,7 +438,7 @@ export default function FacilitiesPage({ facilityId }) {
       <>
       <FacilityRoom facilityId={facility.id} state={state} />
       {facilityId === "servers" && (
-        <Link to="/research" data-servers-rd className="flex min-h-11 items-center justify-between border-2 border-[var(--game-accent)] bg-[var(--game-panel)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]">
+        <Link to="/research" data-servers-rd className="flex min-h-12 items-center justify-between border-2 border-[var(--game-accent)] bg-[var(--game-panel)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]">
           <span>R&amp;D: SPEND THESE POINTS</span>
           <span>&gt;</span>
         </Link>

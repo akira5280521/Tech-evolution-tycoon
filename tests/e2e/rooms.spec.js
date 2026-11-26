@@ -115,6 +115,12 @@ test("the servers room shows the 1930s starter punch and the 1976 Cray-1, and cl
   await expect(room.locator("[data-room-unlock='tab601']").first()).toBeVisible();
   await expect(room.locator("[data-room-slot='cat-1930s']")).toBeVisible();
   await expect(room.locator("[data-room-unlock='cray1']")).toHaveCount(0);
+  // Sprites are clipped to the banner and stay under the HUD and tab bar.
+  const clip = await room.evaluate((el) => {
+    const cs = getComputedStyle(el);
+    return { overflow: cs.overflow, isolation: cs.isolation };
+  });
+  expect(clip).toEqual({ overflow: "hidden", isolation: "isolate" });
   await page.goto("/facilities/cluster");
   await page.locator("nav[aria-label='Main navigation']").waitFor();
   await expect(page.locator("[data-facility-room='cluster'][data-room-soon]")).toContainText("Room coming soon");

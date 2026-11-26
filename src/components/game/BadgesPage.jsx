@@ -1,4 +1,5 @@
 import { badgeList } from "@/lib/empire";
+import EmptyHint from "./EmptyHint";
 import { useGameState } from "./GameState";
 import ScreenShell from "./chrome";
 
@@ -15,6 +16,11 @@ export default function BadgesPage({ top = null }) {
       <p className="font-term text-lg leading-6 text-[var(--game-muted)]">
         Earn badges by unlocking new tech eras, stacking massive lifetime profit, mastering eras, and collapsing the timeline.
       </p>
+      {earned === 0 && (
+        <EmptyHint id="badges" title="NO BADGES YET">
+          Your first comes quickly: open your next era on GAME, or keep a business running until your lifetime profit passes its mark.
+        </EmptyHint>
+      )}
       {groups.map((group) => (
         <section key={group}>
           <h2 className="font-pixel text-[0.65rem] text-[var(--game-violet)]">· {group}</h2>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import EmptyHint from "./EmptyHint";
 import MuseumIcon from "./MuseumIcon";
 import { partLock } from "@/lib/facilities";
 import { museumRows } from "@/lib/history";
@@ -251,6 +252,11 @@ export default function MuseumPage({ top = null, backTo } = {}) {
               </label>
             )}
             <SearchBox value={query} onChange={setQuery} placeholder="Search museum" testId="museum" />
+            {roomId && !query.trim() && exhibits.length > 0 && exhibits.every((e) => e.status === "locked") && (
+              <EmptyHint id="museum-room" title="NOTHING FOUND HERE YET">
+                Pieces join this room when you research them on R&amp;D &gt; TECH or buy them for a facility. Dark ones are still to find.
+              </EmptyHint>
+            )}
             <div data-museum-grid className="grid grid-cols-4 gap-2 min-[480px]:grid-cols-6">
               {exhibits.map(({ item, status }) => {
                 const locked = status === "locked";
@@ -272,7 +278,7 @@ export default function MuseumPage({ top = null, backTo } = {}) {
                 );
               })}
             </div>
-            {!exhibits.length && <p className="font-term text-lg text-[var(--game-muted)]">{decade != null ? "Coming soon." : "Nothing here for that filter."}</p>}
+            {!exhibits.length && <p className="font-term text-lg text-[var(--game-muted)]">{decade != null ? "Coming soon." : query.trim() ? "No match. Try a maker, a model or a year, or clear the search." : "Nothing here for that filter. Pick ALL or another maker."}</p>}
           </>
         )}
       </section>

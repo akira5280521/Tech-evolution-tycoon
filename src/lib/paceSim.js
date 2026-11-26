@@ -107,7 +107,7 @@ function tryServerRd(state, now) {
   for (const part of parts) {
     const cost = partCost(part, counts[part.id] || 0);
     if (!(cost > 0) || cost > budget) continue;
-    if (purchasePart(state, "servers", part.id).ok) return true;
+    if (purchasePart(state, "servers", part.id, now).ok) return true;
   }
   return false;
 }

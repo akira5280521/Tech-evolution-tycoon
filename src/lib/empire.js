@@ -3,7 +3,7 @@
 // singularity. Every Empire Bonuses source multiplies, then a soft ceiling
 // that rises with singularity points keeps the product finite.
 
-import { blankFacilities, facilityReport, noteFacilityNews, plantsHaveParts, readFacilities, recentNews } from "./facilities.js";
+import { blankFacilities, facilityReport, noteFacilityNews, plantsHaveParts, readFacilities, recentNews, settleStages } from "./facilities.js";
 import { advanceResearch, awayBankCap } from "./research.js";
 import { generationPayMult } from "./generations.js";
 import { anniversaryMult } from "./anniversaries.js";
@@ -469,7 +469,7 @@ export function awayShifts(state) {
 }
 
 export function blankLab() {
-  return { overclockUntil: 0, coolUntil: 0, patentDay: null, patents: 0, crew: false, fabDay: null, fabs: 0, cleanUntil: 0, queueSlots: 0, awayShifts: 0 };
+  return { overclockUntil: 0, coolUntil: 0, patentDay: null, patents: 0, crew: false, fabDay: null, fabs: 0, cleanUntil: 0, queueSlots: 0, awayShifts: 0, fieldEngineers: false, stagesSeen: [] };
 }
 
 export function cleanLab(raw, now = Date.now()) {
@@ -493,6 +493,10 @@ export function cleanLab(raw, now = Date.now()) {
     queueSlots: Math.min(4, Math.floor(n(l.queueSlots))),
     // Away shifts earned (0-3), kept for good. Older saves have none.
     awayShifts: Math.min(AWAY_SHIFTS.length, Math.floor(n(l.awayShifts))),
+    // Field engineers (T5 item 61), kept for good. Older saves have none.
+    fieldEngineers: !!l.fieldEngineers,
+    // Staged jobs done before (career): a repeat takes half as long.
+    stagesSeen: Array.isArray(l.stagesSeen) ? l.stagesSeen.filter((k) => typeof k === "string").slice(-400) : [],
   };
 }
 
@@ -1306,6 +1310,8 @@ export function buyUpgrade(state, index, kind, now = Date.now()) {
 export function finishTimedWork(state, now) {
   const notes = [];
   if (!Number.isFinite(now) || now < 1e11) return notes;
+  // Servers coming online, rooms being built, the bench PC being set up.
+  notes.push(...settleStages(state, now));
   const research = timedJob(state.researchJob);
   state.researchJob = research;
   if (research && jobDone(research, now)) {

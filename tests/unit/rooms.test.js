@@ -165,7 +165,7 @@ test("the Inland 601 room lays out 1, 3 or 6 punches on the 1930s stages", () =>
   const mid = serverShown(serverAt({ tab601: 3 }));
   assert.equal(mid.stage.id, "era-1930s-mid");
   assert.equal(mid.items.filter((i) => i.unlockId === "tab601").length, 3);
-  assert.ok(mid.items.some((i) => i.id === "desk-1930s"));
+  assert.equal(mid.items.some((i) => i.id === "desk-1930s"), false, "no desk or desk lamp in a server room (#3)");
 
   const maxed = serverShown(serverAt({ tab601: 6 }));
   assert.equal(maxed.stage.id, "era-1930s-maxed");

@@ -6,6 +6,8 @@ import { useGameState } from "./GameState";
 import ScreenShell, { Embedded, GoldButton, Panel, SubTabs } from "./chrome";
 import { HelpTip, ItemHelp } from "./HintSheet";
 import { generationAt } from "@/lib/generations";
+import { facilityEverUnlocked, fieldEngineersQuote } from "@/lib/facilities";
+import { FIELD_ENGINEERS } from "@/lib/stages";
 import PrestigeBar from "./PrestigeBar";
 import PrestigeReport from "./PrestigeReport";
 import BoardPage, { forkIsReady } from "./BoardPage";
@@ -147,6 +149,37 @@ function ForemanPerk() {
   );
 }
 
+// Field engineers (T5 item 61): server installs take half as long. Bought
+// with R&D points once the server room has opened; kept for good.
+function FieldEngineersPerk() {
+  const { state, buyFieldEngineers } = useGameState();
+  const q = fieldEngineersQuote(state);
+  const hired = !!q.owned;
+  const reached = facilityEverUnlocked(state, "servers");
+  return (
+    <Panel>
+      <div data-field-engineers={hired ? "hired" : reached ? "open" : "locked"} className={`flex items-start gap-2 ${reached ? "" : "opacity-60"}`}>
+        <div className="min-w-0 flex-1">
+          <h2 className="font-pixel text-[0.6rem] leading-5 text-[var(--game-violet)]">PERK · FIELD ENGINEERS</h2>
+          <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
+            {hired
+              ? "Hired. New research servers come online in half the time."
+              : `A field-engineering crew installs research servers in half the time. ${FIELD_ENGINEERS.cost} R&D points, kept for good.${reached ? "" : " Needs Mainframes."}`}
+          </p>
+        </div>
+      </div>
+      {!hired && (
+        <div className="mt-2">
+          <GoldButton disabled={!q.ok} onClick={buyFieldEngineers} dataAttr="buy-field-engineers">
+            <span className="block font-pixel text-[0.6rem]">{reached ? "HIRE FIELD ENGINEERS" : "NEEDS MAINFRAMES"}</span>
+            <span className="font-term text-xl">{FIELD_ENGINEERS.cost} R&amp;D points</span>
+          </GoldButton>
+        </div>
+      )}
+    </Panel>
+  );
+}
+
 function UpgradesTab() {
   const { state, purchaseUpgrade, setAutoUpgrades } = useGameState();
   const open = BUSINESSES.map((cfg, index) => ({ cfg, index })).filter(({ index }) => eraOpen(state, index));
@@ -160,6 +193,7 @@ function UpgradesTab() {
   return (
     <div data-boost-upgrades className="space-y-3">
       <ForemanPerk />
+      <FieldEngineersPerk />
       {hasPerk(state, "auto-upgrades") && (
         <Panel>
           <h2 className="font-pixel text-[0.6rem] text-[var(--game-violet)]">PURCHASING DEPARTMENT</h2>

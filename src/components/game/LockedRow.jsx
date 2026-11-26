@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { stageAt } from "@/lib/stages";
 import { eraCanOpen, eraNeeds, money } from "@/lib/gameConfig";
 import { HISTORY_PACE_MS, calendarYear } from "@/lib/calendar";
 import { ERA_YEAR } from "@/lib/eraYear";
@@ -124,7 +125,7 @@ function EraBuildBar({ build }) {
   return (
     <div data-era-build={build.id} className="mt-2" role="progressbar" aria-label="Setting up the era" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)}>
       <p className="flex justify-between gap-2 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
-        <span>SETTING UP THE ERA</span>
+        <span>SETTING UP THE ERA: <span data-era-stage>{stageAt({ set: "retool", ...build }, now).label.toUpperCase()}</span></span>
         <span data-era-build-left={left} className="tabular-nums">{time}</span>
       </p>
       <div className="mt-1 h-4 border-2 border-[var(--game-accent)] bg-[var(--game-bg)]">

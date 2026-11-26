@@ -32,7 +32,7 @@ const through = (id, extra = {}) => {
 test("HQ opens each plant on its own page, and the Museum card leaves More", async ({ page }) => {
   const seen = await open(page, "/rigs", through("tubes"));
   await tipsOff(page);
-  await expect(page.locator("[data-hub-item]")).toHaveCount(6);
+  await expect(page.locator("[data-hub-item]")).toHaveCount(4);
   await page.locator("[data-hub-item='servers']").click();
   await expect(page).toHaveURL(/\/facilities\/servers$/);
   await expect(page.locator("[data-facility='servers']")).toBeVisible();
@@ -42,11 +42,9 @@ test("HQ opens each plant on its own page, and the Museum card leaves More", asy
   await expect(page.getByText("Irwell Mark 1")).toHaveCount(0);
   await page.getByRole("link", { name: "< BACK" }).click();
   await expect(page).toHaveURL(/\/rigs$/);
-  await page.locator("[data-hub-item='museum']").click();
-  await expect(page).toHaveURL(/\/museum/);
+  await page.goto("/museum");
+  await expect(page).toHaveURL(/\/progress#museum/);
   await expect(page.locator("[data-hw-museum]")).toBeVisible();
-  await page.getByRole("link", { name: "< BACK" }).click();
-  await expect(page).toHaveURL(/\/rigs$/);
   await page.goto("/more#settings");
   await page.locator("nav[aria-label='Main navigation']").waitFor();
   await expect(page.locator("[data-more-tabs]")).not.toContainText("MUSEUM");

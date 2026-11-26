@@ -8,11 +8,10 @@ import { getSaveData } from "@/lib/gameSave";
 import { eraNameAt, eraReachedIndex, formatDuration, longestRun, runLengthMs } from "@/lib/records";
 import { useGameState } from "./GameState";
 import AnalyticsPanel from "./AnalyticsPanel";
-import BadgesPage from "./BadgesPage";
 import AppVersionFooter from "./AppVersion";
 import DailyBriefing from "./DailyBriefing";
 import NextMove from "./NextMove";
-import ScreenShell, { GoldButton, Panel, ProgressBar } from "./chrome";
+import ScreenShell, { GoldButton, Panel, ProgressBar, SubTabs } from "./chrome";
 import { timedProgress } from "@/lib/progress";
 import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
@@ -28,11 +27,11 @@ import { HUB_LABEL } from "@/lib/hub";
 import { HOWTO_GUIDES, guideLocked } from "@/lib/howto";
 import { labSummary, specialtySummary } from "@/lib/rdSummary";
 
+// MORE is settings and help (T3 item 16). Stats, badges, runs and the
+// museum are in PROGRESS.
 const TABS = [
   { id: "settings", label: "SETTINGS", title: "SETTINGS" },
   { id: "howto", label: "HOW TO PLAY", title: "HOW TO PLAY" },
-  { id: "stats", label: "STATS", title: "STATS" },
-  { id: "badges", label: "BADGES", title: "BADGES" },
 ];
 
 const tabBtn = (active, id) =>
@@ -46,28 +45,8 @@ export function MoreLinks({ active }) {
   const navigate = useNavigate();
   const go = (id) => navigate({ to: "/more", hash: id });
   return (
-    <div data-more-tabs className="space-y-3">
-      <div>
-        <p data-more-group="game" className="mb-1 font-pixel text-[0.5rem] text-[var(--game-muted)]">GAME</p>
-        <div className="grid grid-cols-2 gap-2 min-[480px]:grid-cols-3">
-          <button type="button" onClick={() => go("stats")} className={tabBtn(active, "stats")}>STATS</button>
-          <button type="button" onClick={() => go("badges")} className={tabBtn(active, "badges")}>BADGES</button>
-          <button type="button" data-more-achievements disabled className={`${tabBtn(active, "achievements")} opacity-60`}>ACHIEVEMENTS · COMING SOON</button>
-          <Link to="/runs" data-more-runs className={`flex items-center justify-center ${tabBtn(active, "runs")}`}>RUNS</Link>
-        </div>
-      </div>
-      <div>
-        <p data-more-group="help" className="mb-1 font-pixel text-[0.5rem] text-[var(--game-muted)]">HELP</p>
-        <div className="grid grid-cols-2 gap-2 min-[480px]:grid-cols-3">
-          <button type="button" onClick={() => go("howto")} className={tabBtn(active, "howto")}>HOW TO PLAY</button>
-        </div>
-      </div>
-      <div>
-        <p data-more-group="settings" className="mb-1 font-pixel text-[0.5rem] text-[var(--game-muted)]">SETTINGS</p>
-        <div className="grid grid-cols-2 gap-2 min-[480px]:grid-cols-3">
-          <button type="button" onClick={() => go("settings")} className={tabBtn(active, "settings")}>SETTINGS</button>
-        </div>
-      </div>
+    <div data-more-tabs>
+      <SubTabs tabs={TABS.map((t) => ({ id: t.id, label: t.label }))} active={active} onPick={go} name="more" />
     </div>
   );
 }
@@ -80,11 +59,6 @@ export default function MorePage() {
   const navigate = useNavigate();
   const data = getSaveData();
 
-  if (tab === "badges") return <BadgesPage top={<MoreLinks active="badges" />} />;
-  if (hash === "museum") {
-    navigate({ to: "/museum", replace: true });
-    return null;
-  }
 
   return (
     <ScreenShell title={TABS.find((entry) => entry.id === tab)?.title || "SETTINGS"} subtitle="">
@@ -130,7 +104,6 @@ export default function MorePage() {
           <HowTo state={state} tipsOff={!!state.tutorial?.tipsOff} onTips={setTipsOff} />
         </>
       )}
-      {tab === "stats" && <Stats state={state} data={data} />}
     </ScreenShell>
   );
 }
@@ -248,7 +221,7 @@ const HOW_TO = [
     title: "WHAT YOU KEEP FOREVER",
     lines: [
       "Investors, R&D points and your research picks, era tokens, badges, Museum cards, and the rewards from challenges and mega-projects all stay when you prestige.",
-      "Era tokens come from new eras, milestones, projects and the free Daily Crate. Spend them in the shop on the BOARD tab.",
+      "Era tokens come from new eras, milestones, projects and the free Daily Crate. Spend them in the shop in BOOST > BONUSES.",
     ],
   },
   {
@@ -279,7 +252,7 @@ const HOW_TO = [
     id: "extras",
     title: "CHALLENGES AND PROJECTS",
     lines: [
-      "The RUNS tab has optional challenges: one run with special rules, like no managers. Win one for +10% income forever.",
+      "PROGRESS > RUNS has optional challenges: one run with special rules, like no managers. Win one for +10% income forever.",
       "Mega-projects finish on their own once you reach their goal, and each gives a bonus you keep plus tokens.",
     ],
   },
@@ -287,7 +260,7 @@ const HOW_TO = [
     id: "fork",
     title: "THE BIGGER RESET (FORK)",
     lines: [
-      "Much later, with thousands of investors, you can fork the timeline on the BOARD tab. It spends investors to start over like a prestige, with a multiplier you keep forever (up to x4), a higher income limit, and another research slot.",
+      "Much later, with thousands of investors, you can fork the timeline in BOOST > BONUSES. It spends investors to start over like a prestige, with a multiplier you keep forever (up to x4), a higher income limit, and another research slot.",
     ],
   },
   {
@@ -362,7 +335,7 @@ function HowTo({ state, tipsOff, onTips }) {
   );
 }
 
-function Stats({ state, data }) {
+export function Stats({ state, data }) {
   const era = Math.max(0, eraReachedIndex(state));
   const runs = Array.isArray(state.runs) ? state.runs : [];
   const bestEarn = runs.reduce((best, run) => (!best || run.earnings > best.earnings ? run : best), null);

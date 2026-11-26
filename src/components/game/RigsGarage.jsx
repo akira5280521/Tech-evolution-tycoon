@@ -64,8 +64,8 @@ export default function RigsGarage() {
     : !benchHasParts(onBench)
       ? "Build a PC on the Bench first."
       : builds.length >= RIGS_CAP
-        ? `Garage is full (${RIGS_CAP}). Delete a rig to save another.`
-        : "Stores a copy of the current build in this garage.";
+        ? `SAVED BUILDS is full (${RIGS_CAP}). Delete one to save another.`
+        : "Stores a copy of the current build in SAVED BUILDS.";
 
   const onSave = () => {
     saveBenchRig?.();

@@ -17,6 +17,7 @@ import { Route as FacilitiesRouteImport } from './routes/facilities'
 import { Route as GarageRouteImport } from './routes/garage'
 import { Route as MoreRouteImport } from './routes/more'
 import { Route as MuseumRouteImport } from './routes/museum'
+import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as ResearchRouteImport } from './routes/research'
 import { Route as RigsRouteImport } from './routes/rigs'
 import { Route as RunsRouteImport } from './routes/runs'
@@ -64,6 +65,11 @@ const MoreRoute = MoreRouteImport.update({
 const MuseumRoute = MuseumRouteImport.update({
   id: '/museum',
   path: '/museum',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProgressRoute = ProgressRouteImport.update({
+  id: '/progress',
+  path: '/progress',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResearchRoute = ResearchRouteImport.update({
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/garage': typeof GarageRoute
   '/more': typeof MoreRoute
   '/museum': typeof MuseumRoute
+  '/progress': typeof ProgressRoute
   '/research': typeof ResearchRoute
   '/rigs': typeof RigsRoute
   '/runs': typeof RunsRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/garage': typeof GarageRoute
   '/more': typeof MoreRoute
   '/museum': typeof MuseumRoute
+  '/progress': typeof ProgressRoute
   '/research': typeof ResearchRoute
   '/rigs': typeof RigsRoute
   '/runs': typeof RunsRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/garage': typeof GarageRoute
   '/more': typeof MoreRoute
   '/museum': typeof MuseumRoute
+  '/progress': typeof ProgressRoute
   '/research': typeof ResearchRoute
   '/rigs': typeof RigsRoute
   '/runs': typeof RunsRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/garage'
     | '/more'
     | '/museum'
+    | '/progress'
     | '/research'
     | '/rigs'
     | '/runs'
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/garage'
     | '/more'
     | '/museum'
+    | '/progress'
     | '/research'
     | '/rigs'
     | '/runs'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/garage'
     | '/more'
     | '/museum'
+    | '/progress'
     | '/research'
     | '/rigs'
     | '/runs'
@@ -228,6 +240,7 @@ export interface RootRouteChildren {
   GarageRoute: typeof GarageRoute
   MoreRoute: typeof MoreRoute
   MuseumRoute: typeof MuseumRoute
+  ProgressRoute: typeof ProgressRoute
   ResearchRoute: typeof ResearchRoute
   RigsRoute: typeof RigsRoute
   RunsRoute: typeof RunsRoute
@@ -293,6 +306,13 @@ declare module '@tanstack/react-router' {
       path: '/museum'
       fullPath: '/museum'
       preLoaderRoute: typeof MuseumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/progress': {
+      id: '/progress'
+      path: '/progress'
+      fullPath: '/progress'
+      preLoaderRoute: typeof ProgressRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/research': {
@@ -375,6 +395,7 @@ const rootRouteChildren: RootRouteChildren = {
   GarageRoute: GarageRoute,
   MoreRoute: MoreRoute,
   MuseumRoute: MuseumRoute,
+  ProgressRoute: ProgressRoute,
   ResearchRoute: ResearchRoute,
   RigsRoute: RigsRoute,
   RunsRoute: RunsRoute,

@@ -44,11 +44,11 @@ export default function PrestigeReport({ report, onDismiss }) {
         )}
         {report.nextUnlock && (
           <p className="mt-2 font-term text-base leading-5 text-[var(--game-violet)]">
-            Next investor milestone at {count(report.nextUnlock.at)} investors (BOARD tab).
+            Next investor milestone at {count(report.nextUnlock.at)} investors (BOOST &gt; BONUSES).
           </p>
         )}
         <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
-          Challenges are open now on the RUNS tab. Prestige again when the button glows: that's when it would at least double your investors.
+          Challenges are open now in PROGRESS &gt; RUNS. Prestige again when the button glows: that's when it would at least double your investors.
         </p>
         </div>
         <div className="hint-sheet-actions mt-4">

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Play } from "lucide-react";
-import { FOREMAN_COST, buyModeLabel, money, nextBuyMode } from "@/lib/gameConfig";
+import { buyModeLabel, nextBuyMode } from "@/lib/gameConfig";
 import StarterGoal from "./StarterGoal";
 import { NextGoalChip } from "./NextGoalChip";
 import { HUB_LABEL, HUB_ROUTE, hubOpen } from "@/lib/hub";
@@ -41,14 +41,14 @@ function SideLink({ to, open, data, label, progress = null, dot = false }) {
 const on = "border-[var(--game-accent)] bg-[var(--game-accent)] text-black";
 const off = "border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-muted)]";
 
-export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll, onBuyForeman }) {
+export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll }) {
   const unlocked = !!state.foreman;
-  const affordForeman = state.cash >= FOREMAN_COST;
   return (
     <header className="safe-x px-3 pb-2 pt-2">
       <div className="mx-auto max-w-4xl space-y-1.5">
+        {/* The Foreman is hired from BOOST > UPGRADES (T3 item 17); RUN ALL stays here. */}
+        {unlocked && (
         <div className="flex items-stretch gap-1">
-        {unlocked ? (
           <button
             type="button"
             data-run-all
@@ -60,21 +60,8 @@ export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll
             <Play className="h-4 w-4 shrink-0" aria-hidden="true" />
             Run All
           </button>
-        ) : (
-          <button
-            type="button"
-            data-buy-foreman
-            aria-label={`Hire the Foreman for ${money(FOREMAN_COST)}`}
-            onClick={onBuyForeman}
-            disabled={!affordForeman}
-            className={`flex min-h-11 w-full flex-col items-center justify-center border-2 px-2 py-1 text-center shadow-[2px_2px_0_0_#000] ${affordForeman ? on : "cursor-not-allowed border-[var(--game-border)] bg-[var(--game-panel)] text-[var(--game-dim)]"}`}
-          >
-            <span className="font-pixel text-[0.55rem] leading-4">FOREMAN</span>
-            <span className="font-term text-base leading-5">{money(FOREMAN_COST)} · unlocks Run All</span>
-          </button>
-        )}
-        <ItemHelp kind="foreman" state={state} name="the Foreman" className="my-0 self-center" />
         </div>
+        )}
 
         <div className="flex items-stretch gap-2">
           <button

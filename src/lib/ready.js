@@ -102,7 +102,8 @@ export function readyDots(state, now = Date.now()) {
 
 export function tabHasDot(dots, tab) {
   if (tab === "boost") return (dots.boost || []).length > 0;
-  if (tab === "research") return (dots.research || []).length > 0;
+  if (tab === "research") return (dots.research || []).length > 0 || (dots.tech || []).length > 0;
+  if (tab === "hq") return (dots.hq || []).length > 0;
   return false;
 }
 

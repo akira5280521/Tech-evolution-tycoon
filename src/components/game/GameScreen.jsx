@@ -11,7 +11,6 @@ import { useGameState } from "./GameState";
 import TopBar from "./TopBar";
 import BusinessRow from "./BusinessRow";
 import LockedRow from "./LockedRow";
-import PrestigeBar from "./PrestigeBar";
 import WelcomeBack from "./WelcomeBack";
 import PrestigeReport from "./PrestigeReport";
 import BottomTabs from "./BottomTabs";
@@ -49,7 +48,7 @@ function supplyShown(state, key) {
 
 export default function GameScreen() {
   const game = useGameState();
-  const { state, buyMode, setBuyMode, buy, hire, run, runAll, toggleManager, buyForeman, prestige, dismissOffline,
+  const { state, buyMode, setBuyMode, buy, hire, run, runAll, toggleManager, dismissOffline,
     dismissPrestigeReport, dismissArrivalCard, chooseDilemma, chooseStoryEvent, acceptContractOffer, skipContractOffer, cashOut, tutorialNext, tutorialSkip } = game;
   const [, bumpTick] = useState(0);
   const [pullDist, setPullDist] = useState(0);
@@ -214,7 +213,6 @@ export default function GameScreen() {
             }}
             canRunAll={canRunAll}
             onRunAll={runAll}
-            onBuyForeman={buyForeman}
           />
           <div className="safe-x mx-auto max-w-4xl px-3 pt-2">
             <p
@@ -304,11 +302,7 @@ export default function GameScreen() {
               Challenge running: {state.challenge.id} · {money(state.challenge.earnings)} / {money(activeChallengeGoal(state))} this run.
             </p>
           )}
-          {/* Prestige only matters much later; a brand-new player sees it once
-              the run has earned $100M (a thousandth of the first investor). */}
-          {((state.investors || 0) > 0 || state.prestiged || (state.lifetime || 0) >= 1e8) && (
-            <PrestigeBar state={state} onPrestige={prestige} />
-          )}
+          {/* Prestige moved to BOOST > PRESTIGE (T3 item 10). */}
 
           {BUSINESSES.map((cfg, i) => {
             if (blockedByGlass(state, i)) return null;

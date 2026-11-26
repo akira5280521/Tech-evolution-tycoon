@@ -67,7 +67,7 @@ export const HOWTO_GUIDES = [
     title: "HARDWARE MUSEUM",
     always: true,
     lines: [
-      `The Hardware Museum is in ${HUB_LABEL}. It shows every piece of hardware in the game, room by room and decade by decade.`,
+      "The Hardware Museum is in PROGRESS > MUSEUM. It shows every piece of hardware in the game, room by room and decade by decade.",
       "Tap an exhibit to read about it. Dark ones are still to find. Use the search box to filter by name or model; locked pieces stay hidden as ??? and will not match. Finish a room for its badge.",
     ],
   },

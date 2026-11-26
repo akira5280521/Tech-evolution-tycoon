@@ -49,8 +49,8 @@ test("top HQ button opens the hub, and RESEARCH SERVERS opens the plants", async
   await top.click();
   await expect(page).toHaveURL(/\/rigs$/);
   const items = page.locator("[data-hub-item]");
-  await expect(items).toHaveCount(6);
-  await expect(items.first()).toHaveAttribute("data-hub-item", "rigs");
+  await expect(items).toHaveCount(4);
+  await expect(items.first()).toHaveAttribute("data-hub-item", "servers");
   await page.locator("[data-hub-item='servers']").click();
   await expect(page).toHaveURL(/\/facilities\/servers$/);
   await expect(page.locator("[data-facility='servers']")).toBeVisible();
@@ -116,19 +116,16 @@ test("an early HQ lists every facility, and locked cards say what they need", as
   const seen = await open(page, "/rigs", earlySave({ throughId: "timber" }));
   await tipsOff(page);
   const items = page.locator("[data-hub-item]");
-  await expect(items).toHaveCount(6);
+  await expect(items).toHaveCount(4);
   await expect(page.locator("[data-hub-item='servers']")).not.toHaveAttribute("data-locked", "");
   await expect(page.locator("[data-hub-item='servers']")).toContainText("RESEARCH SERVERS");
-  await expect(page.locator("[data-hub-item='museum']")).not.toHaveAttribute("data-locked", "");
-  await expect(page.locator("[data-hub-item='museum']")).toContainText("HARDWARE MUSEUM");
-  for (const id of ["rigs", "bench", "mine", "cluster"]) {
+  for (const id of ["bench", "mine", "cluster"]) {
     const card = page.locator(`[data-hub-item='${id}']`);
     await expect(card).toHaveAttribute("data-locked", "");
     await expect(card).toContainText("???");
     await expect(card).toContainText("COMING SOON");
     await expect(card.locator("[data-hub-need]")).toBeVisible();
   }
-  await expect(page.locator("[data-hub-item='rigs'] [data-hub-need]")).toContainText("Needs Home Computers this run");
   await expect(page.locator("[data-hub-item='bench'] [data-hub-need]")).toContainText("Needs Home Computers this run");
   await expect(page.locator("[data-hub-item='mine'] [data-hub-need]")).toContainText("Needs AI Accelerators this run");
   await expect(page.locator("[data-hub-item='cluster'] [data-hub-need]")).toContainText("Needs AI Accelerators this run");
@@ -150,6 +147,7 @@ const hqSave = (owned, extra = {}) => ({
 test("after a prestige HQ still opens and RIGS says what each plant needs", async ({ page }) => {
   const seen = await open(page, "/", hqSave(1));
   await expect(page.locator("[data-open-facilities]")).toHaveText("HQ");
+  await page.goto("/boost#prestige");
   await page.click('[data-prestige="recruit"]');
   const report = page.locator("[data-prestige-report-ok]");
   if (await report.count()) await report.click();
@@ -160,10 +158,8 @@ test("after a prestige HQ still opens and RIGS says what each plant needs", asyn
   await expect(top).not.toHaveAttribute("data-locked", "");
   await top.click();
   await expect(page).toHaveURL(/\/rigs$/);
-  await expect(page.locator("[data-hub-item]")).toHaveCount(6);
+  await expect(page.locator("[data-hub-item]")).toHaveCount(4);
   await expect(page.locator("[data-hub-item='servers']")).not.toHaveAttribute("data-locked", "");
-  await expect(page.locator("[data-hub-item='rigs']")).toHaveAttribute("data-locked", "");
-  await expect(page.locator("[data-hub-item='rigs'] [data-hub-need]")).toContainText("Needs Home Computers this run");
   await expect(page.locator("[data-hub-item='bench']")).toHaveAttribute("data-locked", "");
   await expect(page.locator("[data-hub-item='bench'] [data-hub-need]")).toContainText("Needs Home Computers this run");
   await expect(page.locator("[data-hub-item='mine'] [data-hub-need]")).toContainText("Needs AI Accelerators this run");

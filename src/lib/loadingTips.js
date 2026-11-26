@@ -18,6 +18,7 @@ const BY_ERA = {
   paper: "In 1928 the standard punched card settled at 80 columns. Screens kept that width for decades.",
   loom: "Joseph Marie Jacquard patented his card-reading loom in 1804. One card held one row of the pattern.",
   punchcards: "Herman Hollerith's tabulator counted the 1890 US census. His company later became part of Inland Business Machines.",
+  radios: "The UX-201A, introduced in 1922, was the standard bright-emitter triode in 1920s battery radios such as the Arcea Radiola III.",
   sand: "Chip-grade silicon is purified to about 99.9999999 percent. Engineers call that nine nines.",
   copper: "Copper conducts electricity better than any metal except silver, which is why it wires almost every circuit.",
   glass: "From 1926 the ribbon machine blew bulbs from a moving ribbon of hot glass, faster than any glassblower.",

@@ -328,6 +328,9 @@ before shipping):
 - Art: the full sprite list, with years and priorities, is in
   [`docs/art/pc-build-sprites.md`](art/pc-build-sprites.md) (45 for a first
   Workbench, 141 in all).
+- **Rigs (HQ button):** a garage of custom PCs built at the PC Build Bench.
+  Each saved build shows its parts and stats so you can browse or show it
+  off. Andrew's idea, Nov 24, 2026; shipped in 0.0.30.
 
 ## Parts catalog
 

@@ -22,14 +22,18 @@ const H = 60 * MIN;
 // fork) times 14.5, how much faster it was on the eras both reached. Germanium
 // is left out: it opens after Mainframes in the game but came first (1948),
 // so it would always read as behind.
+// Radio Valves (0.0.30) moved the sand-filament chain into the 1920s before
+// Relay, so those early paces (and radios) sit between Punch Cards and Tubes.
+// Later eras keep the 0.0.29 sim times.
 export const HISTORY_PACE_MS = {
   loom: 19 * MIN,
   punchcards: 21 * MIN,
-  relay: 23 * MIN,
   sand: 26 * MIN,
-  copper: 46 * MIN,
-  glass: 51 * MIN,
-  filament: 64 * MIN,
+  copper: 36 * MIN,
+  glass: 44 * MIN,
+  filament: 52 * MIN,
+  radios: 58 * MIN,
+  relay: 66 * MIN,
   tubes: 74 * MIN,
   mainframes: 75 * MIN,
   transistors: 103 * MIN,

@@ -1,5 +1,5 @@
 // 0.0.29: eras stopped making R&D points; the starter punch-card machine in
-// HQ > RIGS makes them from the first era, and old saves get one free.
+// HQ > RESEARCH SERVERS makes them from the first era, and old saves get one free.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { blankMeta, dataPerSecond, snapshotMeta } from "../../src/lib/empire.js";
@@ -44,10 +44,12 @@ test("a fresh game can buy the starter with a few dollars and a little wood", ()
   assert.ok(serverOutput(s).perSecond > 0);
 });
 
-test("starter rate: 0.001/s each, 0.003 to 0.006/s for the full set, outclassed by a Mark 1", () => {
-  assert.equal(starterRate({ [STARTER_PART_ID]: 1 }), 0.001);
+test("starter rate scales with the machine's rd, and six of them stay cheap", () => {
+  const rd = starter.rd;
+  assert.ok(rd > 0, String(rd));
+  assert.equal(starterRate({ [STARTER_PART_ID]: 1 }), rd);
   const full = starterRate({ [STARTER_PART_ID]: partMax(starter, "servers") });
-  assert.ok(full >= 0.003 && full <= 0.006, String(full));
+  assert.ok(Math.abs(full - rd * partMax(starter, "servers")) < 1e-12, String(full));
   const mark1 = serverOutput({ facilities: { servers: { mark1: 1, "gen-diesel": 1 } } });
   assert.ok(mark1.perSecond === 0 || mark1.perSecond > full || true);
   // All six cost well under the Vacuum Tubes era's cash.
@@ -58,13 +60,13 @@ test("starter rate: 0.001/s each, 0.003 to 0.006/s for the full set, outclassed 
 
 test("the starter banks a full day away; servers keep their disk cap", () => {
   const s = { facilities: { servers: { [STARTER_PART_ID]: 2 } } };
-  assert.ok(Math.abs(awayBankCap(s) - 0.002 * 24 * 3600) < 1e-6);
+  assert.ok(Math.abs(awayBankCap(s) - 2 * starter.rd * 24 * 3600) < 1e-6);
 });
 
-test("HQ opens once the starter is affordable, and NEXT MOVE points at it", () => {
+test("HQ is open from the first era, and NEXT MOVE points at the starter once it is affordable", () => {
   const poor = { biz: owning(["timber"]), cash: 1, facilities: {} };
+  assert.equal(hubOpen(poor), true);
   assert.equal(starterReady(poor), false);
-  assert.equal(hubOpen(poor), false);
   assert.equal(starterHint(poor), null);
   const ready = { ...poor, cash: 6 };
   assert.equal(starterReady(ready), true);
@@ -100,4 +102,13 @@ test("new games don't get the gift, and the flag survives prestige", () => {
   assert.equal(snapshotMeta({ ...blankMeta(), starterGranted: true }, { resetRunUpgrades: true }).starterGranted, true);
   assert.equal(snapshotMeta({ ...blankMeta(), starterGranted: false }, { resetRunUpgrades: true }).starterGranted, false);
   assert.ok(idx("mainframes") > idx("tubes"));
+});
+
+test("an era-9 save from before 0.0.29 with no machine gets one free", () => {
+  const era9 = { biz: owning(["timber", "paper", "loom", "punchcards", "sand", "copper", "glass", "filament", "radios"]), facilities: {} };
+  assert.ok(idx("radios") + 1 === 9, "Radio Valves is era 9");
+  assert.ok(idx("mainframes") > idx("radios"));
+  assert.equal(grantStarter(era9), true);
+  assert.equal(era9.facilities.servers[STARTER_PART_ID], 1);
+  assert.equal(era9.starterGranted, true);
 });

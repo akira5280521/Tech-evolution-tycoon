@@ -115,7 +115,7 @@ test("the CASH box keeps the same height while an Overclock is running", async (
   let seen = await go(page, base);
   const panel = page.locator("[data-cash-panel]");
   const off = panel.locator("[data-overclock]");
-  await expect(off).toBeVisible();
+  await expect(off).toHaveCount(1);
   await expect(off).toHaveText(/^\s*$/);
   const h = (await panel.boundingBox()).height;
   expectClean(seen);

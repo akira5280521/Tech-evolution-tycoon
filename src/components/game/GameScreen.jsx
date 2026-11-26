@@ -27,7 +27,6 @@ import { ItemHelp, TipCard } from "./HintSheet";
 import { currentTutorialStep, stepTarget, tutorialActive } from "@/lib/tutorial";
 import { StickyHud } from "./chrome";
 import { EraChipStrip } from "./EraChipStrip";
-import { BuyBar } from "./BuyBar";
 import { shouldCollapseRow, rowFullyUpgraded } from "@/lib/rowCollapse";
 
 // The first-run Timber note stays up until the player has both run a business
@@ -176,7 +175,7 @@ export default function GameScreen() {
   const techOpen = BUSINESSES.some((cfg, i) => rowSection(i) === "tech" && eraOpen(state, i) && !blockedByGlass(state, i));
 
   return (
-    <div className="game-root has-buybar game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
+    <div className="game-root game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
       <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} />
       <PrestigeReport report={state.offlineReport ? null : state.prestigeReport} onDismiss={dismissPrestigeReport} />
@@ -355,13 +354,6 @@ export default function GameScreen() {
           Progress saves on this device. Close the app and managers keep earning at half speed for up to 24 hours.
         </p>
       </footer>
-      <BuyBar
-        buyMode={buyMode}
-        onPick={(mode) => {
-          setBuyMode(mode);
-          if (currentTutorialStep(state)?.id === "modes") tutorialNext("modes");
-        }}
-      />
       <BottomTabs />
       {/* A new game names the company first; the coach waits for it (CoachHost). */}
       <CompanyNameScreen state={state} onName={game.nameCompany} />

@@ -33,6 +33,10 @@ export function getImagePreviewClassName(className, currentClassName, baselineCl
 
 /** Returns transform metadata only for canonical public Wix image URLs. */
 export function parseWixMediaUrl(src) {
+  // Only full https addresses can be Wix images. Local game art ("/icons/…")
+  // used to throw inside new URL() on every render of every icon, which is
+  // slow; skip it.
+  if (typeof src !== "string" || !src.startsWith("https://")) return null;
   try {
     const url = new URL(src)
     if (

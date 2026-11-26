@@ -41,7 +41,9 @@ export default function ProgressTrack({ cycleMs, progress, cycleStart, active, l
       const clamped = Math.max(0, Math.min(1, pct));
       const rounded = Math.round(clamped * 100);
       if (barRef.current) barRef.current.style.transform = `scaleX(${clamped})`;
-      if (rootRef.current) {
+      // The attributes only change when the whole percent does, so the page
+      // isn't told about a change 30 times a second for nothing.
+      if (rootRef.current && rounded !== lastPct) {
         rootRef.current.dataset.pct = String(rounded);
         rootRef.current.dataset.full = clamped >= 0.999 ? "1" : "0";
       }

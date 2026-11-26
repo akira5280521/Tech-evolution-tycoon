@@ -63,7 +63,8 @@ import { blankTutorial, readTutorial, TUTORIAL_STEPS, FACILITY_TOURS, tutorialCl
 import { markReadySeen, readReadySeen, seedReadySeen } from "@/lib/ready";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
-import { REBUILD_SECONDS, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants, settleClosedParts, grantStarter } from "@/lib/facilities";
+import { FACILITIES, PARTS, REBUILD_SECONDS, buyFieldEngineers as takeFieldEngineers, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants, settleClosedParts, grantStarter } from "@/lib/facilities";
+import { OPENING, readStages } from "@/lib/stages";
 import { noteHubSeen } from "@/lib/hub";
 import { advanceResearch, buyAwayShift, buyQueueSlot, fillResearchGaps, grantOwnedResearch, noteCompanyYear, queueResearch, readResearchData, readTechDone, readTechJob, readTechQueue, rescuePunchCardSave, startResearch, unqueueResearch } from "@/lib/research";
 import { readGoalsDone, settleGoals } from "@/lib/goals";
@@ -259,6 +260,9 @@ function pack(s) {
     materialsSold: s.materialsSold || 0,
     erasOpened: s.erasOpened || [],
     eraBuild: s.eraBuild || null,
+    // Staged timers (T5 items 61 and 62) and the HQ rooms built this run.
+    stages: s.stages || [],
+    roomsBuilt: Array.isArray(s.roomsBuilt) ? s.roomsBuilt : null,
     shortage: s.shortage || null,
     recall: s.recall || null,
     erasPaid: s.erasPaid || [],
@@ -351,7 +355,8 @@ function loadSave() {
       state.biz[i].activeMs = Number.isFinite(b.activeMs) && b.activeMs > 0 ? b.activeMs : 0;
       // A start-up timer can't be longer than a real one (a bad clock or an
       // edited code would otherwise lock the row).
-      state.biz[i].commissionUntil = Number.isFinite(b.commissionUntil) ? Math.min(b.commissionUntil, Date.now() + COMMISSION_MS) : 0;
+      state.biz[i].commissionMs = Number.isFinite(b.commissionMs) && b.commissionMs > 0 ? Math.min(b.commissionMs, OPENING.maxMs) : COMMISSION_MS;
+      state.biz[i].commissionUntil = Number.isFinite(b.commissionUntil) ? Math.min(b.commissionUntil, Date.now() + state.biz[i].commissionMs) : 0;
     });
     // Parts now open by year and research: keep what was bought fairly, refund
     // the rest (see settleClosedParts).
@@ -376,6 +381,8 @@ function loadSave() {
     state.materialsSold = data.materialsSold || 0;
     state.erasOpened = Array.isArray(data.erasOpened) ? data.erasOpened : [];
     state.eraBuild = data.eraBuild || null;
+    state.stages = readStages(data.stages);
+    state.roomsBuilt = Array.isArray(data.roomsBuilt) ? data.roomsBuilt : null;
     state.shortage = data.shortage && typeof data.shortage === "object" && Number.isFinite(data.shortage.until) ? data.shortage : null;
     state.recall = data.recall || null;
     state.foreman = !!data.foreman;
@@ -483,6 +490,13 @@ function announce(notes) {
     if (note.type === "upgrade") toast("Upgrade installed", { description: "The line is back up." });
     if (note.type === "projectstart") toast("Project started", { description: "Crews are on site. Give them a moment." });
     if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
+    if (note.type === "stage") {
+      const name = note.partId ? PARTS.find((p) => p.id === note.partId)?.name : null;
+      const room = FACILITIES.find((f) => f.id === note.facilityId)?.name || "The room";
+      if (note.kind === "install") toast(`${name || "A machine"} is online!`, { description: "It makes R&D points now." });
+      else if (note.kind === "room") toast(`${room} is built`, { description: "You can fit it out now." });
+      else if (note.kind === "bench") toast("The bench PC is ready", { description: "Benchmark done. It makes R&D points now." });
+    }
     if (note.type === "refined") toast("Refinery batch done", { description: `${note.amount} ${REFINED[note.id]?.name || note.id} added.` });
     if (note.type === "history") {
       if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to PROGRESS > MUSEUM." });
@@ -746,7 +760,7 @@ export function useGame() {
         announce(notes);
         dirty = true;
       }
-      const pending = s.researchJob || s.upgradeJob || s.projectJob || s.refineJob || s.biz.some((row) => (row.commissionUntil || 0) > wall || (row.holdUntil || 0) > wall);
+      const pending = s.researchJob || s.upgradeJob || s.projectJob || s.refineJob || (s.stages || []).length > 0 || s.eraBuild || s.biz.some((row) => (row.commissionUntil || 0) > wall || (row.holdUntil || 0) > wall);
       if (pending) dirty = true;
       const passive = plant > 0 || researchMoved === "gain";
       // Payouts and finished work paint on the short cadence. A plant or
@@ -903,6 +917,14 @@ export function useGame() {
 
   const buyForeman = useCallback(() => {
     if (!takeForeman(stateRef.current)) return;
+    playBuy();
+    saveNow();
+    bump();
+  }, [bump]);
+
+  // Field engineers (T5 item 61): installs take half as long. R&D points.
+  const buyFieldEngineers = useCallback(() => {
+    if (!takeFieldEngineers(stateRef.current).ok) return;
     playBuy();
     saveNow();
     bump();
@@ -1323,6 +1345,7 @@ export function useGame() {
     runAll,
     toggleManager,
     buyForeman,
+    buyFieldEngineers,
     startTech: (id) => {
       const started = startResearch(stateRef.current, id);
       if (!started.ok) return;

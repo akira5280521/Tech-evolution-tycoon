@@ -59,7 +59,7 @@ export const GLOSSARY = {
   },
   fork: {
     term: "FORK THE TIMELINE",
-    text: "A bigger reset, on the BOARD tab. It spends investors and starts your run over. In return you get a singularity point (x1.2 income, then x1.4 and so on, up to x4) that is never lost, a higher income limit, and another research slot. Each fork needs more investors.",
+    text: "A bigger reset, in BOOST > BONUSES. It spends investors and starts your run over. In return you get a singularity point (x1.2 income, then x1.4 and so on, up to x4) that is never lost, a higher income limit, and another research slot. Each fork needs more investors.",
   },
   singularity: {
     term: "SINGULARITY",
@@ -87,7 +87,7 @@ export const GLOSSARY = {
   },
   tokens: {
     term: "ERA TOKENS",
-    text: "Earned from new eras, milestones, finished projects, won challenges and the free Daily Crate. Spend them in the shop on the BOARD tab. They're never lost.",
+    text: "Earned from new eras, milestones, finished projects, won challenges and the free Daily Crate. Spend them in the shop in BOOST > BONUSES. They're never lost.",
   },
   challenge: {
     term: "CHALLENGE RUN",

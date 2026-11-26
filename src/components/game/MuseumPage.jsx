@@ -21,7 +21,7 @@ import {
 import { readPrefs, writePrefs } from "@/lib/gamePrefs";
 import { useGameState } from "./GameState";
 import ScreenShell from "./chrome";
-import { HUB_ITEMS } from "@/lib/hub";
+import { MUSEUM_TITLE_ICON } from "@/lib/hub";
 import MuseumSection from "./MuseumSection";
 import { SearchBox } from "./SearchBox";
 import { matchesSearch, revealedHaystack } from "@/lib/searchText";
@@ -119,7 +119,7 @@ export default function MuseumPage({ top = null, backTo } = {}) {
   }, [open, roomId, state, viewed]);
 
   return (
-    <ScreenShell title={"HARDWARE\nMUSEUM"} subtitle="" backTo={backTo} titleIcon={HUB_ITEMS.find((item) => item.id === "museum")?.titleIcon}>
+    <ScreenShell title={"HARDWARE\nMUSEUM"} subtitle="" backTo={backTo} titleIcon={MUSEUM_TITLE_ICON}>
       {top}
       <section data-hw-museum className="space-y-3">
         <div data-museum-decades className="museum-chip-row flex flex-nowrap gap-2 overflow-x-auto pb-1">

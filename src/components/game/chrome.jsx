@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { incomePerSecond, overclockOn } from "@/lib/empire";
 import { money, reachedEraLabel } from "@/lib/gameConfig";
@@ -105,8 +105,18 @@ export function StickyHud({ state, cps }) {
   );
 }
 
+// A page shown inside another menu's sub-tab (BOARD inside BOOST, RUNS inside
+// PROGRESS, the garage inside the bench) renders only its content: the outer
+// menu already has the title, BACK and sub-tabs (T3 item 14).
+export const EmbedCtx = createContext(false);
+export function Embedded({ children }) {
+  return <EmbedCtx.Provider value={true}>{children}</EmbedCtx.Provider>;
+}
+
 export default function ScreenShell({ title, subtitle, children, backTo = "/", titleIcon } = {}) {
+  const embedded = useContext(EmbedCtx);
   const { state } = useGameState();
+  if (embedded) return <div data-embedded className="space-y-3">{children}</div>;
   const cps = incomePerSecond(state, Date.now());
   return (
     <div className="screen-shell game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">

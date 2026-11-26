@@ -482,8 +482,8 @@ function announce(notes) {
     if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
     if (note.type === "refined") toast("Refinery batch done", { description: `${note.amount} ${REFINED[note.id]?.name || note.id} added.` });
     if (note.type === "history") {
-      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum in HQ > HARDWARE MUSEUM." });
-      else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum in HQ > HARDWARE MUSEUM." });
+      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to PROGRESS > MUSEUM." });
+      else toast(`${note.cards.length} history cards found`, { description: "Read them in PROGRESS > MUSEUM." });
     }
     if (note.type === "compute") {
       toast(`Compute record: ${note.record.name}`, {

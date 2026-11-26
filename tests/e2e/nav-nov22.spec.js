@@ -97,7 +97,7 @@ test("collapse maxed rows, expand on tap, and the Settings toggle", async ({ pag
   await expect(page.locator("[data-row=timber][data-row-collapsed]")).toHaveCount(1);
 
   await page.locator("[data-tab=more]").click();
-  await page.getByRole("button", { name: "SETTINGS" }).click();
+  await page.getByRole("tab", { name: "SETTINGS" }).click();
   const toggle = page.locator("[data-collapse-maxed]");
   await expect(toggle).toContainText("ON");
   await toggle.click();
@@ -129,20 +129,43 @@ test("R&D sub-tabs: QUEUE first, and SPECIALTY and LAB PROJECTS each show their 
   expectClean(seen);
 });
 
-test("More menu is grouped and still has no Museum tab", async ({ page }) => {
+test("More is trimmed to settings and help; Progress holds runs, badges, museum and stats", async ({ page }) => {
   const { save, opts } = midSave();
   const seen = await open(page, "/more", save, opts);
   await tipsOff(page);
-  const tabs = page.locator("[data-more-tabs]");
-  await expect(tabs.locator("[data-more-group=game]")).toHaveText("GAME");
-  await expect(tabs.locator("[data-more-group=help]")).toHaveText("HELP");
-  await expect(tabs.locator("[data-more-group=settings]")).toHaveText("SETTINGS");
-  await expect(tabs).toContainText("HOW TO PLAY");
-  await expect(tabs).toContainText("STATS");
-  await expect(tabs.locator("[data-more-runs]")).toBeVisible();
-  await expect(tabs).not.toContainText("MUSEUM");
-  await page.getByRole("button", { name: "HOW TO PLAY" }).click();
+  const tabs = page.locator("[data-more-tabs] [data-sub-tab]");
+  await expect(tabs).toHaveCount(2);
+  await expect(page.locator("[data-more-tabs]")).toContainText("SETTINGS");
+  await expect(page.locator("[data-more-tabs]")).toContainText("HOW TO PLAY");
+  await expect(page.locator("[data-more-tabs]")).not.toContainText("STATS");
+  await page.locator("[data-more-tabs] [data-sub-tab='howto']").click();
   await expect(page.locator("[data-howto=navigation]")).toBeVisible();
+  await page.locator("nav[aria-label='Main navigation'] [data-tab='progress']").click();
+  await expect(page).toHaveURL(/\/progress/);
+  for (const id of ["runs", "badges", "museum", "stats"]) {
+    await expect(page.locator(`[data-sub-tabs='progress'] [data-sub-tab='${id}']`)).toBeVisible();
+  }
+  await page.locator("[data-sub-tab='stats']").click();
+  await expect(page).toHaveURL(/#stats/);
+  await page.goto("/more#stats");
+  await expect(page).toHaveURL(/\/progress#stats/);
+  expectClean(seen);
+});
+
+test("bottom bar: GAME, HQ, R&D, BOOST, PROGRESS, MORE (at most 6)", async ({ page }) => {
+  const { save, opts } = midSave();
+  const seen = await open(page, "/", save, opts);
+  await tipsOff(page);
+  const nav = page.locator("nav[aria-label='Main navigation'] [data-tab]");
+  await expect(nav).toHaveCount(6);
+  const ids = await nav.evaluateAll((els) => els.map((el) => el.getAttribute("data-tab")));
+  expect(ids).toEqual(["game", "hq", "research", "boost", "progress", "more"]);
+  await page.goto("/board");
+  await expect(page).toHaveURL(/\/boost#bonuses/);
+  await page.goto("/runs");
+  await expect(page).toHaveURL(/\/progress#runs/);
+  await page.goto("/garage");
+  await expect(page).toHaveURL(/\/facilities\/bench#saved/);
   expectClean(seen);
 });
 
@@ -161,7 +184,7 @@ test("TECH search filters by visible name", async ({ page }) => {
 
 test("Museum search does not leak locked names", async ({ page }) => {
   const { save, opts } = midSave();
-  const seen = await open(page, "/museum", save, opts);
+  const seen = await open(page, "/progress#museum", save, opts);
   await tipsOff(page);
   const box = page.locator("[data-search=museum]");
   await expect(box).toBeVisible();

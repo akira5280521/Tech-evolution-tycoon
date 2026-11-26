@@ -74,7 +74,7 @@ export default function PrestigeBar({ state, onPrestige }) {
           )}
           {nextInvestorMilestone(state) && (
             <p data-next-unlock className="font-term text-base leading-5 text-[var(--game-violet)]">
-              Next unlock at {count(nextInvestorMilestone(state).at)} investors (you've had {count(investorPeak(state))}): see BOARD.
+              Next unlock at {count(nextInvestorMilestone(state).at)} investors (you've had {count(investorPeak(state))}): see BONUSES.
             </p>
           )}
           <button

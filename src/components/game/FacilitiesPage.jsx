@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate } from "@tanstack/react-router";
+import { Link, Navigate, useLocation, useNavigate } from "@tanstack/react-router";
 import { REFINED, money } from "@/lib/gameConfig";
 import { businessIncomePerSecond, incomePerSecond } from "@/lib/empire";
 import {
@@ -29,7 +29,8 @@ import { toast } from "sonner";
 import { playerYear, researchItem, serverOutput } from "@/lib/research";
 import { HUB_ROUTE } from "@/lib/hub";
 import { useGameState } from "./GameState";
-import ScreenShell, { GoldButton, Panel } from "./chrome";
+import ScreenShell, { Embedded, GoldButton, Panel, SubTabs } from "./chrome";
+import RigsGarage from "./RigsGarage";
 import { HelpTip, ItemHelp } from "./HintSheet";
 import FacilityRoom from "./FacilityRoom";
 
@@ -409,6 +410,10 @@ export default function FacilitiesPage({ facilityId }) {
   const business = businessIncomePerSecond(state, Date.now());
   const report = facilityReport(state, business);
   const plantsOpen = facilitiesOpen(state);
+  const location = useLocation();
+  const navigate = useNavigate();
+  // The bench's saved PCs (the old RIGS garage) are its SAVED BUILDS tab (T3 item 27).
+  const benchView = facilityId === "bench" && (location.hash || "").replace("#", "") === "saved" ? "saved" : "build";
   const next = plantsOpen ? nextPurchase(state, business) : null;
   useEffect(() => {
     if (facilityId === "servers") noteTutorialPage?.("servers");
@@ -419,6 +424,18 @@ export default function FacilitiesPage({ facilityId }) {
   const showNext = showRebuild && plantsOpen && next;
   return (
     <ScreenShell title={facility.name} subtitle={facility.blurb} backTo={HUB_ROUTE}>
+      {facilityId === "bench" && (
+        <SubTabs
+          tabs={[{ id: "build", label: "BUILD" }, { id: "saved", label: "SAVED BUILDS" }]}
+          active={benchView}
+          onPick={(id) => navigate({ to: "/facilities/$facilityId", params: { facilityId: "bench" }, hash: id === "saved" ? "saved" : "", replace: true })}
+          name="bench"
+        />
+      )}
+      {benchView === "saved" ? (
+        <Embedded><RigsGarage /></Embedded>
+      ) : (
+      <>
       <FacilityRoom facilityId={facility.id} state={state} />
       {facilityId === "servers" && (
         <Link to="/research" data-servers-rd className="flex min-h-11 items-center justify-between border-2 border-[var(--game-accent)] bg-[var(--game-panel)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]">
@@ -438,6 +455,8 @@ export default function FacilitiesPage({ facilityId }) {
       )}
       {showRebuild && <RebuildPanel state={state} onRebuild={rebuildFacilities} />}
       <Plant facility={facility} state={state} report={report} business={business} cash={state.cash || 0} onBuy={buyFacilityPart} next={next} onToggleOc={toggleBenchOc} />
+      </>
+      )}
     </ScreenShell>
   );
 }

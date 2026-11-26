@@ -40,7 +40,10 @@ function pageKey(pathname, hash) {
   const path = (pathname || "/").replace(/\/+$/, "") || "/";
   if (path === "/") return "game";
   const name = path.slice(1).split("/")[0];
-  if (name === "more") return `more#${(hash || "").replace("#", "") || "settings"}`;
+  const tab = (hash || "").replace("#", "");
+  if (name === "more") return `more#${tab || "settings"}`;
+  if (name === "progress") return `progress#${["badges", "museum", "stats"].includes(tab) ? tab : "runs"}`;
+  if (name === "boost" && ["now", "bonuses", "prestige"].includes(tab)) return `boost#${tab}`;
   return name;
 }
 

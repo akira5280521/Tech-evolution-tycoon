@@ -11,6 +11,7 @@ const SCREENS = [
   ["game", "/"], ["rd", "/research"], ["rd-tech", "/research#tech"], ["rd-specialty", "/research#specialty"], ["rd-lab", "/research#lab"],
   ["tech", "/tech"], ["boost", "/boost"], ["boost-prestige", "/boost#prestige"], ["board", "/board"], ["progress", "/progress"], ["runs", "/runs"],
   ["more", "/more"], ["hq", "/rigs"], ["servers", "/facilities/servers"], ["bench", "/facilities/bench"],
+  ["boost-now", "/boost#now"], ["boost-bonuses", "/boost#bonuses"], ["progress-stats", "/progress#stats"], ["progress-museum", "/progress#museum"], ["bench-saved", "/facilities/bench#saved"],
 ];
 
 capture("T3 screens", async ({ browser }) => {

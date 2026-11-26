@@ -1,9 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import MuseumPage from "@/components/game/MuseumPage";
-import { HUB_ROUTE } from "@/lib/hub";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
+// The Hardware Museum moved into PROGRESS (T3 item 26); old links land there.
 export const Route = createFileRoute("/museum")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Hardware Museum — Tech Evolution Tycoon" }] }),
-  component: () => <MuseumPage backTo={HUB_ROUTE} />,
+  beforeLoad: () => {
+    throw redirect({ to: "/progress", hash: "museum", replace: true });
+  },
 });

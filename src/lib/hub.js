@@ -7,23 +7,16 @@
 // their business owned this run to work.
 import { BUSINESSES } from "./gameConfig.js";
 import { FACILITIES, FACILITY_UNLOCK, PARTS, STARTER_PART_ID, anyFacilityOpen, facilityNeed, facilityUnlocked, partCost, readNews } from "./facilities.js";
-import { RIGS_ICON, RIGS_ROUTE, rigsOpen } from "./rigs.js";
 
 // The top button's name, in one place so it can be renamed.
 export const HUB_LABEL = "HQ";
 export const HUB_ROUTE = "/rigs";
 
+// The museum moved to PROGRESS and the saved PCs (RIGS) to the bench's SAVED
+// BUILDS tab (T3 items 26, 27), so HQ lists only the plants.
+export const MUSEUM_TITLE_ICON = "/icons/facilities/museum-32.png";
+
 export const HUB_ITEMS = [
-  {
-    id: "rigs",
-    label: "RIGS",
-    to: RIGS_ROUTE,
-    icon: RIGS_ICON,
-    text: "Custom PCs from the PC Build Bench, saved so you can browse or show them off.",
-    // Same lock as the Bench: Home Computers this run.
-    open: (state) => rigsOpen(state),
-    need: () => facilityNeed("bench"),
-  },
   ...FACILITIES.map((fac) => ({
     id: fac.id,
     label: fac.name,
@@ -36,18 +29,6 @@ export const HUB_ITEMS = [
     open: (state) => (fac.id === "servers" ? !!state : facilityUnlocked(state, fac.id)),
     need: () => facilityNeed(fac.id),
   })),
-  {
-    id: "museum",
-    label: "HARDWARE MUSEUM",
-    to: "/museum",
-    // Option A: the gold classical museum. 16px on the HQ card (shown at 2x),
-    // 32px beside the Museum page title.
-    icon: "/icons/facilities/museum.png",
-    titleIcon: "/icons/facilities/museum-32.png",
-    text: "Every piece of hardware in the game, room by room and decade by decade.",
-    open: (state) => !!state,
-    need: () => "",
-  },
 ];
 
 // The starter research machine is owned, or the cash for the first one is

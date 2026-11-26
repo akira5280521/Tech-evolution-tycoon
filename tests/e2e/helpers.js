@@ -10,7 +10,7 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 export const NOTES_KEY = "pc-tycoon-seen-notes";
 export const PREFS_KEY = "pc-tycoon-prefs-v1";
 
-export const ROUTES = ["/", "/boost", "/tech", "/rigs", "/facilities/servers", "/museum", "/board", "/runs", "/research", "/more", "/badges"];
+export const ROUTES = ["/", "/boost", "/tech", "/rigs", "/facilities/servers", "/progress", "/board", "/runs", "/research", "/more", "/badges"];
 
 // Put a save in localStorage before the app starts. Only once per tab, so a
 // reload keeps whatever the game saved since. `save` is a fixture name from

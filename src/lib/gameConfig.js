@@ -858,21 +858,66 @@ export const ERA_RESEARCH = {
   supercluster: { id: "card-h100", name: "Tensor H100" },
 };
 
-// Opening an era the first time also takes a stock of material, paid only
+// Opening an era the first time also takes a stock of materials, paid only
 // when the player taps OPEN ERA, and only once: it stays paid through
-// prestige and forks. Mainframes need copper wiring, Integrated Circuits
-// silicon, and every era after them wafers, a little more each time.
-const sig2 = (n) => {
-  const e = 10 ** Math.max(0, Math.floor(Math.log10(n)) - 1);
-  return Math.round(n / e) * e;
+// prestige and forks. Each era asks for what it was really built from:
+// wafers for the chips, glass for screens and tubes, copper for wiring and
+// power, and from Microprocessors on a little of the refined grades. Wafers
+// stay the main cost, about two thirds of the old all-wafer amounts.
+export const ERA_MATERIAL = {
+  // Thousands of glass tubes and their copper wiring. (No paper: looms and
+  // punch cards use every sheet the mills make, so it would stall here.)
+  mainframes: [{ key: "copper", amount: 150 }, { key: "glass", amount: 100 }],
+  // The planar process: circuits printed onto silicon wafers.
+  ics: [{ key: "silicon", amount: 150 }, { key: "wafers", amount: 100 }],
+  // Wire-wrapped copper backplanes.
+  minis: [{ key: "wafers", amount: 150 }, { key: "copper", amount: 150 }],
+  // The 4004 was the first chip made with polysilicon gates.
+  cpu: [{ key: "wafers", amount: 200 }, { key: "polysilicon", amount: 20 }],
+  // Plugged into a TV: the glass picture tube.
+  homepc: [{ key: "wafers", amount: 250 }, { key: "glass", amount: 150 }, { key: "copper", amount: 100 }],
+  // The woodgrain front of the 1977 console, and cartridge boards.
+  consoles: [{ key: "wafers", amount: 350 }, { key: "wood", amount: 200 }, { key: "copper", amount: 150 }],
+  // Miles of hand-wired copper inside each cabinet.
+  supercomputers: [{ key: "wafers", amount: 500 }, { key: "copper", amount: 200 }, { key: "ofcopper", amount: 40 }],
+  // Big 19-inch monitors.
+  workstations: [{ key: "wafers", amount: 700 }, { key: "glass", amount: 300 }, { key: "copper", amount: 200 }],
+  // The LCD panel is glass.
+  laptops: [{ key: "wafers", amount: 900 }, { key: "glass", amount: 400 }, { key: "copper", amount: 300 }],
+  // It ran over copper phone lines.
+  dialup: [{ key: "copper", amount: 1500 }, { key: "wafers", amount: 800 }],
+  // CRT monitors, speakers and their wiring.
+  multimedia: [{ key: "wafers", amount: 1800 }, { key: "glass", amount: 800 }, { key: "copper", amount: 600 }],
+  // Fast memory needed clean copper traces.
+  accel3d: [{ key: "wafers", amount: 2800 }, { key: "copper", amount: 800 }, { key: "ofcopper", amount: 100 }],
+  // Big dies and copper heatsinks.
+  gpu: [{ key: "wafers", amount: 4000 }, { key: "ofcopper", amount: 150 }, { key: "polysilicon", amount: 100 }],
+  // Power and network cabling; optical fibre cores are germanium-doped glass.
+  cloud: [{ key: "wafers", amount: 5000 }, { key: "copper", amount: 3000 }, { key: "hpge", amount: 50 }],
+  // Touchscreen glass; silicon-germanium radio chips.
+  phones: [{ key: "wafers", amount: 7000 }, { key: "glass", amount: 3000 }, { key: "germanium", amount: 1000 }],
+  // Mostly screen.
+  tablets: [{ key: "wafers", amount: 10000 }, { key: "glass", amount: 5000 }, { key: "copper", amount: 1500 }],
+  // Tempered-glass side panels and custom-loop cooling.
+  rgb: [{ key: "wafers", amount: 14000 }, { key: "glass", amount: 4000 }, { key: "copper", amount: 4000 }],
+  // Huge dies on the newest nodes.
+  ai: [{ key: "wafers", amount: 20000 }, { key: "polysilicon", amount: 600 }, { key: "ofcopper", amount: 300 }],
+  // Their super-cold fridges are built from oxygen-free copper.
+  quantum: [{ key: "wafers", amount: 25000 }, { key: "ofcopper", amount: 800 }, { key: "polysilicon", amount: 400 }],
+  // Lenses and twin displays.
+  vr: [{ key: "wafers", amount: 35000 }, { key: "glass", amount: 15000 }, { key: "copper", amount: 8000 }],
+  // Whole datacenters of accelerators.
+  chatbots: [{ key: "wafers", amount: 50000 }, { key: "polysilicon", amount: 1000 }, { key: "ofcopper", amount: 1000 }],
+  // Optical fibre between racks, and dense power.
+  supercluster: [{ key: "wafers", amount: 70000 }, { key: "glass", amount: 20000 }, { key: "ofcopper", amount: 2000 }, { key: "hpge", amount: 300 }],
 };
-export const ERA_MATERIAL = { mainframes: { key: "copper", amount: 200 }, ics: { key: "silicon", amount: 200 } };
-{
-  const from = BUSINESSES.findIndex((cfg) => cfg.id === "minis");
-  BUSINESSES.forEach((cfg, i) => {
-    if (i >= from) ERA_MATERIAL[cfg.id] = { key: "wafers", amount: sig2(200 * 1.4 ** (i - from)) };
-  });
+
+// "150 copper, 100 glass and 100 paper"
+export function materialList(items) {
+  const parts = (items || []).map((m) => `${m.amount.toLocaleString("en-US")} ${REFINED[m.key]?.short || m.key}`);
+  return parts.length > 1 ? `${parts.slice(0, -1).join(", ")} and ${parts.at(-1)}` : parts[0] || "";
 }
+
 export function eraPaid(state, index) {
   return (state?.erasPaid || []).includes(BUSINESSES[index]?.id);
 }
@@ -897,11 +942,14 @@ export function eraNeeds(state, index) {
     const done = (state?.techDone || []).includes(project.id);
     needs.push({ kind: "research", have: done ? 1 : 0, need: 1, met: done, research: project.id, label: `Research ${project.name} in R&D > TECH` });
   }
-  const material = ERA_MATERIAL[BUSINESSES[index]?.id];
-  if (material) {
+  const bill = ERA_MATERIAL[BUSINESSES[index]?.id];
+  if (bill) {
     const paid = eraPaid(state, index);
-    const have = state?.supply?.[material.key] || 0;
-    needs.push({ kind: "material", key: material.key, have: paid ? material.amount : have, need: material.amount, met: paid || have >= material.amount, paid, label: paid ? `${material.amount.toLocaleString("en-US")} ${material.key}: paid` : `Use ${material.amount.toLocaleString("en-US")} ${material.key} to open it` });
+    for (const m of bill) {
+      const have = state?.supply?.[m.key] || 0;
+      const name = REFINED[m.key]?.short || m.key;
+      needs.push({ kind: "material", key: m.key, have: paid ? m.amount : have, need: m.amount, met: paid || have >= m.amount, paid, label: paid ? `${m.amount.toLocaleString("en-US")} ${name}: paid` : `Use ${m.amount.toLocaleString("en-US")} ${name} to open it` });
+    }
   }
   return needs;
 }
@@ -945,9 +993,11 @@ export function eraBuildMs(index) {
 export function openEra(state, index, now = Date.now()) {
   if (!eraCanOpen(state, index)) return false;
   const id = BUSINESSES[index].id;
-  const material = ERA_MATERIAL[id];
-  if (material && !eraPaid(state, index)) {
-    state.supply = { ...(state.supply || {}), [material.key]: Math.max(0, (state.supply?.[material.key] || 0) - material.amount) };
+  const bill = ERA_MATERIAL[id];
+  if (bill && !eraPaid(state, index)) {
+    const supply = { ...(state.supply || {}) };
+    for (const m of bill) supply[m.key] = Math.max(0, (supply[m.key] || 0) - m.amount);
+    state.supply = supply;
     state.erasPaid = [...(state.erasPaid || []), id];
   }
   const ms = eraBuildMs(index);
@@ -1302,8 +1352,8 @@ export function nextMove(state) {
       return `Buy another ${prevCfg.name} for ${money(cost)}. Own ${ERA_GATE} ${pluralName(prevCfg.name)} to open the next era (${have}/${ERA_GATE}).`;
     }
     if (eraCanOpen(state, front)) {
-      const m = ERA_MATERIAL[BUSINESSES[front].id];
-      return `Tap OPEN ERA on the locked row${m ? ` to use ${m.amount.toLocaleString("en-US")} ${m.key} and open the next era` : ""}.`;
+      const bill = eraPaid(state, front) ? null : ERA_MATERIAL[BUSINESSES[front].id];
+      return `Tap OPEN ERA on the locked row${bill ? ` to use ${materialList(bill)} and open the next era` : " to open the next era"}.`;
     }
     const earn = eraEarnNeed(state, front);
     if (have >= ERA_GATE && (state?.lifetime || 0) < earn) {

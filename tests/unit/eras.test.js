@@ -87,24 +87,26 @@ test("late eras need a TECH project that can be done before them", () => {
   assert.ok(eraOpen({ ...ready, techDone: [ERA_RESEARCH.quantum.id], erasPaid: ["quantum"] }, index));
 });
 
-import { ERA_BUILD, ERA_MATERIAL, eraBuildMs, eraCanOpen, finishEraBuild, openEra, readEraBuild } from "../../src/lib/gameConfig.js";
-test("opening an era takes its material only on the tap, and only once", () => {
+import { ERA_BUILD, ERA_MATERIAL, REFINED, SUPPLY_KEYS, eraBuildMs, eraCanOpen, finishEraBuild, openEra, readEraBuild } from "../../src/lib/gameConfig.js";
+test("opening an era takes its materials only on the tap, and only once", () => {
   const index = BUSINESSES.findIndex((b) => b.id === "cpu");
-  const cost = ERA_MATERIAL.cpu;
-  assert.equal(cost.key, "wafers");
-  const s = { lifetime: 1e300, techDone: [], supply: { wafers: cost.amount - 1 }, biz: BUSINESSES.map((_, i) => ({ owned: i < index ? 25 : 0 })) };
-  // Every other need met, but the material is short: no OPEN, nothing taken.
+  const bill = ERA_MATERIAL.cpu;
+  assert.deepEqual(bill.map((m) => m.key), ["wafers", "polysilicon"]);
+  const full = () => Object.fromEntries(bill.map((m) => [m.key, m.amount + 5]));
+  const s = { lifetime: 1e300, techDone: [], supply: { ...full(), polysilicon: bill[1].amount - 1 }, biz: BUSINESSES.map((_, i) => ({ owned: i < index ? 25 : 0 })) };
+  // Every other need met, but one material is short: no OPEN, nothing taken.
   assert.ok(!eraOpen(s, index));
   assert.ok(!eraCanOpen(s, index));
   assert.ok(!openEra(s, index));
-  assert.equal(s.supply.wafers, cost.amount - 1);
-  // Enough on hand: still not open and nothing taken until the tap.
-  s.supply.wafers = cost.amount + 5;
+  assert.equal(s.supply.wafers, bill[0].amount + 5);
+  assert.equal(eraNeeds(s, index).filter((n) => n.kind === "material").length, 2);
+  assert.deepEqual(eraNeeds(s, index).filter((n) => n.kind === "material").map((n) => n.met), [true, false]);
+  // Enough of each on hand: still not open and nothing taken until the tap.
+  s.supply = full();
   assert.ok(!eraOpen(s, index));
-  assert.equal(s.supply.wafers, cost.amount + 5);
   assert.ok(eraCanOpen(s, index));
   assert.ok(openEra(s, index, 1000));
-  assert.equal(s.supply.wafers, 5);
+  assert.deepEqual(s.supply, { wafers: 5, polysilicon: 5 });
   // Paid on the tap, then set up for a while before it opens.
   assert.ok(!eraOpen(s, index));
   assert.ok(!eraCanOpen(s, index));
@@ -112,12 +114,39 @@ test("opening an era takes its material only on the tap, and only once", () => {
   assert.equal(finishEraBuild(s, 1000 + eraBuildMs(index)), "cpu");
   assert.ok(eraOpen(s, index));
   // Next run: paid already, so it opens by itself once the other needs are met.
-  const next = { ...s, erasOpened: [], eraBuild: null, supply: { wafers: 0 } };
+  const next = { ...s, erasOpened: [], eraBuild: null, supply: {} };
   assert.ok(eraOpen(next, index));
-  const needs = eraNeeds(next, index);
-  assert.ok(needs.find((n) => n.kind === "material").paid);
-  // Later eras cost more.
-  assert.ok(ERA_MATERIAL.supercluster.amount > ERA_MATERIAL.minis.amount);
+  assert.ok(eraNeeds(next, index).filter((n) => n.kind === "material").every((n) => n.paid));
+});
+
+test("every era's bill uses real materials the player can make by then, and wafers lead from Minicomputers", () => {
+  const ics = BUSINESSES.findIndex((b) => b.id === "ics");
+  for (const [id, bill] of Object.entries(ERA_MATERIAL)) {
+    const i = BUSINESSES.findIndex((b) => b.id === id);
+    assert.ok(i > 0, id);
+    assert.ok(bill.length >= 2, id);
+    assert.equal(new Set(bill.map((m) => m.key)).size, bill.length, `${id}: no repeats`);
+    for (const m of bill) {
+      assert.ok(SUPPLY_KEYS.includes(m.key), `${id}: ${m.key}`);
+      assert.ok(Number.isInteger(m.amount) && m.amount > 0, `${id}: ${m.key}`);
+      // Refined grades only once the refinery is open (from ICs).
+      if (REFINED[m.key]) assert.ok(i > ics, `${id}: ${m.key} before the refinery`);
+      // A raw material is made by a row before this era.
+      else assert.ok(BUSINESSES.slice(0, i).some((b) => b.makes?.[m.key]), `${id}: ${m.key} made earlier`);
+    }
+  }
+  // Every era with a material cost before was given a bill.
+  for (const id of ["mainframes", "ics", "minis", "cpu", "gpu", "supercluster"]) assert.ok(ERA_MATERIAL[id], id);
+  // Wafers lead the bill from Minicomputers on, except Dial-up (copper lines).
+  const minis = BUSINESSES.findIndex((b) => b.id === "minis");
+  for (const [id, bill] of Object.entries(ERA_MATERIAL)) {
+    const i = BUSINESSES.findIndex((b) => b.id === id);
+    if (i < minis || id === "dialup") continue;
+    const wafers = bill.find((m) => m.key === "wafers").amount;
+    assert.ok(bill.every((m) => m.amount <= wafers), id);
+  }
+  // Later eras cost more wafers.
+  assert.ok(ERA_MATERIAL.supercluster[0].amount > ERA_MATERIAL.minis[0].amount);
 });
 
 test("setting an era up takes 20 seconds at first, longer later, at most 10 minutes", () => {

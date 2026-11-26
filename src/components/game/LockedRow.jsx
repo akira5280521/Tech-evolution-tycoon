@@ -34,7 +34,7 @@ export default function LockedRow({ index, id, state, onOpen }) {
           if (n.kind === "material") {
             const pct = Math.max(0, Math.min(100, (n.have / n.need) * 100));
             return (
-              <div key={n.kind} data-era-need={n.kind} data-met={n.met ? "1" : "0"} className="mt-1">
+              <div key={`material-${n.key}`} data-era-need={n.kind} data-era-material={n.key} data-met={n.met ? "1" : "0"} className="mt-1">
                 <p className={`break-words font-term text-base leading-5 ${n.met ? "text-[var(--game-accent)]" : "text-[var(--game-muted)]"}`}>
                   {n.met ? "✓ " : ""}
                   {n.label}

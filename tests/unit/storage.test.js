@@ -64,8 +64,12 @@ test("old saves load with no bigger bins; bad values are dropped", () => {
 });
 
 import { ERA_MATERIAL } from "../../src/lib/gameConfig.js";
-test("the bins always hold enough for the next era's material", () => {
+test("the bins always hold enough for each material the next era needs", () => {
   const s = state(0);
-  s.erasPaid = BUSINESSES.filter((b) => ERA_MATERIAL[b.id]?.key === "wafers" && b.id !== "supercluster").map((b) => b.id);
-  assert.ok(supplyCap(s, "wafers") >= ERA_MATERIAL.supercluster.amount);
+  s.erasPaid = BUSINESSES.filter((b) => ERA_MATERIAL[b.id] && b.id !== "supercluster").map((b) => b.id);
+  for (const m of ERA_MATERIAL.supercluster) assert.ok(supplyCap(s, m.key) >= m.amount, m.key);
+  // Before anything's paid, each bin fits the first era that asks for it.
+  const fresh = state(0);
+  assert.ok(supplyCap(fresh, "glass") >= ERA_MATERIAL.mainframes[1].amount);
+  assert.ok(supplyCap(fresh, "polysilicon") >= ERA_MATERIAL.cpu[1].amount);
 });

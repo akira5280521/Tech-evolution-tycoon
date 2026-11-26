@@ -54,6 +54,9 @@ test("an early save opens TECH from the top bar and shows year-locked hardware",
   await expect(page.locator("[data-research-item='store-hdd']")).toHaveCount(0);
   await expect(page.locator("[data-research-hidden]").first()).toBeVisible();
   await expect(page.locator("[data-research-hidden]").first()).toContainText("???");
+  // A hidden card still says its year and what it needs (#56).
+  await expect(page.locator("[data-research-hidden]").first()).toContainText("1951 · ???");
+  await expect(page.locator("[data-research-hidden]").first()).toContainText("Requires 1951");
   await expect(page.locator("body")).not.toContainText("5 MB disk");
   expectClean(seen);
 });
@@ -61,7 +64,10 @@ test("an early save opens TECH from the top bar and shows year-locked hardware",
 test("TECH shows this era's projects, hides the next era, and search does not leak names", async ({ page }) => {
   const seen = await open(page, "/tech", earlySave("mainframes"));
   await tipsOff(page);
-  await page.locator("[data-research-tab='servers']").click();
+  // The first research server is called out at the top (#58).
+  await expect(page.locator("[data-first-server]")).toContainText("Irwell Mark 1");
+  await page.locator("[data-first-server]").click();
+  await expect(page.locator("[data-research-tab='servers']")).toHaveAttribute("aria-selected", "true");
   await expect(page.locator("[data-research-item='srv-mark1']")).toBeVisible();
   await expect(page.locator("[data-research-item='srv-mark1']")).toContainText("Irwell Mark 1");
   await expect(page.locator("[data-research-item='srv-7090']")).toHaveCount(0);

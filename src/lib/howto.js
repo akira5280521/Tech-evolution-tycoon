@@ -39,7 +39,7 @@ export const HOWTO_GUIDES = [
     unlocks: "Home Computers",
     lines: [
       "The bench builds one PC at a time from parts that fit: a board, a CPU for that board's socket, and memory for its slots.",
-      "The bench tells you if a part doesn't fit. The finished PC makes R&D points, and a four-core CPU lets two TECH projects run at once.",
+      "The bench tells you if a part doesn't fit. The finished PC makes R&D points. TECH runs one project at a time.",
     ],
   },
   {

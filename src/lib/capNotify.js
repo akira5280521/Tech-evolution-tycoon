@@ -14,12 +14,19 @@ function native() {
   return !!(cap && typeof cap.isNativePlatform === "function" && cap.isNativePlatform());
 }
 
+// Why the last permission step failed, for the help line and the error log.
+let lastReason = "";
+export function notifyFailReason() {
+  return lastReason;
+}
+
 async function plugin() {
   if (!native()) return null;
   try {
     const { LocalNotifications } = await import("@capacitor/local-notifications");
     return LocalNotifications;
-  } catch {
+  } catch (e) {
+    lastReason = `plugin: ${e?.message || e}`;
     return null;
   }
 }
@@ -50,13 +57,16 @@ export async function requestNotifyPermission() {
       await ensureChannel(notes);
       return "granted";
     }
+    // Android 13+ shows the POST_NOTIFICATIONS prompt here.
     const next = await notes.requestPermissions();
     if (next?.display === "granted") {
       await ensureChannel(notes);
       return "granted";
     }
+    lastReason = `permission: ${next?.display || "none"}`;
     return "denied";
-  } catch {
+  } catch (e) {
+    lastReason = `request: ${e?.message || e}`;
     return "unavailable";
   }
 }

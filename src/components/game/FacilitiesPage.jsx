@@ -33,6 +33,7 @@ import ScreenShell, { Embedded, GoldButton, Panel, SubTabs } from "./chrome";
 import RigsGarage from "./RigsGarage";
 import { HelpTip, ItemHelp } from "./HintSheet";
 import FacilityRoom from "./FacilityRoom";
+import RoomStatus from "./RoomStatus";
 
 function percent(share) {
   if (!(share > 0)) return "0%";
@@ -124,19 +125,6 @@ function PartValue({ state, facilityId, part, business }) {
   );
 }
 
-// Machine room: one generator and one air conditioner per computer. Racks:
-// watts. Disk: what the newest machine needs.
-function serverStockText(row) {
-  const parts = [];
-  const room = row.groups?.room;
-  const rack = row.groups?.rack;
-  if (room?.watts > 0) parts.push(`Machine room: ${room.watts} generator${room.watts === 1 ? "" : "s"} and coolers needed, ${room.power} generator${room.power === 1 ? "" : "s"}, ${room.cool} cooler${room.cool === 1 ? "" : "s"}`);
-  if (rack?.watts > 0) parts.push(`Racks: ${Math.round(rack.watts)} W, ${Math.round(rack.power)} W of supplies, ${Math.round(rack.cool)} W of fans`);
-  parts.push(`Disk: ${diskSize(row.storage)} of the ${diskSize(row.need)} the newest machine needs`);
-  if (rack?.work > 0) parts.push(row.linkCap > 0 ? `Network: carries ${row.linkCap.toLocaleString("en-US")} of ${rack.work.toLocaleString("en-US")} rack work` : "Network: none, so each rack works alone at half speed");
-  return parts.join(" · ");
-}
-
 function Plant({ facility, state, report, business, cash, onBuy, next, onToggleOc }) {
   const open = facilityUnlocked(state, facility.id);
   const row = report[facility.id];
@@ -199,14 +187,19 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
         </p>
         {open ? (
           <>
-            <p data-facility-limit className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
-              {row.limit}
-              {row.tier ? ` · ${row.tier} model` : ""}
-              {open && (/Bottleneck/.test(row.limit || "") ? <HelpTip term="bottleneck" /> : row.limit === "Network-limited" ? <HelpTip term="network" /> : null)}
-            </p>
+            {bench ? (
+              <p data-facility-limit className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
+                {row.limit}
+                {/Bottleneck/.test(row.limit || "") ? <HelpTip term="bottleneck" /> : null}
+              </p>
+            ) : row.tier ? (
+              <p data-facility-tier className="break-words font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
+                Training the {row.tier} model
+              </p>
+            ) : null}
             {limited && serverTab !== "room" && (
               <button type="button" data-limit-shortcut onClick={showRoomTab} className="mt-1 min-h-12 w-full border-2 border-[var(--game-danger)] px-2 text-left font-pixel text-[0.5rem] leading-4 text-[var(--game-danger)]">
-                {row.limit.toUpperCase()}: SEE ROOM EQUIPMENT &gt;
+                ADD ROOM EQUIPMENT &gt;
               </button>
             )}
             <p data-facility-hint className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{facilityHint(state, facility.id, business)}</p>
@@ -238,14 +231,9 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
             {row.board && !row.board.builtin ? ` · Drive: ${row.drive ? `${row.drive.name}, ${row.driveText}, ${Number(row.driveMbs.toFixed(1))} MB/s` : "none"}` : ""}
           </p>
         )}
-        {open && research && row.gpus > 0 && (
-          <p data-server-stock className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
-            {serverStockText(row)}
-          </p>
-        )}
-        {open && !research && row.gpus > 0 && (
-          <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
-            {Math.round(row.watts)} W of cards · {Math.round(row.power)} W power · {Math.round(row.cool)} W cooling · {Math.round(row.vram)} GB on the cards · {Math.round(row.ram)} GB RAM
+        {open && !research && !bench && row.gpus > 0 && (
+          <p data-card-memory className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
+            {Math.round(row.vram)} GB on the cards
           </p>
         )}
         {open && row.board && !bench && (
@@ -277,6 +265,7 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
             ))}
           </div>
         )}
+        {research && open && <h3 data-machines-head className="mt-3 font-status text-lg font-bold leading-6 text-[var(--game-fg)]">MACHINES</h3>}
         {research && open && (
           <div data-server-tabs role="tablist" className="mt-2 grid scroll-mt-[var(--hud-h,0px)] grid-cols-3 gap-2">
             {SERVER_TABS.map((t) => (
@@ -437,6 +426,12 @@ export default function FacilitiesPage({ facilityId }) {
       ) : (
       <>
       <FacilityRoom facilityId={facility.id} state={state} />
+      <RoomStatus
+        facilityId={facility.id}
+        state={state}
+        locked={!facilityUnlocked(state, facility.id) && facility.id !== "servers"}
+        summary={facility.id === "servers" ? `+${rate(serverOutput(state).perSecond - serverOutput(state).bench)} R&D/s` : facility.id === "bench" ? `+${rate(report.bench.perSecond)} R&D/s` : `${money(report[facility.id]?.perSecond || 0)}/s`}
+      />
       {facilityId === "servers" && (
         <Link to="/research" data-servers-rd className="flex min-h-12 items-center justify-between border-2 border-[var(--game-accent)] bg-[var(--game-panel)] px-3 font-pixel text-[0.55rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000]">
           <span>R&amp;D: SPEND THESE POINTS</span>

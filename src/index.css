@@ -1,5 +1,7 @@
 @import "@fontsource/press-start-2p/400.css";
 @import "@fontsource/vt323/400.css";
+@import "@fontsource/pixelify-sans/400.css";
+@import "@fontsource/pixelify-sans/700.css";
 
 @tailwind base;
 @tailwind components;
@@ -795,4 +797,29 @@ html[data-contrast="high"][data-colorblind="on"] {
   width: 48px;
   height: 48px;
   transform: translate(-50%, -50%);
+}
+
+/* --- Room status panel (T5 item 53): an instrument console, dark in both themes --- */
+.font-status {
+  font-family: "Pixelify Sans", "VT323", ui-monospace, monospace;
+}
+.status-frame {
+  background: #201c32;
+  border: 2px solid #7060a4;
+  box-shadow: inset 2px 2px 0 0 #b2a4e2, inset -2px -2px 0 0 #0a0812, 3px 3px 0 0 #000;
+  color: #ece8f6;
+}
+.status-track {
+  background: #0a0812;
+  border: 2px solid #4a4268;
+}
+.status-fill {
+  background-image: repeating-linear-gradient(to right, transparent 0 14px, rgba(0, 0, 0, 0.35) 14px 16px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.35) 0 2px, transparent 2px calc(100% - 3px), rgba(0, 0, 0, 0.35) calc(100% - 3px));
+  transition: width 0.4s steps(6);
+}
+@media (prefers-reduced-motion: reduce) {
+  .status-fill {
+    transition: none;
+  }
 }

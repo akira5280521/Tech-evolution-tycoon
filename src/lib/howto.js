@@ -11,6 +11,7 @@ export const HOWTO_GUIDES = [
     lines: [
       "The bottom bar has six buttons: GAME, HQ, R&D, BOOST, PROGRESS and MORE. The cash box on top shows cash, income, R&D points, your era and the month. Tap the lightbulb beside it for one line on what to do next on the screen you are on.",
       "HQ is your company building, floor by floor: tap a room to go there, and use the HQ link at the top of any menu to come back. R&D has QUEUE, TECH, SPECIALTY and LAB tabs. BOOST has NOW, UPGRADES (with the Foreman), BONUSES and PRESTIGE. PROGRESS has RUNS, BADGES, MUSEUM and STATS. MORE is just SETTINGS and HOW TO PLAY. A red dot on a button or tab means something there is ready; grey rooms say Coming soon.",
+      "Numbers are short (1.20B). Press and hold cash, income or an amount to see the exact figure. In MORE > SETTINGS you can turn on a tick or a buzz for every tap, pick one of three text sizes, and switch on colorblind colors.",
     ],
   },
   {

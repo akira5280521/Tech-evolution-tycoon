@@ -24,6 +24,9 @@ export function normalizePrefs(raw) {
     effectsVolume: pct(src.effectsVolume, 100),
     effectsMuted: src.effectsMuted === true,
     haptics: src.haptics !== false,
+    // Tick or buzz on every button press (T4 item 35). Both off by default.
+    tapSound: src.tapSound === true,
+    tapHaptic: src.tapHaptic === true,
     notifyCap: src.notifyCap === true,
     notifyResearch: src.notifyResearch === true,
     notifyBins: src.notifyBins === true,

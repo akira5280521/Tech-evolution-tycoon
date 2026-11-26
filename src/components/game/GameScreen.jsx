@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { fullNumber } from "@/lib/fullNumber";
 import { Loader2 } from "lucide-react";
 import { BUSINESSES, ERA_GATE, REFINED, SUPPLY_KEYS, blockedByGlass, eraOpen, frontierEra, isManaged, money, pluralName } from "@/lib/gameConfig";
 import { activeChallengeGoal, incomePerSecond, refiningOpen, shortageOn, supplyCap, supplyFull } from "@/lib/empire";
@@ -244,7 +245,7 @@ export default function GameScreen() {
                     className={`relative flex min-h-12 min-w-0 flex-col items-start justify-center overflow-hidden border px-1 text-left tabular-nums ${full ? "border-[var(--game-danger)] text-[var(--game-danger)]" : "border-[var(--game-border)]"}`}
                   >
                     <span className="w-full truncate text-sm leading-4">{REFINED[key]?.short || key}</span>
-                    <span className="w-full truncate text-sm leading-4">{amount(supply[key])}/{amount(supplyCap(state, key))}</span>
+                    <span data-exact={`${fullNumber(supply[key])} / ${fullNumber(supplyCap(state, key))}`} className="w-full truncate text-sm leading-4">{amount(supply[key])}/{amount(supplyCap(state, key))}</span>
                     {full && <span className="absolute right-0.5 top-0.5 font-pixel text-[0.35rem] leading-none">FULL</span>}
                     {short && <span data-short={key} className="absolute bottom-0.5 right-0.5 font-pixel text-[0.35rem] leading-none text-[var(--game-violet)]">SHORT</span>}
                   </button>
@@ -265,7 +266,7 @@ export default function GameScreen() {
                     aria-pressed={on}
                     disabled={item.id === "tech" && !techOpen}
                     onClick={() => chooseSection(item.id)}
-                    className={`relative min-h-[40px] px-2 font-pixel text-[0.6rem] leading-4 ${
+                    className={`relative min-h-12 px-2 font-pixel text-[0.6rem] leading-4 ${
                       on
                         ? "bg-[var(--game-accent)] text-[var(--game-accent-fg)]"
                         : "text-[var(--game-muted)] disabled:text-[var(--game-dim)]"
@@ -295,7 +296,7 @@ export default function GameScreen() {
               <p data-onboard className="mt-2 border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-2 font-term text-lg leading-6 text-[var(--game-fg)]">
                 Tap the Timber Camp picture to run the business. Then tap BUY. BUY spends cash.
                 {section !== "supply" && (
-                  <button type="button" data-onboard-supply onClick={() => chooseSection("supply")} className="ml-2 font-pixel text-[0.5rem] text-[var(--game-accent)] underline">
+                  <button type="button" data-onboard-supply onClick={() => chooseSection("supply")} className="hit48 relative ml-2 font-pixel text-[0.5rem] text-[var(--game-accent)] underline">
                     SHOW SUPPLY
                   </button>
                 )}

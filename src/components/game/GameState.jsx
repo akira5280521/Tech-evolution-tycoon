@@ -7,6 +7,7 @@ import CloudSync from "./CloudSync";
 import LoadingScreen from "./LoadingScreen";
 import { WhatsNewGate } from "./WhatsNew";
 import { RestartOfferGate } from "./RestartOffer";
+import TapFeedback from "./TapFeedback";
 
 const GameContext = createContext(null);
 
@@ -44,6 +45,7 @@ export function GameStateProvider({ children }) {
       <CloudSync game={api} />
       <WhatsNewGate />
       <RestartOfferGate game={api} />
+      <TapFeedback />
     </GameContext.Provider>
   );
 }

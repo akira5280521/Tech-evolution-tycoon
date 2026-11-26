@@ -1,4 +1,5 @@
 import { money } from "@/lib/gameConfig";
+import { fullMoney } from "@/lib/fullNumber";
 import { awayCap, awayLabel, binsLine } from "@/lib/awayReport";
 
 const cap = (s) => `${s[0].toUpperCase()}${s.slice(1)}`;
@@ -21,7 +22,7 @@ export default function WelcomeBack({ report, onDismiss, state }) {
         <p className="mt-3 font-term text-lg leading-6 text-[var(--game-fg)]">
           You were away for {awayLabel(report.rawAwayMs ?? report.awayMs)}. Your managers kept the businesses running at half speed and made
         </p>
-        <p data-offline-total className="mt-1 font-pixel text-base leading-7 text-[var(--game-success)]">
+        <p data-offline-total data-exact={fullMoney(report.amount)} className="mt-1 font-pixel text-base leading-7 text-[var(--game-success)]">
           {money(report.amount)}
         </p>
         {report.data > 0 && (
@@ -32,7 +33,7 @@ export default function WelcomeBack({ report, onDismiss, state }) {
             {report.rows.map((row) => (
               <li key={row.name} className="flex items-baseline justify-between gap-2">
                 <span className="min-w-0 truncate">{row.name}</span>
-                <span className="shrink-0 text-[var(--game-success)]">+{money(row.amount)}</span>
+                <span data-exact={`+${fullMoney(row.amount)}`} className="shrink-0 text-[var(--game-success)]">+{money(row.amount)}</span>
               </li>
             ))}
           </ul>

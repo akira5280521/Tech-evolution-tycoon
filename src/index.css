@@ -771,3 +771,28 @@ html[data-contrast="high"][data-colorblind="on"] {
 @media (prefers-reduced-motion: reduce) {
   .hint-glow { animation: none; box-shadow: 0 0 6px 1px rgba(255, 210, 90, 0.45); }
 }
+
+/* Tap feedback (T4 item 35): a button sinks a little while pressed. Uses the
+   separate `scale` property so it never fights a button's own transform. */
+@media (prefers-reduced-motion: no-preference) {
+  button:not(:disabled),
+  [role="button"] {
+    transition: scale 60ms ease-out;
+  }
+  button:not(:disabled):active,
+  [role="button"]:active {
+    scale: 0.96;
+  }
+}
+
+/* 48px tap targets (T4 item 40) for controls that must look small: an
+   invisible 48x48 touch area centred on the control. */
+.hit48::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  transform: translate(-50%, -50%);
+}

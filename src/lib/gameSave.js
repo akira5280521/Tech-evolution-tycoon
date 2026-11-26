@@ -1,7 +1,7 @@
 // Shared access to the game's localStorage save slot, used by the game screen
 // (read/write) and the settings screen (read-only analytics).
 
-import { BUSINESSES, ERA_GATE, blankSupply, managerNeed, normalizeBuyMode } from "./gameConfig.js";
+import { BUSINESSES, ERA_GATE, blankSupply, managerNeed, normalizeBuyMode, readEraBuild } from "./gameConfig.js";
 import { readRigs } from "./rigs.js";
 import { backupDue, backupSave } from "./saveBackups.js";
 
@@ -196,6 +196,8 @@ export function migrateSave(data) {
     erasOpened: Array.isArray(data.erasOpened)
       ? data.erasOpened.filter((id) => BUSINESSES.some((cfg) => cfg.id === id))
       : BUSINESSES.filter((cfg, i) => i > 0 && (biz[i]?.owned || 0) === 0 && (biz[i - 1]?.owned || 0) >= ERA_GATE).map((cfg) => cfg.id),
+    // An era being set up after OPEN ERA: { id, startedAt, readyAt }, or none.
+    eraBuild: readEraBuild(data.eraBuild),
     // A historical shortage under way: { key, until }, or none.
     shortage: data.shortage && typeof data.shortage === "object" && typeof data.shortage.key === "string" && Number.isFinite(data.shortage.until) ? { key: data.shortage.key, until: data.shortage.until } : null,
     // A recall being ridden out: { era, until }, or none.

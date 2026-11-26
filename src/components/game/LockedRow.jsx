@@ -20,7 +20,7 @@ export default function LockedRow({ index, id, state, onOpen }) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-1">
-          <h3 className="font-pixel text-sm text-[var(--game-dim)]">??? — NEXT ERA LOCKED</h3>
+          <h3 className="font-pixel text-sm text-[var(--game-dim)]">{state.eraBuild?.id === id ? "??? — NEXT ERA OPENING" : "??? — NEXT ERA LOCKED"}</h3>
           {id && <ItemHelp kind="locked-era" id={id} state={state} name="the next era" className="-mr-2 -mt-2.5" />}
         </div>
         {cal != null && real != null && (
@@ -108,6 +108,27 @@ export default function LockedRow({ index, id, state, onOpen }) {
             OPEN ERA
           </button>
         )}
+        {state.eraBuild?.id === id && <EraBuildBar build={state.eraBuild} />}
+      </div>
+    </div>
+  );
+}
+
+// After OPEN ERA: the era is being set up, and opens when the bar fills.
+function EraBuildBar({ build }) {
+  const now = Date.now();
+  const span = Math.max(1, build.readyAt - build.startedAt);
+  const pct = Math.max(0, Math.min(100, ((now - build.startedAt) / span) * 100));
+  const left = Math.max(0, Math.ceil((build.readyAt - now) / 1000));
+  const time = left >= 60 ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` : `${left}s`;
+  return (
+    <div data-era-build={build.id} className="mt-2" role="progressbar" aria-label="Setting up the era" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)}>
+      <p className="flex justify-between gap-2 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
+        <span>SETTING UP THE ERA</span>
+        <span data-era-build-left={left} className="tabular-nums">{time}</span>
+      </p>
+      <div className="mt-1 h-4 border-2 border-[var(--game-accent)] bg-[var(--game-bg)]">
+        <div className="h-full bg-[var(--game-accent)]" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import {
   AWAY_MODAL_MS,
   BUSINESSES,
   REFINED,
+  finishEraBuild,
   openEra,
   COMMISSION_MS,
   MILESTONES,
@@ -256,6 +257,7 @@ function pack(s) {
     materialsMade: s.materialsMade || {},
     materialsSold: s.materialsSold || 0,
     erasOpened: s.erasOpened || [],
+    eraBuild: s.eraBuild || null,
     shortage: s.shortage || null,
     recall: s.recall || null,
     erasPaid: s.erasPaid || [],
@@ -371,6 +373,7 @@ function loadSave() {
     state.materialsMade = data.materialsMade || {};
     state.materialsSold = data.materialsSold || 0;
     state.erasOpened = Array.isArray(data.erasOpened) ? data.erasOpened : [];
+    state.eraBuild = data.eraBuild || null;
     state.shortage = data.shortage && typeof data.shortage === "object" && Number.isFinite(data.shortage.until) ? data.shortage : null;
     state.recall = data.recall || null;
     state.foreman = !!data.foreman;
@@ -485,6 +488,10 @@ function announce(notes) {
       toast(`${cfg?.name || note.id}: ${aheadLabel(note.ahead).toLowerCase()}`, {
         description: `Your calendar: ${year - note.ahead}. History got there in ${year}.${note.newBest ? " A new best." : ` Best: ${aheadLabel(note.best).toLowerCase()}.`}${note.tokens ? ` +${note.tokens} era token.` : ""}`,
       });
+    }
+    if (note.type === "era-open") {
+      const cfg = BUSINESSES.find((b) => b.id === note.id);
+      toast(`${cfg?.name || note.id} is open`, { description: "Set up and ready. Buy the first one on the game screen." });
     }
     if (note.type === "bubble") toast("DOT-COM BUBBLE!", { description: "Your web stock is soaring. The banner counts down to the pop." });
     if (note.type === "bubblepop") toast("The bubble popped", { description: "The web stock is worth nothing now. Sell sooner next time." });
@@ -715,6 +722,11 @@ export function useGame() {
       const notes = tickDilemma(s, wall, { blocked: blocked || eventUp }).concat(finishTimedWork(s, wall), tickBubble(s, wall), historyNotes);
       const cards = collectHistory(s);
       if (cards.length) notes.push({ type: "history", cards });
+      const built = finishEraBuild(s, wall);
+      if (built) {
+        queueEraArrival(s, built);
+        notes.push({ type: "era-open", id: built });
+      }
       for (const r of noteComputeRecords(s)) notes.push({ type: "compute", record: r });
       for (const r of reachedNow) notes.push({ type: "calendar", ...r });
       if (notes.length) {
@@ -926,9 +938,8 @@ export function useGame() {
 
   const openEraAt = useCallback(
     (index) => {
-      const s = stateRef.current;
-      if (!openEra(s, index)) return;
-      queueEraArrival(s, BUSINESSES[index].id);
+      // The era sets up first; its arrival card comes when it opens (tick).
+      if (!openEra(stateRef.current, index, Date.now())) return;
       playBuy();
       saveNow();
       bump();

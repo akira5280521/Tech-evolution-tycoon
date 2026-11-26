@@ -9,8 +9,8 @@ export const HOWTO_GUIDES = [
     title: "FINDING YOUR WAY",
     always: true,
     lines: [
-      "The GAME list has era chips at the top and a buy-amount bar at the bottom (×1, ×10, ×100, Max). A short Next line under the cash box jumps to the most useful next goal.",
-      "R&D has Specialty and Lab Projects tabs; each section can be folded up and still shows a short summary. A green dot on BOOST, R&D, TECH or an HQ card means something there is ready. MORE is grouped into Game, Help and Settings. TECH and the Hardware Museum have a search box; later-era TECH projects and locked museum pieces stay ??? and will not match a name search.",
+      "The bottom bar has six buttons: GAME, HQ, R&D, BOOST, PROGRESS and MORE. The cash box on top shows cash, income, R&D points, your era and the month. Tap the lightbulb beside it for one line on what to do next on the screen you are on.",
+      "HQ is your company building, floor by floor: tap a room to go there, and use the HQ link at the top of any menu to come back. R&D has QUEUE, TECH, SPECIALTY and LAB tabs. BOOST has NOW, UPGRADES (with the Foreman), BONUSES and PRESTIGE. PROGRESS has RUNS, BADGES, MUSEUM and STATS. MORE is just SETTINGS and HOW TO PLAY. A red dot on a button or tab means something there is ready; grey rooms say Coming soon.",
     ],
   },
   {

@@ -29,3 +29,16 @@ test("idle businesses make the bulb glow on GAME only", () => {
   s.biz[0].running = true;
   assert.equal(screenHint(s, "game").stuck, false);
 });
+
+import { TUTORIAL_STEPS } from "../../src/lib/tutorial.js";
+import { TIPS } from "../../src/lib/tips.js";
+
+test("tutorial and tips never send you to menus that moved", () => {
+  const stale = [/BOARD tab/, /RUNS tab/, /Tap RUNS\b/, /\bRIGS tab/, /on the GAME tab.*prestige/i, /Hardware Museum, in HQ/, /Museum in HQ/];
+  const texts = [
+    ...TUTORIAL_STEPS.map((s) => (typeof s.text === "string" ? s.text : "")),
+    ...TIPS.map((t) => t.text || ""),
+  ];
+  for (const text of texts) for (const re of stale) assert.ok(!re.test(text), `${re}: ${text}`);
+  for (const t of TIPS) assert.ok(!/data-tab="(board|runs)"/.test(t.target || ""), t.id);
+});

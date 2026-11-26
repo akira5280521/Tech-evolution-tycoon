@@ -694,9 +694,13 @@ html[data-contrast="high"][data-colorblind="on"] {
 .museum-chip-row::-webkit-scrollbar {
   display: none;
 }
+/* Museum pieces you don't own: a solid dark silhouette, shape only (the
+   sprite's alpha is the mask). Locked pieces are a shade darker. T4 item 21. */
 .museum-sil {
-  filter: grayscale(1) invert(1) contrast(1.15);
-  opacity: 0.38;
+  filter: brightness(0) invert(0.16);
+}
+.museum-shadow {
+  filter: brightness(0) invert(0.3);
 }
 .museum-new-dot {
   position: absolute;

@@ -265,7 +265,7 @@ export default function MuseumPage({ top = null, backTo } = {}) {
                     className={`relative min-w-0 border-2 bg-black p-1 ${locked ? "border-[var(--game-border)]" : status === "owned" ? "border-[#e6c15a]" : "border-[var(--game-border-strong)]"}`}
                   >
                     {fresh ? <span data-new-dot className="museum-new-dot" /> : null}
-                    <img src={item.icon} alt="" className={`aspect-square w-full object-contain ${locked ? "museum-sil" : status === "retired" ? "grayscale" : ""}`} />
+                    <img src={item.icon} alt="" className={`aspect-square w-full object-contain ${locked ? "museum-sil" : status === "owned" || status === "seen" ? "" : "museum-shadow"}`} />
                     <span className="block font-pixel text-[0.4rem] leading-3 text-[var(--game-muted)]">{locked ? `${Math.floor(item.year / 10) * 10}s` : item.year}</span>
                   </button>
                 );
@@ -295,7 +295,7 @@ function ExhibitSheet({ state, id, roomId, onClose }) {
     >
       <div className="hint-sheet-body">
       <div className="flex gap-3">
-        <img src={item.icon} alt="" className={`h-24 w-24 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain ${locked ? "museum-sil" : status === "retired" ? "grayscale" : ""}`} />
+        <img src={item.icon} alt="" className={`h-24 w-24 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain ${locked ? "museum-sil" : status === "owned" || status === "seen" ? "" : "museum-shadow"}`} />
         <div className="min-w-0">
           <p className={`inline-block border-2 px-1 font-pixel text-[0.45rem] leading-4 ${STATUS_COLOR[status]}`}>{STATUS_LABEL[status]}</p>
           <h2 className="mt-1 break-words font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">{locked ? "???" : item.name}</h2>

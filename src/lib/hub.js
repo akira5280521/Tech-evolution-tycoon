@@ -23,7 +23,7 @@ export const HUB_ITEMS = [
     to: "/facilities/$facilityId",
     params: { facilityId: fac.id },
     icon: fac.icon,
-    text: fac.blurb,
+    text: fac.short || fac.blurb,
     // Research servers stay open from era 1 so the starter punch-card machine
     // can be bought before Mainframes. The rest wait for their era this run.
     open: (state) => (fac.id === "servers" ? !!state : facilityUnlocked(state, fac.id)),

@@ -29,7 +29,10 @@ export const SAVE_KEY = "pc-tycoon-save-v1";
 // of the PC on the Build Bench, kept through prestige like the museum. A
 // save from before v14 has no builds. v15 adds early-era contracts and the
 // moth / Moore's Law story events. Older saves start with none in progress.
-export const SAVE_VERSION = 15;
+// v16 puts TECH in date order with release months: older saves fill in the
+// projects now before ones they finished, and a late save still on punch
+// cards gets its first research server.
+export const SAVE_VERSION = 16;
 const V1_INVESTOR_DIVISOR = 1000;
 // Row order of each older save version.
 const V4_ORDER = ["sand", "copper", "silicon", "wafers", "tubes", "punchcards", "transistors", "ics", "cpu", "homepc", "gpu", "rgb", "quantum"];

@@ -851,11 +851,9 @@ export function useGame() {
       const st = s.biz[i];
       const now = Date.now();
       if ((st.commissionUntil || 0) > now) return;
-      if (st.owned > 0 && !isManaged(st) && st.running) {
-        s.biz = s.biz.map((b, j) => (j === i ? { ...b, shake: (b.shake || 0) + 1 } : b));
-        bump();
-        return;
-      }
+      // Already running: the picture shakes by itself (IconTile); nothing
+      // in the game changes, so nothing redraws.
+      if (st.owned > 0 && !isManaged(st) && st.running) return;
       if (startRun(s, i, now)) {
         saveNow();
         bump();

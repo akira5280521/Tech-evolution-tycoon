@@ -16,7 +16,7 @@ export default function BubbleBanner({ state, onCashOut }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!bubble) return undefined;
-    const id = setInterval(() => setNow(Date.now()), 250);
+    const id = setInterval(() => setNow(Date.now()), 500); // seconds countdown: 2 Hz is enough (T5 item 45)
     return () => clearInterval(id);
   }, [bubble]);
   if (!bubble) return null;

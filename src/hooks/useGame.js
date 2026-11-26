@@ -761,9 +761,11 @@ export function useGame() {
         announce(notes);
         dirty = true;
       }
-      const pending = s.researchJob || s.upgradeJob || s.projectJob || s.refineJob || (s.stages || []).length > 0 || s.eraBuild || s.biz.some((row) => (row.commissionUntil || 0) > wall || (row.holdUntil || 0) > wall);
+      const pending = s.researchJob || s.upgradeJob || s.projectJob || s.refineJob || s.biz.some((row) => (row.commissionUntil || 0) > wall || (row.holdUntil || 0) > wall);
       if (pending) dirty = true;
-      const passive = plant > 0 || researchMoved === "gain";
+      // Long stage bars (installs up to an hour, era set-up) only need a
+      // once-a-second paint, not the 4 Hz one (T5 item 45, battery).
+      const passive = plant > 0 || researchMoved === "gain" || (s.stages || []).length > 0 || !!s.eraBuild;
       // Payouts and finished work paint on the short cadence. A plant or
       // research counter that is merely counting paints about once a second.
       if (dirty && wall - lastRender >= RENDER_MS) {

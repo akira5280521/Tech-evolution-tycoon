@@ -58,15 +58,21 @@ export default function RunsPage() {
   const { state, startChallenge, abandonChallenge } = useGameState();
   const locked = !state.prestiged && !state.challenge;
   const [now, setNow] = useState(0);
+  // A 1 s clock only while a timed challenge or a project is counting down
+  // (T5 item 45, battery).
+  const ticking = !!state.challenge || !!state.projectJob;
   useEffect(() => {
     setNow(Date.now());
+    if (!ticking) return undefined;
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [ticking]);
+  // Otherwise the game's own repaint carries the clock.
+  const clock = ticking ? now : Date.now();
   return (
     <ScreenShell title="RUNS" subtitle="Optional harder runs and big goals. Their rewards are kept forever.">
       <MilestoneLadder state={state} />
-      <AheadOfHistory state={state} now={now} />
+      <AheadOfHistory state={state} now={clock} />
       <h2 className="flex items-center gap-2 font-pixel text-[0.7rem] text-[var(--game-accent)]">
         CHALLENGE RUNS <HelpTip term="challenge" />
       </h2>
@@ -83,7 +89,7 @@ export default function RunsPage() {
       {CHALLENGES.map((challenge) => {
         const done = (state.challengesDone || []).includes(challenge.id);
         const active = state.challenge?.id === challenge.id;
-        const left = active && challenge.limitMs ? Math.max(0, challenge.limitMs - (now - state.challenge.startedAt)) : 0;
+        const left = active && challenge.limitMs ? Math.max(0, challenge.limitMs - (clock - state.challenge.startedAt)) : 0;
         return (
           <Panel key={challenge.id}>
             <div data-help-scope>

@@ -236,7 +236,8 @@ export const FACILITY_TOURS = [
     route: "/facilities/servers",
     steps: [
       { id: "servers-room", title: "MACHINE ROOM", text: "Mainframes opened the rest of this room. Research a computer in R&D > TECH, then come back here to buy it.", target: "[data-facility='servers']", manual: true },
-      { id: "servers-kit", title: "POWER AND COOLING", text: "Each machine-room computer needs its own motor-generator and air conditioner, and a tape or disk once you have researched one.", target: "[data-facility='servers']", manual: true, button: "DONE" },
+      { id: "servers-kit", title: "POWER AND COOLING", text: "Each machine-room computer needs its own motor-generator and air conditioner, and a tape or disk once you have researched one.", target: "[data-facility='servers']", manual: true },
+      { id: "servers-status", title: "ROOM STATUS", text: "Under the room, ROOM STATUS shows compute, storage, heat and power, each against a white limit marker. A bar past its marker turns red and says what to add.", target: "[data-room-status='servers']", manual: true, button: "DONE" },
     ],
   },
   {
@@ -246,7 +247,8 @@ export const FACILITY_TOURS = [
     route: "/facilities/bench",
     steps: [
       { id: "bench-intro", title: "PC BUILD BENCH", text: "The lab builds one PC at a time. It needs a board, a CPU that fits that board's socket, and memory that fits its slots.", target: "[data-facility='bench']", manual: true },
-      { id: "bench-parts", title: "FIT THE PARTS", text: "Start with a board, then a CPU for its socket, then memory for its slots. The bench tells you if something doesn't fit. The PC makes R&D points.", target: "[data-facility='bench']", manual: true, button: "DONE" },
+      { id: "bench-parts", title: "FIT THE PARTS", text: "Start with a board, then a CPU for its socket, then memory for its slots. The bench tells you if something doesn't fit. The PC makes R&D points.", target: "[data-facility='bench']", manual: true },
+      { id: "bench-status", title: "ROOM STATUS", text: "ROOM STATUS under the bench shows the PC's speed, memory, CPU heat and power against their limits. A red bar says what to add.", target: "[data-room-status='bench']", manual: true, button: "DONE" },
     ],
   },
   {
@@ -256,7 +258,7 @@ export const FACILITY_TOURS = [
     route: "/facilities/mine",
     steps: [
       { id: "mine-intro", title: "BITBARK MINE", text: "Graphics cards here mint Bitbark, a game coin that stays in the game. It adds a little extra income.", target: "[data-facility='mine']", manual: true },
-      { id: "mine-run", title: "POWER AND COOLING", text: "Buy a card, then enough power and cooling. The plant runs slower if either can't keep up, and it tells you what to add next.", target: "[data-facility='mine']", manual: true, button: "DONE" },
+      { id: "mine-run", title: "POWER AND COOLING", text: "Buy a card, then enough power and cooling. The plant runs slower if either can't keep up: ROOM STATUS under the room turns that bar red and says what to add.", target: "[data-room-status='mine']", manual: true, button: "DONE" },
     ],
   },
   {
@@ -266,7 +268,7 @@ export const FACILITY_TOURS = [
     route: "/facilities/cluster",
     steps: [
       { id: "cluster-intro", title: "TRAINING CLUSTER", text: "The cluster trains a model and bills the studio. A bigger model needs more memory.", target: "[data-facility='cluster']", manual: true },
-      { id: "cluster-run", title: "CARDS AND MEMORY", text: "Buy graphics cards, memory, power and cooling. The cluster tells you if it needs more RAM or VRAM for the next model size.", target: "[data-facility='cluster']", manual: true, button: "DONE" },
+      { id: "cluster-run", title: "CARDS AND MEMORY", text: "Buy graphics cards, memory, power and cooling. ROOM STATUS under the room shows each one against its limit and says what to add, including RAM for the next model size.", target: "[data-room-status='cluster']", manual: true, button: "DONE" },
     ],
   },
 ];

@@ -71,3 +71,35 @@ test("How to Play locks later facility guides until their era", async ({ page })
   await expect(page.locator("[data-howto='howto-bench']")).toContainText("COMING SOON");
   expectClean(seen);
 });
+
+test("HQ is a building of department cards with room tiles, and every menu has an HQ breadcrumb", async ({ page }) => {
+  const seen = await open(page, "/rigs", "late");
+  await tipsOff(page);
+  const floors = page.locator("[data-hq-floor]");
+  await expect(floors).toHaveCount(5);
+  const ids = await floors.evaluateAll((els) => els.map((el) => el.getAttribute("data-hq-floor")));
+  expect(ids).toEqual(["boost", "rd", "plants", "progress", "game"]);
+  await expect(page.locator("[data-hq-floor] [data-floor-label]").first()).toHaveText("4F");
+  await expect(page.locator("[data-breadcrumb]")).toHaveCount(0);
+  await page.locator("[data-hub-room='rd-tech']").click();
+  await expect(page).toHaveURL(/\/research#tech/);
+  await expect(page.locator("[data-breadcrumb]")).toContainText("R&D");
+  await page.locator("[data-back-hq]").click();
+  await expect(page).toHaveURL(/\/rigs$/);
+  await page.locator("[data-hub-item='servers']").click();
+  await expect(page.locator("[data-breadcrumb]")).toContainText("HARDWARE");
+  await expect(page.locator("[data-breadcrumb]")).toContainText("RESEARCH SERVERS");
+  await page.locator("[data-back-hq]").click();
+  await page.locator("[data-hub-room='progress-museum']").click();
+  await expect(page).toHaveURL(/\/progress#museum/);
+  expectClean(seen);
+});
+
+test("a locked HQ room is greyed and can't be tapped", async ({ page }) => {
+  const seen = await open(page, "/rigs", "newrich");
+  await tipsOff(page);
+  const prestige = page.locator("[data-hub-room='boost-prestige']");
+  await expect(prestige).toHaveAttribute("data-locked", "");
+  await expect(prestige).toHaveAttribute("aria-disabled", "true");
+  expectClean(seen);
+});

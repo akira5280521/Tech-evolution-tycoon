@@ -3,6 +3,7 @@
 // Loom (the reported row); a fake clock to loop over every row.
 import { test, expect } from "@playwright/test";
 import { seed } from "./helpers.js";
+import { SAVE_VERSION } from "../../src/lib/gameSave.js";
 import { BUSINESSES, cycleLabel } from "../../src/lib/gameConfig.js";
 import { effectiveCycleMs } from "../../src/lib/empire.js";
 import { rowSection } from "../../src/lib/sections.js";
@@ -13,7 +14,7 @@ function build(id, { owned = 1, manager = false, stock = 1e7, all = false, extra
   const far = Date.now() + 9e9;
   const supply = Object.fromEntries(MATERIALS.map((k) => [k, stock]));
   return {
-    version: 12, cash: 0, lifetime: 1, investors: 0, lastSeen: Date.now(), sawPit: true, restartSeen: true, starterGranted: true, hubSeen: true,
+    version: SAVE_VERSION, cash: 0, lifetime: 1, investors: 0, lastSeen: Date.now(), sawPit: true, restartSeen: true, starterGranted: true, hubSeen: true,
     tutorial: { seen: [], tips: [], tipsOff: true, done: true, skipped: false, replay: false },
     nextWindfallAt: far, nextDilemmaAt: far, nextBubbleAt: far, nextShortageAt: far, supply, upgrades: {}, specialties: [],
     biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: all ? owned : i === target ? owned : i < target ? 1 : 0, manager: i === target && manager, running: i === target && manager, progress: 0, activeMs: 0, commissionUntil: 0, ...(extraRows[b.id] || {}) })),
@@ -24,6 +25,23 @@ async function load(page, save, section) {
   await seed(page, save, { extra: { "pc-tycoon-prefs-v1": JSON.stringify({ gameSection: section }) } });
   await page.goto("/");
 }
+
+// Fake clock, held still: only the test moves the page's time (runFor /
+// fastForward), so a busy machine can slow the test down but can't stretch or
+// shrink a game cycle. Install before the page loads, hold once it has.
+async function holdClock(page) {
+  const now = await page.evaluate(() => Date.now());
+  await page.clock.pauseAt(now + 1000);
+}
+// Step the held clock until check() is true. False if it never gets there.
+async function stepUntil(page, check, { step = 20, max = 200 } = {}) {
+  for (let k = 0; k < max; k++) {
+    if (await check()) return true;
+    await page.clock.runFor(step);
+  }
+  return check();
+}
+const pageNow = (page) => page.evaluate(() => Date.now());
 
 // One tap: returns how long the run took on the game's own clock.
 async function tapRun(page, id, step = (ms) => page.waitForTimeout(ms)) {
@@ -57,17 +75,29 @@ test("a Loom short of paper still runs its full cycle and pays nothing once pape
   test.setTimeout(60000);
   const save = build("loom");
   save.supply.paper = 1;
+  await page.clock.install({ time: Date.now() });
   await load(page, save, "tech");
-  const took = await tapRun(page, "loom", () => page.waitForTimeout(10));
+  await holdClock(page);
+  const took = await tapRun(page, "loom", () => page.clock.runFor(20));
   expect(took).toBeGreaterThanOrEqual(2600);
   // Paper is used up: the next run takes the same time and pays $0.
   await expect(page.locator("[data-row='loom'] [data-short]")).toContainText("Out of paper");
   const gains = await num(page, "loom", "data-gain");
+  // Let the short pause after a payout pass before tapping again.
+  await page.clock.runFor(300);
   await page.locator("[data-tile='loom']").click();
   await expect.poll(() => num(page, "loom", "data-running")).toBe(1);
-  await page.waitForTimeout(2500);
+  const start = await num(page, "loom", "data-cycle-start");
+  expect(start).toBeGreaterThan(0);
+  // Halfway through the cycle it is still running, however busy the machine.
+  await page.clock.runFor(1300);
   expect(await num(page, "loom", "data-running")).toBe(1);
-  await expect.poll(() => num(page, "loom", "data-running"), { timeout: 1000 }).toBe(0);
+  // Just short of the full cycle, still running.
+  await page.clock.runFor(2600 - 1300 - 50);
+  expect(await num(page, "loom", "data-running")).toBe(1);
+  // Then it finishes: never before the full cycle, and pays nothing.
+  expect(await stepUntil(page, async () => (await num(page, "loom", "data-running")) === 0)).toBe(true);
+  expect((await pageNow(page)) - start).toBeGreaterThanOrEqual(2600);
   expect(await num(page, "loom", "data-gain")).toBe(gains);
 });
 
@@ -75,7 +105,7 @@ test("every row (fake clock): manual runs take the shown cycle, and the label ma
   test.setTimeout(240000);
   await page.clock.install({ time: Date.now() });
   await load(page, build("timber", { all: true }), "tech");
-  const step = async () => page.clock.runFor(20);
+  await holdClock(page);
   for (const section of ["tech", "supply"]) {
     await page.locator(`[data-section='${section}']`).click();
     for (const [i, cfg] of BUSINESSES.entries()) {
@@ -84,20 +114,25 @@ test("every row (fake clock): manual runs take the shown cycle, and the label ma
       await row.scrollIntoViewIfNeeded();
       const cycle = effectiveCycleMs(cfg, { biz: BUSINESSES.map((b) => ({ id: b.id, owned: 1 })), upgrades: {}, specialties: [] });
       await expect(row).toContainText(`/ ${cycleLabel(cycle)}s cycle`);
+      // Let the short pause after the last payout pass (time is held).
+      await page.clock.runFor(300);
       const before = await num(page, cfg.id, "data-gain-at");
       await page.locator(`[data-tile='${cfg.id}']`).click();
       await expect.poll(() => num(page, cfg.id, "data-cycle-start")).toBeGreaterThan(0);
       const start = await num(page, cfg.id, "data-cycle-start");
       await page.clock.fastForward(Math.max(0, cycle - 200));
       let took = null;
-      for (let k = 0; k < 40 && took == null; k++) {
+      await stepUntil(page, async () => {
         const at = await num(page, cfg.id, "data-gain-at");
         if (at > before) took = at - start;
-        else await step();
-      }
+        return took != null;
+      });
       expect(took, cfg.id).not.toBeNull();
+      // Never pays early: exact.
       expect(took, cfg.id).toBeGreaterThanOrEqual(cycle - 1);
-      expect(took, cfg.id).toBeLessThan(cycle + 60);
+      // Pays within one game tick (250 ms) of the cycle. Time only moves when
+      // the test moves it, so this doesn't depend on how busy the machine is.
+      expect(took, cfg.id).toBeLessThan(cycle + 250);
     }
   }
 });

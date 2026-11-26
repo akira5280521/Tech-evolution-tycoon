@@ -175,6 +175,14 @@ export function playCollect() {
   blip(1318.51, 0.06, 0.18);
 }
 
+// A short fanfare when an era or chip generation arrives. Respects the
+// master sound switch and the effects volume / mute.
+export function playArrival() {
+  blip(392, 0, 0.08, 0.1);
+  blip(523.25, 0.08, 0.1, 0.11);
+  blip(784, 0.18, 0.16, 0.13);
+}
+
 export function isAudioAudible() {
   return audible;
 }

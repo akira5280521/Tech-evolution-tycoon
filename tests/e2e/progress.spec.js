@@ -5,6 +5,7 @@ import { expectClean, open, tipsOff } from "./helpers.js";
 import { BUSINESSES } from "../../src/lib/gameConfig.js";
 
 const CPU = BUSINESSES.findIndex((b) => b.id === "cpu");
+const HOMEPC = BUSINESSES.findIndex((b) => b.id === "homepc");
 const row = (id, owned) => ({ id, owned, manager: true, running: false, progress: 0, activeMs: 0, commissionUntil: 0 });
 const tutorial = { seen: [], done: true, skipped: false, replay: false, tips: [], tipsOff: true };
 const save = (extra = {}) => ({
@@ -17,7 +18,7 @@ const save = (extra = {}) => ({
 const pct = (loc) => loc.getAttribute("data-pct").then(Number);
 
 test("TECH card and top button show a bar that advances", async ({ page }) => {
-  const seen = await open(page, "/", save({ techJob: { id: "cpu-8080", progressMs: 1000, durationMs: 30000 } }));
+  const seen = await open(page, "/", save({ techJob: { id: "cpu-8080", progressMs: 1000, durationMs: 30000 }, bestEra: HOMEPC }));
   await tipsOff(page);
   const side = page.locator("[data-open-research] [data-side-progress]");
   await expect(side).toHaveCount(1);

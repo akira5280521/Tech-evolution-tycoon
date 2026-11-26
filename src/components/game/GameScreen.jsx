@@ -16,12 +16,18 @@ import WelcomeBack from "./WelcomeBack";
 import PrestigeReport from "./PrestigeReport";
 import BottomTabs from "./BottomTabs";
 import DilemmaModal from "./DilemmaModal";
+import ArrivalCard from "./ArrivalCard";
+import ContractCard, { ContractChip } from "./ContractCard";
+import StoryEventModal from "./StoryEventModal";
+import { currentArrival } from "@/lib/arrivals";
 import BubbleBanner from "./BubbleBanner";
 import AnniversaryBanner from "./AnniversaryBanner";
-import CoachMark from "./CoachMark";
 import { ItemHelp, TipCard } from "./HintSheet";
 import { currentTutorialStep, stepTarget, tutorialActive } from "@/lib/tutorial";
 import { StickyHud } from "./chrome";
+import { EraChipStrip } from "./EraChipStrip";
+import { BuyBar } from "./BuyBar";
+import { shouldCollapseRow, rowFullyUpgraded } from "@/lib/rowCollapse";
 
 // The first-run Timber note stays up until the player has both run a business
 // by hand and bought one. Either action on its own is not the whole loop.
@@ -44,18 +50,20 @@ function supplyShown(state, key) {
 export default function GameScreen() {
   const game = useGameState();
   const { state, buyMode, setBuyMode, buy, hire, run, runAll, toggleManager, buyForeman, prestige, dismissOffline,
-    dismissPrestigeReport, chooseDilemma, cashOut, tutorialNext, tutorialSkip } = game;
+    dismissPrestigeReport, dismissArrivalCard, chooseDilemma, chooseStoryEvent, acceptContractOffer, skipContractOffer, cashOut, tutorialNext, tutorialSkip } = game;
   const [, bumpTick] = useState(0);
   const [pullDist, setPullDist] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [compact, setCompact] = useState(false);
+  const [collapseMaxed, setCollapseMaxed] = useState(true);
+  const [expandedRows, setExpandedRows] = useState({});
   const [storageKey, setStorageKey] = useState(null);
   const [savedSection, setSavedSection] = useState(() => readPrefs().gameSection);
   // A dilemma or shortage event takes the screen: close the material sheet
   // so the two never stack.
   useEffect(() => {
-    if (state.dilemma) setStorageKey(null);
-  }, [state.dilemma]);
+    if (state.dilemma || state.storyEvent || state.contract?.status === "offered") setStorageKey(null);
+  }, [state.dilemma, state.storyEvent, state.contract]);
   const [scrollTo, setScrollTo] = useState(() => pendingRowId());
   const startYRef = useRef(null);
   const pullRef = useRef(0);
@@ -64,6 +72,7 @@ export default function GameScreen() {
     const apply = () => {
       const prefs = readPrefs();
       setCompact(prefs.compact);
+      setCollapseMaxed(prefs.collapseMaxed !== false);
       setSavedSection(prefs.gameSection);
       applyAudioPrefs(prefs);
     };
@@ -166,11 +175,22 @@ export default function GameScreen() {
   const techOpen = BUSINESSES.some((cfg, i) => rowSection(i) === "tech" && eraOpen(state, i) && !blockedByGlass(state, i));
 
   return (
-    <div className="game-root game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
+    <div className="game-root has-buybar game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
       <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} />
       <PrestigeReport report={state.offlineReport ? null : state.prestigeReport} onDismiss={dismissPrestigeReport} />
-      {!state.offlineReport && !state.prestigeReport && <DilemmaModal dilemma={state.dilemma} onChoose={chooseDilemma} />}
+      {!state.offlineReport && !state.prestigeReport && !tutorialActive(state) && (
+        <ArrivalCard arrival={currentArrival(state)} onDismiss={dismissArrivalCard} />
+      )}
+      {!state.offlineReport && !state.prestigeReport && !currentArrival(state) && (
+        <StoryEventModal event={state.storyEvent} onChoose={chooseStoryEvent} />
+      )}
+      {!state.offlineReport && !state.prestigeReport && !currentArrival(state) && !state.storyEvent && (
+        <ContractCard contract={state.contract} state={state} onAccept={acceptContractOffer} onSkip={skipContractOffer} />
+      )}
+      {!state.offlineReport && !state.prestigeReport && !currentArrival(state) && !state.storyEvent && state.contract?.status !== "offered" && (
+        <DilemmaModal dilemma={state.dilemma} onChoose={chooseDilemma} />
+      )}
 
       {(pullDist > 0 || refreshing) && (
         <div className="flex items-center justify-center gap-2 py-2 font-pixel text-[0.55rem] text-[var(--game-muted)]">
@@ -223,6 +243,7 @@ export default function GameScreen() {
               })}
               <ItemHelp kind="materials" id={SUPPLY_KEYS.filter((key) => supplyShown(state, key))} state={state} name="materials" className="ml-auto" />
             </p>
+            <ContractChip contract={state.contract} now={Date.now()} />
             <div data-section-toggle role="group" aria-label="Game section" className="mt-2 grid grid-cols-2 border-2 border-[var(--game-border)] bg-[var(--game-panel)] shadow-[3px_3px_0_0_#000]">
               {SECTIONS.map((item) => {
                 const on = section === item.id;
@@ -253,6 +274,14 @@ export default function GameScreen() {
                 );
               })}
             </div>
+            <EraChipStrip
+              state={state}
+              onPick={(chip) => {
+                const want = sectionOfId(chip.id);
+                if (want) chooseSection(want);
+                setScrollTo(chip.id);
+              }}
+            />
             {!playedAndBought(state) && !tutorialActive(state) && (
               <p data-onboard className="mt-2 border-2 border-[var(--game-accent)] bg-[var(--game-accent-bg)] p-2 font-term text-lg leading-6 text-[var(--game-fg)]">
                 Tap the Timber Camp picture to run the business. Then tap BUY. BUY spends cash.
@@ -297,6 +326,9 @@ export default function GameScreen() {
                 state={state}
                 buyMode={buyMode}
                 compact={compact}
+                collapsed={shouldCollapseRow(state, i, { collapseMaxed }, !!expandedRows[cfg.id])}
+                canCollapse={collapseMaxed && rowFullyUpgraded(state, i)}
+                onToggleCollapse={() => setExpandedRows((m) => ({ ...m, [cfg.id]: !m[cfg.id] }))}
                 supplyCard={section === "supply"}
                 onNeed={showMaker}
                 tapHint={tutorialActive(state)}
@@ -321,8 +353,14 @@ export default function GameScreen() {
           Progress saves on this device. Close the app and managers keep earning at half speed for up to 24 hours.
         </p>
       </footer>
+      <BuyBar
+        buyMode={buyMode}
+        onPick={(mode) => {
+          setBuyMode(mode);
+          if (currentTutorialStep(state)?.id === "modes") tutorialNext("modes");
+        }}
+      />
       <BottomTabs />
-      <CoachMark state={state} onNext={tutorialNext} onSkip={tutorialSkip} />
       <TipCard />
     </div>
   );

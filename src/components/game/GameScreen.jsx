@@ -176,7 +176,7 @@ export default function GameScreen() {
   return (
     <div className="game-root game-clip-x min-h-screen bg-[var(--game-bg)] text-[var(--game-fg)]">
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-30" />
-      <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} />
+      <WelcomeBack report={state.offlineReport} onDismiss={dismissOffline} state={state} />
       <PrestigeReport report={state.offlineReport ? null : state.prestigeReport} onDismiss={dismissPrestigeReport} />
       {!state.offlineReport && !state.prestigeReport && !tutorialActive(state) && (
         <ArrivalCard arrival={currentArrival(state)} onDismiss={dismissArrivalCard} />

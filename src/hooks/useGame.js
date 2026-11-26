@@ -439,21 +439,24 @@ function loadSave() {
       state.goalsDone = state.goalsDone || [];
       settleGoals(state, { pay: false, migrate: true });
     }
-    const elapsed = Math.min(Math.max(Date.now() - (data.lastSeen || Date.now()), 0), offlineCapMs(state));
+    const rawAway = Math.max(Date.now() - (data.lastSeen || Date.now()), 0);
+    const elapsed = Math.min(rawAway, offlineCapMs(state));
     let offlineGain = 0;
     let rows = [];
     let short = [];
     let full = [];
+    let dataGain = 0;
     if (elapsed > 0) {
       // Managers, plants and R&D earn at OFFLINE_RATE while the app is closed.
       const rate = elapsed < AWAY_GRACE_MS ? 1 : OFFLINE_RATE;
-      state.data = (state.data || 0) + dataPerSecond(state) * (elapsed / 1000) * rate;
+      dataGain = dataPerSecond(state) * (elapsed / 1000) * rate;
+      state.data = (state.data || 0) + dataGain;
       beginArrivalCatchup(state);
       ({ gain: offlineGain, rows, short, full } = replayAway(state, elapsed, Date.now(), rate));
       endArrivalCatchup(state, elapsed);
     }
     if (offlineGain > 0 && elapsed >= AWAY_MODAL_MS) {
-      state.offlineReport = { amount: offlineGain, awayMs: elapsed, rows, short, full };
+      state.offlineReport = { amount: offlineGain, awayMs: elapsed, rawAwayMs: rawAway, data: dataGain, rows, short, full };
     }
     applyBriefing(state);
     finishTimedWork(state, Date.now());
@@ -658,7 +661,8 @@ export function useGame() {
       void cancelCapNotification();
       if (!s.hiddenAt) return;
       const now = Date.now();
-      const away = Math.min(Math.max(0, now - s.hiddenAt), offlineCapMs(s));
+      const rawAway = Math.max(0, now - s.hiddenAt);
+      const away = Math.min(rawAway, offlineCapMs(s));
       s.hiddenAt = 0;
       // Start every row's clock from where the replay leaves it.
       s.biz = s.biz.map((st) => {
@@ -669,11 +673,12 @@ export function useGame() {
       });
       if (away > 0) {
         const rate = away < AWAY_GRACE_MS ? 1 : OFFLINE_RATE;
-        s.data = (s.data || 0) + dataPerSecond(s) * (away / 1000) * rate;
+        const dataGain = dataPerSecond(s) * (away / 1000) * rate;
+        s.data = (s.data || 0) + dataGain;
         beginArrivalCatchup(s);
         const { gain, rows, short, full } = replayAway(s, away, now, rate);
         endArrivalCatchup(s, away);
-        if (gain > 0 && away >= AWAY_MODAL_MS) s.offlineReport = { amount: gain, awayMs: away, rows, short, full };
+        if (gain > 0 && away >= AWAY_MODAL_MS) s.offlineReport = { amount: gain, awayMs: away, rawAwayMs: rawAway, data: dataGain, rows, short, full };
       }
       lastWall = now;
       awayBudget = OFFLINE_CAP_MS;

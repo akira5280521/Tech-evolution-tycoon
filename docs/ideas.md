@@ -792,3 +792,25 @@ chance.
 - **Free-build mode:** after the last era, a sandbox Workbench with every
   collected part and lighting, any period, for screenshots and collection.
 
+
+## From GD-10 T5 (noted, not built)
+
+- **Tiny buy progress bars (item 63, Spare):** a thin bar under each BUY
+  button that fills toward the next affordable buy, so the player can see how
+  close it is without reading numbers.
+- **HQ R&D card queue-slot dot:** a small dot on the HQ R&D card when a
+  research queue slot is free, so an empty slot is easy to spot.
+- **Second "why am I stuck" line for the lightbulb:** when the main hint is
+  waiting on time (earn, materials), add a second line with the next useful
+  thing to do meanwhile.
+- **Single-row bottom bar on narrow phones:** fold the bottom navigation
+  into one row (icons only, labels on long-press) below about 360 px wide.
+- **Free-roam first-person HQ view:** walk through the HQ rooms in first
+  person, in the same 32-bit pixel style, modeled on real machine rooms.
+- **No-railing variant of the room base art:** an alternative room base
+  without the railing. The current railing art is to be left alone until
+  this is decided.
+- **Room tier upgrades with a renovating bar:** T5 item 62 asked for a stage
+  bar on room upgrades, but rooms have no tier upgrade yet. If one is added,
+  give it the same staged bar (Clearing the floor → Framing → Wiring →
+  Fitting out) as the first room build.

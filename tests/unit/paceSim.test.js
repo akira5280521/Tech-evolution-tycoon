@@ -40,3 +40,13 @@ test("act does not throw on a fresh save", () => {
   const out = act(s, SIM_START);
   assert.equal(!!out && typeof out === "object" ? !!out.state || true : typeof out === "boolean", true);
 });
+
+// T5 item 29: OPEN ERA starts a set-up bar that the game's tick finishes.
+// The sim has to finish it on sim time, or Mainframes never opens in a
+// first run (that was the 22h 39m first prestige).
+test("the sim finishes the OPEN ERA set-up bar and reaches Mainframes in the first hour", () => {
+  const r = runProfile("active", { start: SIM_START, maxElapsed: 60 * 60 * 1000 });
+  assert.ok(r.eras.mainframes != null, "Mainframes arrived within an hour");
+  assert.equal(r.state.eraBuild?.id === "mainframes", false);
+  assert.ok(r.state.eraBuild == null || r.state.eraBuild.startedAt < SIM_START + r.elapsed + 1, "set-up bars run on sim time");
+});

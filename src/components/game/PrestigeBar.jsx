@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { PRESTIGE_UNIT, count, investorsFor, money, prestigeMult } from "@/lib/gameConfig";
 import { ItemHelp } from "./HintSheet";
+import { useArm } from "./useArm";
 import { empireFactors, investorPeak, nextInvestorMilestone } from "@/lib/empire";
 
 // Investors and starting over (prestige), in plain words. The exact numbers
 // sit behind "Details" for players who want them.
 export default function PrestigeBar({ state, onPrestige }) {
+  const [armed, arm, disarm] = useArm();
   const [details, setDetails] = useState(false);
   const claimable = investorsFor(state.lifetime);
   const pct = Math.round((prestigeMult(state.investors) - 1) * 100);
@@ -39,8 +41,9 @@ export default function PrestigeBar({ state, onPrestige }) {
       <div className="flex flex-col gap-2">
         <button
           type="button"
-          onClick={onPrestige}
+          onClick={arm}
           disabled={claimable < 1}
+          aria-expanded={armed}
           data-prestige="recruit"
           data-prestige-ready={doubles ? "yes" : "no"}
           className={`prestige-btn order-first w-full min-h-[48px] select-none border-2 px-4 py-2 text-center shadow-[3px_3px_0_0_#000] ${doubles ? "prestige-ready" : ""} ${
@@ -54,6 +57,29 @@ export default function PrestigeBar({ state, onPrestige }) {
             {claimable >= 1 ? `+${claimable} investor${claimable === 1 ? "" : "s"}` : `at ${firstAt}`}
           </span>
         </button>
+        {armed && claimable >= 1 && (
+          <div data-prestige-confirm role="alertdialog" aria-label="Confirm prestige" className="order-first border-2 border-[var(--game-violet)] bg-[var(--game-bg)] p-2">
+            <p className="font-term text-lg leading-6 text-[var(--game-fg)]">
+              Start over with +{claimable} investor{claimable === 1 ? "" : "s"}? Cash, businesses and eras reset; research, badges and investors stay.
+            </p>
+            <div className="mt-2 flex gap-2">
+              <button
+                type="button"
+                data-prestige-go
+                onClick={() => {
+                  disarm();
+                  onPrestige();
+                }}
+                className="min-h-12 flex-1 border-2 border-[var(--game-violet)] bg-[var(--game-violet)] px-2 font-pixel text-[0.55rem] text-black shadow-[3px_3px_0_0_#000]"
+              >
+                YES, PRESTIGE
+              </button>
+              <button type="button" data-prestige-cancel onClick={disarm} className="min-h-12 flex-1 border-2 border-[var(--game-border-strong)] px-2 font-pixel text-[0.55rem] text-[var(--game-muted)]">
+                CANCEL
+              </button>
+            </div>
+          </div>
+        )}
         <div className="prestige-text tabular-nums">
           <h2 className="flex items-center gap-2 font-pixel text-sm text-[var(--game-violet)]">
             INVESTORS <ItemHelp kind="prestige" state={state} name="prestige" />

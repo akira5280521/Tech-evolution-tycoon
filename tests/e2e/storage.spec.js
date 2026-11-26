@@ -46,6 +46,9 @@ test("selling and swapping from the material sheet", async ({ page }) => {
   await tipsOff(page);
   await page.locator("[data-material='copper']").click();
   await page.locator("[data-sell='copper']").click();
+  // Selling asks once (T4 item 37).
+  await expect(page.locator("[data-sell='copper']")).toHaveAttribute("data-sell-armed", "yes");
+  await page.locator("[data-sell='copper']").click();
   await expect.poll(async () => (await saved(page))?.supply?.copper ?? 999).toBe(400);
   await page.locator("[data-swap-target]").selectOption("sand");
   await page.locator("[data-swap='copper']").click();

@@ -823,3 +823,15 @@ html[data-contrast="high"][data-colorblind="on"] {
     transition: none;
   }
 }
+
+/* Full-screen era card (T5 item 44): a short stepped rise, none with reduced motion. */
+@keyframes era-card-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+.era-card-in {
+  animation: era-card-in 0.5s steps(5) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .era-card-in { animation: none; }
+}

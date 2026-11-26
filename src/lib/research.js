@@ -15,6 +15,7 @@ import { companyCaps } from "./company.js";
 import { GENERATIONS } from "./generations.js";
 import { PARTS, benchStock, pushHeadline, readFacilities, serverStock, starterRate } from "./facilities.js";
 import { playerYear } from "./eraYear.js";
+import { AWAY_SHIFTS, awayShifts } from "./empire.js";
 import { calendarYearAt } from "./calendar.js";
 import { RELEASE_MONTH, monthName } from "./releaseMonths.js";
 
@@ -464,6 +465,24 @@ export function buyQueueSlot(state) {
   state.lab = { ...(state.lab || {}), queueSlots: queueSlots(state) + 1 };
   pushHeadline(state, `rd-queue-${quote.slot.id}`, `${companyCaps(state)} R&D: ${quote.slot.name} OPENS A RESEARCH QUEUE SLOT`);
   return { ok: true, slot: quote.slot };
+}
+
+// The next away shift to earn (T4 item 42), with why it can't be bought yet.
+export function awayShiftQuote(state) {
+  const shift = AWAY_SHIFTS[awayShifts(state)];
+  if (!shift) return { ok: false, shift: null, reason: "Every away shift is earned." };
+  if (playerYear(state) < shift.year) return { ok: false, shift, reason: `Opens in ${shift.year}.` };
+  if ((Number(state?.data) || 0) < shift.cost) return { ok: false, shift, reason: `Needs ${shift.cost} R&D points.` };
+  return { ok: true, shift };
+}
+
+export function buyAwayShift(state) {
+  const quote = awayShiftQuote(state);
+  if (!quote.ok) return quote;
+  state.data = Math.max(0, (Number(state.data) || 0) - quote.shift.cost);
+  state.lab = { ...(state.lab || {}), awayShifts: awayShifts(state) + 1 };
+  pushHeadline(state, `rd-away-${quote.shift.id}`, `${companyCaps(state)} R&D: ${quote.shift.name} KEEPS THE PLANT EARNING LONGER`);
+  return { ok: true, shift: quote.shift };
 }
 
 // Why a project can't join the queue, or null. A project whose only lock is

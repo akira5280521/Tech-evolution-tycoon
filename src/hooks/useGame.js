@@ -65,7 +65,7 @@ import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
 import { REBUILD_SECONDS, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants, settleClosedParts, grantStarter } from "@/lib/facilities";
 import { noteHubSeen } from "@/lib/hub";
-import { advanceResearch, buyQueueSlot, fillResearchGaps, grantOwnedResearch, noteCompanyYear, queueResearch, readResearchData, readTechDone, readTechJob, readTechQueue, rescuePunchCardSave, startResearch, unqueueResearch } from "@/lib/research";
+import { advanceResearch, buyAwayShift, buyQueueSlot, fillResearchGaps, grantOwnedResearch, noteCompanyYear, queueResearch, readResearchData, readTechDone, readTechJob, readTechQueue, rescuePunchCardSave, startResearch, unqueueResearch } from "@/lib/research";
 import { readGoalsDone, settleGoals } from "@/lib/goals";
 import { applyOrientation } from "@/lib/orientation";
 import { notesUnseen } from "@/lib/releaseNotes";
@@ -1341,6 +1341,11 @@ export function useGame() {
     },
     buyQueueSlot: () => {
       if (!buyQueueSlot(stateRef.current).ok) return;
+      saveNow();
+      bump();
+    },
+    buyAwayShift: () => {
+      if (!buyAwayShift(stateRef.current).ok) return;
       saveNow();
       bump();
     },

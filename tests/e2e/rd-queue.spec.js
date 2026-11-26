@@ -1,7 +1,7 @@
 // T3 R&D restructure: TECH inside R&D (18, 6, 19), distinct SPECIALTY and LAB
 // tabs (4, 22), Home PC vs server room (57, 52, 60), and the queue (23, 24).
 import { test, expect } from "@playwright/test";
-import { expectClean, open } from "./helpers.js";
+import { expectClean, open, saved } from "./helpers.js";
 import { BUSINESSES } from "../../src/lib/gameConfig.js";
 import { ERA_YEAR } from "../../src/lib/eraYear.js";
 
@@ -102,5 +102,16 @@ test("Research Servers: machines and room equipment tabs, Home PC points to the 
   await expect(page.locator("[data-part='mark1']")).toHaveCount(0);
   await page.locator("[data-server-tab='home']").click();
   await expect(page.locator("[data-server-home]")).toContainText("PC Build Bench");
+  expectClean(seen);
+});
+
+test("AWAY SHIFTS in LAB raise the away cap with R&D points (T4 item 42)", async ({ page }) => {
+  const seen = await open(page, "/research", rdSave(1977));
+  await page.locator("[data-sub-tab='lab']").click();
+  await expect(page.locator("[data-away-cap-now]")).toContainText("up to 24h");
+  await page.locator("[data-action='lab-away-pager']").click();
+  await expect(page.locator("[data-away-shift='pager']")).toContainText("EARNED");
+  await expect(page.locator("[data-away-cap-now]")).toContainText("up to 28h");
+  await expect.poll(async () => (await saved(page))?.lab?.awayShifts ?? null).toBe(1);
   expectClean(seen);
 });

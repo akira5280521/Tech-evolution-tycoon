@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { WEB_VERSION_CODE, WEB_VERSION_NAME } from "@/lib/appVersion";
 import { PREFS_EVENT, readPrefs, writePrefs } from "@/lib/gamePrefs";
 import { applyAudioPrefs } from "@/lib/sfx";
-import { cancelCapNotification, notificationPermission, openNotificationSettings, requestNotifyPermission } from "@/lib/capNotify";
+import { cancelCapNotification, notificationPermission, notifyFailReason, openNotificationSettings, requestNotifyPermission } from "@/lib/capNotify";
 import { achievementsLive, openAchievements } from "@/lib/achievements";
 import { WhatsNewDialog } from "./WhatsNew";
 import { useCloud } from "./CloudSync";
@@ -43,6 +43,9 @@ export function PlayToggles() {
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <button type="button" data-compact onClick={() => set({ compact: !prefs.compact })} className={`${choice} ${off}`}>
           COMPACT ROWS: {prefs.compact ? "ON" : "OFF"}
+        </button>
+        <button type="button" data-collapse-maxed onClick={() => set({ collapseMaxed: !prefs.collapseMaxed })} className={`${choice} ${prefs.collapseMaxed ? on : off}`}>
+          COLLAPSE MAXED: {prefs.collapseMaxed ? "ON" : "OFF"}
         </button>
         <button type="button" data-sound onClick={() => set({ sound: !prefs.sound })} className={`${choice} ${prefs.sound ? on : off}`}>
           SOUND: {prefs.sound ? "ON" : "OFF"}
@@ -130,65 +133,92 @@ export function DisplaySettings() {
           </button>
         ))}
       </div>
+      <p className="mt-3 font-pixel text-[0.5rem] leading-4 text-[var(--game-fg)]">MONITOR DISPLAY</p>
+      <p className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">The picture on facility room monitors. Era-accurate is the default and uses the real phosphor or palette for each unlock.</p>
+      <div className="mt-2 grid grid-cols-2 gap-2" role="group" aria-label="Monitor display">
+        {[
+          ["era", "ERA-ACCURATE"],
+          ["green", "GREEN"],
+          ["amber", "AMBER"],
+          ["color", "COLOR"],
+        ].map(([id, label]) => (
+          <button key={id} type="button" data-monitor-display={id} aria-pressed={prefs.monitorDisplay === id} onClick={() => set({ monitorDisplay: id })} className={`${choice} ${prefs.monitorDisplay === id ? on : off}`}>
+            {label}
+          </button>
+        ))}
+      </div>
       <button type="button" data-contrast onClick={() => set({ contrast: !prefs.contrast })} className={`${choice} mt-3 w-full ${prefs.contrast ? on : off}`}>
         HIGH CONTRAST: {prefs.contrast ? "ON" : "OFF"}
       </button>
+      <button type="button" data-colorblind-toggle onClick={() => set({ colorblind: !prefs.colorblind })} className={`${choice} mt-3 w-full ${prefs.colorblind ? on : off}`}>
+        COLORBLIND COLORS: {prefs.colorblind ? "ON" : "OFF"}
+      </button>
+      <p className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">Good news shows in blue and warnings in orange, in place of green and red.</p>
     </Panel>
   );
 }
 
 export function AwayReminder() {
   const [prefs, set] = usePrefs();
+  const [perm, setPerm] = useState("unknown");
   const [help, setHelp] = useState("");
-  const waiting = useRef(false);
-  const turnOn = async () => {
-    const result = await requestNotifyPermission();
-    if (result === "granted") {
-      waiting.current = false;
-      setHelp("");
-      set({ notifyCap: true });
-      return;
-    }
-    waiting.current = true;
-    set({ notifyCap: false });
-    if (result === "denied") {
-      setHelp("Android isn't showing the allow prompt. Open notification settings, allow notifications for this app, then come back.");
-      return;
-    }
-    setHelp("This install can't post notifications yet.");
+  const anyOn = (next) => !!(next.notifyCap || next.notifyResearch || next.notifyBins);
+  const explain = (status) => {
+    if (status === "granted") return "";
+    if (status === "denied") return "Android is blocking notifications for this app. Your choice is saved; allow notifications in settings and they start working.";
+    const why = notifyFailReason();
+    return `This install can't post notifications yet${why ? ` (${why})` : ""}. Your choice is saved.`;
   };
-  const toggle = () => {
-    if (prefs.notifyCap) {
-      waiting.current = false;
-      setHelp("");
-      set({ notifyCap: false });
-      void cancelCapNotification();
+  // The switch always saves. Android's permission is asked for separately, so
+  // a missing or slow prompt can't leave the switch stuck on OFF.
+  const toggle = (key) => {
+    const next = { [key]: !prefs[key] };
+    const after = set(next);
+    if (!next[key]) {
+      if (!anyOn(after)) {
+        void cancelCapNotification();
+        setHelp("");
+      }
       return;
     }
-    void turnOn();
+    void requestNotifyPermission().then((status) => {
+      setPerm(status);
+      setHelp(explain(status));
+    });
   };
   useEffect(() => {
-    const onShow = () => {
-      if (document.hidden || !waiting.current) return;
+    const check = () => {
+      if (document.hidden) return;
       void notificationPermission().then((status) => {
-        if (status !== "granted") return;
-        waiting.current = false;
-        setHelp("");
-        set({ notifyCap: true });
+        setPerm(status);
+        setHelp(anyOn(readPrefs()) ? explain(status) : "");
       });
     };
-    document.addEventListener("visibilitychange", onShow);
-    return () => document.removeEventListener("visibilitychange", onShow);
-  }, [set]);
+    check();
+    document.addEventListener("visibilitychange", check);
+    return () => document.removeEventListener("visibilitychange", check);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <Panel>
-      <h2 className="font-pixel text-[0.6rem]">AWAY TIME</h2>
+      <h2 className="font-pixel text-[0.6rem]">NOTIFICATIONS</h2>
       <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
-        Optional. A notification when managers hit the away-time cap. Off unless you turn it on. Opening the game clears the reminder.
+        Optional. Reminders when away time fills, research finishes, or bins are full. Off unless you turn them on. Opening the game clears them. Each kind notifies at most once every 30 minutes.
       </p>
-      <button type="button" data-notify-cap onClick={toggle} className={`${choice} mt-3 w-full ${prefs.notifyCap ? on : off}`}>
+      <button type="button" data-notify-cap onClick={() => toggle("notifyCap")} className={`${choice} mt-3 w-full ${prefs.notifyCap ? on : off}`}>
         CAP REMINDER: {prefs.notifyCap ? "ON" : "OFF"}
       </button>
+      <button type="button" data-notify-research onClick={() => toggle("notifyResearch")} className={`${choice} mt-2 w-full ${prefs.notifyResearch ? on : off}`}>
+        RESEARCH DONE: {prefs.notifyResearch ? "ON" : "OFF"}
+      </button>
+      <button type="button" data-notify-bins onClick={() => toggle("notifyBins")} className={`${choice} mt-2 w-full ${prefs.notifyBins ? on : off}`}>
+        BINS FULL: {prefs.notifyBins ? "ON" : "OFF"}
+      </button>
+      {anyOn(prefs) && perm !== "unknown" ? (
+        <p data-notify-perm={perm} className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
+          Android permission: {perm === "granted" ? "ALLOWED" : "NOT ALLOWED"}
+        </p>
+      ) : null}
       {help ? (
         <div className="mt-2">
           <p data-notify-help className="font-term text-base leading-5 text-[var(--game-fg)]">{help}</p>

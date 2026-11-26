@@ -76,6 +76,7 @@ export const ERA_FACTS = {
   paper: "A paper mill grinds logs to pulp and presses it into sheets; the stiff card stock is what punch cards were cut from.",
   loom: "The Jacquard loom of 1804 read a chain of punched cards to pick which threads to lift: the first machine run by stored instructions.",
   punchcards: "Punched cards and electric tabulators counted the 1890 US census in a fraction of the time the 1880 count took.",
+  radios: "Home radios of the 1920s used bright-emitter triodes such as the UX-201A; Arcea's Radiola and Stillwater Kett's Model 20 put a parlour set in reach of ordinary families.",
   relay: "Relay computers of the early 1940s did arithmetic by clicking thousands of telephone relays, a few operations a second.",
   sand: "Silica sand is mostly silicon dioxide: the raw stuff of glass, and much later of silicon chips.",
   copper: "Copper carries current better than any common metal, so it became the wire inside almost every machine.",
@@ -324,7 +325,7 @@ function topBarInfo(state, { tech, rigs }) {
     text: "Tap the buy-amount button to change how many one BUY gets: X1, X10, X25, X50, X75, X100, then MAX.",
     rows: [
       { label: "TECH", text: tech ? "The tech timeline: timed research projects paid with R&D points. CPU and GPU projects unlock new chips." : LOCKED_TEXT },
-      { label: HUB_LABEL, text: rigs ? "Your hardware menu. Its RIGS section has the research machines that make R&D points (a punch-card machine from the start, servers from Mainframes), and later a mine and a training cluster that pay cash." : LOCKED_TEXT },
+      { label: HUB_LABEL, text: rigs ? "Your hardware menu. It lists every facility: RESEARCH SERVERS is open from the start (a punch-card machine, then servers from Mainframes). The PC build bench, Bitbark mine and AI training cluster stay listed as locked until their era." : LOCKED_TEXT },
     ],
   };
 }
@@ -357,7 +358,7 @@ function researchInfo(state, id) {
   }
   const opens = researchUnlocks(id);
   let effect;
-  const opensText = opens.length ? `It opens the ${opens.map((p) => p.name).join(" and the ")} on RIGS.` : "";
+  const opensText = opens.length ? `It opens the ${opens.map((p) => p.name).join(" and the ")} in HQ.` : "";
   if (gen && gen.index > 0) {
     effect = `Finishing it switches ${row.name} to this chip once you own ${gen.need}: pay +${Math.round(gen.index * GENERATION_BONUS * 100)}% over the first chip.`;
   } else if (opens.length) {
@@ -562,7 +563,7 @@ function milestoneInfo(state, id) {
 function rdInfo(state) {
   return {
     title: "R&D POINTS",
-    text: `The one research currency, made only by research machines in ${HUB_LABEL} > RIGS: ${rate(serverOutput(state).perSecond)} a second now, at half rate while away. Spend them on research, the TECH timeline and lab projects; they're never lost.`,
+    text: `The one research currency, made only by research machines in ${HUB_LABEL} > RESEARCH SERVERS: ${rate(serverOutput(state).perSecond)} a second now, at half rate while away. Spend them on research, the TECH timeline and lab projects; they're never lost.`,
     rows: serverOutput(state).perSecond > 0 ? [{ label: "AWAY", text: awayLine(state, "the servers") }] : [],
   };
 }

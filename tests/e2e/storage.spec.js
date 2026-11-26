@@ -52,3 +52,29 @@ test("selling and swapping from the material sheet", async ({ page }) => {
   await expect.poll(async () => (await saved(page))?.supply?.sand || 0).toBeGreaterThan(0);
   expectClean(seen);
 });
+
+test("the material sheet keeps CLOSE and BINS above the tab bar", async ({ page }) => {
+  await page.setViewportSize({ width: 412, height: 915 });
+  const base = SAVES.mid;
+  const save = { ...base, lastSeen: Date.now(), cash: 1e15, bestEra: 30, supply: { ...(base.supply || {}), silicon: 2000 } };
+  const seen = await open(page, "/", save);
+  await tipsOff(page);
+  await page.locator("[data-material='silicon']").click();
+  const sheet = page.locator("[data-storage-sheet='silicon']");
+  await expect(sheet).toBeVisible();
+  const close = sheet.locator("[data-storage-close]");
+  const bins = sheet.locator("[data-storage-upgrade]");
+  await expect(close).toBeVisible();
+  await expect(bins).toBeVisible();
+  const closeBox = await close.boundingBox();
+  const binsBox = await bins.boundingBox();
+  const navBox = await page.locator("nav[aria-label='Main navigation']").boundingBox();
+  expect(closeBox, "CLOSE should be on screen").toBeTruthy();
+  expect(binsBox, "BINS should be on screen").toBeTruthy();
+  expect(navBox, "tab bar should be on screen").toBeTruthy();
+  expect(closeBox.y + closeBox.height).toBeLessThanOrEqual(navBox.y + 2);
+  expect(binsBox.y + binsBox.height).toBeLessThanOrEqual(navBox.y + 2);
+  expect(closeBox.y).toBeGreaterThanOrEqual(0);
+  expectClean(seen);
+});
+

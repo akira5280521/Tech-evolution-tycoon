@@ -1,4 +1,5 @@
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { FlaskConical } from "lucide-react";
 import { BUSINESSES, RESEARCH_MS, count, investorsFor, money } from "@/lib/gameConfig";
 import { SPECIALTIES, canCommit, specialtySlots } from "@/lib/empire";
@@ -15,41 +16,58 @@ import ScreenShell, { GoldButton, Panel, ProgressBar } from "./chrome";
 import { timedProgress } from "@/lib/progress";
 import { CheckForUpdatesButton } from "./UpdateNotice";
 import SaveBackup from "./SaveBackup";
-import MuseumPage from "./MuseumPage";
 import CopyStats from "./CopyStats";
+import { CompanyNameSetting } from "./CompanyName";
+import { companyName } from "@/lib/company";
 import LabProjects from "./LabProjects";
 import AccountPanel from "./AccountPanel";
 import { HelpTip, ItemHelp } from "./HintSheet";
 import { GLOSSARY, GLOSSARY_ORDER } from "@/lib/glossary";
 import { AchievementsButton, AwayReminder, DisplaySettings, FeedbackButton, PlayToggles, ResetProgress, WhatsNewButton } from "./SettingsControls";
 import { HUB_LABEL } from "@/lib/hub";
+import { HOWTO_GUIDES, guideLocked } from "@/lib/howto";
+import { labSummary, specialtySummary } from "@/lib/rdSummary";
 
 const TABS = [
   { id: "settings", label: "SETTINGS", title: "SETTINGS" },
   { id: "howto", label: "HOW TO PLAY", title: "HOW TO PLAY" },
   { id: "stats", label: "STATS", title: "STATS" },
   { id: "badges", label: "BADGES", title: "BADGES" },
-  { id: "museum", label: "MUSEUM", title: "MUSEUM" },
 ];
+
+const tabBtn = (active, id) =>
+  `min-h-11 border-2 px-2 py-2 text-center font-pixel text-[0.5rem] leading-4 shadow-[3px_3px_0_0_#000] ${
+    active === id
+      ? "border-[var(--game-accent)] text-[var(--game-accent)]"
+      : "border-[var(--game-border-strong)] text-[var(--game-muted)]"
+  }`;
 
 export function MoreLinks({ active }) {
   const navigate = useNavigate();
+  const go = (id) => navigate({ to: "/more", hash: id });
   return (
-    <div data-more-tabs className="grid grid-cols-2 gap-2 min-[480px]:grid-cols-3">
-      {TABS.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          onClick={() => navigate({ to: "/more", hash: tab.id })}
-          className={`min-h-11 border-2 px-2 py-2 text-center font-pixel text-[0.5rem] leading-4 shadow-[3px_3px_0_0_#000] ${
-            active === tab.id
-              ? "border-[var(--game-accent)] text-[var(--game-accent)]"
-              : "border-[var(--game-border-strong)] text-[var(--game-muted)]"
-          }`}
-        >
-          {tab.label}
-        </button>
-      ))}
+    <div data-more-tabs className="space-y-3">
+      <div>
+        <p data-more-group="game" className="mb-1 font-pixel text-[0.5rem] text-[var(--game-muted)]">GAME</p>
+        <div className="grid grid-cols-2 gap-2 min-[480px]:grid-cols-3">
+          <button type="button" onClick={() => go("stats")} className={tabBtn(active, "stats")}>STATS</button>
+          <button type="button" onClick={() => go("badges")} className={tabBtn(active, "badges")}>BADGES</button>
+          <button type="button" data-more-achievements disabled className={`${tabBtn(active, "achievements")} opacity-60`}>ACHIEVEMENTS · COMING SOON</button>
+          <Link to="/runs" data-more-runs className={`flex items-center justify-center ${tabBtn(active, "runs")}`}>RUNS</Link>
+        </div>
+      </div>
+      <div>
+        <p data-more-group="help" className="mb-1 font-pixel text-[0.5rem] text-[var(--game-muted)]">HELP</p>
+        <div className="grid grid-cols-2 gap-2 min-[480px]:grid-cols-3">
+          <button type="button" onClick={() => go("howto")} className={tabBtn(active, "howto")}>HOW TO PLAY</button>
+        </div>
+      </div>
+      <div>
+        <p data-more-group="settings" className="mb-1 font-pixel text-[0.5rem] text-[var(--game-muted)]">SETTINGS</p>
+        <div className="grid grid-cols-2 gap-2 min-[480px]:grid-cols-3">
+          <button type="button" onClick={() => go("settings")} className={tabBtn(active, "settings")}>SETTINGS</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -58,18 +76,24 @@ export default function MorePage() {
   const location = useLocation();
   const hash = (location.hash || "#settings").replace("#", "");
   const tab = TABS.some((entry) => entry.id === hash) ? hash : "settings";
-  const { state, reset, setOrientation, touchBriefing, exportSave, importSave, tutorialReplay, setTipsOff } = useGameState();
+  const { state, reset, setOrientation, touchBriefing, exportSave, importSave, tutorialReplay, setTipsOff, nameCompany } = useGameState();
   const navigate = useNavigate();
   const data = getSaveData();
 
   if (tab === "badges") return <BadgesPage top={<MoreLinks active="badges" />} />;
-  if (tab === "museum") return <MuseumPage top={<MoreLinks active="museum" />} />;
+  if (hash === "museum") {
+    navigate({ to: "/museum", replace: true });
+    return null;
+  }
 
   return (
     <ScreenShell title={TABS.find((entry) => entry.id === tab)?.title || "SETTINGS"} subtitle="">
       <MoreLinks active={tab} />
       {tab === "settings" && (
         <div className="flex min-h-[60vh] flex-col gap-3">
+          <Panel>
+            <CompanyNameSetting state={state} onName={nameCompany} />
+          </Panel>
           <PlayToggles />
           <DisplaySettings />
           <OrientationSetting value={state.orientation || "auto"} onChange={setOrientation} />
@@ -103,7 +127,7 @@ export default function MorePage() {
               </GoldButton>
             </div>
           </Panel>
-          <HowTo tipsOff={!!state.tutorial?.tipsOff} onTips={setTipsOff} />
+          <HowTo state={state} tipsOff={!!state.tutorial?.tipsOff} onTips={setTipsOff} />
         </>
       )}
       {tab === "stats" && <Stats state={state} data={data} />}
@@ -144,7 +168,7 @@ const HOW_TO = [
     id: "goal",
     title: "THE GOAL",
     lines: [
-      "You run a company of businesses, from a timber camp onward. ERA at the top shows how many you've opened.",
+      "You run a company of businesses, from a timber camp onward. The decade at the top is the era you have reached.",
       "Make cash, spend it to grow, and open the next business. Much later you can prestige and start over stronger.",
     ],
   },
@@ -154,9 +178,20 @@ const HOW_TO = [
     lines: [
       "Tap a business's picture to run it. The bar fills, then it pays you cash.",
       "Tap BUY to get another one. BUY spends cash, the big CASH number. What you earned this run is not cash.",
-      "The buy-amount button sets how many one BUY tap gets. Tap it to cycle X1, X10, X25, X50, X75, X100, then MAX.",
+      "The buy-amount button at the top, or the slim bar at the bottom of the GAME list (×1, ×10, ×100, Max), sets how many one BUY tap gets. Both use the same setting, and the game remembers it.",
       "Own 10 of a business to open the next one. Each era also needs some earnings this run, and more with more investors and forks.",
       "The late eras need a TECH project first, and from Mainframes on, opening an era the first time uses some material when you tap OPEN ERA.",
+    ],
+  },
+  {
+    id: "navigation",
+    title: "FINDING YOUR WAY",
+    lines: [
+      "Chips at the top of the GAME list jump to an unlocked era. A grey ??? chip is the next era you have not opened yet.",
+      "A short Next line under the cash box points at the most useful next goal. Tap it to go there.",
+      "A fully upgraded business with a manager on shrinks to one line (icon, name, count, income). Tap the line to expand it, or turn COLLAPSE MAXED off in Settings.",
+      "The R&D tab has Specialty and Lab Projects sub-tabs; each section can be collapsed, and a short summary stays visible. A green dot on BOOST, R&D, TECH or an HQ card means something there is ready. It clears when you open that page.",
+      "MORE is grouped into Game, Help and Settings. On TECH and in the Hardware Museum, the search box filters by name and model as you type; later-era TECH projects and locked museum pieces stay hidden as ??? and will not match a name search.",
     ],
   },
   {
@@ -188,7 +223,7 @@ const HOW_TO = [
     id: "buying",
     title: "BUYING FASTER",
     lines: [
-      "X1 buys one business per tap. X10, X25, X50, X75 and X100 buy that many. MAX buys as many as your cash allows.",
+      "X1 buys one business per tap. X10, X25, X50, X75 and X100 buy that many. MAX buys as many as your cash allows. The bar at the bottom of the GAME list jumps to ×1, ×10, ×100 or Max; the top BUY AMOUNT button still cycles every amount, including the in-between ones.",
       "Milestones come at 25, 50, 75, 100, 150 and 200 of one business. At 25, 50 and 100 it runs twice as fast; at 75 and 150 it pays twice as much, and at 200 three times as much.",
     ],
   },
@@ -220,24 +255,24 @@ const HOW_TO = [
     id: "rd",
     title: "R&D POINTS",
     lines: [
-      `R&D points are the one research currency, made only by research machines in ${HUB_LABEL} (beside TECH), then RIGS: a cheap punch-card multiplier from the start, then research servers from Mainframes. They earn at half rate while the game is closed; the servers only bank what their disks hold (1 hour of output, plus another hour per TB of disk), while the punch-card machine banks all day.`,
-      "Spend them on the R&D tab (specialties and lab projects) and on the TECH timeline. They are never lost, even when you prestige.",
+      `R&D points are the one research currency, made only by research machines in ${HUB_LABEL} (beside TECH), then RESEARCH SERVERS: a cheap punch-card multiplier from the start, then research servers from Mainframes. They earn at half rate while the game is closed; the servers only bank what their disks hold (1 hour of output, plus another hour per TB of disk), while the punch-card machine banks all day.`,
+      "Spend them on the R&D tab (specialties and lab projects; use the sub-tabs at the top, or collapse a section to see a short summary) and on the TECH timeline. They are never lost, even when you prestige.",
     ],
   },
   {
     id: "tech",
     title: "THE TECH TIMELINE",
     lines: [
-      "TECH (beside the buy button) lists real chips, memory, storage, cooling, power and networking in the order they came out. One project runs at a time and keeps going while the app is closed.",
+      "TECH (beside the buy button) lists the chips, memory, storage, cooling, power and networking of the eras you have reached, in the order they came out. Later eras stay hidden as ??? and will not match a name search. One project runs at a time and keeps going while the app is closed.",
       "\"Requires 1985\" means your company hasn't reached that year yet. \"Research X first\" means finish the project before it. Processor and graphics projects unlock each chip generation's extra pay. Finished research is kept when you prestige.",
     ],
   },
   {
     id: "facilities",
-    title: `FACILITIES (${HUB_LABEL} > RIGS)`,
+    title: `FACILITIES (${HUB_LABEL})`,
     lines: [
-      "Research servers open with Mainframes and make R&D points. Newer machines and parts open in their real year once you research them on TECH. With AI Accelerators, the Bitbark mine and the AI training cluster add a small extra income.",
-      "Buy parts for each plant. A plant runs slower when its power or cooling can't keep up with its cards or racks, and it tells you what to add next. Parts are lost when you prestige.",
+      "HQ (beside TECH) is the menu for every area: Research Servers, the PC Build Bench, the Bitbark Mine, the training cluster, and the Hardware Museum. Tap a card to open that area.",
+      "Each plant has its own page. Research servers make R&D points; later plants add a little income. Parts need their TECH project, and are lost when you prestige.",
     ],
   },
   {
@@ -262,7 +297,7 @@ const HOW_TO = [
   },
 ];
 
-function HowTo({ tipsOff, onTips }) {
+function HowTo({ state, tipsOff, onTips }) {
   return (
     <>
       {HOW_TO.map((section, i) => (
@@ -278,6 +313,26 @@ function HowTo({ tipsOff, onTips }) {
           </ul>
         </details>
       ))}
+      {HOWTO_GUIDES.map((guide) => {
+        const locked = guideLocked(state, guide);
+        return (
+          <details key={guide.id} data-howto={guide.id} data-howto-locked={locked ? "" : undefined} className="howto-section border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]">
+            <summary className={`flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 ${locked ? "text-[var(--game-dim)]" : "text-[var(--game-accent)]"}`}>
+              {locked ? "??? " + guide.title : guide.title}
+              <span aria-hidden="true" className="howto-caret shrink-0 text-[var(--game-muted)]">+</span>
+            </summary>
+            {locked ? (
+              <p data-howto-need className="px-3 pb-3 font-pixel text-[0.5rem] leading-4 text-[var(--game-dim)]">Unlocks with {guide.unlocks}. COMING SOON</p>
+            ) : (
+              <ul className="space-y-2 px-3 pb-3">
+                {guide.lines.map((line) => (
+                  <li key={line} className="font-term text-lg leading-6">{line}</li>
+                ))}
+              </ul>
+            )}
+          </details>
+        );
+      })}
       <details data-howto="words" className="howto-section border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]">
         <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">
           WORDS TO KNOW
@@ -317,6 +372,7 @@ function Stats({ state, data }) {
   const challengeName = state.challenge ? (state.challenge.id === "glass" ? "GLASS CEILING" : state.challenge.id === "noboss" ? "NO BOSSES" : "SPEEDRUN") : null;
   return (
     <>
+      <p data-stats-company className="break-words font-pixel text-[0.6rem] text-[var(--game-accent)]">{companyName(state).toUpperCase()}</p>
       <AnalyticsPanel data={data} />
       <CopyStats state={state} />
       <Panel>
@@ -379,8 +435,10 @@ function Stats({ state, data }) {
 
 // The Research Lab, on its own tab in the main navigation.
 export function ResearchPage() {
-  const { state, chooseSpecialty, runLabProject } = useGameState();
+  const { state, chooseSpecialty, runLabProject, markReadyView } = useGameState();
+  useEffect(() => { markReadyView?.("research"); }, [markReadyView, state.data, state.researchJob, state.lab, state.specialties]);
   return (
+
     <ScreenShell title="RESEARCH" subtitle="">
       <ResearchBody state={state} onCommit={chooseSpecialty} onLab={runLabProject} />
     </ScreenShell>
@@ -388,20 +446,69 @@ export function ResearchPage() {
 }
 
 export function ResearchBody({ state, onCommit, onLab }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const specialtyRef = useRef(null);
+  const labRef = useRef(null);
+  useEffect(() => {
+    if (specialtyRef.current) specialtyRef.current.open = true;
+    if (labRef.current) labRef.current.open = true;
+  }, []);
+  useEffect(() => {
+    const hash = (location.hash || "").replace("#", "");
+    if (hash !== "specialty" && hash !== "lab") return undefined;
+    const el = hash === "lab" ? labRef.current : specialtyRef.current;
+    if (el) el.open = true;
+    const timer = setTimeout(() => el?.scrollIntoView({ block: "start" }), 50);
+    return () => clearTimeout(timer);
+  }, [location.hash]);
+  const pickTab = (id) => {
+    navigate({ to: "/research", hash: id, replace: true });
+  };
   const rate = serverOutput(state).perSecond;
   const slots = specialtySlots(state);
   const picked = state.specialties || [];
   return (
     <>
+      <div data-rd-tabs className="grid grid-cols-2 gap-2">
+        {[
+          ["specialty", "SPECIALTY"],
+          ["lab", "LAB PROJECTS"],
+        ].map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            data-rd-tab={id}
+            onClick={() => pickTab(id)}
+            className={`min-h-11 border-2 px-2 font-pixel text-[0.55rem] shadow-[3px_3px_0_0_#000] ${
+              (location.hash || "").replace("#", "") === id
+                ? "border-[var(--game-accent)] text-[var(--game-accent)]"
+                : "border-[var(--game-border-strong)] text-[var(--game-muted)]"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
       <Panel>
         <p className="flex items-center gap-2 font-pixel text-[0.55rem] text-[var(--game-muted)]">
           R&amp;D POINTS <ItemHelp kind="rd" state={state} name="R&D points" />
         </p>
         <p className="font-term text-5xl leading-none text-[var(--game-success)]">{(state.data || 0).toFixed(1)}</p>
         <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">
-          +{rate.toFixed(rate > 0 && rate < 0.1 ? 3 : 2)} a second from your research machines in {HUB_LABEL} &gt; RIGS. R&D points are never lost, even when you prestige.
+          +{rate.toFixed(rate > 0 && rate < 0.1 ? 3 : 2)} a second from your research machines in {HUB_LABEL} &gt; RESEARCH SERVERS. R&D points are never lost, even when you prestige.
         </p>
       </Panel>
+      <details
+        ref={specialtyRef}
+        data-rd-section="specialty"
+        defaultOpen
+        className="border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]"
+      >
+        <summary data-rd-toggle="specialty" className="flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">
+          COMPANY SPECIALTY
+          <span data-rd-summary="specialty" className="font-term text-base text-[var(--game-muted)]">{specialtySummary(state)}</span>
+        </summary>
       <Panel>
         <h2 className="flex items-center gap-2 font-pixel text-[0.7rem]">
           <FlaskConical className="h-4 w-4 text-[var(--game-accent)]" aria-hidden="true" />
@@ -443,7 +550,21 @@ export function ResearchBody({ state, onCommit, onLab }) {
           );
         })}
       </Panel>
-      {onLab && <LabProjects state={state} onRun={onLab} />}
+      </details>
+      {onLab && (
+        <details
+          ref={labRef}
+          data-rd-section="lab"
+          defaultOpen
+          className="border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]"
+        >
+          <summary data-rd-toggle="lab" className="flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">
+            LAB PROJECTS
+            <span data-rd-summary="lab" className="font-term text-base text-[var(--game-muted)]">{labSummary(state)}</span>
+          </summary>
+          <LabProjects state={state} onRun={onLab} />
+        </details>
+      )}
     </>
   );
 }

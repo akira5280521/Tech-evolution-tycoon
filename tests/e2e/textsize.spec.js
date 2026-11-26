@@ -21,7 +21,7 @@ for (const size of ["large", "xl"]) {
           const out = [];
           if (document.documentElement.scrollWidth > innerWidth + 1) out.push(`page is ${document.documentElement.scrollWidth}px wide`);
           for (const el of document.querySelectorAll("button, a, h1, h2, h3, [data-help-sheet] p")) {
-            if (el.closest("[aria-hidden='true'], [data-ticker], .marquee")) continue;
+            if (el.closest("[aria-hidden='true'], [data-ticker], .marquee, .museum-chip-row, [data-era-chips]")) continue;
             const r = el.getBoundingClientRect();
             if (r.width === 0 || r.height === 0) continue;
             const style = getComputedStyle(el);
@@ -56,7 +56,7 @@ test("xl text on a small phone: tip and help buttons stay reachable", async ({ p
   await page.setViewportSize({ width: 320, height: 568 });
   const problems = [];
   await open(page, "/tech", "late", { extra: { [PREFS]: JSON.stringify({ textSize: "xl" }) } });
-  for (const path of ["/tech", "/rigs", "/facilities", "/boost", "/board", "/runs", "/research", "/"]) {
+  for (const path of ["/tech", "/rigs", "/facilities/servers", "/boost", "/board", "/runs", "/research", "/"]) {
     await page.goto(path);
     await page.waitForTimeout(600);
     if (await page.locator("[data-tip]").count()) {

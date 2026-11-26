@@ -2,7 +2,7 @@
 // strong runs needing more. Eras already open stay open.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { BUSINESSES, ERA_EARN, ERA_GATE, eraEarnNeed, eraNeeds, eraOpen, runBonus } from "../../src/lib/gameConfig.js";
+import { BUSINESSES, ERA_EARN, ERA_GATE, eraDecadeLabel, eraEarnNeed, eraNeeds, eraOpen, eraYear, reachedEraLabel, runBonus } from "../../src/lib/gameConfig.js";
 import { migrateSave } from "../../src/lib/gameSave.js";
 
 const gated = BUSINESSES.findIndex((b, i) => i > 0 && ERA_EARN[b.id] > 0);
@@ -130,4 +130,48 @@ test("the first eras need only 10 of the one before, so the tutorial is unchange
   const paper = BUSINESSES.findIndex((b) => b.id === "paper");
   const s = { lifetime: 0, biz: BUSINESSES.map((_, i) => ({ owned: i === 0 ? 10 : 0 })) };
   assert.ok(eraOpen(s, paper));
+});
+
+test("dated eras become a compact decade, and material rows use the next dated era", () => {
+  const glass = BUSINESSES.findIndex((b) => b.id === "glass");
+  const radios = BUSINESSES.findIndex((b) => b.id === "radios");
+  const tubes = BUSINESSES.findIndex((b) => b.id === "tubes");
+  const relay = BUSINESSES.findIndex((b) => b.id === "relay");
+  const timber = BUSINESSES.findIndex((b) => b.id === "timber");
+  const loom = BUSINESSES.findIndex((b) => b.id === "loom");
+  const phones = BUSINESSES.findIndex((b) => b.id === "phones");
+  assert.equal(glass + 1, 7, "Glassworks is era 7, feeding Radio Valves");
+  assert.equal(radios + 1, 9, "Radio Valves is era 9");
+  assert.ok(radios > BUSINESSES.findIndex((b) => b.id === "punchcards"));
+  assert.ok(radios < relay && relay < tubes);
+  assert.equal(eraYear(BUSINESSES[radios]), 1920);
+  assert.equal(eraYear(BUSINESSES[tubes]), 1946);
+  assert.equal(eraYear(BUSINESSES[glass]), null);
+  assert.equal(eraDecadeLabel(glass), "1920s");
+  assert.equal(eraDecadeLabel(radios), "1920s");
+  assert.equal(eraDecadeLabel(relay), "1940s");
+  assert.equal(eraDecadeLabel(tubes), "1940s");
+  assert.equal(eraDecadeLabel(timber), "1800s");
+  assert.equal(eraDecadeLabel(loom), "1800s");
+  assert.equal(eraDecadeLabel(phones), "2000s");
+});
+
+test("the header label follows the newest era the player owns", () => {
+  const glass = BUSINESSES.findIndex((b) => b.id === "glass");
+  const phones = BUSINESSES.findIndex((b) => b.id === "phones");
+  const empty = { biz: BUSINESSES.map((b) => ({ id: b.id, owned: 0 })) };
+  assert.equal(reachedEraLabel(empty), "1800s");
+  const atGlass = { biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: i <= glass ? 1 : 0 })) };
+  assert.equal(reachedEraLabel(atGlass), "1920s");
+  const atPhones = { biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: i === phones ? 1 : 0 })) };
+  assert.equal(reachedEraLabel(atPhones), "2000s");
+});
+
+test("the Superclusters earn gate is hours, not days, at a late run's income (#51)", () => {
+  // The 0.0.30 tester: $265.45Qi needed at 5.8e18 base means a run bonus near 21.3.
+  const bonus = (265.45e18 / 5.8e18) ** (1 / 1.25);
+  const need = ERA_EARN.supercluster * bonus ** 1.25;
+  const hours = need / 713e12 / 3600;
+  assert.ok(hours < 12, `supercluster gate takes ${hours.toFixed(1)} h at $713T/s`);
+  assert.ok(ERA_EARN.supercluster > ERA_EARN.chatbots, "still more than Chatbots");
 });

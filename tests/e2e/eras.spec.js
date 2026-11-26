@@ -68,12 +68,12 @@ test("OPEN ERA takes the material only when tapped, and opens the era", async ({
 
 test("an era being set up opens when its bar fills, with a toast", async ({ page }) => {
   const now = Date.now();
-  const seen = await open(page, "/", shortOf("cpu", { techDone: [], erasPaid: ["cpu"], eraBuild: { id: "cpu", startedAt: now - 33_000, readyAt: now + 2500 } }));
+  const seen = await open(page, "/", shortOf("cpu", { techDone: [], erasPaid: ["cpu"], eraBuild: { id: "cpu", startedAt: now - 25_000, readyAt: now + 10_000 }, nextDilemmaAt: now + 9e9 }));
   await tipsOff(page);
   const bar = page.locator("[data-era-build='cpu']");
   await bar.scrollIntoViewIfNeeded();
   await expect(bar).toBeVisible();
-  await expect(page.getByText("Microprocessors is open")).toBeVisible({ timeout: 8000 });
+  await expect(page.getByText("Microprocessors is open")).toBeVisible({ timeout: 20_000 });
   await expect(bar).toHaveCount(0);
   await expect.poll(async () => page.evaluate(() => JSON.parse(localStorage.getItem("pc-tycoon-save-v1")).erasOpened || [])).toContain("cpu");
   expectClean(seen);

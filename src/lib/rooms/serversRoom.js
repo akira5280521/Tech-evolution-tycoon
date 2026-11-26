@@ -305,9 +305,9 @@ export const SERVERS_ROOM = {
       z: 30,
       unlockId: "tab601",
       variants: [
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 188, "y": 90, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 1, "facilityId": "servers", "stageId": "era-1930s-start"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 176, "y": 84, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 1, "facilityId": "servers", "stageId": "era-1930s-mid"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 108, "y": 84, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 1, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 193, "y": 102, "w": 42, "h": 51, "condition": {"partId": "tab601", "minParts": 1, "facilityId": "servers", "stageId": "era-1930s-start"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 181, "y": 96, "w": 42, "h": 51, "condition": {"partId": "tab601", "minParts": 1, "facilityId": "servers", "stageId": "era-1930s-mid"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 113, "y": 96, "w": 42, "h": 51, "condition": {"partId": "tab601", "minParts": 1, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
       ],
     },
     {
@@ -316,8 +316,8 @@ export const SERVERS_ROOM = {
       z: 30,
       unlockId: "tab601",
       variants: [
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 212, "y": 84, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 2, "facilityId": "servers", "stageId": "era-1930s-mid"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 156, "y": 84, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 2, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 217, "y": 96, "w": 42, "h": 51, "condition": {"partId": "tab601", "minParts": 2, "facilityId": "servers", "stageId": "era-1930s-mid"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 161, "y": 96, "w": 42, "h": 51, "condition": {"partId": "tab601", "minParts": 2, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
       ],
     },
     {
@@ -326,8 +326,8 @@ export const SERVERS_ROOM = {
       z: 30,
       unlockId: "tab601",
       variants: [
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 198, "y": 90, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 3, "facilityId": "servers", "stageId": "era-1930s-mid"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 204, "y": 84, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 3, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 203, "y": 102, "w": 42, "h": 51, "condition": {"partId": "tab601", "minParts": 3, "facilityId": "servers", "stageId": "era-1930s-mid"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 209, "y": 96, "w": 42, "h": 51, "condition": {"partId": "tab601", "minParts": 3, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
       ],
     },
     {
@@ -336,7 +336,7 @@ export const SERVERS_ROOM = {
       z: 30,
       unlockId: "tab601",
       variants: [
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 126, "y": 90, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 4, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 131, "y": 102, "w": 42, "h": 51, "condition": {"partId": "tab601", "minParts": 4, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
       ],
     },
     {
@@ -345,7 +345,7 @@ export const SERVERS_ROOM = {
       z: 30,
       unlockId: "tab601",
       variants: [
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 172, "y": 90, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 5, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 177, "y": 102, "w": 42, "h": 51, "condition": {"partId": "tab601", "minParts": 5, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
       ],
     },
     {
@@ -354,7 +354,7 @@ export const SERVERS_ROOM = {
       z: 30,
       unlockId: "tab601",
       variants: [
-        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 210, "y": 90, "w": 52, "h": 63, "condition": {"partId": "tab601", "minParts": 6, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
+        {"sprite": "/rooms/servers/sprites/tab601.png", "unlockId": "tab601", "x": 215, "y": 102, "w": 42, "h": 51, "condition": {"partId": "tab601", "minParts": 6, "facilityId": "servers", "stageId": "era-1930s-maxed"}, "strip": "/rooms/servers/sprites/tab601-strip.png", "animation": {"frames": 24, "durationMs": 70, "kind": "strip"}},
       ],
     },
     {
@@ -674,14 +674,6 @@ export const SERVERS_ROOM = {
       variants: [
         {"sprite": "/rooms/servers/sprites/filing-short.png", "x": 75, "y": 105, "w": 30, "h": 43, "condition": {"stageId": "era-1930s-mid"}},
         {"sprite": "/rooms/servers/sprites/filing-short.png", "x": 75, "y": 105, "w": 30, "h": 43, "condition": {"stageId": "era-1930s-maxed"}},
-      ],
-    },
-    {
-      id: "desk-1930s",
-      flavor: true,
-      z: 12,
-      variants: [
-        {"sprite": "/rooms/servers/sprites/desk-1930s.png", "x": 99, "y": 83, "w": 80, "h": 65, "condition": {"stageId": "era-1930s-mid"}},
       ],
     },
     {

@@ -6,6 +6,7 @@ import { BUSINESSES } from "../../src/lib/gameConfig.js";
 import { ERA_YEAR } from "../../src/lib/eraYear.js";
 import { SAVE_VERSION } from "../../src/lib/gameSave.js";
 import { PARTS } from "../../src/lib/facilities.js";
+import { SERVERS_STAGE_DEFS } from "../../src/lib/rooms/index.js";
 
 const far = () => Date.now() + 9e9;
 const HOMEPC = BUSINESSES.findIndex((b) => b.id === "homepc");
@@ -138,4 +139,77 @@ test("the servers room shows the 1930s starter punch and the 1976 Cray-1, and cl
   await expect(crayRoom.locator("[data-room-unlock='tab601']")).toHaveCount(0);
   expectClean(seen2);
   await crayPage.close();
+});
+
+// Every layer in a room must sit inside the banner.
+const outsideBanner = (page, id) => page.evaluate((facility) => {
+  const room = document.querySelector(`[data-facility-room='${facility}']`).getBoundingClientRect();
+  return [...document.querySelectorAll(`[data-facility-room='${facility}'] .facility-room-layer`)]
+    .filter((el) => { const r = el.getBoundingClientRect(); return r.left < room.left - 1 || r.top < room.top - 1 || r.right > room.right + 1 || r.bottom > room.bottom + 1; })
+    .map((el) => el.getAttribute("data-room-slot") || "base");
+}, id);
+
+test("buying a machine changes the room art at once, with no reopen (items 2 and 49)", async ({ page }) => {
+  const { save, opts } = serversSave({ tab601: 1 }, 1977);
+  save.techDone = ["srv-mark1", "srv-7090", "srv-360"];
+  const seen = await open(page, "/facilities/servers", save, opts);
+  await tipsOff(page);
+  const room = page.locator("[data-facility-room='servers']");
+  const base = () => room.locator("img").first().getAttribute("src");
+  await expect(room.locator("[data-room-unlock='tab601']").first()).toBeVisible();
+  expect(await base()).toContain("base-1930s");
+  for (const part of ["mgset", "roomac", "mark1"]) await page.locator(`[data-action="buy-${part}"]`).click();
+  expect(await base()).toContain("base-1950s");
+  await expect(room.locator("[data-room-unlock='mark1']")).toBeVisible();
+  await expect(room.locator("[data-room-unlock='tab601']")).toHaveCount(0);
+  await page.locator('[data-action="buy-ibm7090"]').click();
+  await expect(room.locator("[data-room-unlock='ibm7090']")).toBeVisible();
+  await page.locator('[data-action="buy-s360"]').click();
+  await expect(room.locator("[data-room-unlock='s360']")).toBeVisible();
+  expect(await outsideBanner(page, "servers")).toEqual([]);
+  expectClean(seen);
+});
+
+test("every servers stage draws inside the banner, with floor shadows and no desk (items 1, 3 and 28)", async ({ browser }) => {
+  for (const stage of SERVERS_STAGE_DEFS) {
+    const t = stage.trigger;
+    const parts = t?.anyParts ? { [t.anyParts[0]]: 1 } : t ? { tab601: 1, [t.partId]: t.minParts || 1 } : { tab601: 1 };
+    if (parts.tape || parts.ramac) parts.mark1 = 1;
+    if (stage.year >= 1951) { parts.mgset = 1; parts.roomac = 1; }
+    const page = await browser.newPage();
+    await page.setViewportSize({ width: 412, height: 915 });
+    const { save, opts } = serversSave(parts, stage.year);
+    await open(page, "/facilities/servers", save, opts);
+    await tipsOff(page);
+    const room = page.locator("[data-facility-room='servers']");
+    await expect(room, stage.id).toBeVisible();
+    expect(await outsideBanner(page, "servers"), stage.id).toEqual([]);
+    await expect(room.locator("[data-room-slot^='desk']"), stage.id).toHaveCount(0);
+    await page.close();
+  }
+  const page = await browser.newPage();
+  await page.setViewportSize({ width: 412, height: 915 });
+  const { save, opts } = serversSave({ tab601: 6 }, 1931);
+  await open(page, "/facilities/servers", save, opts);
+  await tipsOff(page);
+  await expect(page.locator("[data-facility-room='servers'] [data-room-shadow]")).toHaveCount(6);
+  await page.close();
+});
+
+test("the bench room draws inside the banner in each stage (items 28 and 55)", async ({ browser }) => {
+  const stages = [
+    [1, { "k-atdesk": 1, "y-5151": 1, "c-286": 1, "b-at": 1, "p-at150": 1 }, 1984],
+    [50, { "k-atdesk": 1, "k-attower": 1, "y-8513": 1, "b-vlb": 1, "c-486": 1, "h-586fan": 1, "p-at230": 1, "m-simm1": 2, "v-vga": 1 }, 1990],
+    [200, { "k-atdesk": 1, "k-attower": 1, "k-babyat": 1, "y-8513": 1, "y-ms3d": 1, "b-vlb": 1, "c-486": 1, "h-586fan": 1, "p-at230": 1, "m-simm1": 2, "v-vga": 1, "r-360k": 1, "d-st225": 1, "r-144": 1, "d-cp3044": 1 }, 1993],
+  ];
+  for (const [owned, parts, year] of stages) {
+    const page = await browser.newPage();
+    await page.setViewportSize({ width: 412, height: 915 });
+    const { save, opts } = benchSave(owned, parts, {}, year);
+    await open(page, "/facilities/bench", save, opts);
+    await tipsOff(page);
+    await expect(page.locator("[data-facility-room='bench']")).toBeVisible();
+    expect(await outsideBanner(page, "bench"), `bench at ${owned}`).toEqual([]);
+    await page.close();
+  }
 });

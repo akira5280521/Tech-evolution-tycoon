@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { isPageHidden } from "@/lib/pageVisibility";
 import { PREFS_EVENT, readPrefs } from "@/lib/gamePrefs";
 import {
@@ -83,6 +83,16 @@ function useRoomFrame(animate, durationMs, frames) {
   return { frame, ref, reduce };
 }
 
+// A soft pixel shadow under the machines that stand on the server room floor,
+// so they sit on it instead of floating (item 1).
+const FLOOR_SHADOW = "/rooms/shared/floor-shadow.png";
+function standsOnFloor(room, slot, variant) {
+  if (room.facilityId !== "servers" || !variant.sprite || !variant.unlockId) return false;
+  if (/^l-/.test(variant.unlockId)) return false;
+  const bottom = variant.y + variant.h;
+  return bottom >= 125 && bottom <= 192 && variant.h >= 24;
+}
+
 function layerStyle(x, y, w, h, room) {
   return {
     left: `${(x / room.width) * 100}%`,
@@ -114,16 +124,17 @@ function LayeredRoom({ room, state }) {
   const frames = 24;
   const { frame, ref, reduce } = useRoomFrame(anyAnim, duration, frames);
 
-  const drawn = useMemo(() => {
-    const items = [];
-    const ctx = room.facilityId === "servers" ? { stage: resolveServersStage(state) } : {};
-    for (const slot of [...(room.slots || [])].sort((a, b) => (a.z || 0) - (b.z || 0))) {
-      for (const variant of pickPlacements(state, slot, room.facilityId, ctx)) {
-        items.push({ slot, variant });
-      }
+  // Worked out on every render. `state` is one object the game changes in
+  // place, so a memo keyed on it never refreshed: the base art swapped with
+  // the era but the machines stayed as they were until the app reopened
+  // (items 2 and 49).
+  const drawn = [];
+  const ctx = room.facilityId === "servers" ? { stage: resolveServersStage(state) } : {};
+  for (const slot of [...(room.slots || [])].sort((a, b) => (a.z || 0) - (b.z || 0))) {
+    for (const variant of pickPlacements(state, slot, room.facilityId, ctx)) {
+      drawn.push({ slot, variant });
     }
-    return items;
-  }, [room, state]);
+  }
 
   const base = pickBase(room, state);
 
@@ -140,6 +151,19 @@ function LayeredRoom({ room, state }) {
         const z = slot.z || variant.z || 1;
         const anim = variant.animation;
         const nodes = [];
+        if (standsOnFloor(room, slot, variant)) {
+          nodes.push(
+            <img
+              key={`${slot.id}-${variant.x}-${variant.y}-shadow`}
+              src={FLOOR_SHADOW}
+              alt=""
+              data-room-shadow={slot.id}
+              className="facility-room-layer pixel-art"
+              style={{ ...layerStyle(variant.x - variant.w * 0.04, variant.y + variant.h - 4, variant.w * 1.08, 8, room), zIndex: z }}
+              draggable={false}
+            />,
+          );
+        }
         if (anim?.kind === "strip" && variant.strip) {
           const fw = variant.w;
           const fh = variant.h;

@@ -85,9 +85,9 @@ export function CashTicker({ state, cps }) {
         <HintBulb state={state} />
         <div className="flex items-baseline gap-2 pr-16">
           <span data-cash-label className="shrink-0 font-pixel text-[8px] leading-[10px] text-[var(--game-muted)]">CASH</span>
-          <span data-cash className="min-w-0 break-all font-term text-2xl leading-none text-[var(--game-success)]">{money(state.cash)}</span>
+          <span data-cash className="shrink-0 whitespace-nowrap font-term text-2xl leading-none text-[var(--game-success)]">{money(state.cash)}</span>
           {/* Fixed slot: an Overclock never changes the bar's height. */}
-          <span data-overclock className="ml-auto shrink-0 font-pixel text-[0.45rem] leading-4 text-[var(--game-accent)]">
+          <span data-overclock className="ml-auto min-w-0 flex-1 truncate whitespace-nowrap text-right font-pixel text-[0.45rem] leading-4 text-[var(--game-accent)]">
             {oc ? `OVERCLOCKED x1.5 · ${Math.ceil((state.lab.overclockUntil - Date.now()) / 60000)} MIN LEFT` : ""}
           </span>
         </div>

@@ -6,6 +6,10 @@ test("long-press on cash shows the exact amount, and a short tap does not (item 
   const cash = page.locator("[data-cash]");
   const exact = await cash.getAttribute("data-exact");
   expect(exact).toMatch(/^\$[\d,]+(\.\d\d)?$/);
+  // Measure once the fonts are in: a late font moves the box out from under
+  // the finger and cancels the long-press.
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(300);
   const box = await cash.boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();

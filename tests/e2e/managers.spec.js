@@ -58,7 +58,11 @@ for (const width of [412, 320]) {
     await expect(card.locator("[data-manager-status]")).toHaveText("Manager: off");
     expect((await card.boundingBox()).height).toBe(before);
     expectClean(seen);
-    const page2 = await page.context().newPage();
+    // Close the first page: both pages share one save, and a page still
+    // running keeps writing its own over the second one's.
+    const context = page.context();
+    await page.close();
+    const page2 = await context.newPage();
     await page2.setViewportSize({ width, height: 915 });
     seen = await go(page2, save({ wood: 1e9 }));
     const card2 = page2.locator("[data-row='timber']");
@@ -119,7 +123,10 @@ test("the CASH box keeps the same height while an Overclock is running", async (
   await expect(off).toHaveText(/^\s*$/);
   const h = (await panel.boundingBox()).height;
   expectClean(seen);
-  const page2 = await page.context().newPage();
+  // Close the first page so it can't write its save over the second one's.
+  const context = page.context();
+  await page.close();
+  const page2 = await context.newPage();
   seen = await go(page2, { ...base, lab: { ...(base.lab || {}), overclockUntil: Date.now() + 8 * 60 * 1000 } });
   const panel2 = page2.locator("[data-cash-panel]");
   await expect(panel2.locator("[data-overclock]")).toContainText("OVERCLOCKED x1.5");

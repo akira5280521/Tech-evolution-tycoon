@@ -166,3 +166,12 @@ test("the header label follows the newest era the player owns", () => {
   const atPhones = { biz: BUSINESSES.map((b, i) => ({ id: b.id, owned: i === phones ? 1 : 0 })) };
   assert.equal(reachedEraLabel(atPhones), "2000s");
 });
+
+test("the Superclusters earn gate is hours, not days, at a late run's income (#51)", () => {
+  // The 0.0.30 tester: $265.45Qi needed at 5.8e18 base means a run bonus near 21.3.
+  const bonus = (265.45e18 / 5.8e18) ** (1 / 1.25);
+  const need = ERA_EARN.supercluster * bonus ** 1.25;
+  const hours = need / 713e12 / 3600;
+  assert.ok(hours < 12, `supercluster gate takes ${hours.toFixed(1)} h at $713T/s`);
+  assert.ok(ERA_EARN.supercluster > ERA_EARN.chatbots, "still more than Chatbots");
+});

@@ -155,7 +155,7 @@ export default function SaveBackup({ state, onExport, onImport }) {
       </div>
 
       <div className="mt-4 space-y-2 border-t-2 border-[var(--game-border)] pt-3" data-save-import>
-        <h3 className="font-pixel text-[0.55rem]">RESTORE FROM A CODE</h3>
+        <h3 className="font-pixel text-[0.55rem]">IMPORT SAVE: RESTORE FROM A CODE</h3>
         <textarea
           value={paste}
           onChange={(event) => {

@@ -47,6 +47,21 @@ export function PlayToggles() {
         <button type="button" data-collapse-maxed onClick={() => set({ collapseMaxed: !prefs.collapseMaxed })} className={`${choice} ${prefs.collapseMaxed ? on : off}`}>
           COLLAPSE MAXED: {prefs.collapseMaxed ? "ON" : "OFF"}
         </button>
+        <button type="button" data-starter-goals onClick={() => set({ goalsHidden: !prefs.goalsHidden })} className={`${choice} ${prefs.goalsHidden ? off : on}`}>
+          STARTER GOALS: {prefs.goalsHidden ? "HIDDEN" : "ON"}
+        </button>
+      </div>
+    </Panel>
+  );
+}
+
+// Sound and touch feel (T4 item 39: the SOUND group).
+export function SoundSettings() {
+  const [prefs, set] = usePrefs();
+  return (
+    <Panel>
+      <h2 className="font-pixel text-[0.6rem]">SOUND AND VIBRATION</h2>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <button type="button" data-sound onClick={() => set({ sound: !prefs.sound })} className={`${choice} ${prefs.sound ? on : off}`}>
           SOUND: {prefs.sound ? "ON" : "OFF"}
         </button>
@@ -58,9 +73,6 @@ export function PlayToggles() {
         </button>
         <button type="button" data-tap-haptic aria-pressed={prefs.tapHaptic} onClick={() => set({ tapHaptic: !prefs.tapHaptic })} className={`${choice} ${prefs.tapHaptic ? on : off}`}>
           TAP VIBRATION: {prefs.tapHaptic ? "ON" : "OFF"}
-        </button>
-        <button type="button" data-starter-goals onClick={() => set({ goalsHidden: !prefs.goalsHidden })} className={`${choice} ${prefs.goalsHidden ? off : on}`}>
-          STARTER GOALS: {prefs.goalsHidden ? "HIDDEN" : "ON"}
         </button>
       </div>
       <Volume
@@ -78,9 +90,19 @@ export function PlayToggles() {
         onMute={() => set({ effectsMuted: !prefs.effectsMuted })}
       />
       <p className="mt-2 font-term text-base leading-5 text-[var(--game-muted)]">
-        Sound off silences both. Music and effects each have their own volume. Leaving the app or locking the screen pauses them, and they come back if sound is still on.
+        Sound off silences both. Music and effects each have their own volume. Leaving the app or locking the screen pauses them, and they come back if sound is still on. Vibration is for buys and milestones; tap vibration buzzes on every tap.
       </p>
     </Panel>
+  );
+}
+
+// A heading for one group of settings (T4 item 39).
+export function SettingsGroup({ id, title, children }) {
+  return (
+    <section data-settings-group={id} aria-label={title} className="flex flex-col gap-3">
+      <h2 className="mt-2 border-b-2 border-[var(--game-accent)] pb-1 font-pixel text-[0.7rem] text-[var(--game-accent)]">{title}</h2>
+      {children}
+    </section>
   );
 }
 

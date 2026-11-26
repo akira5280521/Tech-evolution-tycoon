@@ -9,6 +9,8 @@ import { generationPayMult } from "./generations.js";
 import { anniversaryMult } from "./anniversaries.js";
 import { blankTutorial } from "./tutorial.js";
 import { ROOMS, exhibitStatus, roomComplete } from "./museum.js";
+import { readRigs } from "./rigs.js";
+import { noteContractProgress } from "./contracts.js";
 import { COMPUTE_RECORDS, computePower, flopsLabel, moorePoints } from "./compute.js";
 import {
   BUSINESSES,
@@ -375,10 +377,17 @@ export const CHALLENGES = [
   },
 ];
 
+// Career earnings goals for the two early mega-projects. Dollar amounts are
+// a design call so the 1860s cable is first and cheapest, not a $10B gate
+// sitting behind later owned-count work.
+export const CABLE_NEED = 5e6;
+export const MAINFRAME_NEED = 1e8;
+
 export const PROJECTS = [
-  { id: "cable", name: "TRANSCONTINENTAL CABLE", blurb: "Career earnings reach $10.00B.", reward: 0.1, tokens: 20 },
-  { id: "mainframe", name: "NATIONAL MAINFRAME", blurb: "Career earnings reach $1.00T.", reward: 0.1, tokens: 20 },
-  { id: "orbital", name: "ORBITAL ARRAY", blurb: "Own 25 Quantum Servers at once.", reward: 0.1, tokens: 20, eras: ["quantum"] },
+  { id: "cable", name: "TRANSCONTINENTAL CABLE", blurb: "Career earnings reach $5.00M.", reward: 0.1, tokens: 20,
+    check: (s) => (s.careerEarnings || 0) >= CABLE_NEED },
+  { id: "mainframe", name: "NATIONAL MAINFRAME", blurb: "Career earnings reach $100.00M.", reward: 0.1, tokens: 20,
+    check: (s) => (s.careerEarnings || 0) >= MAINFRAME_NEED },
   // Later projects pay a smaller bonus each so the set stays inside the soft ceiling.
   { id: "arpanet", name: "ARPANET NODE", blurb: "Own 100 Punch Cards and 100 Transistors at once.", reward: 0.05, tokens: 15, eras: ["punchcards", "transistors"],
     check: (s) => owns(s, "punchcards", 100) && owns(s, "transistors", 100) },
@@ -390,6 +399,7 @@ export const PROJECTS = [
     check: (s) => (s.careerEarnings || 0) >= 1e15 },
   { id: "lan", name: "WORLD'S BIGGEST LAN PARTY", blurb: "Own 150 Graphics Cards and 150 RGB Battlestations at once.", reward: 0.05, tokens: 15, eras: ["gpu", "rgb"],
     check: (s) => owns(s, "gpu", 150) && owns(s, "rgb", 150) },
+  { id: "orbital", name: "ORBITAL ARRAY", blurb: "Own 25 Quantum Servers at once.", reward: 0.1, tokens: 20, eras: ["quantum"] },
   { id: "timeline", name: "PARALLEL TIMELINE", blurb: "Fork the timeline once.", reward: 0.05, tokens: 15,
     check: (s) => (s.singularities || 0) >= 1 },
 ];
@@ -572,7 +582,13 @@ export function blankMeta() {
     dilemma: null,
     lastDilemma: null,
     museum: [],
+    rigs: [],
     eventsDone: [],
+    contractsDone: [],
+    contract: null,
+    contractDeferUntil: 0,
+    storyEvent: null,
+    storyDeferUntil: 0,
     bubble: null,
     nextBubbleAt: 0,
     dilemmaDeferUntil: 0,
@@ -593,6 +609,7 @@ export function blankMeta() {
     hubSeen: false,
     // A new game buys its own starter machine; old saves get one once (0.0.29).
     starterGranted: true,
+    readySeen: { seeded: true, boost: [], research: [], tech: [], hq: [] },
     tutorial: blankTutorial(),
     orientation: "auto",
     businessesBought: 0,
@@ -788,6 +805,22 @@ export function makesOf(state, cfg) {
   return Object.fromEntries(Object.entries(cfg.makes).map(([key, n]) => [key, (Number(n) || 0) * mult]));
 }
 
+// How much one completed cycle of this row adds to the bins, when it has
+// the materials it needs and no shortage is cutting the output. Copies
+// stack. The x3 revenue upgrade triples the material too. Milestones and
+// research raise cash, not the material count.
+export function runYield(state, cfg, owned) {
+  const per = makesOf(state, cfg);
+  if (!per) return null;
+  let count = owned;
+  if (!Number.isFinite(count)) {
+    const i = BUSINESSES.findIndex((row) => row.id === cfg?.id);
+    count = state?.biz?.[i]?.owned || 0;
+  }
+  const n = count > 0 ? count : 0;
+  return Object.fromEntries(Object.entries(per).map(([key, make]) => [key, (Number(make) || 0) * n]));
+}
+
 function moveSupply(state, cfg, cycles, owned, now = 0) {
   if (!cfg?.uses && !cfg?.makes) return;
   const supply = ensureSupply(state);
@@ -853,7 +886,7 @@ export function establishedCount(state) {
   return (state.biz || []).reduce((n, st) => n + (st && st.owned > 0 ? 1 : 0), 0);
 }
 
-// Eras no longer make R&D points (0.0.29): research machines in HQ > RIGS
+// Eras no longer make R&D points (0.0.29): research machines in HQ > RESEARCH SERVERS
 // do, starting with the starter machine. Kept so callers and old math read 0.
 // eslint-disable-next-line no-unused-vars
 export function dataPerSecond(state) {
@@ -974,6 +1007,7 @@ export function creditCycles(state, index, cycles, now = 0, rate = 1) {
   const factor = supplyFactor(state, cfg, cycles);
   moveSupply(state, cfg, cycles, st.owned, now);
   const amount = cycles * cfg.revenue * rev * st.owned * milestoneMult(st.owned) * empireFactors(state, now).total * factor * rate;
+  noteContractProgress(state, index, cycles, st.owned);
   return creditAmount(state, amount, now);
 }
 
@@ -1049,22 +1083,31 @@ export function creditBatch(state, due, now, rate = 1, stats = null) {
 // moment. Pays `rate` of the normal amount. Returns the total and per-row
 // earnings for the welcome-back report.
 const AWAY_SLICES = 720;
-export function replayAway(state, elapsed, end, rate = 1) {
+export function replayAway(state, elapsed, end, rate = 1, options = {}) {
   const gains = new Array(BUSINESSES.length).fill(0);
   let facilityGain = 0;
   if (!(elapsed > 0)) return { gain: 0, rows: [] };
   const start = end - elapsed;
-  const step = elapsed / AWAY_SLICES;
+  const slices = Math.max(1, Math.min(AWAY_SLICES, Math.floor(Number(options.slices)) || AWAY_SLICES));
+  const step = elapsed / slices;
+  // alsoManual: an active player keeps tapping unmanaged rows. Away
+  // catch-up leaves this off, so only hired managers run while you're gone.
+  const alsoManual = options.alsoManual === true;
+  const prevAway = !!state.awayReplay;
+  // Real away catch-up pauses contracts. An active sim session uses
+  // alsoManual and should still count contract progress.
+  state.awayReplay = options.pauseContracts ?? !alsoManual;
   // How long each material ran short (rows using it paid less) or sat FULL
   // (new output lost), for the Welcome Back report.
   const shortMs = {};
   const fullMs = {};
   const shortRows = {};
-  for (let k = 0; k < AWAY_SLICES; k++) {
+  for (let k = 0; k < slices; k++) {
     const mid = start + step * (k + 0.5);
     finishTimedWork(state, mid);
     const due = state.biz.map((st, i) => {
-      if (!isManaged(st) || st.owned <= 0) return 0;
+      const tapping = alsoManual && st.owned > 0 && !st.managerOff;
+      if ((!isManaged(st) && !tapping) || st.owned <= 0) return 0;
       const cycle = effectiveCycleMs(BUSINESSES[i], state);
       if (!(cycle > 0)) return 0;
       st.activeMs = (st.activeMs || 0) + step;
@@ -1117,6 +1160,7 @@ export function replayAway(state, elapsed, end, rate = 1) {
     .filter(([, ms]) => ms >= 60_000)
     .sort((a, b) => b[1] - a[1])
     .map(([key, ms]) => ({ key, ms }));
+  state.awayReplay = prevAway;
   return { gain, rows, short, full };
 }
 
@@ -1178,8 +1222,6 @@ export function failChallenge(state) {
 
 function projectReady(state, id) {
   if ((state.projectsDone || []).includes(id)) return false;
-  if (id === "cable") return (state.careerEarnings || 0) >= 1e10;
-  if (id === "mainframe") return (state.careerEarnings || 0) >= 1e12;
   if (id === "orbital") return (state.biz?.[indexOfBusiness("quantum")]?.owned || 0) >= 25;
   const spec = PROJECTS.find((p) => p.id === id);
   return !!spec?.check?.(state);
@@ -1689,6 +1731,7 @@ export function describeEffects(effects) {
   if (effects.boost) parts.push(`Income x1.15 for ${effects.boost} minutes`);
   if (effects.pay) parts.push(`Costs ${effects.pay} seconds of income`);
   if (effects.shortage) parts.push(`${effects.shortage.key} made at half rate for ${effects.shortage.minutes} minutes`);
+  if (effects.moore) parts.push("Newer eras (1965 on) cost 15% less");
   if (effects.recall) parts.push(`${BUSINESSES.find((cfg) => cfg.id === effects.recall.era)?.name || effects.recall.era} earn half for ${effects.recall.minutes} minutes`);
   return parts.join(", ");
 }
@@ -1856,7 +1899,12 @@ export function snapshotMeta(state, options = {}) {
     briefingDay: state.briefingDay || null,
     badgesEarned: [...(state.badgesEarned || [])],
     museum: [...(state.museum || [])],
+    // Cosmetic bench snapshots, kept through prestige like the museum.
+    rigs: readRigs(state.rigs),
     eventsDone: [...(state.eventsDone || [])],
+    // Completed early-era contracts stay done across prestige, like events.
+    // A live offer or deadline is cleared; it can come back later in the new run.
+    contractsDone: [...(state.contractsDone || [])],
     nextBubbleAt: state.nextBubbleAt || 0,
     supply: { ...ensureSupply(state) },
     // Bigger bins are buildings: kept through prestige and forks.
@@ -1874,6 +1922,7 @@ export function snapshotMeta(state, options = {}) {
     boughtX10: !!state.boughtX10,
     hubSeen: !!state.hubSeen,
     starterGranted: !!state.starterGranted,
+    readySeen: { ...(state.readySeen || { seeded: true, boost: [], research: [], tech: [], hq: [] }) },
     tutorial: { ...(state.tutorial || blankTutorial()), seen: [...(state.tutorial?.seen || [])], tips: [...(state.tutorial?.tips || [])] },
     orientation: state.orientation === "portrait" || state.orientation === "landscape" ? state.orientation : "auto",
     buyMode: normalizeBuyMode(state.buyMode),

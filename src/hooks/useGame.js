@@ -8,15 +8,11 @@ import {
   REFINED,
   openEra,
   COMMISSION_MS,
-  FOREMAN_COST,
-  MAX_BUY,
   MILESTONES,
   NORMAL_TICK_MS,
   OFFLINE_CAP_MS,
   OFFLINE_RATE,
-  buyCount,
   cappedTick,
-  costOf,
   normalizeBuyMode,
   investorsFor,
   isManaged,
@@ -27,24 +23,19 @@ import {
   PROJECTS,
   scaledChallengeGoal,
   beginResearch,
-  blankMeta,
   collectBadges,
   legacyBadgeIds,
   buyShopItem,
   buyLabProject,
   cleanLab,
   buyUpgrade,
-  canBuyIndex,
-  canHireIndex,
   replayAway,
   failChallenge,
   empireFactors,
   investorPeak,
   INVESTOR_MILESTONES,
-  nextInvestorMilestone,
   peakFromSave,
   offlineCapMs,
-  startingBiz,
   ensureManagersHired,
   autoBuyUpgrade,
   businessIncomePerSecond,
@@ -55,9 +46,8 @@ import {
   effectiveCycleMs,
   ensureSupply,
   finishTimedWork,
-  managerPrice,
-  notePurchase,
   resolveDilemma,
+  describeEffects,
   isDilemmaId,
   forkCost,
   singularityMult,
@@ -68,17 +58,21 @@ import {
   sellMaterial,
   swapMaterial,
 } from "@/lib/empire";
-import { blankTutorial, readTutorial, TUTORIAL_STEPS, tutorialCleared } from "@/lib/tutorial";
+import { blankTutorial, readTutorial, TUTORIAL_STEPS, FACILITY_TOURS, tutorialCleared, markOpened } from "@/lib/tutorial";
+import { markReadySeen, readReadySeen, seedReadySeen } from "@/lib/ready";
 import { cashOutBubble, cleanBubble, tickBubble } from "@/lib/bubble";
 import { collectHistory, isHistoryCardId } from "@/lib/history";
-import { generationAt } from "@/lib/generations";
 import { REBUILD_SECONDS, facilityReport, noteFacilityNews, purchasePart, readFacilities, readNews, migrateFacilities, rebuildPlants, settleClosedParts, grantStarter } from "@/lib/facilities";
 import { noteHubSeen } from "@/lib/hub";
-import { advanceResearch, fillResearchGaps, grantOwnedResearch, readResearchData, readTechDone, readTechJob, startResearch } from "@/lib/research";
-import { currentGoal, readGoalsDone, settleGoals } from "@/lib/goals";
+import { advanceResearch, fillResearchGaps, grantOwnedResearch, noteCompanyYear, readResearchData, readTechDone, readTechJob, rescuePunchCardSave, startResearch } from "@/lib/research";
+import { readGoalsDone, settleGoals } from "@/lib/goals";
 import { applyOrientation } from "@/lib/orientation";
 import { notesUnseen } from "@/lib/releaseNotes";
 import { SAVE_VERSION, clearSaveData, getSaveData, remapBestEra, writeSaveData } from "@/lib/gameSave";
+import { deleteRig, readRigs, saveRig } from "@/lib/rigs";
+import { applyFork, applyPrestige, applyStoryChoice, buyBusiness, buyForeman as takeForeman, freshBiz, freshState, hireManager, playHistory, startAllRuns, startRun } from "@/lib/playState";
+import { acceptContract, skipContract } from "@/lib/contracts";
+import { beginArrivalCatchup, currentArrival, dismissArrival, endArrivalCatchup, queueEraArrival, queueGenerationArrival } from "@/lib/arrivals";
 import { encodeSave } from "@/lib/saveCode";
 import { isPageHidden } from "@/lib/pageVisibility";
 import { playBuy, playCollect } from "@/lib/sfx";
@@ -101,36 +95,6 @@ const RENDER_MS = 250;
 // number about once a second. Payouts and finished projects still paint immediately.
 const DISPLAY_MS = 1000;
 // 24 hours / 720 = 2 minute slices at the cap; shorter absences slice finer.
-
-function freshBiz(mode) {
-  return BUSINESSES.map((cfg, i) => ({
-    owned: mode === "glass" ? (cfg.id === "tubes" ? 1 : 0) : i === 0 ? 1 : 0,
-    manager: false,
-    running: false,
-    progress: 0,
-    activeMs: 0,
-    lastGain: null,
-    commissionUntil: 0,
-  }));
-}
-
-function freshState() {
-  return {
-    ...blankMeta(),
-    cash: 0,
-    lifetime: 0,
-    investors: 0,
-    streak: 1,
-    briefingDay: null,
-    offlineReport: null,
-    gainSeq: 0,
-    biz: freshBiz(),
-    milestones: {},
-    trackedSince: Date.now(),
-    trackedFromStart: true,
-    runStartedAt: Date.now(),
-  };
-}
 
 function num(n, fallback = 0) {
   return typeof n === "number" && Number.isFinite(n) && n >= 0 ? n : fallback;
@@ -180,8 +144,14 @@ function applySavedMeta(state, raw) {
   state.tutorial = readTutorial(m.tutorial, num(m.careerEarnings) > 0 || num(raw?.investors) > 0 || (raw?.biz || []).some((b, i) => (b?.owned || 0) > (i === 0 ? 1 : 0)));
   state.badgesEarned = Array.isArray(m.badgesEarned) ? m.badgesEarned.filter((id) => typeof id === "string") : [];
   state.museum = Array.isArray(m.museum) ? m.museum.filter((id) => isHistoryCardId(id)) : [];
+  state.rigs = readRigs(m.rigs);
   state.bubble = cleanBubble(m.bubble);
   state.eventsDone = Array.isArray(m.eventsDone) ? [...new Set(m.eventsDone.filter((id) => typeof id === "string"))] : [];
+  state.contractsDone = Array.isArray(m.contractsDone) ? [...new Set(m.contractsDone.filter((id) => typeof id === "string"))] : [];
+  state.contract = m.contract && typeof m.contract === "object" ? m.contract : null;
+  state.contractDeferUntil = num(m.contractDeferUntil);
+  state.storyEvent = m.storyEvent && typeof m.storyEvent === "object" && typeof m.storyEvent.id === "string" ? { id: m.storyEvent.id } : null;
+  state.storyDeferUntil = num(m.storyDeferUntil);
   state.nextBubbleAt = num(m.nextBubbleAt);
   state.modStamp = 1;
   const orient = raw?.orientation;
@@ -218,11 +188,13 @@ function applySavedMeta(state, raw) {
   state.techDone = readTechDone(m.techDone);
   state.techJob = readTechJob(m.techJob);
   state.techJob2 = readTechJob(m.techJob2);
+  state.companyYear = m.companyYear && Number.isFinite(m.companyYear.year) && Number.isFinite(m.companyYear.at) ? { year: m.companyYear.year, at: m.companyYear.at } : null;
   state.goalsDone = readGoalsDone(m.goalsDone);
   state.boughtX10 = !!m.boughtX10;
   state.hubSeen = !!m.hubSeen;
   // Saves from before 0.0.29 have no flag: grantStarter gives them one machine.
   state.starterGranted = !!m.starterGranted;
+  state.readySeen = readReadySeen(m.readySeen || raw?.readySeen);
   state.benchOc = m.benchOc !== false;
   state.restartSeen = !!m.restartSeen;
 }
@@ -269,7 +241,13 @@ function pack(s) {
     prestiged: !!s.prestiged,
     badgesEarned: s.badgesEarned || [],
     museum: s.museum || [],
+    rigs: readRigs(s.rigs),
     eventsDone: s.eventsDone || [],
+    contractsDone: s.contractsDone || [],
+    contract: s.contract || null,
+    contractDeferUntil: s.contractDeferUntil || 0,
+    storyEvent: s.storyEvent || null,
+    storyDeferUntil: s.storyDeferUntil || 0,
     bubble: s.bubble || null,
     nextBubbleAt: s.nextBubbleAt || 0,
     supply: s.supply,
@@ -286,6 +264,7 @@ function pack(s) {
     boughtX10: !!s.boughtX10,
     hubSeen: !!s.hubSeen,
     starterGranted: !!s.starterGranted,
+    readySeen: s.readySeen || null,
     benchOc: s.benchOc !== false,
     restartSeen: !!s.restartSeen,
     tutorial: s.tutorial || null,
@@ -323,6 +302,7 @@ function pack(s) {
     techDone: readTechDone(s.techDone),
     techJob: readTechJob(s.techJob),
     techJob2: readTechJob(s.techJob2),
+    companyYear: s.companyYear || null,
     biz: s.biz.map((b, i) => ({
       id: BUSINESSES[i].id,
       owned: b.owned,
@@ -374,6 +354,15 @@ function loadSave() {
     // Eras stopped making R&D points in 0.0.29: a save before Mainframes with
     // no research machine gets one free starter machine, once.
     grantStarter(state);
+    // Existing saves shouldn't get unlock tours for plants they already have.
+    if (!state.tutorial?.toursReady) {
+      const hadProgress = (state.careerEarnings || 0) > 0 || (state.investors || 0) > 0 || (state.biz || []).some((b, i) => (b?.owned || 0) > (i === 0 ? 1 : 0));
+      if (hadProgress) {
+        state.tutorial.toursDone = FACILITY_TOURS.filter((tour) => tour.when(state)).map((tour) => tour.id);
+      }
+      state.tutorial.toursReady = true;
+    }
+    seedReadySeen(state);
     state.supply = data.supply;
     ensureSupply(state);
     state.storage = data.storage || {};
@@ -425,6 +414,13 @@ function loadSave() {
       grantOwnedResearch(state);
       fillResearchGaps(state);
     }
+    if (prior < 16) {
+      // 0.0.31 put every TECH line in date order; a project already done
+      // keeps the ones now before it.
+      fillResearchGaps(state);
+      rescuePunchCardSave(state);
+    }
+    noteCompanyYear(state);
     collectBadges(state);
     if (state.goalsDone == null || prior < 9) {
       state.goalsDone = state.goalsDone || [];
@@ -439,7 +435,9 @@ function loadSave() {
       // Managers, plants and R&D earn at OFFLINE_RATE while the app is closed.
       const rate = elapsed < AWAY_GRACE_MS ? 1 : OFFLINE_RATE;
       state.data = (state.data || 0) + dataPerSecond(state) * (elapsed / 1000) * rate;
+      beginArrivalCatchup(state);
       ({ gain: offlineGain, rows, short, full } = replayAway(state, elapsed, Date.now(), rate));
+      endArrivalCatchup(state, elapsed);
     }
     if (offlineGain > 0 && elapsed >= AWAY_MODAL_MS) {
       state.offlineReport = { amount: offlineGain, awayMs: elapsed, rows, short, full };
@@ -471,8 +469,8 @@ function announce(notes) {
     if (note.type === "project") toast("Project finished", { description: "The bonus is permanent." });
     if (note.type === "refined") toast("Refinery batch done", { description: `${note.amount} ${REFINED[note.id]?.name || note.id} added.` });
     if (note.type === "history") {
-      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum in MORE > MUSEUM." });
-      else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum in MORE > MUSEUM." });
+      if (note.cards.length === 1) toast(`History card: ${note.cards[0].title}`, { description: "Added to the Museum in HQ > HARDWARE MUSEUM." });
+      else toast(`${note.cards.length} history cards found`, { description: "Read them in the Museum in HQ > HARDWARE MUSEUM." });
     }
     if (note.type === "compute") {
       toast(`Compute record: ${note.record.name}`, {
@@ -488,6 +486,8 @@ function announce(notes) {
     }
     if (note.type === "bubble") toast("DOT-COM BUBBLE!", { description: "Your web stock is soaring. The banner counts down to the pop." });
     if (note.type === "bubblepop") toast("The bubble popped", { description: "The web stock is worth nothing now. Sell sooner next time." });
+    if (note.type === "contract-done") toast(note.spec?.title || "CONTRACT COMPLETE", { description: "The office paid in cash and era tokens." });
+    if (note.type === "contract-fail") toast(note.spec?.title || "CONTRACT LAPSED", { description: "Nothing lost. The office will ask again later." });
   }
 }
 
@@ -653,7 +653,9 @@ export function useGame() {
       if (away > 0) {
         const rate = away < AWAY_GRACE_MS ? 1 : OFFLINE_RATE;
         s.data = (s.data || 0) + dataPerSecond(s) * (away / 1000) * rate;
+        beginArrivalCatchup(s);
         const { gain, rows, short, full } = replayAway(s, away, now, rate);
+        endArrivalCatchup(s, away);
         if (gain > 0 && away >= AWAY_MODAL_MS) s.offlineReport = { amount: gain, awayMs: away, rows, short, full };
       }
       lastWall = now;
@@ -705,8 +707,10 @@ export function useGame() {
       if (autoBuyUpgrade(s, wall)) dirty = true;
       // No dilemma starts while Welcome Back, the prestige report, What's New
       // or the fresh-start offer is up.
-      const blocked = !!s.offlineReport || !!s.prestigeReport || (!!s.restartSuggested && !s.restartSeen) || notesUnseen();
-      const notes = tickDilemma(s, wall, { blocked }).concat(finishTimedWork(s, wall), tickBubble(s, wall));
+      const blocked = !!s.offlineReport || !!s.prestigeReport || (!!s.restartSuggested && !s.restartSeen) || notesUnseen() || !!currentArrival(s);
+      const historyNotes = playHistory(s, wall, { blocked, hidden: false });
+      const eventUp = !!s.storyEvent || s.contract?.status === "offered";
+      const notes = tickDilemma(s, wall, { blocked: blocked || eventUp }).concat(finishTimedWork(s, wall), tickBubble(s, wall), historyNotes);
       const cards = collectHistory(s);
       if (cards.length) notes.push({ type: "history", cards });
       for (const r of noteComputeRecords(s)) notes.push({ type: "compute", record: r });
@@ -784,31 +788,16 @@ export function useGame() {
   const buy = useCallback(
     (i) => {
       const s = stateRef.current;
-      if (!canBuyIndex(s, i)) return;
-      const cfg = BUSINESSES[i];
-      const st = s.biz[i];
-      const count = Math.floor(buyCount(buyMode, cfg, st.owned, s.cash));
-      if (!Number.isFinite(count) || count < 1 || count > MAX_BUY) return;
-      const cost = costOf(cfg, st.owned, count);
-      if (!Number.isFinite(s.cash) || !Number.isFinite(cost) || !(s.cash >= cost)) return;
-      // Only a buy made while BUY X10 is the goal on screen. Cycling the button
-      // during the tutorial, or buying X10 earlier, does not skip that goal.
-      if (normalizeBuyMode(buyMode) === "x10" && currentGoal(s)?.id === "x10") s.boughtX10 = true;
-      const before = st.owned;
-      s.cash -= cost;
       const now = Date.now();
-      s.biz = s.biz.map((b, j) => (j === i ? {
-        ...b,
-        owned: b.owned + count,
-        commissionUntil: before === 0 ? now + COMMISSION_MS : b.commissionUntil,
-      } : b));
-      notePurchase(s, i, before, before + count);
-      s.businessesBought = (s.businessesBought || 0) + count;
-      const reachedEra = eraReachedIndex(s);
-      if (reachedEra > (s.bestEra || 0)) s.bestEra = reachedEra;
+      const purchased = buyBusiness(s, i, buyMode, now);
+      if (!purchased.ok) return;
+      const { count, before, after, beforeGen, afterGen, goalPay } = purchased;
+      const cfg = BUSINESSES[i];
+      if (before === 0) queueEraArrival(s, cfg.id);
+      if (afterGen && afterGen.id !== beforeGen?.id) queueGenerationArrival(s, cfg.id, afterGen);
       playBuy();
       // Celebrate each milestone this purchase reached.
-      const reached = MILESTONES.filter((ms) => before < ms.owned && before + count >= ms.owned);
+      const reached = MILESTONES.filter((ms) => before < ms.owned && after >= ms.owned);
       if (reached.length) buzzStrong();
       else buzzLight();
       if (reached.length) {
@@ -816,13 +805,10 @@ export function useGame() {
         toast(`${cfg.name}: ${reached[reached.length - 1].owned} owned!`, { description: `${what} · +${2 * reached.length} era tokens` });
         s.biz[i] = { ...s.biz[i], milestoneAt: now };
       }
-      const beforeGen = generationAt(cfg.id, before, s.techDone);
-      const afterGen = generationAt(cfg.id, before + count, s.techDone);
       if (afterGen && afterGen.id !== beforeGen?.id && before > 0) {
         toast(afterGen.name, { description: `${afterGen.year}. ${afterGen.tagline}` });
       }
-      const goalPay = settleGoals(s, { pay: true });
-      if (goalPay.reward > 0) toast("Goal complete", { description: `+${money(goalPay.reward)} cash` });
+      if (goalPay?.reward > 0) toast("Goal complete", { description: `+${money(goalPay.reward)} cash` });
       saveNow();
       bump();
     },
@@ -832,18 +818,7 @@ export function useGame() {
   const hire = useCallback(
     (i) => {
       const s = stateRef.current;
-      if (!canHireIndex(s, i)) return;
-      if ((s.biz[i].commissionUntil || 0) > Date.now()) return;
-      const price = managerPrice(s, i);
-      s.cash -= price;
-      if (s.shop?.freeManager) s.shop = { ...s.shop, freeManager: false };
-      const started = Date.now();
-      const cycle = effectiveCycleMs(BUSINESSES[i], s);
-      s.biz = s.biz.map((b, j) => (j === i ? { ...b, manager: true, managerOff: false, running: true, progress: 0, cycleStart: started, cycleAt: cycle, paidLaps: 0, holdUntil: 0 } : b));
-      s.managersHired = (s.managersHired || 0) + 1;
-      ensureManagersHired(s);
-      const goalPay = settleGoals(s, { pay: true });
-      if (goalPay.reward > 0) toast("Goal complete", { description: `+${money(goalPay.reward)} cash` });
+      if (!hireManager(s, i, Date.now())) return;
       buzzLight();
       saveNow();
       bump();
@@ -879,19 +854,12 @@ export function useGame() {
     (i) => {
       const s = stateRef.current;
       const st = s.biz[i];
-      if ((st.commissionUntil || 0) > Date.now()) return;
-      if (st.owned > 0 && !isManaged(st) && st.running) {
-        s.biz = s.biz.map((b, j) => (j === i ? { ...b, shake: (b.shake || 0) + 1 } : b));
-        bump();
-        return;
-      }
-      if (st.owned > 0 && !isManaged(st) && !st.running) {
-        s.sawPit = true;
-        const goalPay = settleGoals(s, { pay: true });
-        if (goalPay.reward > 0) toast("Goal complete", { description: `+${money(goalPay.reward)} cash` });
-        const started = Date.now();
-        const cycle = effectiveCycleMs(BUSINESSES[i], s);
-        s.biz = s.biz.map((b, j) => (j === i ? { ...b, running: true, progress: 0, cycleStart: started, cycleAt: cycle, paidLaps: 0, holdUntil: 0 } : b));
+      const now = Date.now();
+      if ((st.commissionUntil || 0) > now) return;
+      // Already running: the picture shakes by itself (IconTile); nothing
+      // in the game changes, so nothing redraws.
+      if (st.owned > 0 && !isManaged(st) && st.running) return;
+      if (startRun(s, i, now)) {
         saveNow();
         bump();
       }
@@ -901,31 +869,13 @@ export function useGame() {
 
   const runAll = useCallback(() => {
     const s = stateRef.current;
-    if (!s.foreman) return;
-    const now = Date.now();
-    let any = false;
-    s.biz = s.biz.map((b, j) => {
-      if (b.owned > 0 && !isManaged(b) && !b.running && !((b.commissionUntil || 0) > now)) {
-        any = true;
-        return { ...b, running: true, progress: 0, cycleStart: now, cycleAt: effectiveCycleMs(BUSINESSES[j], s), paidLaps: 0, holdUntil: 0 };
-      }
-      return b;
-    });
-    if (any) {
-      s.sawPit = true;
-      const goalPay = settleGoals(s, { pay: true });
-      if (goalPay.reward > 0) toast("Goal complete", { description: `+${money(goalPay.reward)} cash` });
-      saveNow();
-      bump();
-    }
+    if (!startAllRuns(s, Date.now())) return;
+    saveNow();
+    bump();
   }, [bump, saveNow]);
 
   const buyForeman = useCallback(() => {
-    const s = stateRef.current;
-    if (s.foreman) return;
-    if (!(s.cash >= FOREMAN_COST) || !Number.isFinite(s.cash)) return;
-    s.cash -= FOREMAN_COST;
-    s.foreman = true;
+    if (!takeForeman(stateRef.current)) return;
     playBuy();
     saveNow();
     bump();
@@ -974,7 +924,9 @@ export function useGame() {
 
   const openEraAt = useCallback(
     (index) => {
-      if (!openEra(stateRef.current, index)) return;
+      const s = stateRef.current;
+      if (!openEra(s, index)) return;
+      queueEraArrival(s, BUSINESSES[index].id);
       playBuy();
       saveNow();
       bump();
@@ -1077,6 +1029,34 @@ export function useGame() {
     [bump]
   );
 
+  const chooseStoryEvent = useCallback(
+    (choice) => {
+      const result = applyStoryChoice(stateRef.current, choice, Date.now());
+      if (!result) return;
+      if (result.type === "choice") {
+        const summary = describeEffects(result.effects || {}) || "The event is in the logbook.";
+        toast(result.title, { description: `${summary}.` });
+      }
+      if (result.type === "defer") toast("Deferred", { description: "The story will wait 5 minutes." });
+      saveNow();
+      bump();
+    },
+    [bump]
+  );
+
+  const acceptContractOffer = useCallback(() => {
+    if (!acceptContract(stateRef.current, Date.now())) return;
+    saveNow();
+    bump();
+  }, [bump]);
+
+  const skipContractOffer = useCallback(() => {
+    if (!skipContract(stateRef.current, Date.now())) return;
+    toast("Contract skipped", { description: "Nothing lost. The office will ask again later." });
+    saveNow();
+    bump();
+  }, [bump]);
+
   const cashOut = useCallback(() => {
     const result = cashOutBubble(stateRef.current, Date.now());
     if (!result) return;
@@ -1102,6 +1082,11 @@ export function useGame() {
   }, [bump]);
 
   // Tutorial: a manual step's button, skipping, and replaying from Help.
+  const dismissArrivalCard = useCallback(() => {
+    dismissArrival(stateRef.current);
+    bump();
+  }, [bump]);
+
   const tutorialNext = useCallback((id) => {
     const s = stateRef.current;
     const t = s.tutorial || blankTutorial();
@@ -1123,7 +1108,47 @@ export function useGame() {
   const tutorialReplay = useCallback(() => {
     const s = stateRef.current;
     const t = s.tutorial || blankTutorial();
-    s.tutorial = { ...blankTutorial(), replay: true, tips: [...(t.tips || [])], tipsOff: !!t.tipsOff };
+    s.tutorial = {
+      ...blankTutorial(),
+      replay: true,
+      tips: [...(t.tips || [])],
+      tipsOff: !!t.tipsOff,
+      toursSeen: [...(t.toursSeen || [])],
+      toursSkipped: [...(t.toursSkipped || [])],
+      toursDone: [...(t.toursDone || [])],
+      toursReady: true,
+    };
+    saveNow();
+    bump();
+  }, [bump, saveNow]);
+
+  const noteTutorialPage = useCallback((id) => {
+    const s = stateRef.current;
+    if (!markOpened(s, id)) return;
+    saveNow();
+    bump();
+  }, [bump, saveNow]);
+
+  const tourNext = useCallback((stepId) => {
+    const s = stateRef.current;
+    const t = s.tutorial || blankTutorial();
+    if ((t.toursSeen || []).includes(stepId)) return;
+    const toursSeen = [...(t.toursSeen || []), stepId];
+    const toursDone = [...(t.toursDone || [])];
+    for (const tour of FACILITY_TOURS) {
+      if (toursDone.includes(tour.id) || (t.toursSkipped || []).includes(tour.id)) continue;
+      if (tour.steps.every((step) => toursSeen.includes(step.id)) && !toursDone.includes(tour.id)) toursDone.push(tour.id);
+    }
+    s.tutorial = { ...t, toursSeen, toursDone };
+    saveNow();
+    bump();
+  }, [bump, saveNow]);
+
+  const tourSkip = useCallback((tourId) => {
+    const s = stateRef.current;
+    const t = s.tutorial || blankTutorial();
+    if (!tourId || (t.toursSkipped || []).includes(tourId)) return;
+    s.tutorial = { ...t, toursSkipped: [...(t.toursSkipped || []), tourId] };
     saveNow();
     bump();
   }, [bump, saveNow]);
@@ -1188,41 +1213,17 @@ export function useGame() {
     lines.push("", "You lose your cash, businesses, managers, upgrades and facility parts.", "You keep your investors (each one boosts all income forever), research, tokens and badges.");
     if (!window.confirm(lines.join("\n"))) return;
     buzzStrong();
-    pushRun(s, { investorsGained: gained });
-    s.prestigeCount = (s.prestigeCount || 0) + 1;
-    const meta = snapshotMeta(s, { resetRunUpgrades: true });
-    const next = freshState();
-    Object.assign(next, meta);
-    const firstTime = !s.prestiged;
-    const incomeBefore = empireFactors(s, Date.now()).total;
-    next.investors = nextInvestors;
-    next.investorPeak = Math.max(investorPeak(s), nextInvestors);
-    next.biz = startingBiz(next, freshBiz(), s.biz);
-    ensureManagersHired(next);
-    next.cash = 0;
-    next.lifetime = 0;
-    next.prestiged = true;
-    next.runStartedAt = Date.now();
-    next.dilemma = null;
-    next.challenge = null;
-    // The first prestige gets a screen that shows what changed.
-    if (firstTime) {
-      next.prestigeReport = {
-        gained,
-        investors: nextInvestors,
-        incomeBefore,
-        incomeAfter: empireFactors(next, Date.now()).total,
-        unlocked: INVESTOR_MILESTONES.filter((ms) => investorPeak(s) < ms.at && next.investorPeak >= ms.at).map((ms) => ({ title: ms.title, text: ms.text })),
-        nextUnlock: nextInvestorMilestone(next),
-      };
-    }
+    const applied = applyPrestige(s, now);
+    if (!applied) return;
+    const { next, firstTime } = applied;
     stateRef.current = next;
     saveNow();
     bump();
-    toast(`${gained} ${noun} joined!`, { description: "Everything now earns more. Rebuild faster than before." });
-    // Investor milestones reached by this prestige.
-    for (const ms of INVESTOR_MILESTONES) {
-      if (investorPeak(s) < ms.at && next.investorPeak >= ms.at) toast(`Unlocked: ${ms.title}`, { description: ms.text });
+    toast(`${applied.gained} ${noun} joined!`, { description: "Everything now earns more. Rebuild faster than before." });
+    if (firstTime || applied.gained) {
+      for (const ms of INVESTOR_MILESTONES) {
+        if (investorPeak(s) < ms.at && next.investorPeak >= ms.at) toast(`Unlocked: ${ms.title}`, { description: ms.text });
+      }
     }
   }, [bump]);
 
@@ -1233,23 +1234,12 @@ export function useGame() {
     if ((s.investors || 0) < bill) return;
     if (singularityMult((s.singularities || 0) + 1) <= singularityMult(s.singularities || 0)) return;
     if (!window.confirm(`Fork the timeline?\n\nThis spends ${bill} investors and starts your run over (cash, businesses, managers, upgrades and facility parts).\nYou get: income x${singularityMult((s.singularities || 0) + 1).toFixed(1)} forever (now x${singularityMult(s.singularities || 0).toFixed(1)}) and another research slot.\nYou keep: your other investors, research, tokens and badges.`)) return;
-    pushRun(s, { investorsGained: 0 });
-    const meta = snapshotMeta(s, { resetRunUpgrades: true });
-    const next = freshState();
-    Object.assign(next, meta);
-    next.investors = Math.max(0, (s.investors || 0) - bill);
-    next.biz = startingBiz(next, freshBiz(), s.biz);
-    ensureManagersHired(next);
-    next.cash = 0;
-    next.lifetime = 0;
-    next.singularities = (s.singularities || 0) + 1;
-    next.runStartedAt = Date.now();
-    next.dilemma = null;
-    next.challenge = null;
-    stateRef.current = next;
+    const applied = applyFork(s, Date.now());
+    if (!applied) return;
+    stateRef.current = applied.next;
     saveNow();
     bump();
-    toast("Timeline forked", { description: `Income x${singularityMult(next.singularities).toFixed(1)} forever. Another research slot is open.` });
+    toast("Timeline forked", { description: `Income x${singularityMult(applied.next.singularities).toFixed(1)} forever. Another research slot is open.` });
   }, [bump]);
 
   const reset = useCallback(() => {
@@ -1273,7 +1263,7 @@ export function useGame() {
   const importSave = useCallback(
     (data) => {
       if (!data || typeof data !== "object") return false;
-      writeSaveData(data);
+      writeSaveData(data, { backup: "force" });
       const { state } = loadSave();
       stateRef.current = state;
       saveNow();
@@ -1287,11 +1277,20 @@ export function useGame() {
     if (applyBriefing(stateRef.current)) bump();
   }, [bump]);
 
+  const markReadyView = useCallback((bucket, prefix) => {
+    if (markReadySeen(stateRef.current, bucket, Date.now(), prefix || "")) {
+      saveNow();
+      bump();
+    }
+  }, [bump, saveNow]);
+
   return {
     ready,
     state: stateRef.current,
+
     buyMode,
     setBuyMode,
+    markReadyView,
     buy,
     hire,
     run,
@@ -1354,9 +1353,29 @@ export function useGame() {
       saveNow();
       bump();
     },
+    saveBenchRig: () => {
+      const done = saveRig(stateRef.current);
+      if (done.ok) {
+        saveNow();
+        bump();
+      }
+      return done;
+    },
+    deleteBenchRig: (id) => {
+      const done = deleteRig(stateRef.current, id);
+      if (done.ok) {
+        saveNow();
+        bump();
+      }
+      return done;
+    },
     prestige,
     reset,
     dismissOffline,
+    dismissArrivalCard,
+    chooseStoryEvent,
+    acceptContractOffer,
+    skipContractOffer,
     purchaseUpgrade,
     upgradeStorage,
     openEraAt,
@@ -1379,6 +1398,9 @@ export function useGame() {
     tipShown,
     tutorialSkip,
     tutorialReplay,
+    noteTutorialPage,
+    tourNext,
+    tourSkip,
     tipSeen,
     setTipsOff,
     setAutoUpgrades,

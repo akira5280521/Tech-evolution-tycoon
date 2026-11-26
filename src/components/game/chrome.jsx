@@ -5,9 +5,11 @@ import { money } from "@/lib/gameConfig";
 import { PREFS_EVENT } from "@/lib/gamePrefs";
 import { progressLabel } from "@/lib/progress";
 import BottomTabs from "./BottomTabs";
+import { TechHqLinks } from "./TopBar";
 import { ItemHelp, TipCard } from "./HintSheet";
 import NewsTicker from "./NewsTicker";
 import StarterGoal from "./StarterGoal";
+import { NextGoalChip } from "./NextGoalChip";
 import { useGameState } from "./GameState";
 
 export function BackButton({ to = "/" }) {
@@ -35,12 +37,14 @@ export function CashTicker({ state, cps }) {
         <div data-cash-rate className="h-[1.15em] truncate whitespace-nowrap font-term text-[clamp(12px,4.2vw,16px)] leading-[1.15] tabular-nums text-[var(--game-success)]">
           {money(cps)}/s income
         </div>
-        {overclockOn(state, Date.now()) && (
-          <div data-overclock className="font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
-            OVERCLOCKED x1.5 · {Math.ceil((state.lab.overclockUntil - Date.now()) / 60000)} MIN LEFT
-          </div>
-        )}
+        {/* Always reserve this line so an Overclock never jumps the box height. */}
+        <div data-overclock className="h-4 overflow-hidden font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">
+          {overclockOn(state, Date.now())
+            ? `OVERCLOCKED x1.5 · ${Math.ceil((state.lab.overclockUntil - Date.now()) / 60000)} MIN LEFT`
+            : " "}
+        </div>
       </div>
+      <NextGoalChip state={state} />
       <StarterGoal state={state} />
       <NewsTicker state={state} />
     </div>
@@ -92,7 +96,7 @@ export function StickyHud({ state, cps }) {
   );
 }
 
-export default function ScreenShell({ title, subtitle, children, backTo = "/" }) {
+export default function ScreenShell({ title, subtitle, children, backTo = "/", titleIcon } = {}) {
   const { state } = useGameState();
   const cps = incomePerSecond(state, Date.now());
   return (
@@ -103,11 +107,26 @@ export default function ScreenShell({ title, subtitle, children, backTo = "/" })
       <header className="safe-x border-b-2 border-[var(--game-border)] bg-[var(--game-bg)] px-3 pb-3 pt-2">
         <div className="mx-auto max-w-4xl">
           <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h1 className="title-glow whitespace-pre-line font-pixel text-sm leading-6 text-[var(--game-accent)]">{title}</h1>
-              {subtitle && <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{subtitle}</p>}
+            <div className="flex min-w-0 items-center gap-2.5">
+              {titleIcon && (
+                <img
+                  src={titleIcon}
+                  alt=""
+                  width={32}
+                  height={32}
+                  data-title-icon
+                  className="pixel-art h-8 w-8 shrink-0"
+                />
+              )}
+              <div className="min-w-0">
+                <h1 className="title-glow whitespace-pre-line font-pixel text-sm leading-6 text-[var(--game-accent)]">{title}</h1>
+                {subtitle && <p className="mt-2 font-term text-lg leading-6 text-[var(--game-muted)]">{subtitle}</p>}
+              </div>
             </div>
             <BackButton to={backTo} />
+          </div>
+          <div className="mt-2">
+            <TechHqLinks state={state} />
           </div>
         </div>
       </header>

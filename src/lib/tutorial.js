@@ -10,6 +10,8 @@
 
 import { BUSINESSES, costOf, eraOpen, managerNeed } from "./gameConfig.js";
 import { HUB_LABEL } from "./hub.js";
+import { FIRST_RESEARCH_ID } from "./research.js";
+import { STARTER_PART_ID, facilityUnlocked } from "./facilities.js";
 
 const indexOf = (id) => BUSINESSES.findIndex((cfg) => cfg.id === id);
 const ownedOf = (state, id) => state?.biz?.[indexOf(id)]?.owned || 0;
@@ -27,7 +29,7 @@ function canAfford(state, id) {
   const index = indexOf(id);
   const cfg = BUSINESSES[index];
   if (!cfg) return false;
-  const cost = costOf(cfg, ownedOf(state, id), 1);
+  const cost = costOf(cfg, ownedOf(state, id), 1, state);
   return Number.isFinite(cost) && (state?.cash || 0) >= cost;
 }
 
@@ -106,9 +108,51 @@ export const TUTORIAL_STEPS = [
     target: "[data-supply]",
   },
   {
+    id: "hq",
+    title: "HEADQUARTERS",
+    text: `Tap ${HUB_LABEL} (beside TECH). It is the menu for research machines, later plants, and the Hardware Museum.`,
+    target: "[data-open-facilities]",
+    done: (s) => !!(s.tutorial?.opened || []).includes("hq"),
+  },
+  {
+    id: "hq-go",
+    title: "GO",
+    text: "These are locations you can visit. Tap GO to go there.",
+    target: "[data-action='go-servers']",
+    done: (s) => !!(s.tutorial?.opened || []).includes("servers"),
+  },
+  {
+    id: "servers",
+    title: "RESEARCH SERVERS",
+    text: "Tap RESEARCH SERVERS. This room holds the machines that make R&D points.",
+    target: "[data-hub-item='servers']",
+    done: (s) => !!(s.tutorial?.opened || []).includes("servers"),
+  },
+  {
+    id: "starter",
+    title: "THE PUNCH-CARD MACHINE",
+    text: "Tap BUY on the Inland 601. It is cheap, and it starts making R&D points at once. You need those points to research hardware on TECH.",
+    target: "[data-action='buy-tab601']",
+    done: (s) => (s.facilities?.servers?.[STARTER_PART_ID] || 0) > 0,
+  },
+  {
+    id: "tech",
+    title: "THE TECH TIMELINE",
+    text: "Tap BACK, then TECH (beside HQ). TECH lists real inventions to research with R&D points.",
+    target: "[data-open-research]",
+    done: (s) => !!(s.tutorial?.opened || []).includes("tech"),
+  },
+  {
+    id: "project",
+    title: "FIRST RESEARCH",
+    text: "Tap the Hollerith tabulator to start it. It is the first project, and it keeps going while the app is closed.",
+    target: "[data-action='research-tab-hollerith']",
+    done: (s) => (s.techDone || []).includes(FIRST_RESEARCH_ID) || s.techJob?.id === FIRST_RESEARCH_ID || s.techJob2?.id === FIRST_RESEARCH_ID,
+  },
+  {
     id: "later",
     title: "WHAT'S AHEAD",
-    text: `The ??? buttons open later. TECH is research: timed projects paid with R&D points. ${HUB_LABEL} holds the research machines that make R&D points, and other plants. A tip explains each one when it opens.`,
+    text: `Other plants open later: the PC Build Bench, the Bitbark Mine and the training cluster. A short guide walks you through each one when it unlocks. You can also read them in MORE > HOW TO PLAY.`,
     target: "[data-open-research]",
     manual: true,
     button: "DONE",
@@ -128,7 +172,7 @@ export function stepText(step, state) {
 
 // tips / tipsOff belong to the one-time feature tips (src/lib/tips.js).
 export function blankTutorial() {
-  return { seen: [], done: false, skipped: false, replay: false, tips: [], tipsOff: false, tipsShown: [] };
+  return { seen: [], done: false, skipped: false, replay: false, tips: [], tipsOff: false, tipsShown: [], opened: [], toursSeen: [], toursSkipped: [], toursDone: [], toursReady: false };
 }
 
 // Read a saved tutorial record. A save from before the tutorial existed counts
@@ -146,6 +190,10 @@ export function readTutorial(raw, hasProgress) {
     tips: Array.isArray(raw.tips) ? raw.tips.filter((id) => typeof id === "string").slice(0, 100) : [],
     tipsOff: !!raw.tipsOff,
     tipsShown: Array.isArray(raw.tipsShown) ? raw.tipsShown.filter((id) => typeof id === "string").slice(0, 100) : [],
+    opened: Array.isArray(raw.opened) ? raw.opened.filter((id) => typeof id === "string").slice(0, 20) : [],
+    toursSeen: Array.isArray(raw.toursSeen) ? raw.toursSeen.filter((id) => typeof id === "string").slice(0, 40) : [],
+    toursSkipped: Array.isArray(raw.toursSkipped) ? raw.toursSkipped.filter((id) => typeof id === "string").slice(0, 20) : [],
+    toursDone: Array.isArray(raw.toursDone) ? raw.toursDone.filter((id) => typeof id === "string").slice(0, 20) : [],
   };
 }
 
@@ -177,4 +225,84 @@ export function tutorialCleared(state) {
 
 export function stepNumber(step) {
   return TUTORIAL_STEPS.findIndex((s) => s.id === step?.id) + 1;
+}
+
+// Short guides that fire once when a facility first unlocks this career.
+export const FACILITY_TOURS = [
+  {
+    id: "tour-servers",
+    facilityId: "servers",
+    when: (s) => facilityUnlocked(s, "servers"),
+    route: "/facilities/servers",
+    steps: [
+      { id: "servers-room", title: "MACHINE ROOM", text: "Mainframes opened the rest of this room. Research a computer on TECH, then come back here to buy it.", target: "[data-facility='servers']", manual: true },
+      { id: "servers-kit", title: "POWER AND COOLING", text: "Each machine-room computer needs its own motor-generator and air conditioner, and a tape or disk once you have researched one.", target: "[data-facility='servers']", manual: true, button: "DONE" },
+    ],
+  },
+  {
+    id: "tour-bench",
+    facilityId: "bench",
+    when: (s) => facilityUnlocked(s, "bench"),
+    route: "/facilities/bench",
+    steps: [
+      { id: "bench-intro", title: "PC BUILD BENCH", text: "The lab builds one PC at a time. It needs a board, a CPU that fits that board's socket, and memory that fits its slots.", target: "[data-facility='bench']", manual: true },
+      { id: "bench-parts", title: "FIT THE PARTS", text: "Start with a board, then a CPU for its socket, then memory for its slots. The bench tells you if something doesn't fit. The PC makes R&D points.", target: "[data-facility='bench']", manual: true, button: "DONE" },
+    ],
+  },
+  {
+    id: "tour-mine",
+    facilityId: "mine",
+    when: (s) => facilityUnlocked(s, "mine"),
+    route: "/facilities/mine",
+    steps: [
+      { id: "mine-intro", title: "BITBARK MINE", text: "Graphics cards here mint Bitbark, a game coin that stays in the game. It adds a little extra income.", target: "[data-facility='mine']", manual: true },
+      { id: "mine-run", title: "POWER AND COOLING", text: "Buy a card, then enough power and cooling. The plant runs slower if either can't keep up, and it tells you what to add next.", target: "[data-facility='mine']", manual: true, button: "DONE" },
+    ],
+  },
+  {
+    id: "tour-cluster",
+    facilityId: "cluster",
+    when: (s) => facilityUnlocked(s, "cluster"),
+    route: "/facilities/cluster",
+    steps: [
+      { id: "cluster-intro", title: "TRAINING CLUSTER", text: "The cluster trains a model and bills the studio. A bigger model needs more memory.", target: "[data-facility='cluster']", manual: true },
+      { id: "cluster-run", title: "CARDS AND MEMORY", text: "Buy graphics cards, memory, power and cooling. The cluster tells you if it needs more RAM or VRAM for the next model size.", target: "[data-facility='cluster']", manual: true, button: "DONE" },
+    ],
+  },
+];
+
+export function tourSteps() {
+  return FACILITY_TOURS.flatMap((tour) => tour.steps);
+}
+
+// The coach to show now: the first-session tutorial first, then one facility
+// tour at a time, in unlock order.
+export function currentCoach(state) {
+  const first = currentTutorialStep(state);
+  if (first) {
+    return { kind: "tutorial", tourId: null, step: first, index: stepNumber(first), total: TUTORIAL_STEPS.length, route: null };
+  }
+  if (tutorialActive(state)) return null;
+  const rec = state?.tutorial;
+  const skipped = rec?.toursSkipped || [];
+  const done = rec?.toursDone || [];
+  const seen = rec?.toursSeen || [];
+  for (const tour of FACILITY_TOURS) {
+    if (skipped.includes(tour.id) || done.includes(tour.id)) continue;
+    if (!tour.when(state)) continue;
+    for (let i = 0; i < tour.steps.length; i++) {
+      const step = tour.steps[i];
+      if (seen.includes(step.id)) continue;
+      return { kind: "tour", tourId: tour.id, step, index: i + 1, total: tour.steps.length, route: tour.route };
+    }
+  }
+  return null;
+}
+
+export function markOpened(state, id) {
+  if (!state?.tutorial || !id) return false;
+  const opened = state.tutorial.opened || [];
+  if (opened.includes(id)) return false;
+  state.tutorial = { ...state.tutorial, opened: [...opened, id] };
+  return true;
 }

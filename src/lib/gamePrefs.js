@@ -17,18 +17,35 @@ export function normalizePrefs(raw) {
   return {
     sound: src.sound !== false,
     compact: src.compact === true,
+    // Shrink fully upgraded, auto-run rows to one line. Default on.
+    collapseMaxed: src.collapseMaxed !== false,
     musicVolume: pct(src.musicVolume, 70),
     musicMuted: src.musicMuted === true,
     effectsVolume: pct(src.effectsVolume, 100),
     effectsMuted: src.effectsMuted === true,
     haptics: src.haptics !== false,
     notifyCap: src.notifyCap === true,
+    notifyResearch: src.notifyResearch === true,
+    notifyBins: src.notifyBins === true,
+    notifyAt: {
+      cap: Number.isFinite(Number(src.notifyAt?.cap)) ? Number(src.notifyAt.cap) : 0,
+      research: Number.isFinite(Number(src.notifyAt?.research)) ? Number(src.notifyAt.research) : 0,
+      bins: Number.isFinite(Number(src.notifyAt?.bins)) ? Number(src.notifyAt.bins) : 0,
+    },
     numberFormat,
     textSize,
+    // Facility room monitor glass: era-accurate (default), or a forced phosphor.
+    monitorDisplay: src.monitorDisplay === "green" || src.monitorDisplay === "amber" || src.monitorDisplay === "color" ? src.monitorDisplay : "era",
     contrast: src.contrast === true,
+    colorblind: src.colorblind === true,
     goalsHidden: src.goalsHidden === true,
     // The game screen section last shown: "tech" (default) or "supply".
     gameSection: src.gameSection === "supply" ? "supply" : "tech",
+    // Museum exhibits the player has opened. Stored in prefs so viewing
+    // never rewrites the empire save.
+    museumViewed: Array.isArray(src.museumViewed)
+      ? [...new Set(src.museumViewed.map((id) => String(id)).filter(Boolean))].slice(0, 2500)
+      : [],
   };
 }
 

@@ -1,0 +1,16 @@
+{
+  "frames": 24,
+  "durationMs": 70,
+  "cat-strip": {
+    "w": 27,
+    "h": 18,
+    "originX": 0,
+    "originY": 0
+  },
+  "cat-start-strip": {
+    "w": 27,
+    "h": 18,
+    "originX": 0,
+    "originY": 0
+  }
+}

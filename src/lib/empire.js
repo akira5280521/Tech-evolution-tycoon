@@ -694,8 +694,8 @@ export function boughtCap(state, key, level = storageLevel(state, key)) {
 // material, so a small bin can never block OPEN ERA.
 function nextEraStock(state, key) {
   const paid = state?.erasPaid || [];
-  const next = BUSINESSES.find((cfg) => ERA_MATERIAL[cfg.id]?.key === key && !paid.includes(cfg.id));
-  return next ? ERA_MATERIAL[next.id].amount : 0;
+  const next = BUSINESSES.find((cfg) => !paid.includes(cfg.id) && (ERA_MATERIAL[cfg.id] || []).some((m) => m.key === key));
+  return next ? ERA_MATERIAL[next.id].find((m) => m.key === key).amount : 0;
 }
 export function supplyCap(state, key, level = storageLevel(state, key)) {
   return Math.min(SUPPLY_CAP, Math.max(boughtCap(state, key, level) + 100 * flowOf(state, key), nextEraStock(state, key)));

@@ -199,3 +199,8 @@ if (typeof window !== "undefined") {
   });
   window.addEventListener("pageshow", syncFromPage);
 }
+
+// A soft tick for any button press, when tap sound is on (T4 item 35).
+export function playTap() {
+  blip(1760, 0, 0.025, 0.04);
+}

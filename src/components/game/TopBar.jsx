@@ -55,7 +55,7 @@ export default function TopBar({ state, buyMode, setBuyMode, onRunAll, canRunAll
             aria-label="Run All"
             onClick={onRunAll}
             disabled={!canRunAll}
-            className={`flex min-h-11 w-full items-center justify-center gap-2 border-2 px-2 font-pixel text-[0.55rem] uppercase shadow-[2px_2px_0_0_#000] ${canRunAll ? `${off} hover:border-[var(--game-accent)] hover:text-[var(--game-accent)]` : "cursor-not-allowed border-[var(--game-border)] text-[var(--game-dim)]"}`}
+            className={`flex min-h-12 w-full items-center justify-center gap-2 border-2 px-2 font-pixel text-[0.55rem] uppercase shadow-[2px_2px_0_0_#000] ${canRunAll ? `${off} hover:border-[var(--game-accent)] hover:text-[var(--game-accent)]` : "cursor-not-allowed border-[var(--game-border)] text-[var(--game-dim)]"}`}
           >
             <Play className="h-4 w-4 shrink-0" aria-hidden="true" />
             Run All

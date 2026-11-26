@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { fullMoney } from "@/lib/fullNumber";
 import { Link, useLocation } from "@tanstack/react-router";
 import { Lightbulb } from "lucide-react";
 import { hintPage, screenHint } from "@/lib/screenHint";
@@ -18,7 +19,7 @@ export function BackButton({ to = "/" }) {
   return (
     <Link
       to={to}
-      className="inline-flex min-h-11 shrink-0 items-center border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-3 font-pixel text-[0.55rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]"
+      className="inline-flex min-h-12 shrink-0 items-center border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-3 font-pixel text-[0.55rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]"
     >
       &lt; BACK
     </Link>
@@ -56,7 +57,7 @@ function HintBulb({ state }) {
         aria-label="Hint for this screen"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className={`absolute right-9 top-0.5 flex h-6 w-7 items-center justify-center border-2 ${open ? "border-[var(--game-accent)] text-[var(--game-accent)]" : "border-[var(--game-border-strong)] text-[var(--game-muted)]"} ${hint.stuck && !open ? "hint-glow" : ""}`}
+        className={`hit48 absolute right-9 top-0.5 flex h-6 w-7 items-center justify-center border-2 ${open ? "border-[var(--game-accent)] text-[var(--game-accent)]" : "border-[var(--game-border-strong)] text-[var(--game-muted)]"} ${hint.stuck && !open ? "hint-glow" : ""}`}
       >
         <Lightbulb className="h-4 w-4" aria-hidden="true" />
       </button>
@@ -85,7 +86,7 @@ export function CashTicker({ state, cps }) {
         <HintBulb state={state} />
         <div className="flex items-baseline gap-2 pr-16">
           <span data-cash-label className="shrink-0 font-pixel text-[8px] leading-[10px] text-[var(--game-muted)]">CASH</span>
-          <span data-cash className="shrink-0 whitespace-nowrap font-term text-2xl leading-none text-[var(--game-success)]">{money(state.cash)}</span>
+          <span data-cash data-exact={fullMoney(state.cash)} className="shrink-0 whitespace-nowrap font-term text-2xl leading-none text-[var(--game-success)]">{money(state.cash)}</span>
           {/* Fixed slot: an Overclock never changes the bar's height. */}
           <span data-overclock className="ml-auto min-w-0 flex-1 truncate whitespace-nowrap text-right font-pixel text-[0.45rem] leading-4 text-[var(--game-accent)]">
             {oc ? `OVERCLOCKED x1.5 · ${Math.ceil((state.lab.overclockUntil - Date.now()) / 60000)} MIN LEFT` : ""}
@@ -93,7 +94,7 @@ export function CashTicker({ state, cps }) {
         </div>
         <div data-status-line className="flex h-[1.15em] items-baseline gap-2 pr-8 whitespace-nowrap font-term text-[clamp(12px,3.8vw,16px)] leading-[1.15] tabular-nums">
           <span data-era-progress aria-label={era ? `Current era: ${era}` : "Current era"} className="shrink-0 text-[var(--game-muted)]">{era}</span>
-          <span data-cash-rate className="min-w-0 flex-1 truncate text-[var(--game-success)]">{money(cps)}/s income</span>
+          <span data-cash-rate data-exact={`${fullMoney(cps)}/s`} className="min-w-0 flex-1 truncate text-[var(--game-success)]">{money(cps)}/s income</span>
           <span data-rd-points aria-label={`R&D points: ${rdPoints(state.data)}`} className="shrink-0 text-[var(--game-accent)]">R&amp;D {rdPoints(state.data)}</span>
           <span data-calendar-month data-month={when.month} className="shrink-0 text-[var(--game-fg)]">{monthName(when.month)} {when.year}</span>
         </div>
@@ -162,7 +163,7 @@ function Breadcrumb({ title, via }) {
   const name = String(title || "").replace(/\s+/g, " ").trim();
   return (
     <nav data-breadcrumb aria-label="Where you are" className="mb-1 flex min-w-0 flex-wrap items-center gap-1 font-pixel text-[0.5rem] leading-5 text-[var(--game-muted)]">
-      <Link to={HUB_ROUTE} data-back-hq className="underline decoration-dotted hover:text-[var(--game-accent)]">{HUB_LABEL}</Link>
+      <Link to={HUB_ROUTE} data-back-hq className="hit48 relative inline-block underline decoration-dotted hover:text-[var(--game-accent)]">{HUB_LABEL}</Link>
       {via && <><span aria-hidden="true">&gt;</span><span>{via}</span></>}
       <span aria-hidden="true">&gt;</span>
       <span className="min-w-0 break-words text-[var(--game-fg)]">{name}</span>
@@ -225,7 +226,7 @@ export function SubTabs({ tabs, active, onPick, name = "menu" }) {
           aria-disabled={tab.locked ? "true" : undefined}
           data-sub-tab={tab.id}
           onClick={() => !tab.locked && onPick(tab.id)}
-          className={`relative min-h-11 min-w-0 border-2 px-1 py-1 text-center font-pixel text-[0.5rem] leading-4 shadow-[3px_3px_0_0_#000] ${
+          className={`relative min-h-12 min-w-0 border-2 px-1 py-1 text-center font-pixel text-[0.5rem] leading-4 shadow-[3px_3px_0_0_#000] ${
             tab.locked
               ? "cursor-not-allowed border-[var(--game-border)] text-[var(--game-dim)]"
               : active === tab.id
@@ -257,7 +258,7 @@ export function GoldButton({ children, disabled, onClick, dataAttr }) {
       disabled={disabled}
       onClick={onClick}
       data-action={dataAttr}
-      className={`w-full border-2 px-3 py-2 text-center shadow-[3px_3px_0_0_#000] ${
+      className={`min-h-12 w-full border-2 px-3 py-2 text-center shadow-[3px_3px_0_0_#000] ${
         disabled
           ? "cursor-not-allowed border-[var(--game-border)] bg-[var(--game-panel)] text-[var(--game-dim)]"
           : "border-[var(--game-accent)] bg-[var(--game-accent)] text-black"

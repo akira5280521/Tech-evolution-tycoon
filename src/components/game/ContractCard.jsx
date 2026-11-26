@@ -22,10 +22,10 @@ export default function ContractCard({ contract, state, onAccept, onSkip }) {
           {pay ? <p className="mt-3 font-term text-base text-[var(--game-muted)]">Pay: {pay}</p> : null}
         </div>
         <div className="hint-sheet-actions mt-4">
-          <button type="button" data-contract-accept onClick={onAccept} className="min-h-11 w-full border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-3 py-2 font-pixel text-[0.6rem] text-[var(--game-fg)]">
+          <button type="button" data-contract-accept onClick={onAccept} className="min-h-12 w-full border-2 border-[var(--game-border-strong)] bg-[var(--game-panel)] px-3 py-2 font-pixel text-[0.6rem] text-[var(--game-fg)]">
             ACCEPT
           </button>
-          <button type="button" data-contract-skip onClick={onSkip} className="mt-2 min-h-11 w-full border-2 border-[var(--game-violet-border)] px-3 py-2 font-pixel text-[0.6rem] text-[var(--game-violet)]">
+          <button type="button" data-contract-skip onClick={onSkip} className="mt-2 min-h-12 w-full border-2 border-[var(--game-violet-border)] px-3 py-2 font-pixel text-[0.6rem] text-[var(--game-violet)]">
             SKIP — IT COMES BACK LATER
           </button>
         </div>

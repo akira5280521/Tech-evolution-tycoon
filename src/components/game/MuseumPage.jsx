@@ -29,7 +29,7 @@ import { matchesSearch, revealedHaystack } from "@/lib/searchText";
 import RecordsSection from "./RecordsSection";
 
 function chipClass({ on, gold, grey }) {
-  return `relative shrink-0 min-h-11 overflow-visible whitespace-nowrap border-2 px-2 py-1 text-center font-pixel text-[8px] leading-4 shadow-[3px_3px_0_0_#000] ${
+  return `relative shrink-0 min-h-12 overflow-visible whitespace-nowrap border-2 px-2 py-1 text-center font-pixel text-[8px] leading-4 shadow-[3px_3px_0_0_#000] ${
     grey
       ? "border-[var(--game-border)] text-[var(--game-dim)] opacity-60"
       : gold
@@ -172,7 +172,7 @@ export default function MuseumPage({ top = null, backTo } = {}) {
                     type="button"
                     data-today-item={e.id}
                     onClick={() => visit(e.item)}
-                    className="mt-1 flex w-full min-h-11 items-center gap-2 text-left"
+                    className="mt-1 flex w-full min-h-12 items-center gap-2 text-left"
                   >
                     <MuseumIcon src={e.item.icon} shade={e.found ? "" : "museum-sil"} className="h-10 w-10 shrink-0 border-2 border-[var(--game-border)] bg-black object-contain" />
                     <span className="min-w-0 break-words font-term text-lg leading-6 text-[var(--game-fg)]">
@@ -241,7 +241,7 @@ export default function MuseumPage({ top = null, backTo } = {}) {
                   data-museum-maker
                   value={maker || ""}
                   onChange={(e) => setMaker(e.target.value || null)}
-                  className="min-h-11 min-w-0 flex-1 border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] px-2 font-term text-lg text-[var(--game-fg)]"
+                  className="min-h-12 min-w-0 flex-1 border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] px-2 font-term text-lg text-[var(--game-fg)]"
                 >
                   <option value="">Every maker</option>
                   {filters.makers.map((m) => (
@@ -309,7 +309,7 @@ function ExhibitSheet({ state, id, roomId, onClose }) {
       <p className="mt-2 break-words font-term text-lg leading-6 text-[var(--game-fg)]">{locked ? why : item.spec.replace(/^\d{4}: /, "").replace(/^./, (c) => c.toUpperCase())}</p>
       </div>
       <div className="hint-sheet-actions mt-2 flex justify-end">
-        <button type="button" data-exhibit-close onClick={onClose} className="min-h-11 border-2 border-[var(--game-border-strong)] px-3 font-pixel text-[0.5rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]">
+        <button type="button" data-exhibit-close onClick={onClose} className="min-h-12 border-2 border-[var(--game-border-strong)] px-3 font-pixel text-[0.5rem] text-[var(--game-fg)] shadow-[3px_3px_0_0_#000]">
           CLOSE
         </button>
       </div>

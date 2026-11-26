@@ -56,7 +56,7 @@ export default function PrestigeReport({ report, onDismiss }) {
           type="button"
           onClick={onDismiss}
           data-prestige-report-ok
-          className="min-h-11 w-full shrink-0 select-none border-2 border-[var(--game-violet)] bg-[var(--game-violet-bg)] px-3 py-2 font-pixel text-sm uppercase text-[var(--game-violet)] shadow-[3px_3px_0_0_#000]"
+          className="min-h-12 w-full shrink-0 select-none border-2 border-[var(--game-violet)] bg-[var(--game-violet-bg)] px-3 py-2 font-pixel text-sm uppercase text-[var(--game-violet)] shadow-[3px_3px_0_0_#000]"
         >
           Let's go
         </button>

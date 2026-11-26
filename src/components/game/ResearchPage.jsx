@@ -165,7 +165,7 @@ export default function TechList({ focusId = "" }) {
             aria-selected={section === sec.id}
             data-tech-section={sec.id}
             onClick={() => setSection(sec.id)}
-            className={`min-h-11 border-2 px-2 font-pixel text-[0.55rem] shadow-[3px_3px_0_0_#000] ${section === sec.id ? "border-[var(--game-accent)] bg-[var(--game-accent)] text-black" : "border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-muted)]"}`}
+            className={`min-h-12 border-2 px-2 font-pixel text-[0.55rem] shadow-[3px_3px_0_0_#000] ${section === sec.id ? "border-[var(--game-accent)] bg-[var(--game-accent)] text-black" : "border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-muted)]"}`}
           >
             {sec.label}
           </button>

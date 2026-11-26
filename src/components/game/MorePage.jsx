@@ -35,7 +35,7 @@ const TABS = [
 ];
 
 const tabBtn = (active, id) =>
-  `min-h-11 border-2 px-2 py-2 text-center font-pixel text-[0.5rem] leading-4 shadow-[3px_3px_0_0_#000] ${
+  `min-h-12 border-2 px-2 py-2 text-center font-pixel text-[0.5rem] leading-4 shadow-[3px_3px_0_0_#000] ${
     active === id
       ? "border-[var(--game-accent)] text-[var(--game-accent)]"
       : "border-[var(--game-border-strong)] text-[var(--game-muted)]"
@@ -126,7 +126,7 @@ function OrientationSetting({ value, onChange }) {
             data-orientation={id}
             aria-pressed={value === id}
             onClick={() => onChange(id)}
-            className={`min-h-11 border-2 px-1 font-pixel text-[0.5rem] ${value === id ? "border-[var(--game-accent)] text-[var(--game-accent)]" : "border-[var(--game-border-strong)] text-[var(--game-muted)]"}`}
+            className={`min-h-12 border-2 px-1 font-pixel text-[0.5rem] ${value === id ? "border-[var(--game-accent)] text-[var(--game-accent)]" : "border-[var(--game-border-strong)] text-[var(--game-muted)]"}`}
           >
             {label}
           </button>
@@ -275,7 +275,7 @@ function HowTo({ state, tipsOff, onTips }) {
     <>
       {HOW_TO.map((section, i) => (
         <details key={section.id} data-howto={section.id} open={i < 2} className="howto-section border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]">
-          <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">
+          <summary className="flex min-h-12 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">
             {section.title}
             <span aria-hidden="true" className="howto-caret shrink-0 text-[var(--game-muted)]">+</span>
           </summary>
@@ -290,7 +290,7 @@ function HowTo({ state, tipsOff, onTips }) {
         const locked = guideLocked(state, guide);
         return (
           <details key={guide.id} data-howto={guide.id} data-howto-locked={locked ? "" : undefined} className="howto-section border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]">
-            <summary className={`flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 ${locked ? "text-[var(--game-dim)]" : "text-[var(--game-accent)]"}`}>
+            <summary className={`flex min-h-12 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 ${locked ? "text-[var(--game-dim)]" : "text-[var(--game-accent)]"}`}>
               {locked ? "??? " + guide.title : guide.title}
               <span aria-hidden="true" className="howto-caret shrink-0 text-[var(--game-muted)]">+</span>
             </summary>
@@ -307,7 +307,7 @@ function HowTo({ state, tipsOff, onTips }) {
         );
       })}
       <details data-howto="words" className="howto-section border-2 border-[var(--game-border-strong)] bg-[var(--game-card)] shadow-[4px_4px_0_0_#000]">
-        <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">
+        <summary className="flex min-h-12 cursor-pointer items-center justify-between gap-2 px-3 py-2 font-pixel text-[0.6rem] leading-5 text-[var(--game-accent)]">
           WORDS TO KNOW
           <span aria-hidden="true" className="howto-caret shrink-0 text-[var(--game-muted)]">+</span>
         </summary>

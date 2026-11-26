@@ -829,8 +829,13 @@ export const ERA_EARN = {
   ics: 1.1e8, minis: 1.2e8, cpu: 1.4e8, homepc: 5.0e8, consoles: 3.1e9, supercomputers: 2.5e10,
   workstations: 9.0e10, laptops: 1.3e11, dialup: 1.7e11, multimedia: 1.9e11, accel3d: 3.2e11, gpu: 4.3e11,
   cloud: 5.8e11, phones: 1.4e12, tablets: 3.1e12, rgb: 5.7e12, ai: 9.8e12, quantum: 5.2e13, vr: 1.6e15,
-  chatbots: 6.1e16, supercluster: 5.8e18,
+  chatbots: 6.1e16, supercluster: 6.0e17,
 };
+// 0.0.31: Superclusters was 5.8e18, 95 times Chatbots. A 0.0.30 tester with
+// a run bonus near 21 needed $265.45Qi at about $713T a second, about 97
+// hours; it is now about $27.5Qi, roughly ten hours from arriving at that
+// income. The gate is worked out live from this table, so old saves just see
+// the lower number.
 export function runBonus(state) {
   const forks = Math.max(0, Math.floor(Number(state?.singularities) || 0));
   return prestigeMult(state?.investors || 0) * Math.min(4, 1 + forks * 0.2);

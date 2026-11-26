@@ -16,7 +16,9 @@ import {
   techJobs,
   hasResearchMaterials,
   researchMaterials,
+  inGameMonth,
 } from "@/lib/research";
+import { monthName } from "@/lib/releaseMonths";
 import { REFINED } from "@/lib/gameConfig";
 import { useGameState } from "./GameState";
 import ScreenShell, { GoldButton, Panel, ProgressBar } from "./chrome";
@@ -74,6 +76,8 @@ export default function ResearchPage() {
       const runningFirst = first && jobs.some((job) => job.id === first.id);
       // Don't yank away from a project already running on another tab.
       if (first && !done && (runningFirst || jobs.length === 0)) entry = first;
+      const mark1 = researchItem("srv-mark1");
+      if (!entry && done && jobs.length === 0 && mark1 && playerYear(state) >= mark1.year && !(state.techDone || []).includes(mark1.id)) entry = mark1;
     }
     if (!entry || !techRevealed(state, entry)) return;
     setTab(entry.tab);
@@ -91,6 +95,12 @@ export default function ResearchPage() {
   const speed = researchSpeed(state);
   const rd = Math.floor(state.data || 0);
   const perSecond = serverOutput(state).perSecond;
+  const month = inGameMonth(state);
+  const mark1 = researchItem("srv-mark1");
+  const needsServer = !!mark1 && playerYear(state) >= mark1.year && !(state.techDone || []).includes("srv-mark1") && !jobs.some((j) => j.id === "srv-mark1");
+  const tabRows = researchRows(tab);
+  const firstInTab = tabRows.find((entry) => !entry.soon);
+  const tabEmpty = !query.trim() && tabRows.length > 0 && !tabRows.some((entry) => techRevealed(state, entry));
 
   return (
     <ScreenShell title="TECH" subtitle="Projects keep going while the app is closed.">
@@ -110,8 +120,13 @@ export default function ResearchPage() {
           );
         })}
         <p data-research-slots className="mt-1 break-words font-term text-base leading-5 text-[var(--game-muted)]">
-          {twoSlots ? "Two projects at once: the bench's CPU has four or more cores." : "One project at a time. A four-core CPU on the PC bench allows two."}
+          {twoSlots ? "Two projects at once." : "One project at a time."} Projects open in their real month: {monthName(month.month)} {month.year || "—"} now.
         </p>
+        {needsServer && (
+          <button type="button" data-first-server onClick={() => { setTab("servers"); setFocus("srv-mark1"); setTimeout(() => document.querySelector('[data-research-item="srv-mark1"]')?.scrollIntoView({ block: "center" }), 50); }} className="mt-2 w-full border-2 border-[var(--game-accent)] p-2 text-left font-term text-base leading-5 text-[var(--game-accent)]">
+            First research server: research the Irwell Mark 1 on SERVERS ({researchCost(researchItem("srv-mark1")).toLocaleString("en-US")} R&amp;D), then build it in HQ. It makes R&amp;D far faster than punch cards.
+          </button>
+        )}
         {playerYear(state) < TECH_OPENS && (
           <p data-tech-opens-year className="mt-2 break-words font-term text-base leading-5 text-[var(--game-accent)]">
             Projects open in their real year. The earliest ones open in {TECH_OPENS}.
@@ -135,6 +150,9 @@ export default function ResearchPage() {
         ))}
       </div>
       <div className="space-y-2">
+        {tabEmpty && firstInTab && (
+          <p data-tab-opens className="font-term text-base leading-5 text-[var(--game-muted)]">Nothing to research here yet. The first project on this tab opens in {firstInTab.year}.</p>
+        )}
         {rows.length === 0 && <p data-search-empty="tech" className="font-term text-lg text-[var(--game-muted)]">No matches.</p>}
         {rows.map((entry) => {
           const revealed = techRevealed(state, entry);
@@ -144,7 +162,8 @@ export default function ResearchPage() {
                 <div data-research-hidden aria-label="Unknown future project" className="flex items-start gap-2 opacity-60">
                   <div className="h-8 w-8 shrink-0 border-2 border-[var(--game-border-strong)] bg-[var(--game-bg)]" aria-hidden="true" />
                   <div className="min-w-0 flex-1">
-                    <p className="font-pixel text-[0.55rem] leading-4 text-[var(--game-muted)]">???</p>
+                    <p className="font-pixel text-[0.55rem] leading-4 text-[var(--game-muted)]">{entry.year} · ???</p>
+                    <p data-research-hidden-need className="font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)]">{researchLock(state, entry) || `Requires ${entry.year}`}</p>
                   </div>
                 </div>
               </Panel>
@@ -167,7 +186,10 @@ export default function ResearchPage() {
                   )}
                 </div>
                 <div className={`min-w-0 flex-1 ${lock ? "opacity-60" : ""}`}>
-                  <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)] [overflow-wrap:anywhere]">{entry.year} · {entry.name}</p>
+                  <p className="break-words font-pixel text-[0.55rem] leading-4 text-[var(--game-fg)] [overflow-wrap:anywhere]">{entry.year >= 1000 ? `${monthName(entry.month)} ${entry.year}` : entry.year} · {entry.name}</p>
+                  {!done && entry.prereq && researchItem(entry.prereq) && (
+                    <p data-research-after className="break-words font-term text-base leading-5 text-[var(--game-muted)]">After: {researchItem(entry.prereq).name}{(state.techDone || []).includes(entry.prereq) ? " (done)" : ""}</p>
+                  )}
                   <p className="break-words font-term text-base leading-5 text-[var(--game-muted)]">{entry.spec}</p>
                   {opens.length > 0 && (
                     <p data-research-opens className="break-words font-term text-base leading-5 text-[var(--game-accent)]">Opens in HQ: {opens.map((p) => p.name).join(", ")}</p>

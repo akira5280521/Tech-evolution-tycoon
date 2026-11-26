@@ -7,7 +7,7 @@ import { HUB_LABEL } from "./hub.js";
 export const GLOSSARY = {
   bench: {
     term: "PC BUILD BENCH",
-    text: "A plant in HQ from Home Computers: the lab builds one PC from real parts. The CPU must match the board's socket and chipset, memory its slots, cards its slots (ISA, PCI, AGP, PCI Express), and the supply its plugs. The PC makes R&D points; a four-core CPU lets two Tech projects run at once.",
+    text: "A plant in HQ from Home Computers: the lab builds one PC from real parts. The CPU must match the board's socket and chipset, memory its slots, cards its slots (ISA, PCI, AGP, PCI Express), and the supply its plugs. The PC makes R&D points.",
   },
   bottleneck: {
     term: "BOTTLENECK",

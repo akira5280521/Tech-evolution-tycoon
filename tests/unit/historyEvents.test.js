@@ -14,10 +14,10 @@ function own(state, id, n = 1) {
   return i;
 }
 
-test("SAVE_VERSION is 15 for contracts and story events", () => {
-  assert.equal(SAVE_VERSION, 15);
+test("SAVE_VERSION is 16 (contracts and story events from 15)", () => {
+  assert.equal(SAVE_VERSION, 16);
   const out = migrateSave({ version: 14, cash: 10, biz: [{ id: "timber", owned: 1 }] });
-  assert.equal(out.version, 15);
+  assert.equal(out.version, 16);
 });
 
 test("the census office is offered after Punch Cards, and only one contract runs at a time", () => {

@@ -25,6 +25,9 @@ test("first prestige: guide, report, then challenges open", async ({ page }) => 
   await expect(page.locator('[data-prestige-ready="yes"]')).toHaveCount(1);
 
   await page.click('[data-prestige="recruit"]');
+  // Prestige asks once (T4 item 37).
+  await expect(page.locator("[data-prestige-report]")).toHaveCount(0);
+  await page.click("[data-prestige-go]");
   await expect(page.locator("[data-prestige-report]")).toBeVisible();
   expect(dialogs[0]).toContain("Income: ×");
   await expect(page.locator("[data-prestige-report]")).toContainText("YOU KEPT");

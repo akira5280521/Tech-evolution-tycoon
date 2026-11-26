@@ -1,6 +1,6 @@
 // The Welcome Back card's text (T4 items 47, 36, 42): one summary, the bins
 // that were FULL folded into a single line, and the away-time cap.
-import { INVESTOR_MILESTONES, hasPerk, offlineCapMs } from "./empire.js";
+import { AWAY_SHIFTS, INVESTOR_MILESTONES, awayShifts, hasPerk, offlineCapMs } from "./empire.js";
 
 export function awayLabel(ms) {
   const totalMin = Math.floor((Number(ms) || 0) / 60000);
@@ -27,5 +27,6 @@ export function awayCap(state, rawAwayMs) {
   const capMs = offlineCapMs(state);
   const capped = Number(rawAwayMs) > capMs;
   const next = INVESTOR_MILESTONES.find((m) => (m.id === "away-36" || m.id === "away-48") && !hasPerk(state, m.id)) || null;
-  return { capMs, capped, next };
+  const shift = AWAY_SHIFTS[awayShifts(state)] || null;
+  return { capMs, capped, next, shift };
 }

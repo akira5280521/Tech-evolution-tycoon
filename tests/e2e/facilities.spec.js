@@ -149,6 +149,7 @@ test("after a prestige HQ still opens and RIGS says what each plant needs", asyn
   await expect(page.locator("[data-open-facilities]")).toHaveText("HQ");
   await page.goto("/boost#prestige");
   await page.click('[data-prestige="recruit"]');
+  await page.click("[data-prestige-go]");
   const report = page.locator("[data-prestige-report-ok]");
   if (await report.count()) await report.click();
   await page.goto("/");

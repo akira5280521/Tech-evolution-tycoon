@@ -22,7 +22,7 @@ import LabProjects from "./LabProjects";
 import AccountPanel from "./AccountPanel";
 import { HelpTip, ItemHelp } from "./HintSheet";
 import { GLOSSARY, GLOSSARY_ORDER } from "@/lib/glossary";
-import { AchievementsButton, AwayReminder, DisplaySettings, FeedbackButton, PlayToggles, ResetProgress, WhatsNewButton } from "./SettingsControls";
+import { AchievementsButton, AwayReminder, DisplaySettings, FeedbackButton, PlayToggles, ResetProgress, SettingsGroup, SoundSettings, WhatsNewButton } from "./SettingsControls";
 import { HUB_LABEL } from "@/lib/hub";
 import { HOWTO_GUIDES, guideLocked } from "@/lib/howto";
 import { labSummary, specialtySummary } from "@/lib/rdSummary";
@@ -65,20 +65,33 @@ export default function MorePage() {
       <MoreLinks active={tab} />
       {tab === "settings" && (
         <div className="flex min-h-[60vh] flex-col gap-3">
-          <Panel>
-            <CompanyNameSetting state={state} onName={nameCompany} />
-          </Panel>
-          <PlayToggles />
-          <DisplaySettings />
-          <OrientationSetting value={state.orientation || "auto"} onChange={setOrientation} />
-          <AwayReminder />
-          <CheckForUpdatesButton />
-          <WhatsNewButton />
-          <AccountPanel state={state} onExport={exportSave} onImport={importSave} />
-          <AchievementsButton />
-          <SaveBackup state={state} onExport={exportSave} onImport={importSave} />
-          <FeedbackButton state={state} />
-          <ResetProgress onReset={reset} />
+          <SettingsGroup id="game" title="GAME">
+            <Panel>
+              <CompanyNameSetting state={state} onName={nameCompany} />
+            </Panel>
+            <PlayToggles />
+          </SettingsGroup>
+          <SettingsGroup id="sound" title="SOUND">
+            <SoundSettings />
+          </SettingsGroup>
+          <SettingsGroup id="notifications" title="NOTIFICATIONS">
+            <AwayReminder />
+          </SettingsGroup>
+          <SettingsGroup id="display" title="DISPLAY">
+            <DisplaySettings />
+            <OrientationSetting value={state.orientation || "auto"} onChange={setOrientation} />
+          </SettingsGroup>
+          <SettingsGroup id="save" title="SAVE">
+            <AccountPanel state={state} onExport={exportSave} onImport={importSave} />
+            <SaveBackup state={state} onExport={exportSave} onImport={importSave} />
+            <ResetProgress onReset={reset} />
+          </SettingsGroup>
+          <SettingsGroup id="about" title="ABOUT">
+            <CheckForUpdatesButton />
+            <WhatsNewButton />
+            <AchievementsButton />
+            <FeedbackButton state={state} />
+          </SettingsGroup>
           <AppVersionFooter />
         </div>
       )}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useArm } from "./useArm";
 import { MARKET_LOT, STORAGE_STEP, SWAP_FEE, materialPrice, refineAmount, refiningOpen, storageCost, storageLevel, supplyCap, swapQuote } from "@/lib/empire";
 import { REFINED, REFINE_MS, REFINE_RATIO, SUPPLY_KEYS, fmt, money } from "@/lib/gameConfig";
 
@@ -107,6 +108,7 @@ function RefinePanel({ state, grade, onRefine }) {
 
 // Sell spare stock for a little cash, or swap it for another material.
 function MarketPanel({ state, materialKey, shown, onSell, onSwap }) {
+  const [armed, arm, disarm] = useArm();
   const others = shown.filter((k) => k !== materialKey);
   const [target, setTarget] = useState(others[0] || null);
   const now = Date.now();
@@ -123,11 +125,16 @@ function MarketPanel({ state, materialKey, shown, onSell, onSwap }) {
       <button
         type="button"
         data-sell={materialKey}
+        data-sell-armed={armed ? "yes" : "no"}
         disabled={!(lot > 0)}
-        onClick={() => onSell?.(materialKey, MARKET_LOT)}
+        onClick={() => {
+          if (!armed) return arm();
+          disarm();
+          onSell?.(materialKey, MARKET_LOT);
+        }}
         className="mt-1 min-h-12 w-full border-2 border-[var(--game-accent)] px-3 font-pixel text-[0.5rem] text-[var(--game-accent)] shadow-[3px_3px_0_0_#000] disabled:border-[var(--game-border)] disabled:text-[var(--game-dim)]"
       >
-        SELL {lot} · {money(lot * price)}
+        {armed ? `TAP AGAIN TO SELL ${lot} · ${money(lot * price)}` : `SELL ${lot} · ${money(lot * price)}`}
       </button>
       {others.length > 0 && (
         <div className="mt-2 flex flex-wrap items-center gap-2">

@@ -191,7 +191,7 @@ export default function TechList({ focusId = "" }) {
         {tabEmpty && firstInTab && (
           <p data-tab-opens className="font-term text-base leading-5 text-[var(--game-muted)]">Nothing to research here yet. The first project on this tab opens in {firstInTab.year}.</p>
         )}
-        {rows.length === 0 && <p data-search-empty="tech" className="font-term text-lg text-[var(--game-muted)]">No matches.</p>}
+        {rows.length === 0 && <p data-search-empty="tech" className="font-term text-lg text-[var(--game-muted)]">No matches. Try a name, a model or a year, or clear the search.</p>}
         {rows.map((entry, i) => {
           const tier = !query.trim() && shownTab === "servers" ? serverTier(entry) : null;
           const prevTier = i > 0 && tier ? serverTier(rows[i - 1]) : null;

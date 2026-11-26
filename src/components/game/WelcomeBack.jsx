@@ -10,7 +10,7 @@ const rd = (n) => (n >= 100 ? Math.round(n).toLocaleString("en-US") : n.toFixed(
 export default function WelcomeBack({ report, onDismiss, state }) {
   if (!report) return null;
   const bins = binsLine(report.full);
-  const { capMs, capped, next } = awayCap(state, report.rawAwayMs ?? report.awayMs);
+  const { capMs, capped, next, shift } = awayCap(state, report.rawAwayMs ?? report.awayMs);
   return (
     <div
       role="dialog"
@@ -53,6 +53,7 @@ export default function WelcomeBack({ report, onDismiss, state }) {
         <p data-offline-cap className="mt-2 shrink-0 font-term text-sm leading-5 text-[var(--game-muted)]">
           {capped ? `Away time pays for up to ${Math.round(capMs / 3600e3)}h, and you hit it.` : `Away time pays for up to ${Math.round(capMs / 3600e3)}h.`}
           {next ? ` ${next.title} (${next.at.toLocaleString("en-US")} investors) raises it.` : ""}
+          {shift ? ` ${shift.name} in R&D > LAB adds ${shift.hours}h.` : ""}
         </p>
         <button
           type="button"

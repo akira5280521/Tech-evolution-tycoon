@@ -6,6 +6,7 @@ import { HUB_LABEL } from "@/lib/hub";
 import {
   QUEUE_SLOTS,
   queueSlotQuote,
+  awayShiftQuote,
   queueSlots,
   queueWait,
   researchCost,
@@ -16,7 +17,7 @@ import {
   techJobs,
   techQueue,
 } from "@/lib/research";
-import { SPECIALTIES, specialtySlots } from "@/lib/empire";
+import { AWAY_SHIFTS, SPECIALTIES, awayShifts, offlineCapMs, specialtySlots } from "@/lib/empire";
 import { timedProgress, techProgress } from "@/lib/progress";
 import { labSummary, specialtySummary } from "@/lib/rdSummary";
 import { readyDots } from "@/lib/ready";
@@ -190,8 +191,47 @@ function QueueSlotProjects({ state, onBuy }) {
   );
 }
 
+// Away shifts (T4 item 42): earned Lab Projects that let time away pay
+// for longer. Bought with R&D points, never money.
+function AwayShiftProjects({ state, onBuy }) {
+  const owned = awayShifts(state);
+  const quote = awayShiftQuote(state);
+  return (
+    <Panel>
+      <h2 className="font-pixel text-[0.65rem] text-[var(--game-accent)]">AWAY SHIFTS</h2>
+      <p data-away-cap-now className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">
+        Time away pays for up to {Math.round(offlineCapMs(state) / 3600e3)}h now. Each shift adds {AWAY_SHIFTS[0].hours}h; investor milestones raise it too.
+      </p>
+      {AWAY_SHIFTS.map((shift, i) => {
+        const have = i < owned;
+        const next = i === owned;
+        return (
+          <div key={shift.id} data-away-shift={shift.id} className={`mt-2 border-2 border-[var(--game-border)] p-3 ${!have && !next ? "opacity-60" : ""}`}>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className="font-pixel text-[0.6rem]">{shift.name}</h3>
+              <span className="font-term text-lg text-[var(--game-muted)]">{shift.year} · {shift.cost} R&amp;D</span>
+            </div>
+            <p className="mt-1 font-term text-lg leading-6">{shift.blurb}</p>
+            {have ? (
+              <p className="mt-1 font-pixel text-[0.5rem] text-[var(--game-success)]">EARNED</p>
+            ) : next ? (
+              <div className="mt-2">
+                <GoldButton dataAttr={`lab-away-${shift.id}`} disabled={!quote.ok} onClick={onBuy}>
+                  <span className="font-pixel text-[0.55rem]">{quote.ok ? `${shift.name} · ${shift.cost} R&D` : quote.reason}</span>
+                </GoldButton>
+              </div>
+            ) : (
+              <p className="mt-1 font-pixel text-[0.5rem] text-[var(--game-dim)]">AFTER {AWAY_SHIFTS[i - 1].name}</p>
+            )}
+          </div>
+        );
+      })}
+    </Panel>
+  );
+}
+
 export default function RdPage() {
-  const { state, chooseSpecialty, runLabProject, markReadyView, unqueueTech, buyQueueSlot } = useGameState();
+  const { state, chooseSpecialty, runLabProject, markReadyView, unqueueTech, buyQueueSlot, buyAwayShift } = useGameState();
   const location = useLocation();
   const navigate = useNavigate();
   const { tab, focus } = readRdHash(location.hash);
@@ -231,6 +271,7 @@ export default function RdPage() {
             <p className="mt-1 font-term text-base leading-5 text-[var(--game-muted)]">Spend spare R&amp;D points on one-off projects at fixed prices, and earn research queue slots.</p>
           </Panel>
           <QueueSlotProjects state={state} onBuy={buyQueueSlot} />
+          <AwayShiftProjects state={state} onBuy={buyAwayShift} />
           <LabProjects state={state} onRun={runLabProject} bare />
         </div>
       )}

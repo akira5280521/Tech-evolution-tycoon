@@ -3,7 +3,6 @@
 
 import {
   BUSINESSES,
-  COMMISSION_MS,
   FOREMAN_COST,
   MAX_BUY,
   buyCount,
@@ -31,6 +30,7 @@ import {
   creditAmount,
   incomePerSecond,
 } from "./empire.js";
+import { openingMs } from "./stages.js";
 import { currentGoal, settleGoals } from "./goals.js";
 import { eraReachedIndex, pushRun } from "./records.js";
 import { generationAt } from "./generations.js";
@@ -78,12 +78,16 @@ export function buyBusiness(state, index, mode, now = Date.now()) {
   if (normalizeBuyMode(mode) === "x10" && currentGoal(state)?.id === "x10") state.boughtX10 = true;
   const before = st.owned;
   const after = before + count;
+  // A business's first opening this run takes a while (T5 item 62): longer
+  // for later eras, half as long once an earlier run reached it.
+  const opening = before === 0 ? openingMs(index, index <= (state.bestEra || 0)) : 0;
   const beforeGen = generationAt(cfg.id, before, state.techDone);
   state.cash -= cost;
   state.biz = state.biz.map((b, j) => (j === index ? {
     ...b,
     owned: after,
-    commissionUntil: before === 0 ? now + COMMISSION_MS : b.commissionUntil,
+    commissionUntil: before === 0 ? now + opening : b.commissionUntil,
+    commissionMs: before === 0 ? opening : b.commissionMs,
   } : b));
   notePurchase(state, index, before, after);
   state.businessesBought = (state.businessesBought || 0) + count;

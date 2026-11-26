@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { BUSINESSES } from "../../src/lib/gameConfig.js";
 import { ERA_YEAR, playerYear } from "../../src/lib/eraYear.js";
-import { PARTS, facilityUnlocked, openParts, partLock, partOpen, purchasePart, settleClosedParts, partCost } from "../../src/lib/facilities.js";
+import { PARTS, facilityUnlocked, openParts, partLock, partOpen, purchasePart, settleClosedParts, settleStages, partCost } from "../../src/lib/facilities.js";
 import { RESEARCH, researchItem, researchLock, serverOutput, awayBankHours, AWAY_BANK } from "../../src/lib/research.js";
 
 const upTo = (id, techDone = []) => ({
@@ -50,7 +50,10 @@ test("the research servers open with Mainframes; the Mark 1, its room kit, and t
     assert.match(partLock(s, PARTS.find((x) => x.id === id)) || "", /Research .+ in TECH/);
   }
   s.techDone = ["srv-mark1", "store-tape"];
-  for (const id of ["mgset", "roomac", "mark1", "tape"]) assert.ok(purchasePart(s, "servers", id).ok, id);
+  for (const id of ["mgset", "roomac", "mark1", "tape"]) assert.ok(purchasePart(s, "servers", id, 1e12).ok, id);
+  // The Mark 1 comes online after its install (T5 item 61).
+  assert.equal(serverOutput(s).perSecond, 0);
+  settleStages(s, 1e12 + 3 * 60e3);
   assert.ok(serverOutput(s).perSecond > 0);
   // The 7090 waits for 1959, then for its research.
   const p = PARTS.find((x) => x.id === "ibm7090");

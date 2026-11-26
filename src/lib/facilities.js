@@ -13,6 +13,7 @@
 import { BUSINESSES } from "./gameConfig.js";
 import { playerYear } from "./eraYear.js";
 import { BENCH_PARTS, BENCH_RD, MULTI_FAMILY, price } from "./benchParts.js";
+import { FIELD_ENGINEERS, benchBuildMs, installMs, installSet, readStages, roomBuildMs } from "./stages.js";
 
 export const SHARE_CAP = 0.05;
 export const STARTER_SHARE = 0.0009;
@@ -417,6 +418,101 @@ function countsOf(state, facilityId) {
   return state?.facilities?.[facilityId] || {};
 }
 
+// --- Staged timers (T5 items 61 and 62) ---
+// The run's jobs: servers being installed, HQ rooms being built and the
+// bench PC being set up. See stages.js.
+export function stageJobs(state) {
+  return Array.isArray(state?.stages) ? state.stages : [];
+}
+
+export function installingCount(state, facilityId, partId) {
+  return stageJobs(state).filter((j) => j.kind === "install" && j.facilityId === facilityId && j.partId === partId).length;
+}
+
+// What is running: the plant's parts less the machines still being installed.
+export function liveCounts(state, facilityId) {
+  const counts = countsOf(state, facilityId);
+  const jobs = stageJobs(state).filter((j) => j.kind === "install" && j.facilityId === facilityId);
+  if (!jobs.length) return counts;
+  const live = { ...counts };
+  for (const j of jobs) live[j.partId] = Math.max(0, (live[j.partId] || 0) - 1);
+  return live;
+}
+
+export function roomJob(state, facilityId) {
+  return stageJobs(state).find((j) => j.kind === "room" && j.facilityId === facilityId) || null;
+}
+
+export function benchJob(state) {
+  return stageJobs(state).find((j) => j.kind === "bench") || null;
+}
+
+function stageSeen(state, key) {
+  return (state?.lab?.stagesSeen || []).includes(key);
+}
+
+function markSeen(state, key) {
+  if (stageSeen(state, key)) return;
+  state.lab = { ...(state.lab || {}), stagesSeen: [...(state.lab?.stagesSeen || []), key].slice(-400) };
+}
+
+function addJob(state, job) {
+  state.stages = [...stageJobs(state), job];
+}
+
+export function hasFieldEngineers(state) {
+  return !!state?.lab?.fieldEngineers;
+}
+
+// Field engineers: a BOOST perk bought with R&D points once the server room
+// is open. Kept for good.
+export function fieldEngineersQuote(state) {
+  if (hasFieldEngineers(state)) return { ok: false, owned: true, cost: FIELD_ENGINEERS.cost };
+  if (!facilityEverUnlocked(state, "servers")) return { ok: false, reason: "Needs Mainframes", cost: FIELD_ENGINEERS.cost };
+  if ((Number(state?.data) || 0) < FIELD_ENGINEERS.cost) return { ok: false, reason: `Needs ${FIELD_ENGINEERS.cost} R&D points`, cost: FIELD_ENGINEERS.cost };
+  return { ok: true, cost: FIELD_ENGINEERS.cost };
+}
+
+export function buyFieldEngineers(state) {
+  const q = fieldEngineersQuote(state);
+  if (!q.ok) return q;
+  state.data = (Number(state.data) || 0) - q.cost;
+  state.lab = { ...(state.lab || {}), fieldEngineers: true };
+  return { ok: true, cost: q.cost };
+}
+
+// Called with the game clock: start building rooms whose plant just opened,
+// and finish jobs whose time is up. Returns notes for the news.
+export function settleStages(state, now) {
+  const notes = [];
+  if (!state || !Number.isFinite(now)) return notes;
+  state.stages = readStages(state.stages);
+  // Saves from before room building: every open room is already built.
+  if (!Array.isArray(state.roomsBuilt)) state.roomsBuilt = FACILITY_IDS.filter((id) => facilityUnlocked(state, id));
+  for (const id of FACILITY_IDS) {
+    if (state.roomsBuilt.includes(id) || roomJob(state, id) || !facilityUnlocked(state, id)) continue;
+    const ms = roomBuildMs(id, stageSeen(state, `room:${id}`));
+    addJob(state, { id: `room-${id}-${now}`, kind: "room", facilityId: id, partId: null, set: "room", startedAt: now, readyAt: now + ms });
+  }
+  const left = [];
+  for (const j of state.stages) {
+    if (now < j.readyAt) {
+      left.push(j);
+      continue;
+    }
+    if (j.kind === "room") {
+      state.roomsBuilt = [...state.roomsBuilt.filter((id) => id !== j.facilityId), j.facilityId];
+      markSeen(state, `room:${j.facilityId}`);
+    } else if (j.kind === "install") markSeen(state, `install:${j.partId}`);
+    else if (j.kind === "bench") markSeen(state, "bench");
+    notes.push({ type: "stage", kind: j.kind, facilityId: j.facilityId, partId: j.partId });
+  }
+  state.stages = left;
+  return notes;
+}
+
+const FACILITY_IDS = ["servers", "bench", "mine", "cluster"];
+
 function stock(counts, facilityId) {
   let watts = 0;
   let power = 0;
@@ -609,9 +705,9 @@ function rowOf(facilityId, counts) {
 
 export function facilityReport(state, businessPerSecond) {
   const biz = Number.isFinite(businessPerSecond) && businessPerSecond > 0 ? businessPerSecond : 0;
-  const mine = rowOf("mine", countsOf(state, "mine"));
-  const cluster = rowOf("cluster", countsOf(state, "cluster"));
-  const servers = rowOf("servers", countsOf(state, "servers"));
+  const mine = rowOf("mine", liveCounts(state, "mine"));
+  const cluster = rowOf("cluster", liveCounts(state, "cluster"));
+  const servers = rowOf("servers", liveCounts(state, "servers"));
   const uncapped = mine.share + cluster.share;
   const share = Math.min(SHARE_CAP, uncapped);
   const scale = uncapped > 0 ? share / uncapped : 0;
@@ -629,8 +725,16 @@ export function facilityReport(state, businessPerSecond) {
     mine: dress(mine),
     cluster: dress(cluster),
     servers: { ...servers, share: 0, perSecond: 0 },
-    bench: { ...benchStock(countsOf(state, "bench"), { oc: state?.benchOc !== false }), limit: benchLimit(countsOf(state, "bench"), { oc: state?.benchOc !== false }), share: 0 },
+    bench: benchRow(state),
   };
+}
+
+function benchRow(state) {
+  const counts = countsOf(state, "bench");
+  const row = { ...benchStock(counts, { oc: state?.benchOc !== false }), limit: benchLimit(counts, { oc: state?.benchOc !== false }), share: 0 };
+  // Still being assembled: no R&D yet.
+  if (benchJob(state)) return { ...row, perf: 0, perSecond: 0, building: true };
+  return row;
 }
 
 function cheapest(facilityId, kind, counts, open = null, group = null, coolant = null) {
@@ -1772,9 +1876,11 @@ export function partShort(state, part) {
     .filter((x) => x.have < x.need);
 }
 
-export function purchasePart(state, facilityId, partId) {
+export function purchasePart(state, facilityId, partId, now = Date.now()) {
   const part = byId[partId];
   if (!state || !partPlantOpen(state, facilityId, part)) return { ok: false };
+  // A room still being built takes no parts (the punch-card corner works from the start).
+  if (!part?.starter && roomJob(state, facilityId)) return { ok: false, reason: "Under construction" };
   if (!part || part.soon || !part.fits.includes(facilityId)) return { ok: false };
   if (!partOpen(state, part) || partRetired(state, part)) return { ok: false, reason: partLock(state, part) };
   const facilities = readFacilities(state.facilities);
@@ -1793,8 +1899,23 @@ export function purchasePart(state, facilityId, partId) {
     state.supply = supply;
   }
   state.cash += fit.refund;
+  const benchBefore = facilityId === "bench" ? benchStock(facilities.bench || {}) : null;
   facilities[facilityId] = fit.counts;
   state.facilities = facilities;
+  // A new research machine takes a while to come online (T5 item 61).
+  const ms = installMs(part, { repeat: stageSeen(state, `install:${part.id}`), engineers: hasFieldEngineers(state) });
+  if (facilityId === "servers" && ms > 0) {
+    addJob(state, { id: `install-${part.id}-${now}-${installingCount(state, facilityId, part.id)}`, kind: "install", facilityId, partId: part.id, set: installSet(part), startedAt: now, readyAt: now + ms });
+  }
+  // A bench PC with a new board or CPU is set up before it counts (T5 item 62).
+  if (benchBefore) {
+    const after = benchStock(fit.counts);
+    if (after.perf > 0 && (after.cpu?.id !== benchBefore.cpu?.id || after.board?.id !== benchBefore.board?.id)) {
+      state.stages = stageJobs(state).filter((j) => j.kind !== "bench");
+      const bms = benchBuildMs(stageSeen(state, "bench"));
+      addJob(state, { id: `bench-${now}`, kind: "bench", facilityId: "bench", partId: null, set: "bench", startedAt: now, readyAt: now + bms });
+    }
+  }
   // The first Inland 601 punches one result as it starts, enough to begin
   // the first TECH project without a long wait at 0.001 R&D/s.
   if (part.starter && owned === 0) state.data = (Number(state.data) || 0) + 1;

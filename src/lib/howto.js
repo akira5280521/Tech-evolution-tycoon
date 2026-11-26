@@ -11,7 +11,7 @@ export const HOWTO_GUIDES = [
     lines: [
       "The bottom bar has six buttons: GAME, HQ, R&D, BOOST, PROGRESS and MORE. The cash box on top shows cash, income, R&D points, your era and the month. Tap the lightbulb beside it for one line on what to do next on the screen you are on.",
       "HQ is your company building, floor by floor: tap a room to go there, and use the HQ link at the top of any menu to come back. R&D has QUEUE, TECH, SPECIALTY and LAB tabs. BOOST has NOW, UPGRADES (with the Foreman), BONUSES and PRESTIGE. PROGRESS has RUNS, BADGES, MUSEUM and STATS. MORE is just SETTINGS and HOW TO PLAY. A red dot on a button or tab means something there is ready; grey rooms say Coming soon.",
-      "Numbers are short (1.20B). Press and hold cash, income or an amount to see the exact figure. In MORE > SETTINGS you can turn on a tick or a buzz for every tap, pick one of three text sizes, and switch on colorblind colors. Settings come in groups: GAME, SOUND, NOTIFICATIONS, DISPLAY, SAVE (export and import a save code) and ABOUT.",
+      "A business's first opening in a run (hiring, stocking, grand opening) and a new era (retooling) each show a bar with what is happening. Later eras take longer, up to a few minutes. Ordinary buys are instant. Numbers are short (1.20B). Press and hold cash, income or an amount to see the exact figure. In MORE > SETTINGS you can turn on a tick or a buzz for every tap, pick one of three text sizes, and switch on colorblind colors. Settings come in groups: GAME, SOUND, NOTIFICATIONS, DISPLAY, SAVE (export and import a save code) and ABOUT.",
       "Only PRESTIGE and selling materials ask you to tap twice; everything else happens on one tap. Time away pays for up to 24 hours at first: investor milestones and the AWAY SHIFTS projects in R&D > LAB (bought with R&D points) make it longer.",
     ],
   },
@@ -31,6 +31,7 @@ export const HOWTO_GUIDES = [
     unlocks: "Mainframes",
     lines: [
       "Mainframes open the rest of the machine room. Research a computer in R&D > TECH, then buy it here with its own motor-generator and air conditioner.",
+      "Big things take a while and keep going while the app is closed. A new HQ room is built first, a few minutes at most. A new computer is delivered, installed and configured before it comes online: a couple of minutes for an early mainframe, up to an hour for the biggest supercomputers. Several can install at once, and nothing skips the wait. A repeat of something you did in an earlier run takes about half as long. The FIELD ENGINEERS perk in BOOST > UPGRADES (R&D points) halves install times.",
       "Tape drives and disks also need their TECH project before you can buy them. Machines make far more R&D points than the punch-card starter.",
       "ROOM STATUS, under the room, has a bar each for compute, storage, heat and power (and network once you have racks), with a white marker at the limit. Power and heat are the real machines' kilowatts: every watt a computer draws comes out as heat. A bar past its marker turns red, with a box saying what to add.",
       "Each machine card has spec bars from the real computer it is modeled on: SPEED, MEMORY, STORAGE, POWER and HEAT. They use a log scale so a 1951 machine and a 2021 one fit on the same bar. Its heat is its power draw and adds to the room's HEAT bar.",

@@ -13,7 +13,7 @@
 import { BUSINESSES } from "./gameConfig.js";
 import { companyCaps } from "./company.js";
 import { GENERATIONS } from "./generations.js";
-import { PARTS, benchStock, pushHeadline, readFacilities, serverStock, starterRate } from "./facilities.js";
+import { PARTS, benchJob, benchStock, liveCounts, pushHeadline, readFacilities, serverStock, starterRate } from "./facilities.js";
 import { playerYear } from "./eraYear.js";
 import { AWAY_SHIFTS, awayShifts } from "./empire.js";
 import { calendarYearAt } from "./calendar.js";
@@ -301,12 +301,13 @@ export function readTechJob(raw) {
 }
 
 export function serverOutput(state) {
-  const counts = readFacilities(state?.facilities).servers || {};
+  // Machines still being installed don't run yet (T5 item 61).
+  const counts = liveCounts({ ...state, facilities: readFacilities(state?.facilities) }, "servers");
   const { work, speed, storage, need } = serverStock(counts);
   // Each machine needs the disk of its day (part.diskGb) for full speed.
   const disk = need <= 0 ? 1 : storage >= need ? 1 : storage > 0 ? 0.5 : 0.25;
   // The PC build bench adds its own R&D.
-  const bench = benchStock(readFacilities(state?.facilities).bench, { oc: state?.benchOc !== false }).perSecond;
+  const bench = benchJob(state) ? 0 : benchStock(readFacilities(state?.facilities).bench, { oc: state?.benchOc !== false }).perSecond;
   // The starter machine adds a flat rate: no power, cooling or disk needed.
   const starter = starterRate(counts);
   return { work, speed, storage, need, bench, starter, perSecond: work * speed * disk * RD_PER_WORK + bench + starter };

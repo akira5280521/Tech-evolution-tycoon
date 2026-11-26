@@ -6,7 +6,7 @@
 // (which is also the heat the room must remove), compute in FLOPS. The
 // limits keep the game's own rules: a room with half the generators it needs
 // can supply half its machines' real draw.
-import { MINE_RAM_GB, PARTS, TIERS, benchStock, plantShort, plantStock, readFacilities } from "./facilities.js";
+import { MINE_RAM_GB, PARTS, TIERS, benchJob, benchStock, liveCounts, plantShort, plantStock, readFacilities, stageJobs } from "./facilities.js";
 import { MACHINE_SPECS, fmtBytes, fmtFlops, fmtKw } from "./machineSpecs.js";
 
 const EPS = 1e-6;
@@ -184,9 +184,15 @@ function benchStatus(state, counts) {
 
 // { online, bars: [{ id, label, icon, value, limit, text, fill, mark, bad, alert, tone }] }
 export function roomStatus(state, facilityId) {
-  const counts = readFacilities(state?.facilities)[facilityId] || {};
-  if (facilityId === "servers") return serverStatus(state, counts);
-  if (facilityId === "mine" || facilityId === "cluster") return cardPlantStatus(state, counts, facilityId);
-  if (facilityId === "bench") return benchStatus(state, counts);
-  return { online: 0, bars: [] };
+  // Machines still coming online don't count yet (T5 item 61).
+  const counts = liveCounts({ ...state, facilities: readFacilities(state?.facilities) }, facilityId);
+  const installing = stageJobs(state).filter((j) => j.kind === "install" && j.facilityId === facilityId).length;
+  let out = { online: 0, bars: [] };
+  if (facilityId === "servers") out = serverStatus(state, counts);
+  else if (facilityId === "mine" || facilityId === "cluster") out = cardPlantStatus(state, counts, facilityId);
+  else if (facilityId === "bench") {
+    out = benchStatus(state, counts);
+    if (benchJob(state)) out.online = 0;
+  }
+  return { ...out, installing };
 }

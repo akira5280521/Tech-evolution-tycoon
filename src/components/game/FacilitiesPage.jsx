@@ -23,6 +23,9 @@ import {
   rebuildReady,
   partMaterials,
   partShort,
+  benchJob,
+  roomJob,
+  stageJobs,
 } from "@/lib/facilities";
 import { extrasText, partValue } from "@/lib/plantValue";
 import { toast } from "sonner";
@@ -34,6 +37,7 @@ import RigsGarage from "./RigsGarage";
 import { HelpTip, ItemHelp } from "./HintSheet";
 import FacilityRoom from "./FacilityRoom";
 import RoomStatus, { MachineSpecBars } from "./RoomStatus";
+import StageBar from "./StageBar";
 import { machineSpec, specBars } from "@/lib/machineSpecs";
 
 function percent(share) {
@@ -52,7 +56,9 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, busi
   const dim = part.soon || !open || !!lock;
   const short = partShort(state, part);
   const mats = partMaterials(part);
-  const affordable = open && !lock && !part.soon && !fit.reason && !short.length && Number.isFinite(cost) && cash >= cost && owned < partMax(part, facilityId);
+  const building = !part.starter && !!roomJob(state, facilityId);
+  const affordable = open && !building && !lock && !part.soon && !fit.reason && !short.length && Number.isFinite(cost) && cash >= cost && owned < partMax(part, facilityId);
+  const installs = stageJobs(state).filter((j) => j.kind === "install" && j.facilityId === facilityId && j.partId === part.id);
   return (
     <div data-part={part.id} data-best-part={best ? "" : undefined} data-help-scope className={`border-2 ${best ? "border-[var(--game-accent)]" : "border-[var(--game-border)]"} bg-[var(--game-bg)] p-2`}>
       {best && <p className="mb-1 font-pixel text-[0.5rem] leading-4 text-[var(--game-accent)]">BEST NEXT PART</p>}
@@ -80,12 +86,20 @@ function PartRow({ part, owned, open, cash, onBuy, facilityId, state, best, busi
           <MachineSpecBars bars={specBars(part)} real={machineSpec(part.id)?.real} />
         </div>
       )}
+      {installs.length > 0 && (
+        <div data-installing={installs.length} className="mt-2 space-y-1">
+          {installs.slice(0, 3).map((job, i) => (
+            <StageBar key={job.id} job={job} kind="install" title={i === 0 ? `COMING ONLINE: ${installs.length} of ${owned}` : undefined} />
+          ))}
+          {installs.length > 3 && <p className="font-term text-base leading-5 text-[var(--game-muted)]">+{installs.length - 3} more being installed</p>}
+        </div>
+      )}
       {part.soon ? (
         <p className="mt-2 font-pixel text-[0.5rem] leading-4 text-[var(--game-muted)] opacity-60">COMING SOON</p>
       ) : (
         <div className="mt-2">
           <GoldButton dataAttr={`buy-${part.id}`} disabled={!affordable} onClick={onBuy}>
-            <span className="font-pixel text-[0.55rem]">{lock ? lock : !open ? "LOCKED" : facilityId === "bench" && owned > 0 && part.kind !== "stick" ? "ON THE BENCH" : `BUY ${money(cost)}`}</span>
+            <span className="font-pixel text-[0.55rem]">{lock ? lock : !open ? "LOCKED" : building ? "UNDER CONSTRUCTION" : facilityId === "bench" && owned > 0 && part.kind !== "stick" ? "ON THE BENCH" : `BUY ${money(cost)}`}</span>
             {open && !lock && !(facilityId === "bench" && owned > 0 && part.kind !== "stick") && mats && (
               <span data-part-materials className={`block font-term text-base leading-5 ${short.length ? "text-[var(--game-danger)]" : ""}`}>
                 {short.length
@@ -246,6 +260,11 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
           <p data-board className="break-words font-term text-base leading-5 text-[var(--game-muted)]">
             Memory: {row.board.used} of {row.board.slots} slots used on the {row.board.name}.
           </p>
+        )}
+        {open && bench && benchJob(state) && (
+          <div data-bench-building className="mt-2">
+            <StageBar job={benchJob(state)} kind="bench" title="SETTING UP THE PC" />
+          </div>
         )}
         {open && bench && row.canOc && (
           <div className="mt-2">
@@ -432,6 +451,12 @@ export default function FacilitiesPage({ facilityId }) {
       ) : (
       <>
       <FacilityRoom facilityId={facility.id} state={state} />
+      {roomJob(state, facility.id) && (
+        <div data-room-building className="status-frame p-3">
+          <StageBar job={roomJob(state, facility.id)} kind="room" title={`BUILDING THE ${facility.name.toUpperCase()}`} />
+          <p className="mt-1 font-term text-base leading-5 text-[#9690ac]">The crew keeps working while the app is closed. Parts can go in once it is built.</p>
+        </div>
+      )}
       <RoomStatus
         facilityId={facility.id}
         state={state}

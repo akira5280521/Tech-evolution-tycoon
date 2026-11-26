@@ -1,5 +1,6 @@
 import { Fragment, memo, useEffect, useRef, useState } from "react";
 import { fullMoney } from "@/lib/fullNumber";
+import { formatLeft, stageAt } from "@/lib/stages";
 import {
   BUSINESSES,
   COMMISSION_MS,
@@ -218,8 +219,8 @@ function BusinessRow({ index, row, cash, state, buyMode, onBuy, onHire, onRun, o
         {!compact && <p className="font-term text-base leading-5 text-[var(--game-muted)]">{shownTag}</p>}
         {commissioning ? (
           <>
-            <p className="font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">BRINGING THE LINE ONLINE</p>
-            <ProgressTrack cycleMs={COMMISSION_MS} cycleStart={(st.commissionUntil || 0) - COMMISSION_MS} progress={0} active loop={false} />
+            <OpeningLabel st={st} />
+            <ProgressTrack cycleMs={st.commissionMs || COMMISSION_MS} cycleStart={(st.commissionUntil || 0) - (st.commissionMs || COMMISSION_MS)} progress={0} active loop={false} />
           </>
         ) : (
           <ProgressTrack
@@ -410,3 +411,16 @@ function arePropsEqual(prev, next) {
 }
 
 export default memo(BusinessRow, arePropsEqual);
+
+// The first opening's stage (T5 item 62): hiring, stocking, grand opening.
+function OpeningLabel({ st }) {
+  const ms = st.commissionMs || COMMISSION_MS;
+  const now = Date.now();
+  const at = stageAt({ set: "opening", startedAt: (st.commissionUntil || 0) - ms, readyAt: st.commissionUntil || 0 }, now);
+  return (
+    <p data-opening-stage={at.stage} className="flex justify-between gap-2 font-pixel text-[0.55rem] leading-4 text-[var(--game-accent)]">
+      <span>{at.label.toUpperCase()}</span>
+      <span className="tabular-nums">{formatLeft(at.leftMs)}</span>
+    </p>
+  );
+}

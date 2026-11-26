@@ -235,7 +235,7 @@ export const FACILITY_TOURS = [
     when: (s) => facilityUnlocked(s, "servers"),
     route: "/facilities/servers",
     steps: [
-      { id: "servers-room", title: "MACHINE ROOM", text: "Mainframes opened the rest of this room. Research a computer in R&D > TECH, then come back here to buy it.", target: "[data-facility='servers']", manual: true },
+      { id: "servers-room", title: "MACHINE ROOM", text: "Mainframes opened the rest of this room. Research a computer in R&D > TECH, then come back here to buy it. A new computer takes a few minutes to deliver and install before it comes online, even with the app closed.", target: "[data-facility='servers']", manual: true },
       { id: "servers-kit", title: "POWER AND COOLING", text: "Each machine-room computer needs its own motor-generator and air conditioner, and a tape or disk once you have researched one.", target: "[data-facility='servers']", manual: true },
       { id: "servers-status", title: "ROOM STATUS", text: "Under the room, ROOM STATUS shows compute, storage, heat and power, each against a white limit marker. A bar past its marker turns red and says what to add.", target: "[data-room-status='servers']", manual: true, button: "DONE" },
     ],

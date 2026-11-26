@@ -109,7 +109,7 @@ export default function RoomStatus({ facilityId, state, summary, locked = false 
       <div className="flex items-baseline gap-2 border-b border-[#7060a4] pb-2">
         <h3 className="font-status text-lg font-bold leading-6">ROOM STATUS</h3>
         <span data-status-summary className="ml-auto text-right font-status text-sm leading-5 text-[#56ce74]">
-          {locked ? "COMING SOON" : `${status.online.toLocaleString("en-US")} online${summary ? `  ${summary}` : ""}`}
+          {locked ? "COMING SOON" : `${status.online.toLocaleString("en-US")} online${status.installing ? ` · ${status.installing} installing` : ""}${summary ? `  ${summary}` : ""}`}
         </span>
       </div>
       <div className="mt-3">

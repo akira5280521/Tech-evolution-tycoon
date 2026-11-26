@@ -33,6 +33,7 @@ export const HOWTO_GUIDES = [
       "Mainframes open the rest of the machine room. Research a computer in R&D > TECH, then buy it here with its own motor-generator and air conditioner.",
       "Tape drives and disks also need their TECH project before you can buy them. Machines make far more R&D points than the punch-card starter.",
       "ROOM STATUS, under the room, has a bar each for compute, storage, heat and power (and network once you have racks), with a white marker at the limit. Power and heat are the real machines' kilowatts: every watt a computer draws comes out as heat. A bar past its marker turns red, with a box saying what to add.",
+      "Each machine card has spec bars from the real computer it is modeled on: SPEED, MEMORY, STORAGE, POWER and HEAT. They use a log scale so a 1951 machine and a 2021 one fit on the same bar. Its heat is its power draw and adds to the room's HEAT bar.",
     ],
   },
   {

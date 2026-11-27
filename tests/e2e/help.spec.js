@@ -12,7 +12,8 @@ const VIEWPORTS = [
 for (const vp of VIEWPORTS) {
   for (const path of ["/", "/boost", "/tech", "/facilities/servers", "/board", "/runs", "/research"]) {
     test(`"?" buttons on ${path}, ${vp.name}`, async ({ page }) => {
-      test.setTimeout(180_000);
+      // About 130 "?" buttons on the busiest pages; slow when the machine is busy.
+      test.setTimeout(360_000);
       await page.setViewportSize(vp);
       await open(page, path, "late");
       await tipsOff(page);

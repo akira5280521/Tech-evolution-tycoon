@@ -43,7 +43,9 @@ test("the material sheet opens from the strip in TECH and in SUPPLY, refined gra
 
 test("a RIGS part short of a material says so on its BUY button", async ({ page }) => {
   const supply = Object.fromEntries(Object.keys(SAVES.late.supply || {}).map((k) => [k, 0]));
-  const seen = await open(page, "/facilities/mine", late({ cash: 1e30, techDone: RESEARCH.map((e) => e.id), supply: { ...supply, wafers: 0, glass: 0, copper: 0 } }));
+  // Managers off, so nothing refills the empty bins while the test runs.
+  const idle = late().biz.map((row) => ({ ...row, manager: false, running: false }));
+  const seen = await open(page, "/facilities/mine", late({ cash: 1e30, techDone: RESEARCH.map((e) => e.id), biz: idle, supply: { ...supply, wafers: 0, glass: 0, copper: 0 } }));
   await tipsOff(page);
   const mats = page.locator("[data-part-materials]");
   await expect(mats.first()).toBeVisible();

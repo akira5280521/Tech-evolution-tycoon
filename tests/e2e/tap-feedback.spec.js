@@ -6,12 +6,25 @@ test("long-press on cash shows the exact amount, and a short tap does not (item 
   const cash = page.locator("[data-cash]");
   const exact = await cash.getAttribute("data-exact");
   expect(exact).toMatch(/^\$[\d,]+(\.\d\d)?$/);
+  // Measure once the fonts are in: a late font moves the box out from under
+  // the finger and cancels the long-press.
+  await page.evaluate(() => document.fonts.ready);
+  // A popup at the top (the history-cards toast on load) can cover the cash
+  // box on a slow run, and then the press lands on the popup.
+  await expect(page.locator("[data-sonner-toast]")).toHaveCount(0, { timeout: 20_000 });
+  await page.waitForTimeout(300);
   const box = await cash.boundingBox();
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  // A short tap: no exact amount. (Checked after letting go, so a slow run
+  // can't make the tap look long.)
+  await page.mouse.move(x, y);
   await page.mouse.down();
-  await page.waitForTimeout(100);
+  await page.mouse.up();
+  await page.waitForTimeout(800);
   await expect(page.locator("[data-exact-peek]")).toHaveCount(0);
-  await page.waitForTimeout(600);
+  // A long-press: the exact amount shows while held.
+  await page.mouse.down();
   await expect(page.locator("[data-exact-peek]")).toHaveText(/^\$[\d,]+(\.\d\d)?$/);
   await page.mouse.up();
 });

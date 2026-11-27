@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { commas } from "@/lib/fullNumber";
 import { useArm } from "./useArm";
 import { MARKET_LOT, STORAGE_STEP, SWAP_FEE, materialPrice, refineAmount, refiningOpen, storageCost, storageLevel, supplyCap, swapQuote } from "@/lib/empire";
 import { REFINED, REFINE_MS, REFINE_RATIO, SUPPLY_KEYS, fmt, money } from "@/lib/gameConfig";
@@ -6,7 +7,7 @@ import { REFINED, REFINE_MS, REFINE_RATIO, SUPPLY_KEYS, fmt, money } from "@/lib
 // Whole numbers up to a million read best with commas: "840 / 1,000".
 export function amount(n) {
   const v = Math.floor(n || 0);
-  return v < 1e6 ? v.toLocaleString("en-US") : fmt(v);
+  return v < 1e6 ? commas(v) : fmt(v);
 }
 
 // One material's bins: how full they are and the next bigger size.

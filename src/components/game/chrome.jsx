@@ -279,7 +279,7 @@ export function SubTabs({ tabs, active, onPick, name = "menu" }) {
           aria-disabled={tab.locked ? "true" : undefined}
           data-sub-tab={tab.id}
           onClick={() => !tab.locked && onPick(tab.id)}
-          className={`relative min-h-12 min-w-0 overflow-hidden border-2 px-1.5 py-1 text-center font-pixel text-[0.5rem] leading-4 shadow-[3px_3px_0_0_#000] ${
+          className={`relative min-h-12 min-w-0 border-2 px-1.5 py-1 text-center font-pixel text-[0.5rem] leading-4 shadow-[3px_3px_0_0_#000] ${
             tab.locked
               ? "cursor-not-allowed border-[var(--game-border)] text-[var(--game-dim)]"
               : active === tab.id

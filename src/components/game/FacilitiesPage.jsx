@@ -301,7 +301,7 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
                 aria-selected={serverTab === t.id}
                 data-server-tab={t.id}
                 onClick={() => setServerTab(t.id)}
-                className={`min-h-12 min-w-0 overflow-hidden border-2 px-1.5 font-pixel text-[0.5rem] leading-4 ${serverTab === t.id ? "border-[var(--game-accent)] text-[var(--game-accent)]" : "border-[var(--game-border-strong)] text-[var(--game-muted)]"}`}
+                className={`min-h-12 min-w-0 border-2 px-1.5 font-pixel text-[0.5rem] leading-4 ${serverTab === t.id ? "border-[var(--game-accent)] text-[var(--game-accent)]" : "border-[var(--game-border-strong)] text-[var(--game-muted)]"}`}
               >
                 <TabLabel text={t.label} short={t.short} />
               </button>

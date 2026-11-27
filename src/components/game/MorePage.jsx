@@ -31,7 +31,7 @@ import { labSummary, specialtySummary } from "@/lib/rdSummary";
 // museum are in PROGRESS.
 const TABS = [
   { id: "settings", label: "SETTINGS", title: "SETTINGS" },
-  { id: "howto", label: "HOW TO PLAY", title: "HOW TO PLAY" },
+  { id: "howto", label: "HOW TO PLAY", short: "HOW TO", title: "HOW TO PLAY" },
 ];
 
 const tabBtn = (active, id) =>
@@ -46,7 +46,7 @@ export function MoreLinks({ active }) {
   const go = (id) => navigate({ to: "/more", hash: id });
   return (
     <div data-more-tabs>
-      <SubTabs tabs={TABS.map((t) => ({ id: t.id, label: t.label }))} active={active} onPick={go} name="more" />
+      <SubTabs tabs={TABS.map((t) => ({ id: t.id, label: t.label, short: t.short }))} active={active} onPick={go} name="more" />
     </div>
   );
 }

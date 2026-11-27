@@ -360,12 +360,13 @@ img[src*="/icons/"] {
   pointer-events: none;
 }
 
-/* Tab labels stay on one line; a long one is cut with … instead of wrapping
-   letter by letter. */
+/* Tab labels may wrap at a space (LAB PROJECTS, SERVER MACHINES). They must
+   not wrap letter-by-letter; a long single word shrinks or uses a short form. */
 [data-tab-label] {
-  white-space: nowrap;
+  white-space: normal;
   overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .safe-x {

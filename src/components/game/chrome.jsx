@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { fullMoney } from "@/lib/fullNumber";
 import { Link, useLocation } from "@tanstack/react-router";
 import { Lightbulb } from "lucide-react";
@@ -212,8 +212,60 @@ export default function ScreenShell({ title, subtitle, children, backTo = "/", t
   );
 }
 
+// Fits a pixel-font tab label inside its button. Keeps the full words when
+// they fit, shrinks by whole pixels if they don't, and only then uses a short
+// form. The ready-dot on a tab is ignored when measuring.
+const TAB_FONT_MIN = 6;
+
+export function TabLabel({ text, short }) {
+  const ref = useRef(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const fit = () => {
+      const apply = (label, size) => {
+        if (el.textContent !== label) el.textContent = label;
+        el.style.fontSize = size ? `${size}px` : "";
+      };
+      // Height is allowed to wrap onto another line (the tab grows). Only a
+      // line that is wider than the padded box counts as overflow.
+      const overflows = () => el.scrollWidth - el.clientWidth > 0.5;
+      const shrink = (label) => {
+        apply(label, "");
+        let size = Math.round(parseFloat(getComputedStyle(el).fontSize) || 8);
+        apply(label, size);
+        while (size > TAB_FONT_MIN && overflows()) {
+          size -= 1;
+          apply(label, size);
+        }
+        return !overflows();
+      };
+      if (shrink(text)) {
+        el.removeAttribute("data-tab-short");
+        return;
+      }
+      if (short && short !== text && shrink(short)) {
+        el.setAttribute("data-tab-short", short);
+        return;
+      }
+      apply(short || text, TAB_FONT_MIN);
+      if (short && short !== text) el.setAttribute("data-tab-short", short);
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    document.fonts?.ready?.then(fit);
+    return () => ro.disconnect();
+  }, [text, short]);
+  return (
+    <span ref={ref} data-tab-label className="block w-full overflow-hidden whitespace-normal text-center">
+      {text}
+    </span>
+  );
+}
+
 // Sub-tabs under a menu's title (T3 item 14: title + BACK, sub-tabs, content).
-// tabs: [{ id, label, dot?, locked? }]. A locked tab is greyed with "Coming soon".
+// tabs: [{ id, label, short?, dot?, locked? }]. A locked tab is greyed with "Coming soon".
 export function SubTabs({ tabs, active, onPick, name = "menu" }) {
   return (
     <div data-sub-tabs={name} role="tablist" className={`grid gap-2 ${tabs.length >= 4 ? "grid-cols-4" : tabs.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
@@ -222,11 +274,12 @@ export function SubTabs({ tabs, active, onPick, name = "menu" }) {
           key={tab.id}
           type="button"
           role="tab"
+          aria-label={tab.label}
           aria-selected={active === tab.id}
           aria-disabled={tab.locked ? "true" : undefined}
           data-sub-tab={tab.id}
           onClick={() => !tab.locked && onPick(tab.id)}
-          className={`relative min-h-12 min-w-0 border-2 px-1 py-1 text-center font-pixel text-[0.5rem] leading-4 shadow-[3px_3px_0_0_#000] ${
+          className={`relative min-h-12 min-w-0 overflow-hidden border-2 px-1.5 py-1 text-center font-pixel text-[0.5rem] leading-4 shadow-[3px_3px_0_0_#000] ${
             tab.locked
               ? "cursor-not-allowed border-[var(--game-border)] text-[var(--game-dim)]"
               : active === tab.id
@@ -234,7 +287,7 @@ export function SubTabs({ tabs, active, onPick, name = "menu" }) {
               : "border-[var(--game-border-strong)] bg-[var(--game-panel)] text-[var(--game-muted)]"
           }`}
         >
-          {tab.label}
+          <TabLabel text={tab.label} short={tab.short} />
           {tab.locked && <span className="block font-term text-xs leading-4">Coming soon</span>}
           {tab.dot && <span data-sub-tab-dot aria-label="ready" className="absolute -right-1 -top-1 h-2.5 w-2.5 border border-black bg-[var(--game-danger)]" />}
         </button>

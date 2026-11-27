@@ -32,7 +32,7 @@ import { toast } from "sonner";
 import { playerYear, researchItem, serverOutput } from "@/lib/research";
 import { HUB_ROUTE } from "@/lib/hub";
 import { useGameState } from "./GameState";
-import ScreenShell, { Embedded, GoldButton, Panel, SubTabs } from "./chrome";
+import ScreenShell, { Embedded, GoldButton, Panel, SubTabs, TabLabel } from "./chrome";
 import RigsGarage from "./RigsGarage";
 import { HelpTip, ItemHelp } from "./HintSheet";
 import FacilityRoom from "./FacilityRoom";
@@ -301,9 +301,9 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
                 aria-selected={serverTab === t.id}
                 data-server-tab={t.id}
                 onClick={() => setServerTab(t.id)}
-                className={`min-h-12 border-2 px-1 font-pixel text-[0.5rem] leading-4 ${serverTab === t.id ? "border-[var(--game-accent)] text-[var(--game-accent)]" : "border-[var(--game-border-strong)] text-[var(--game-muted)]"}`}
+                className={`min-h-12 min-w-0 overflow-hidden border-2 px-1.5 font-pixel text-[0.5rem] leading-4 ${serverTab === t.id ? "border-[var(--game-accent)] text-[var(--game-accent)]" : "border-[var(--game-border-strong)] text-[var(--game-muted)]"}`}
               >
-                {t.label}
+                <TabLabel text={t.label} short={t.short} />
               </button>
             ))}
           </div>
@@ -361,9 +361,9 @@ function Plant({ facility, state, report, business, cash, onBuy, next, onToggleO
 }
 
 const SERVER_TABS = [
-  { id: "machines", label: "SERVER MACHINES", kinds: ["tabulator", "server"] },
-  { id: "room", label: "ROOM EQUIPMENT", kinds: ["power", "cool", "disk", "link"] },
-  { id: "home", label: "HOME PC PARTS", kinds: [] },
+  { id: "machines", label: "SERVER MACHINES", short: "SERVERS", kinds: ["tabulator", "server"] },
+  { id: "room", label: "ROOM EQUIPMENT", short: "ROOM", kinds: ["power", "cool", "disk", "link"] },
+  { id: "home", label: "HOME PC PARTS", short: "HOME PC", kinds: [] },
 ];
 
 const BENCH_TABS = [
@@ -440,7 +440,7 @@ export default function FacilitiesPage({ facilityId }) {
     <ScreenShell title={facility.name} subtitle={facility.blurb} backTo={HUB_ROUTE} crumbVia="HARDWARE">
       {facilityId === "bench" && (
         <SubTabs
-          tabs={[{ id: "build", label: "BUILD" }, { id: "saved", label: "SAVED BUILDS" }]}
+          tabs={[{ id: "build", label: "BUILD" }, { id: "saved", label: "SAVED BUILDS", short: "SAVED" }]}
           active={benchView}
           onPick={(id) => navigate({ to: "/facilities/$facilityId", params: { facilityId: "bench" }, hash: id === "saved" ? "saved" : "", replace: true })}
           name="bench"

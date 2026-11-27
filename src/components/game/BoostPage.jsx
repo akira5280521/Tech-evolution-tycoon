@@ -60,7 +60,7 @@ export default function BoostPage() {
   const anyUpgrade = BUSINESSES.some((cfg, i) => eraOpen(state, i) && upgradeReady(state, i));
   const tabs = [
     { id: "now", label: "NOW", dot: false },
-    { id: "upgrades", label: "UPGRADES", dot: anyUpgrade || (!state.foreman && state.cash >= FOREMAN_COST) },
+    { id: "upgrades", label: "UPGRADES", short: "UPGRADE", dot: anyUpgrade || (!state.foreman && state.cash >= FOREMAN_COST) },
     { id: "bonuses", label: "BONUSES", dot: forkIsReady(state) },
     { id: "prestige", label: "PRESTIGE", dot: prestigeReady(state) },
   ];

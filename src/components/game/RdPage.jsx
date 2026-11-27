@@ -31,8 +31,8 @@ import { HelpTip } from "./HintSheet";
 export const RD_TABS = [
   { id: "queue", label: "QUEUE" },
   { id: "tech", label: "TECH" },
-  { id: "specialty", label: "SPECIALTY" },
-  { id: "lab", label: "LAB PROJECTS" },
+  { id: "specialty", label: "SPECIALTY", short: "SPEC" },
+  { id: "lab", label: "LAB PROJECTS", short: "LAB" },
 ];
 
 // /research#tech-cpu-8080 -> { tab: "tech", focus: "cpu-8080" }
